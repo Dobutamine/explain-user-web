@@ -144,8 +144,9 @@ export default {
     async initDiagram() {
       // first clear all children from the stage
       if (pixiApp) {
-        pixiApp = null
+        this.destroyPixiApp(pixiApp)
       }
+      
       // get the reference to the canvas
       canvas = document.getElementById("stage");
 
