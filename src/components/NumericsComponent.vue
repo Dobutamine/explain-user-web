@@ -35,12 +35,17 @@ export default {
     };
   },
   methods: {
-
+    updateWatchList() {
+      let _watchList = []
+      this.mutableParameters.forEach(param => {
+        param.props.forEach(p => _watchList.push(p))
+      })
+      explain.watchModelPropsSlow(_watchList)
+    },
     dataUpdate() {
       if (!this.isEnabled) return;
 
-      this.currentData =
-        explain.modelDataSlow[explain.modelDataSlow.length - 1];
+      this.currentData = explain.modelDataSlow[explain.modelDataSlow.length - 1];
 
       this.mutableParameters.forEach((param) => {
         param.value = "";
@@ -76,20 +81,18 @@ export default {
     },
   },
   beforeUnmount() {
+    this.$bus.off("model_ready", () => this.updateWatchList())
+    this.$bus.off("reset", () => this.updateWatchList())
+    this.$bus.off("rts", () => { this.dataUpdate()});
+    this.$bus.off("data", () => { this.dataUpdate()});
   },
   mounted() {
     this.isEnabled = !this.collapsed;
     this.mutableParameters = [...this.parameters];
-
-    // get the realtime slow data
-    this.$bus.on("rts", () => {
-      this.dataUpdate()
-    });
-
-    // get the slow data from a calculation frame
-    this.$bus.on("data", () => {
-      this.dataUpdate()
-    });
+    this.$bus.on("model_ready", () => this.updateWatchList())
+    this.$bus.on("reset", () => this.updateWatchList())
+    this.$bus.on("rts", () => { this.dataUpdate()});
+    this.$bus.on("data", () => { this.dataUpdate()});
   },
 };
 </script>

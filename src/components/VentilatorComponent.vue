@@ -418,20 +418,6 @@ export default {
     update_hfo() {
       explain.callModelFunction("Ventilator.set_ventilator_hfov", [this.hfo_map_cmh2o, this.hfo_freq, this.hfo_amplitude_cmh2o, this.hfo_bias_flow])
     },
-    updateWatchList() {
-      explain.watchModelPropsSlow([
-          "Ventilator.pip_cmh2o",
-          "Ventilator.peep_cmh2o",
-          "Ventilator.vent_rate",
-          "Ventilator.minute_volume",
-          "Ventilator.compliance",
-          "Ventilator.resistance",
-          "Ventilator.exp_tidal_volume",
-          "Ventilator.etco2",
-          "Ventilator.exp_tidal_volume",
-          "Ventilator.exp_tidal_volume"
-        ])
-    },
     update_ventilator_setttings() {
       if (this.update_model) {
 
@@ -443,7 +429,6 @@ export default {
             explain.callModelFunction("Ventilator.switch_ventilator", [false])
             break;
           case "PC":
-            this.updateWatchList()
             if (!this.ventilator_running) {
               this.ventilator_running = true;
               explain.callModelFunction("Ventilator.switch_ventilator", [true])
@@ -455,7 +440,6 @@ export default {
             this.toggle_spont_breathing()
             break;
           case "PRVC":
-            this.updateWatchList()
             if (!this.ventilator_running) {
               this.ventilator_running = true;
               explain.callModelFunction("Ventilator.switch_ventilator", [true])
@@ -468,7 +452,6 @@ export default {
             this.toggle_spont_breathing()
             break;
           case "PS":
-            this.updateWatchList()
             if (!this.ventilator_running) {
               this.ventilator_running = true;
               explain.callModelFunction("Ventilator.switch_ventilator", [true])
@@ -491,7 +474,6 @@ export default {
             this.toggle_spont_breathing()
             break;
           case "HFOV":
-            this.updateWatchList()
             if (!this.ventilator_running) {
               this.ventilator_running = true;
               explain.callModelFunction("Ventilator.switch_ventilator", [true])
