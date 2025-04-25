@@ -233,6 +233,17 @@ export default defineComponent({
       }
       this.showLoadStatePopUp = false
     },
+    async getAllUserStates() {
+      this.stateList = []
+      this.userStateList = []
+      this.sharedStateList = []
+
+      this.userStateList = await this.state.getAllUserStatesFromServer(this.general.apiUrl, this.user.name, this.user.token)
+      this.sharedStateList = await this.state.getAllSharedStatesFromServer(this.general.apiUrl, this.user.name, this.user.token)
+
+      this.buildStateList()
+      this.showLoadStatePopUp = true
+    },
     toggleSharedStates() {
       this.buildStateList()
     },
@@ -244,17 +255,6 @@ export default defineComponent({
           this.stateList.push(t + " (shared)")
         })
       }
-    },
-    async getAllUserStates() {
-      this.stateList = []
-      this.userStateList = []
-      this.sharedStateList = []
-
-      this.userStateList = await this.state.getAllUserStatesFromServer(this.general.apiUrl, this.user.name, this.user.token)
-      this.sharedStateList = await this.state.getAllSharedStatesFromServer(this.general.apiUrl, this.user.name, this.user.token)
-
-      this.buildStateList()
-      this.showLoadStatePopUp = true
     },
     protectState() {
       this.state.protected = !this.state.protected
@@ -273,43 +273,6 @@ export default defineComponent({
       this.$bus.emit("rt_stop")
       this.user.logOut()
       this.$router.push("/login");
-    },
-    uploadDefinition() {
-      this.definition.definition = { ...explain.modelDefinition }
-      this.definition.name = explain.modelDefinition.name
-      this.definition.saveDefinitionToServer(this.general.apiUrl, this.user.name, this.user.token)
-    },
-    stopRt() {
-      if (this.rtState) {
-        explain.stop();
-        this.rtState = false
-        this.playArmed = false;
-        this.butColor = "white";
-        this.butIcon = "fa-solid fa-play";
-        this.butCaption = "PLAY";
-        // get the model state
-        explain.getModelState()
-        this.$bus.emit("rt_stop")
-      }
-    },
-    download() {
-      this.stopRt()
-      explain.saveModelState("local")
-    },
-    saveState() {
-      this.stopRt()
-      this.selectedState = this.state.name
-      this.showSaveStatePopUp = true
-    },
-    upload() {
-      if (this.state.protected) {
-        if (this.selectedState !== this.state.name) {
-          this.state.protected = false
-        }
-      }
-      this.state.name = this.selectedState
-      this.showSaveStatePopUp = false
-      explain.saveModelState("server")
     },
     togglePlay() {
       this.rtState = !this.rtState;
@@ -333,9 +296,18 @@ export default defineComponent({
         this.$bus.emit("rt_stop")
       }
     },
-    reload() {
-      explain.restartModelDefinition();
-      this.$bus.emit('reset')
+    stopRt() {
+      if (this.rtState) {
+        explain.stop();
+        this.rtState = false
+        this.playArmed = false;
+        this.butColor = "white";
+        this.butIcon = "fa-solid fa-play";
+        this.butCaption = "PLAY";
+        // get the model state
+        explain.getModelState()
+        this.$bus.emit("rt_stop")
+      }
     },
     calculate() {
       this.calcRunning = !this.calcRunning;
@@ -362,12 +334,47 @@ export default defineComponent({
       this.$bus.emit('status', explain.statusMessage)
       this.calculationReady();
     },
+    // not tested
+    uploadDefinition() {
+      this.definition.definition = { ...explain.modelDefinition }
+      this.definition.name = explain.modelDefinition.name
+      this.definition.saveDefinitionToServer(this.general.apiUrl, this.user.name, this.user.token)
+    },
+    // not tested
+    download() {
+      this.stopRt()
+      explain.saveModelState("local")
+    },
+    // not tested
+    saveState() {
+      this.stopRt()
+      this.selectedState = this.state.name
+      this.showSaveStatePopUp = true
+    },
+    // not tested
+    upload() {
+      if (this.state.protected) {
+        if (this.selectedState !== this.state.name) {
+          this.state.protected = false
+        }
+      }
+      this.state.name = this.selectedState
+      this.showSaveStatePopUp = false
+      explain.saveModelState("server")
+    },
+    // not tested
+    reload() {
+      explain.restartModelDefinition();
+      this.$bus.emit('reset')
+    },
+    // not tested
     submitInput() {
       if (this.userInput.length > 0) {
         this.state.renameState(this.userInput, this.user.name)
       }
       this.showInputPopup = false
     },
+    // not tested
     uploadStateToServer() {
       this.state.model_definition = { ...explain.modelDefinition }
       this.state.saveStateToServer(this.general.apiUrl, this.user.name, this.user.token).then((t) => {

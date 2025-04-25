@@ -320,7 +320,7 @@ export default {
               let watched_models_oxy = []
               component.models.forEach(m => {
                 watched_models_oxy.push(m + ".vol")
-                watched_models_oxy.push(m + ".aboxy.to2")
+                watched_models_oxy.push(m + ".to2")
               })
               explain.watchModelProps(watched_models_oxy)
               break;
@@ -342,7 +342,7 @@ export default {
               let watched_models_pump = []
               component.models.forEach(m => {
                 watched_models_pump.push(m + ".vol")
-                watched_models_pump.push(m + ".aboxy.to2")
+                watched_models_pump.push(m + ".to2")
                 watched_models_pump.push(m + ".pump_rpm")
               })
               explain.watchModelProps(watched_models_pump)
@@ -386,7 +386,7 @@ export default {
               let watched_models_bc = []
               component.models.forEach(m => {
                 watched_models_bc.push(m + ".vol")
-                watched_models_bc.push(m + ".aboxy.to2")
+                watched_models_bc.push(m + ".to2")
               })
               explain.watchModelProps(watched_models_bc)
               break;
@@ -553,7 +553,7 @@ export default {
               let watched_models_oxy = []
               component.models.forEach(m => {
                 watched_models_oxy.push(m + ".vol")
-                watched_models_oxy.push(m + ".aboxy.to2")
+                watched_models_oxy.push(m + ".to2")
               })
               explain.watchModelProps(watched_models_oxy)
               break;
@@ -561,7 +561,7 @@ export default {
               let watched_models_pump = []
               component.models.forEach(m => {
                 watched_models_pump.push(m + ".vol")
-                watched_models_pump.push(m + ".aboxy.to2")
+                watched_models_pump.push(m + ".to2")
                 watched_models_pump.push(m + ".pump_rpm")
               })
               explain.watchModelProps(watched_models_pump)
@@ -577,7 +577,7 @@ export default {
               let watched_models_bc = []
               component.models.forEach(m => {
                 watched_models_bc.push(m + ".vol")
-                watched_models_bc.push(m + ".aboxy.to2")
+                watched_models_bc.push(m + ".to2")
               })
               explain.watchModelProps(watched_models_bc)
               break;
@@ -720,7 +720,26 @@ export default {
       }
     }
   },
-  beforeUnmount() { },
+  beforeUnmount() { 
+    this.$bus.off("state", this.processStateChanged)
+    this.$bus.off('rt_start', () => this.rt_running = true)
+    this.$bus.off('rt_stop', () => this.rt_running = false)
+    this.$bus.off('reset', () => this.buildDiagram())
+    this.$bus.off('rebuild_diagram', () => this.buildDiagram())
+    this.$bus.off("update_watchlist", () => this.update_watchlist())
+    this.$bus.off("update_drainage_site", (new_site) => {
+      try {
+        this.state.diagram_definition.components['ECLS_DR'].dbcFrom = new_site
+        this.update_component('ECLS_DR')
+      } catch { }
+    })
+    this.$bus.off("update_return_site", (new_site) => {
+      try {
+        this.state.diagram_definition.components['ECLS_RE'].dbcTo = new_site
+        this.update_component('ECLS_RE')
+      } catch { }
+    })
+  },
   mounted() {
     // initialize and build the diagram
     this.initDiagram().then(() => {

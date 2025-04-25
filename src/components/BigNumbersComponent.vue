@@ -72,7 +72,6 @@ export default {
       abp: "-/-",
       abp_mean: "(-)",
       rr: "-",
-      vent_rate: "-",
       etco2: "-",
       temp: "-",
     };
@@ -81,10 +80,13 @@ export default {
     updateWatchList() {
       // watch the appropriate properties
       explain.watchModelPropsSlow([
-        "Heart.heart_rate", 
-        "Breathing.resp_rate", 
-        "Blood.so2_pre",
-        "Blood.so2_post",
+        "Monitor.heart_rate", 
+        "Monitor.resp_rate", 
+        "Monitor.spo2_pre",
+        "Monitor.spo2",
+        "Monitor.abp_syst",
+        "Monitor.abp_diast",
+        "Monitor.abp_mean"
       ])
     },
     dataUpdate() {
@@ -94,13 +96,12 @@ export default {
 
       if (this.currentData) {
         try {
-          this.hr = this.currentData["Heart.heart_rate"].toFixed(0)
-          this.rr = this.currentData["Breathing.resp_rate"].toFixed(0)
-          this.spo2_pre = this.currentData["Blood.so2_pre"].toFixed(0)
-          this.spo2_post = this.currentData["Blood.so2_post"].toFixed(0)
-          // this.abp = this.currentData["AD.pres_cor_max"].toFixed(0) + "/" + this.currentData["AD.pres_cor_min"].toFixed(0)
-          // this.abp_mean = "(" + this.currentData["AD.pres_cor_mean"].toFixed(0) + ")"
-          // this.vent_rate = this.currentData["Ventilator.vent_rate"].toFixed(0)
+          this.hr = this.currentData["Monitor.heart_rate"].toFixed(0)
+          this.rr = this.currentData["Monitor.resp_rate"].toFixed(0)
+          this.spo2_pre = this.currentData["Monitor.spo2_pre"].toFixed(0)
+          this.spo2_post = this.currentData["Monitor.spo2"].toFixed(0)
+          this.abp = this.currentData["Monitor.abp_syst"].toFixed(0) + "/" + this.currentData["Monitor.abp_diast"].toFixed(0)
+          this.abp_mean = "(" + this.currentData["Monitor.abp_mean"].toFixed(0) + ")"
         } catch { }
 
       }
