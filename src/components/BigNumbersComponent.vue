@@ -78,23 +78,29 @@ export default {
     };
   },
   methods: {
-
+    updateWatchList() {
+      // watch the appropriate properties
+      explain.watchModelPropsSlow([
+        "Heart.heart_rate", 
+        "Breathing.resp_rate", 
+        "Blood.so2_pre",
+        "Blood.so2_post",
+      ])
+    },
     dataUpdate() {
       if (!this.isEnabled) return;
 
-      this.currentData =
-        explain.modelDataSlow[explain.modelDataSlow.length - 1];
-
+      this.currentData = explain.modelDataSlow[explain.modelDataSlow.length - 1];
 
       if (this.currentData) {
         try {
           this.hr = this.currentData["Heart.heart_rate"].toFixed(0)
+          this.rr = this.currentData["Breathing.resp_rate"].toFixed(0)
           this.spo2_pre = this.currentData["Blood.so2_pre"].toFixed(0)
           this.spo2_post = this.currentData["Blood.so2_post"].toFixed(0)
-          this.abp = this.currentData["AD.pres_cor_max"].toFixed(0) + "/" + this.currentData["AD.pres_cor_min"].toFixed(0)
-          this.abp_mean = "(" + this.currentData["AD.pres_cor_mean"].toFixed(0) + ")"
-          this.rr = this.currentData["Breathing.resp_rate"].toFixed(0)
-          this.vent_rate = this.currentData["Ventilator.vent_rate"].toFixed(0)
+          // this.abp = this.currentData["AD.pres_cor_max"].toFixed(0) + "/" + this.currentData["AD.pres_cor_min"].toFixed(0)
+          // this.abp_mean = "(" + this.currentData["AD.pres_cor_mean"].toFixed(0) + ")"
+          // this.vent_rate = this.currentData["Ventilator.vent_rate"].toFixed(0)
         } catch { }
 
       }
@@ -105,6 +111,9 @@ export default {
   mounted() {
     this.isEnabled = !this.collapsed;
 
+    // watch the big bumber data
+    this.updateWatchList();
+
     // get the realtime slow data
     this.$bus.on("rts", () => {
       this.dataUpdate()
@@ -114,6 +123,9 @@ export default {
     this.$bus.on("data", () => {
       this.dataUpdate()
     });
+
+    // if the model resets make sure we still get the data in
+    this.$bus.on("reset", this.updateWatchList)
 
   },
 };

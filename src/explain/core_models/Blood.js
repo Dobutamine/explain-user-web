@@ -28,24 +28,6 @@ export class Blood {
       ],
     },
     {
-      target: "set_pres_cor_factor",
-      caption: "cor factor",
-      type: "function",
-      optional: false,
-      args: [
-        {
-          target: "pres_cor_factor",
-          type: "number",
-          optional: false,
-          factor: 1,
-          delta: 0.1,
-          rounding: 1,
-          ul: 10.0,
-          ll: 0.1,
-        },
-      ],
-    },
-    {
       target: "set_na_conc",
       caption: "sodium concentration (mmol/l)",
       type: "function",
@@ -338,13 +320,11 @@ export class Blood {
     this._t = this._model_engine.modeling_stepsize;
 
     // set the aboxy and solutes if not set by the state which is loaded
-    for (let [model_name, model] of Object.entries(this._model_engine.models)) {
+    for (let [_, model] of Object.entries(this._model_engine.models)) {
       if (
         model.model_type === "BloodCapacitance" ||
         model.model_type === "BloodTimeVaryingElastance"
       ) {
-        // set the correction factor
-        this.set_pres_cor_factor(this.pres_cor_factor);
         if (Object.keys(model.aboxy).length === 0) {
           console.log("setting blood composition");
           model.aboxy = { ...this.aboxy };
@@ -370,28 +350,11 @@ export class Blood {
     }
   }
 
-  set_pres_cor_factor(new_factor) {
-    console.log(new_factor);
-    this.pres_cor_factor = parseFloat(new_factor);
-    for (let [_, model] of Object.entries(this._model_engine.models)) {
-      if (
-        (model.model_type === "BloodCapacitance" ||
-          model.model_type === "BloodTimeVaryingElastance") &&
-        !model.fixed_composition
-      ) {
-        if (model.is_enabled) {
-          model.pres_cor_factor = parseFloat(new_factor);
-        }
-      }
-    }
-  }
-
   set_blood_properties(model_name) {
     // set the aboxy and solutes if not set by the state which is loaded
     if (
       this._model_engine.models[model_name].model_type === "BloodCapacitance" ||
-      this._model_engine.models[model_name].model_type ===
-        "BloodTimeVaryingElastance"
+      this._model_engine.models[model_name].model_type === "BloodTimeVaryingElastance"
     ) {
       if (
         Object.keys(this._model_engine.models[model_name].aboxy).length === 0

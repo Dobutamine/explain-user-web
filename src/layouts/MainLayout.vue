@@ -158,12 +158,11 @@
 </template>
 
 <script>
-import { defineComponent, ref } from 'vue'
+import { defineComponent } from 'vue'
 import { useGeneralStore } from 'src/stores/general';
 import { useUserStore } from 'src/stores/user';
 import { useStateStore } from 'src/stores/state';
 import { explain } from 'src/boot/explain';
-import { TimeScale } from 'chart.js';
 
 export default defineComponent({
   name: 'MainLayout',
@@ -181,7 +180,6 @@ export default defineComponent({
   },
   data() {
     return {
-      model_file: [],
       modelName: "",
       modelDescription: "",
       playArmed: false,
@@ -191,9 +189,6 @@ export default defineComponent({
       butCaption: "PLAY",
       butColor: "white",
       butCalcColor: "white",
-      butDebugColor: "negative",
-      butDebugIcon: "fa-solid fa-bug",
-      butDebugCaption: "no debug",
       butIcon: "fa-solid fa-play",
       butCalcIcon: "fa-solid fa-forward-step",
       butCalcCaption: "CALCULATE",
@@ -216,8 +211,7 @@ export default defineComponent({
       sharedStateList: [],
       userInput: "",
       durations: [1, 2, 3, 5, 10, 20, 30, 60, 120, 240, 360, 600, 1200, 1800],
-      current_model_definition: 'baseline_neonate',
-      available_model_definitions: ['default', 'coarctatio_aortae', 'double_outlet_right_ventricle', 'term_fetus', 'hypoplastic_left_heart_syndrome', 'mitral_atresia', 'pulmonary_atresia', 'total_anomalous_venous_connection', 'transposition_of_great_arteries', 'tricuspid_atresia', 'truncus_arteriosus']
+      current_model_definition: 'baseline_neonate'
     }
   },
   methods: {
@@ -330,18 +324,6 @@ export default defineComponent({
       this.state.name = this.selectedState
       this.showSaveStatePopUp = false
       explain.saveModelState("server")
-    },
-    toggleDebug() {
-      this.debugState = !this.debugState
-      if (this.debugState) {
-        this.butDebugColor = "positive"
-        this.butDebugCaption = "debug"
-        explain.start_debugger();
-      } else {
-        this.butDebugColor = "negative"
-        this.butDebugCaption = "no debug"
-        explain.stop_debugger();
-      }
     },
     togglePlay() {
       this.rtState = !this.rtState;

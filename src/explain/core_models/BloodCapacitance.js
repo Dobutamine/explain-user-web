@@ -78,8 +78,6 @@ export class BloodCapacitance {
   pres_cc = 0.0;
   pres_atm = 0.0;
   pres_mus = 0.0;
-  pres_cor = 0.0;
-  pres_cor_factor = 1.0;
 
   act_factor = 0.0;
   ans_activity_factor = 1.0;
@@ -107,25 +105,14 @@ export class BloodCapacitance {
   pres = 0.0;
   pres_in = 0.0;
   pres_out = 0.0;
-  pres_tm = 0.0;
-  pres_max = 0.0;
-  pres_min = 0.0;
-  pres_mean = 0.0;
-  pres_cor_max = 0.0;
-  pres_cor_min = 0.0;
-  pres_cor_mean = 0.0;
+  pres_tm = 0.0
+
 
   // local parameters
   _model_engine = {};
   _heart = {};
   _is_initialized = false;
   _t = 0.0005;
-  _temp_pres_max = -1000.0;
-  _temp_pres_min = 1000.0;
-  _temp_vol_max = -1000.0;
-  _temp_vol_min = 1000.0;
-  _analytics_timer = 0.0;
-  _analytics_window = 2.0;
 
   // the constructor builds a bare bone modelobject of the correct type and with the correct name and stores a reference to the modelengine object
   constructor(model_ref, name = "", type = "") {
@@ -166,8 +153,7 @@ export class BloodCapacitance {
     let _el_base = this.el_base * this.el_base_scaling_factor;
 
     // adjust the elastance depending on the activity of the external factor, autonomic nervous system and the drug model
-    let _el =
-      _el_base +
+    let _el = _el_base +
       this.act_factor +
       (this.el_base_factor * _el_base - _el_base) +
       (this.el_base_ans_factor * _el_base - _el_base) *
@@ -197,10 +183,7 @@ export class BloodCapacitance {
       (_u_vol_base * this.u_vol_drug_factor - _u_vol_base);
 
     // calculate the recoil pressure depending on the volume, unstressed volume and elastance
-    this.pres_in =
-      _el * (this.vol - _u_vol) +
-      _el_k * Math.pow(this.vol - _u_vol, 2) +
-      this.pres_atm;
+    this.pres_in = _el * (this.vol - _u_vol) + _el_k * Math.pow(this.vol - _u_vol, 2) + this.pres_atm;
 
     // calculate the pressures exerted by the surrounding tissues or other forces
     this.pres_out = this.pres_ext + this.pres_cc + this.pres_mus;
@@ -211,54 +194,10 @@ export class BloodCapacitance {
     // calculate the total pressure
     this.pres = this.pres_in + this.pres_out;
 
-    // corrected pressure
-    this.pres_cor = this.pres * this.pres_cor_factor;
-
-    // analyze the pressures and volume
-    this.analyze();
-
     // reset the pressure which are recalculated every model iterattion
     this.pres_ext = 0.0;
     this.pres_cc = 0.0;
     this.pres_mus = 0.0;
-  }
-
-  analyze() {
-    // analyze the pressures
-    if (this.pres > this._temp_pres_max) {
-      this._temp_pres_max = this.pres;
-    }
-    if (this.pres < this._temp_vol_min) {
-      this._temp_pres_min = this.pres;
-    }
-    if (this.vol > this._temp_vol_max) {
-      this._temp_vol_max = this.vol;
-    }
-    if (this.vol < this._temp_vol_min) {
-      this._temp_vol_min = this.vol;
-    }
-
-    this._analytics_timer += this._t;
-    // set the max and min pressures
-    if (
-      this._heart.ncc_ventricular === 1 ||
-      this._analytics_timer > this._analytics_window
-    ) {
-      this._analytics_timer = 0.0;
-      this.pres_max = this._temp_pres_max;
-      this.pres_min = this._temp_pres_min;
-      this.pres_mean = (2.0 * this.pres_min + this.pres_max) / 3.0;
-      this.pres_cor_max = this.pres_max * this.pres_cor_factor;
-      this.pres_cor_min = this.pres_min * this.pres_cor_factor;
-      this.pres_cor_mean = (2.0 * this.pres_cor_min + this.pres_cor_max) / 3.0;
-      this.vol_max = this._temp_vol_max;
-      this.vol_min = this._temp_vol_min;
-      this.vol_sv = this.vol_max - this.vol_min;
-      this._temp_pres_max = -1000.0;
-      this._temp_pres_min = 1000.0;
-      this._temp_vol_max = -1000.0;
-      this._temp_vol_min = 1000.0;
-    }
   }
 
   volume_in(dvol, comp_from) {

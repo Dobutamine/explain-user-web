@@ -71,8 +71,7 @@
       <div class="col text-center">
         <br />
         <p>
-          This Explain webapplication is developed by Tim Antonius, Willem van Meurs, Berend Westerhof and Willem de
-          Boode <br>
+          This Explain webapplication is developed and maintained by Tim Antonius.<br>
         </p>
 
         <br />
@@ -134,13 +133,10 @@ export default {
       subscriptionAutoRenew: false,
       additionalData: {},
       errorText: "",
-      connected: false,
       showChoices: false,
       newUserEntry: false,
       login: true,
-      get_config: null,
-      log_in: null,
-      get_definition: null,
+      log_in: null
     };
   },
   methods: {
@@ -233,13 +229,22 @@ export default {
       }
     },
   },
-
   beforeUnmount() {
     this.log_in();
   },
   mounted() {
     this.$q.dark.set(true);
-    // define a login request handler
+
+    /*
+    This code sets up an action listener for a user login functionality. Here's what it does step by step:
+
+    It creates an action subscriber that listens to actions dispatched from a user store (Pinia) of the Vue.js application.
+    The listener specifically watches for an action named "logIn" to be dispatched.
+
+    When the "logIn" action occurs, it executes the callback function after the action completes.
+
+    This is a typical pattern in frontend applications to handle authentication flows, especially in Vue applications using Pinia for state management. The $onAction API is a Pinia feature that allows subscribing to store actions.
+    */
     this.log_in = this.user.$onAction(({ name, after }) => {
       if (name === "logIn") {
         after((result) => {
@@ -254,6 +259,7 @@ export default {
         });
       }
     });
+
     this.load_default_state = this.state.$onAction(({ name, after }) => {
       if (name === "getStateFromServer") {
         after((result) => {
@@ -313,7 +319,6 @@ export default {
       }
     });
 
-
     this.$bus.on("registered", () => {
       this.newUserEntry = false;
     });
@@ -321,7 +326,7 @@ export default {
     if (process.env.DEV) {
       //override login for developement development
       this.password = "y5qkqjed";
-      this.name = "timothy";
+      this.name = "timothy_exp";
       this.user.logIn(this.general.apiUrl, this.name, this.password);
     }
   },

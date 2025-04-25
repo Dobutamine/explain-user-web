@@ -4,7 +4,7 @@
       <div class="row">
         <div class="col-3">
           <q-tabs v-model="tab_left" dense class="text-white" active-color="primary" indicator-color="primary"
-            align="left" narrow-indicator outside-arrows @update:model-value="tabLeftChanged">
+            narrow-indicator outside-arrows @update:model-value="tabLeftChanged">
             <q-tab name="model_editor"><q-icon name="fa-solid fa-pen-to-square" size="xs"></q-icon><q-tooltip>edit model
                 components</q-tooltip>
             </q-tab>
@@ -34,15 +34,8 @@
                 width: '5px',
                 opacity: 1.0
               }">
-                <div v-for="(index) in no_of_modeleditor" :key="index">
-                  <ModelEditor></ModelEditor>
-                </div>
-
-                <!-- <q-btn class="q-pb-xs q-pt-xs q-ma-sm" color="grey-9" size="xs" icon="fa-solid fa-plus"
-                  @click="addModelEditor" style="font-size: 8px; width: 95%;"></q-btn>
-                <q-btn v-if="no_of_modeleditor > 1" class="q-pb-xs q-pt-xs q-ma-sm" color="negative" size="xs"
-                  icon="fa-solid fa-minus" @click="removeModelEditor" style="font-size: 8px; width: 95%;"></q-btn> -->
-                <DiagramEditorComponent></DiagramEditorComponent>
+              <ModelEditor></ModelEditor>
+              <DiagramEditorComponent></DiagramEditorComponent>
               </q-scroll-area>
             </q-tab-panel>
             <q-tab-panel name="circulatory_system">
@@ -120,7 +113,7 @@
 
         <div class="col-6">
           <q-tabs v-model="tab_center" dense class="text-white" active-color="primary" indicator-color="primary"
-            align="center" narrow-indicator outside-arrows @update:model-value="tabCenterChanged">
+           narrow-indicator outside-arrows @update:model-value="tabCenterChanged">
 
             <q-tab name="diagram">
               <q-icon name="fa-solid fa-home" size="xs"></q-icon>
@@ -215,7 +208,7 @@
 
         <div class="col-3">
           <q-tabs v-model="tab_right" dense class="text-white" active-color="primary" indicator-color="primary"
-            align="left" narrow-indicator outside-arrows @update:model-value="tabRightChanged">
+            narrow-indicator outside-arrows @update:model-value="tabRightChanged">
             <q-tab name="numerics">
               <q-icon name="fa-solid fa-desktop" size="xs"></q-icon>
               <q-tooltip>monitoring</q-tooltip>
@@ -291,7 +284,7 @@ export default defineComponent({
   },
   data() {
     return {
-      tab_left: "circulatory_system",
+      tab_left: "model_editor",
       tab_center: "diagram",
       tab_right: "numerics",
       no_of_modeleditor: 1,
@@ -305,8 +298,7 @@ export default defineComponent({
     }
   },
   methods: {
-
-    tabLeftChanged(tabName) {
+    tabLeftChanged() {
       explain.getModelState()
     },
     tabRightChanged() {
@@ -354,18 +346,8 @@ export default defineComponent({
 
       }
     },
-    addModelEditor() {
-      this.no_of_modeleditor += 1
-      explain.getModelState()
-    },
-    removeModelEditor() {
-      if (this.no_of_modeleditor > 1) {
-        this.no_of_modeleditor -= 1
-      }
-    },
     updateWatchlist() {
-      explain.watchModelPropsSlow(["Heart.heart_rate", "Blood.so2_pre", "Blood.so2_post", "AD.pres_max", "AD.pres_min", "AD.pres_mean", "AD.pres_cor_max", "AD.pres_cor_min", "AD.pres_cor_mean", "Breathing.resp_rate", "Ventilator.vent_rate"])
-
+      // update the watchlist by looking at the enabled monitors
       Object.keys(this.state.configuration.enabled_monitors).forEach(enabled_monitor_category => {
         this.state.configuration.enabled_monitors[enabled_monitor_category].forEach((monitor) => {
           this.state.configuration.monitors[monitor].parameters.forEach((p) => {
@@ -400,6 +382,7 @@ export default defineComponent({
     // get the model state
     explain.getModelState()
 
+    // if the models resets make sure the watchlist is up to date
     this.$bus.on("reset", this.updateWatchlist)
   }
 })
