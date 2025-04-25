@@ -274,6 +274,9 @@ export class Monitor extends BaseModelClass {
         this.esv_lv = this._esv_lv_list.reduce((acc, val) => acc + val, 0) / this._esv_lv_list.length;
         this.esv_rv = this._esv_rv_list.reduce((acc, val) => acc + val, 0) / this._esv_rv_list.length;
 
+        this.lv_sv = this.edv_lv - this.esv_lv
+        this.rv_sv = this.edv_rv - this.esv_rv
+
         if (this._edv_lv_list.length > this.hr_avg_beats) {
           this._edv_lv_list.shift();
           this._edv_rv_list.shift();

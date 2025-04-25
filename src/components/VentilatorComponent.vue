@@ -418,8 +418,23 @@ export default {
     update_hfo() {
       explain.callModelFunction("Ventilator.set_ventilator_hfov", [this.hfo_map_cmh2o, this.hfo_freq, this.hfo_amplitude_cmh2o, this.hfo_bias_flow])
     },
+    updateWatchList() {
+      explain.watchModelPropsSlow([
+          "Ventilator.pip_cmh2o",
+          "Ventilator.peep_cmh2o",
+          "Ventilator.vent_rate",
+          "Ventilator.minute_volume",
+          "Ventilator.compliance",
+          "Ventilator.resistance",
+          "Ventilator.exp_tidal_volume",
+          "Ventilator.etco2",
+          "Ventilator.exp_tidal_volume",
+          "Ventilator.exp_tidal_volume"
+        ])
+    },
     update_ventilator_setttings() {
       if (this.update_model) {
+
         switch (this.mode) {
           case "OFF":
             this.ventilator_running = false
@@ -428,57 +443,62 @@ export default {
             explain.callModelFunction("Ventilator.switch_ventilator", [false])
             break;
           case "PC":
+            this.updateWatchList()
             if (!this.ventilator_running) {
               this.ventilator_running = true;
               explain.callModelFunction("Ventilator.switch_ventilator", [true])
             }
             if (this.ventilator_running) {
-              explain.callModelFunction("Ventilator.set_ventilator_pc", [this.pip_cmh2o, this.peep_cmh2o, this.freq, this.insp_time, this.insp_flow])
+              explain.callModelFunction("Ventilator.set_pc", [this.pip_cmh2o, this.peep_cmh2o, this.freq, this.insp_time, this.insp_flow])
             }
             this.spont_breathing = false
             this.toggle_spont_breathing()
             break;
           case "PRVC":
+            this.updateWatchList()
             if (!this.ventilator_running) {
               this.ventilator_running = true;
               explain.callModelFunction("Ventilator.switch_ventilator", [true])
             }
             if (this.ventilator_running) {
               this.pip_caption = "pip max"
-              explain.callModelFunction("Ventilator.set_ventilator_prvc", [this.pip_cmh2o, this.peep_cmh2o, this.freq, this.tidal_volume, this.insp_time, this.insp_flow])
+              explain.callModelFunction("Ventilator.set_prvc", [this.pip_cmh2o, this.peep_cmh2o, this.freq, this.tidal_volume, this.insp_time, this.insp_flow])
             }
             this.spont_breathing = false
             this.toggle_spont_breathing()
             break;
           case "PS":
+            this.updateWatchList()
             if (!this.ventilator_running) {
               this.ventilator_running = true;
               explain.callModelFunction("Ventilator.switch_ventilator", [true])
             }
             if (this.ventilator_running) {
-              explain.callModelFunction("Ventilator.set_ventilator_ps", [this.pip_cmh2o, this.peep_cmh2o, this.freq, this.insp_time, this.insp_flow])
+              explain.callModelFunction("Ventilator.set_ps", [this.pip_cmh2o, this.peep_cmh2o, this.freq, this.insp_time, this.insp_flow])
             }
             break;
           case "VC":
+
             if (!this.ventilator_running) {
               this.ventilator_running = true;
               explain.callModelFunction("Ventilator.switch_ventilator", [true])
             }
             if (this.ventilator_running) {
               this.pip_caption = "pip max"
-              explain.callModelFunction("Ventilator.set_ventilator_vc", [this.pip_cmh2o, this.peep_cmh2o, this.freq, this.tidal_volume, this.insp_time, this.insp_flow])
+              explain.callModelFunction("Ventilator.set_vc", [this.pip_cmh2o, this.peep_cmh2o, this.freq, this.tidal_volume, this.insp_time, this.insp_flow])
             }
             this.spont_breathing = false
             this.toggle_spont_breathing()
             break;
           case "HFOV":
+            this.updateWatchList()
             if (!this.ventilator_running) {
               this.ventilator_running = true;
               explain.callModelFunction("Ventilator.switch_ventilator", [true])
             }
             if (this.ventilator_running) {
               this.pip_caption = "pip max"
-              explain.callModelFunction("Ventilator.set_ventilator_hfov", [this.hfo_map_cmh2o, this.hfo_freq, this.hfo_amplitude_cmh2o, this.hfo_bias_flow])
+              explain.callModelFunction("Ventilator.set_hfov", [this.hfo_map_cmh2o, this.hfo_freq, this.hfo_amplitude_cmh2o, this.hfo_bias_flow])
 
             }
             this.spont_breathing = false
