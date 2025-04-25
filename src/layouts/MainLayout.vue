@@ -66,7 +66,7 @@
               size="xs" @update:model-value="toggleSharedStates" />
           </q-card-section>
 
-          <q-card-actions align="right">
+          <q-card-actions>
             <q-btn flat label="Cancel" color="primary" size="sm" v-close-popup />
             <q-btn flat label="Load" color="primary" size="sm" @click="loadSelectedState" />
           </q-card-actions>
@@ -85,7 +85,7 @@
               size="xs" />
           </q-card-section>
 
-          <q-card-actions align="right">
+          <q-card-actions>
             <q-btn flat label="Cancel" color="primary" size="sm" v-close-popup />
             <q-btn flat label="Save" color="primary" size="sm" @click="upload" />
           </q-card-actions>
@@ -221,15 +221,13 @@ export default defineComponent({
         let stateName = this.selectedState.split(" (shared)")[0]
         result = await this.state.getSharedStateFromServer(this.general.apiUrl, stateName, this.user.token)
         if (result) {
-          explain.loadModelDefinition(this.state.model_definition);
+          explain.build(this.state.model_definition);
         }
       } else {
         result = await this.state.getStateFromServer(this.general.apiUrl, this.user.name, this.selectedState, this.user.token)
       }
       if (result) {
-        // console.log("state loaded")
-        // console.log(this.state.model_definition)
-        explain.loadModelDefinition(this.state.model_definition);
+        explain.build(this.state.model_definition);
         this.showLoadStatePopUp = false
         this.$bus.emit('reset')
       }
@@ -280,18 +278,6 @@ export default defineComponent({
       this.definition.definition = { ...explain.modelDefinition }
       this.definition.name = explain.modelDefinition.name
       this.definition.saveDefinitionToServer(this.general.apiUrl, this.user.name, this.user.token)
-    },
-    selectModelDefinition() {
-      // stop the model
-      explain.stop();
-      this.rtState = false
-      this.playArmed = false;
-      this.butColor = "white";
-      this.butIcon = "fa-solid fa-play";
-      this.butCaption = "PLAY";
-      this.$bus.emit("rt_stop")
-      // load the new model definition
-      explain.loadBakedInModelDefinition(this.current_model_definition)
     },
     stopRt() {
       if (this.rtState) {
@@ -371,51 +357,10 @@ export default defineComponent({
         }
       }
     },
-    infoUpdate() {
-      this.infoMessage = explain.info_message;
-      if (this.infoMessage.includes("model definition")) {
-        this.modelName = explain.modelDefinition.name
-        this.modelDescription = explain.modelDefinition.description
-      }
-      this.$bus.emit('info')
-
-      if (this.infoMessage.includes("model ready")) {
-        this.$bus.emit('reset')
-        this.rtState = true
-        this.togglePlay()
-        explain.calculate(5)
-      }
-
-    },
-    errorUpdate() {
-      if (this.statusMessage.includes("dependency error")) {
-        this.calcRunning = false;
-        this.butCalcCaption = "CALCULATE";
-        this.butCalcColor = "white";
-        this.rtState = false;
-        this.butColor = "white";
-        this.butIcon = "fa-solid fa-play";
-        this.butCaption = "PLAY";
-      }
-      this.$bus.emit('error')
-
-    },
     statusUpdate() {
-      this.$bus.emit('status')
-      this.statusMessage = explain.status_message;
+      this.statusMessage = "STATUS: " + explain.statusMessage
+      this.$bus.emit('status', explain.statusMessage)
       this.calculationReady();
-    },
-    stateUpdate() {
-      this.$bus.emit('state')
-    },
-    dataSlowUpdate() {
-      this.$bus.emit('rts')
-    },
-    dataFastUpdate() {
-      this.$bus.emit('rtf')
-    },
-    dataUpdate() {
-      this.$bus.emit('data')
     },
     submitInput() {
       if (this.userInput.length > 0) {
@@ -439,79 +384,91 @@ export default defineComponent({
     },
   },
   beforeUnmount() {
-    document.removeEventListener("state", this.stateUpdate);
     document.removeEventListener("status", this.statusUpdate);
-    document.removeEventListener("info", this.statusUpdate);
-    document.removeEventListener("error", this.errorUpdate);
-    document.removeEventListener("rts", this.dataSlowUpdate);
-    document.removeEventListener("rtf", this.dataFastUpdate);
-    document.removeEventListener("data", this.dataUpdate);
+    document.removeEventListener("model_ready", () => this.$bus.emit("model_ready"));
+    document.removeEventListener("error", () => this.$bus.emit("model_failed"));
+    document.removeEventListener("rt_start", () => this.$bus.emit("rt_start"));
+    document.removeEventListener("rt_stop", () => this.$bus.emit("rt_stop"));
+    document.removeEventListener("rts", () => this.$bus.emit("rts"));
+    document.removeEventListener("rtf", () => this.$bus.emit("rtf"));
+    document.removeEventListener("state", () => this.$bus.emit("state"));
+    document.removeEventListener("data", () => this.$bus.emit("data"));
+    document.removeEventListener("data_slow", () => this.$bus.emit("data_slow"));
+    document.removeEventListener("prop_value", (e) => this.$bus.emit("prop_value", e.detail));
+    document.removeEventListener("model_props", (e) => this.$bus.emit("model_props", e.detail));
+    document.removeEventListener("model_interface", (e) => this.$bus.emit("model_interface", e.detail));
     document.removeEventListener("state_saved", this.uploadStateToServer);
-    document.removeEventListener("show_popup", (t) => {
-      this.popupTitle = t.title
-      this.popupMessage = t.message
-      this.showPopup = true
-    });
   },
   mounted() {
     try {
       document.removeEventListener("status", this.statusUpdate);
     } catch { }
     document.addEventListener("status", this.statusUpdate);
+
     try {
-      document.removeEventListener("state", this.stateUpdate);
-    } catch { }
-    document.addEventListener("state", this.stateUpdate);
+      document.removeEventListener("model_ready", () => this.$bus.emit("model_ready"));
+    } catch {}
+    document.addEventListener("model_ready", () => this.$bus.emit("model_ready"));
+
     try {
-      document.removeEventListener("info", this.infoUpdate);
-    } catch { }
-    document.addEventListener("info", this.infoUpdate);
+      document.removeEventListener("error", () => this.$bus.emit("model_failed"));
+    } catch {}
+    document.addEventListener("error", () => this.$bus.emit("model_failed"));
+
     try {
-      document.removeEventListener("info", this.errorUpdate);
-    } catch { }
-    document.addEventListener("info", this.errorUpdate);
+      document.removeEventListener("rt_start", () => this.$bus.emit("rt_start"));
+    } catch {}
+    document.addEventListener("rt_start", () => this.$bus.emit("rt_start"));
+
     try {
-      document.removeEventListener("info", this.stateUpdate);
-    } catch { }
-    document.addEventListener("info", this.stateUpdate);
+      document.removeEventListener("rt_stop", () => this.$bus.emit("rt_stop"));
+    } catch {}
+    document.addEventListener("rt_stop", () => this.$bus.emit("rt_stop"));
+
     try {
-      document.removeEventListener("rts", this.dataSlowUpdate);
-    } catch { }
-    document.addEventListener("rts", this.dataSlowUpdate);
+      document.removeEventListener("rts", () => this.$bus.emit("rts"));
+    } catch {}
+    document.addEventListener("rts", () => this.$bus.emit("rts"));
+
     try {
-      document.removeEventListener("rtf", this.dataFastUpdate);
-    } catch { }
-    document.addEventListener("rtf", this.dataFastUpdate);
+      document.removeEventListener("rtf", () => this.$bus.emit("rtf"));
+    } catch {}
+    document.addEventListener("rtf", () => this.$bus.emit("rtf"));
+
     try {
-      document.removeEventListener("data", this.dataUpdate);
-    } catch { }
-    document.addEventListener("data", this.dataUpdate);
+      document.removeEventListener("state", () => this.$bus.emit("state"));
+    } catch {}
+    document.addEventListener("state", () => this.$bus.emit("state"));
+
+    try {
+      document.removeEventListener("data", () => this.$bus.emit("data"));
+    } catch {}
+    document.addEventListener("data", () => this.$bus.emit("data"));
+
+    try {
+      document.removeEventListener("data_slow", () => this.$bus.emit("data_slow"));
+    } catch {}
+    document.addEventListener("data_slow", () => this.$bus.emit("data_slow"));
+
+    try {
+      document.removeEventListener("prop_value", (e) => this.$bus.emit("prop_value", e.detail));
+    } catch {}
+    document.addEventListener("prop_value", (e) => this.$bus.emit("prop_value", e.detail));
+
+    try {
+      document.removeEventListener("model_props", (e) => this.$bus.emit("model_props", e.detail));
+    } catch {}
+    document.addEventListener("model_props", (e) => this.$bus.emit("model_props", e.detail));
+
+    try {
+      document.removeEventListener("model_interface", (e) => this.$bus.emit("model_interface", e.detail));
+    } catch {}
+    document.addEventListener("model_interface", (e) => this.$bus.emit("model_interface", e.detail));
+
     try {
       document.removeEventListener("state_saved", this.uploadStateToServer);
     } catch { }
     document.addEventListener("state_saved", this.uploadStateToServer);
-    try {
-      document.removeEventListener("show_popup", (t) => {
-        this.popupTitle = t.title
-        this.popupMessage = t.message
-        this.showPopup = true
-      });
-    } catch {
-    }
-
-    this.$bus.on('load_new_model', (t) => {
-      if (t !== this.current_model_definition) {
-        this.current_model_definition = t
-        this.selectModelDefinition()
-      }
-    })
-
-    this.$bus.on('show_popup', (t) => {
-      this.popupTitle = t.title
-      this.popupMessage = t.message
-      this.showPopup = true
-    })
-
   }
 })
 </script>

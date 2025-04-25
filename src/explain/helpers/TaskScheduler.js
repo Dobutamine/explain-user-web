@@ -1,187 +1,162 @@
 export default class TaskScheduler {
-  // define an object which has reference to the model
-  model = {};
+  constructor(model_ref) {
+    this._model_engine = model_ref; // object holding a reference to the model engine
+    this._t = model_ref.modeling_stepsize; // setting the modeling stepsize
+    this._is_initialized = false; // flag whether the model is initialized or not
+    this.is_enabled = true; // flag to enable or disable the task scheduler
 
-  // define a array holding a list with tasks which should run
-  tasks = [];
-  tasks_ready = false;
+    // local properties
+    this._tasks = {}; // dictionary holding the current tasks
+    this._task_interval = 0.015; // interval at which tasks are evaluated
+    this._task_interval_counter = 0.0; // counter
+  }
+  add_function_call(new_function_call) {
+    const task_id = Math.floor(Math.random() * 10000)
+    const id = "task_" + task_id
+    
+    new_function_call.id = id
+    new_function_call.running = false;
+    new_function_call.completed = false;
+    new_function_call.type = 2
+    new_function_call.stepsize = 0.0;
 
-  _completed_tasks = [];
+    let result = new_function_call.func.split(".")
+    // get a reference to the function
+    new_function_call.model = this._model_engine.models[result[0]]
+    new_function_call.func = this._model_engine.models[result[0]][result[1]]
 
-  _update_interval = 0.015;
-  _update_counter = 0.0;
-
-  // local parameters
-  _model_engine = {};
-  _t = 0.0005;
-
-  constructor(_model_engine) {
-    // get a reference to the whole model
-    this._model_engine = _model_engine;
-
-    // store the modeling stepsize
-    this._t = _model_engine.modeling_stepsize;
+    // add the function call to the task list
+    this._tasks[id] = new_function_call;
   }
 
-  update_tasks() {
-    if (this._update_counter >= this._update_interval) {
-      this._update_counter = 0;
-      this.do_tasks();
+  add_task(new_task) {
+    // create task id
+    const task_id = Math.floor(Math.random() * 10000)
+    const id = "task_" + task_id
+    new_task.id = id
+    new_task.running = false;
+    new_task.completed = false;
+
+    new_task.model = this._model_engine.models[new_task.model]
+
+    let current_value = new_task.model[new_task.prop1];
+    if (new_task.prop2 !== null) {
+      current_value = current_value[new_task.prop2];
     }
-    this._update_counter += this._t;
-  }
+    new_task.current_value = current_value;
 
-  clean_up() {
-    this._completed_tasks.forEach((id) => {
-      let index = -1;
-      this.tasks.forEach((task, i) => {
-        if (task.id === id) {
-          index = i;
-        }
-      });
-      if (index > -1) {
-        //console.log("Removed completed task with id: ", this.tasks[index].id);
-        let removed_task = this.tasks.splice(index, 1);
-        // console.log("Removed task: ", removed_task[0].id);
+    if (typeof current_value === "number") {
+      new_task.type = 0;
+    } else if (typeof current_value === "boolean" || typeof current_value === "string"
+    ) {
+      new_task.type = 1;
+    }
+
+    // calculate the stepsize
+    if (new_task.it > 0) {
+      const stepsize =
+        (new_task.t - current_value) /
+        (new_task.it / this._task_interval);
+      new_task.stepsize = stepsize;
+      if (stepsize !== 0.0) {
+        this._tasks[id] = new_task;
       }
-    });
+    } else {
+      new_task.type = 1;
+      new_task.stepsize = 0.0;
+      this._tasks[id] = new_task;
+    }
+
+    if (new_task.type > 0) {
+      // calculate the stepsize for boolean or string types
+      new_task.stepsize = 0.0;
+      this._tasks[id] = new_task;
+    }
+
   }
 
-  do_tasks() {
-    // is there a completed task
-    let completed = false;
-    this.tasks.forEach((task, index) => {
-      if (task.status !== "completed") {
-        if (task.at > 0) {
-          task.status = "waiting";
-          task.at -= this._update_interval;
-        } else {
+  remove_task(task_id) {
+    const id = "task_" + task_id;
+    if (id in this._tasks) {
+      delete this._tasks[id];
+      return true;
+    }
+    return false;
+  }
+
+  remove_all_tasks() {
+    this._tasks = {};
+  }
+
+  run_tasks() {
+    if (this._task_interval_counter > this._task_interval) {
+      const finished_tasks = [];
+      // reset the counter
+      this._task_interval_counter = 0.0;
+
+      // run the tasks
+      for (const id in this._tasks) {
+        const task = this._tasks[id];
+
+        // check if the task should be executed
+        if (task.at < this._task_interval && !task.running) {
           task.at = 0;
-          task.status = "running";
-          task.it -= this._update_interval;
+          
           switch (task.type) {
-            case "number":
-              if (Math.abs(task.v - task.t) < Math.abs(task.step)) {
-                task.v = parseFloat(task.t);
-                task.status = "completed";
-                completed = true;
-                this.tasks_ready = true;
-                this._completed_tasks.push(task.id);
-              } else {
-                task.v += task.step;
-              }
-              // update the property
-              task.m[task.p] = parseFloat(task.v);
+            case 0:
+              // start the task
+              task.running = true
+              break
+            case 1:
+              // boolean or string type
+              task.current_value = task.t;
+              this._set_value(task);
+              task.completed = true;
+              finished_tasks.push(id);
               break;
+            case 2:
+              task.func.apply(task.model, task.args)
+              task.completed = true;
+              finished_tasks.push(id);
+              break;
+          }
 
-            case "boolean":
-              if (task.it <= 0) {
-                task.v = task.t;
-                task.status = "completed";
-                completed = true;
-                this.tasks_ready = true;
-                // update the property
-                task.m[task.p] = task.v;
-                if (task.p == "is_enabled") {
-                  this._model_engine.rebuildExecutionList = true;
-                  //console.log("rebuild execution list");
-                }
-                this._completed_tasks.push(task.id);
-              }
-              break;
+        } else {
+          // decrease the time remaining
+          task.at -= this._task_interval;
+        }
 
-            case "string":
-              if (task.it <= 0) {
-                task.v = task.t;
-                task.status = "completed";
-                completed = true;
-                this.tasks_ready = true;
-                // update the property
-                task.m[task.p] = task.v;
-                this._completed_tasks.push(task.id);
-              }
-              break;
-
-            case "object":
-              if (task.it <= 0) {
-                task.v = task.t;
-                task.status = "completed";
-                completed = true;
-                this.tasks_ready = true;
-                // update the property
-                task.m[task.p] = task.v;
-                this._completed_tasks.push(task.id);
-              }
-              break;
-
-            case "function":
-              if (task.it <= 0) {
-                task.status = "completed";
-                completed = true;
-                this.tasks_ready = true;
-                // update the property
-                task.m[task.p](...task.t);
-                this._completed_tasks.push(task.id);
-              }
-              break;
+        // for numerical tasks, adjust the value incrementally
+        if (task.type < 1 && task.running) {
+          if (Math.abs(task.current_value - task.t) < Math.abs(task.stepsize)) {
+            task.current_value = task.t;
+            this._set_value(task);
+            task.stepsize = 0;
+            task.completed = true;
+            finished_tasks.push(id);
+          } else {
+            task.current_value += task.stepsize;
+            this._set_value(task);
           }
         }
       }
-    });
-    if (completed) {
-      this.clean_up();
+
+      // remove completed tasks
+      finished_tasks.forEach((ft) => {
+        delete this._tasks[ft];
+      });
+    }
+
+    if (this.is_enabled) {
+      this._task_interval_counter += this._t;
     }
   }
 
-  add_task(new_prop_value) {
-    // first cleanup
-    this.clean_up();
-
-    // build task
-    let new_task = {
-      id: Math.floor(Math.random() * 1000),
-      m: {},
-      p: {},
-      o: null,
-      t: new_prop_value.t,
-      at: parseFloat(new_prop_value.at),
-      it: parseFloat(new_prop_value.it),
-      type: new_prop_value.type,
-      status: "scheduled",
-      step: 0.0,
-      v: 0.0,
-    };
-
-    // check whether a task contains an is_enabled property
-
-    let t = new_prop_value.prop.split(".");
-    switch (t.length) {
-      case 2:
-        new_task.m = this._model_engine.models[t[0]];
-        new_task.p = t[1];
-        new_task.o = this._model_engine.models[t[0]][t[1]];
-        new_task.v = this._model_engine.models[t[0]][t[1]];
-        break;
-      case 3:
-        new_task.m = this._model_engine.models[t[0]][t[1]];
-        new_task.p = t[2];
-        new_task.o = this._model_engine.models[t[0]][t[1]][t[2]];
-        new_task.v = this._model_engine.models[t[0]][t[1]][t[2]];
-        break;
+  _set_value(task) {
+    if (task.prop2 === null) {
+      task.model[task.prop1] = task.current_value;
+    } else {
+      task.model[task.prop1][task.prop2] = task.current_value;
     }
-
-    if (new_task.type === "number") {
-      if (new_task.it > 0.0) {
-        new_task.step =
-          ((new_task.t - new_task.o) / new_task.it) * this._update_interval;
-      } else {
-        new_task.step = new_task.t - new_task.o;
-        new_task.it = this._update_interval;
-      }
-    }
-
-    // push the task onto the list
-    //console.log("Added new task: ", new_task);
-    this.tasks.push(new_task);
   }
 }

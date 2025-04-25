@@ -1,52 +1,46 @@
-import { GasExchanger } from "../ModelIndex";
-
-export default class DataCollector {
-  collected_data = [];
-  collected_data_slow = [];
-  sample_interval = 0.005;
-  sample_interval_slow = 1.0;
-  watch_list = {};
-  watch_list_slow = {};
-
-  ncc_ventricular = {};
-  ncc_atrial = {};
-  // local parameters
-  _model_engine = {};
-  _interval_counter = 0;
-  _interval_counter_slow = 0;
-
-  constructor(model_ref) {
+export default class Datacollector {
+  constructor(model) {
     // store a reference to the model instance
-    this._model_engine = model_ref;
+    this.model = model;
 
     // define the watch list
-    this.watch_list = {};
+    this.watch_list = [];
+
+    // define the watch list
+    this.watch_list_slow = [];
 
     // define the data sample interval
     this.sample_interval = 0.005;
+    this.sample_interval_slow = 1.0;
+
     this._interval_counter = 0;
+    this._interval_counter_slow = 0;
+
 
     // get the modeling stepsize from the model
-    this._t = this._model_engine.modeling_stepsize;
+    this.modeling_stepsize = this.model.modeling_stepsize;
 
-    // try to add two always needed ecg properties to the watchlist
+    // try to add two always-needed ecg properties to the watchlist
     this.ncc_ventricular = {
       label: "Heart.ncc_ventricular",
-      model: this._model_engine.models["Heart"],
+      model: this.model.models["Heart"],
       prop1: "ncc_ventricular",
+      prop2: null,
     };
     this.ncc_atrial = {
       label: "Heart.ncc_atrial",
-      model: this._model_engine.models["Heart"],
+      model: this.model.models["Heart"],
       prop1: "ncc_atrial",
+      prop2: null,
     };
 
     // add the two always there
-    this.watch_list[this.ncc_atrial["label"]] = this.ncc_atrial;
-    this.watch_list[this.ncc_ventricular["label"]] = this.ncc_ventricular;
+    this.watch_list.push(this.ncc_atrial);
+    this.watch_list.push(this.ncc_ventricular);
 
     // define the data list
     this.collected_data = [];
+    this.collected_data_slow = [];
   }
 
   clear_data() {
@@ -62,11 +56,11 @@ export default class DataCollector {
     this.clear_data();
 
     // empty the watch list
-    this.watch_list = {};
+    this.watch_list = [];
 
-    // add the two always there
-    this.watch_list[this.ncc_atrial["label"]] = this.ncc_atrial;
-    this.watch_list[this.ncc_ventricular["label"]] = this.ncc_ventricular;
+    // add the two always present
+    this.watch_list.push(this.ncc_atrial);
+    this.watch_list.push(this.ncc_ventricular);
   }
 
   clear_watchlist_slow() {
@@ -74,7 +68,7 @@ export default class DataCollector {
     this.clear_data_slow();
 
     // empty the watch list
-    this.watch_list_slow = {};
+    this.watch_list_slow = [];
   }
 
   get_model_data() {
@@ -95,102 +89,82 @@ export default class DataCollector {
     return data;
   }
 
-  set_sample_interval(new_interval) {
-    if (new_interval > 0.0005) {
-      this.sample_interval = new_interval;
-    }
+  set_sample_interval(new_interval = 0.005) {
+    this.sample_interval = new_interval;
   }
 
-  set_sample_interval_slow(new_interval) {
-    if (new_interval > 0.5) {
-      this.sample_interval_slow = new_interval;
-    }
+  set_sample_interval_slow(new_interval = 0.005) {
+    this.sample_interval_slow = new_interval;
   }
 
   add_to_watchlist(properties) {
+    // define a return object
+    let success = true;
+
     // first clear all data
     this.clear_data();
 
+    // check whether property is a string
     if (typeof properties === "string") {
+      // convert string to a list
       properties = [properties];
     }
 
-    // add all the desired properties
+    // add to the watchlist
     properties.forEach((prop) => {
-      // split the property
-      let p = prop.split(".");
-      let watch_list_item = {
-        label: "",
-        model: "",
-        prop1: "",
-        prop2: "",
-      };
-      if (this._model_engine.models[p[0]]) {
-        switch (p.length) {
-          case 2:
-            watch_list_item = {
-              label: prop,
-              model: this._model_engine.models[p[0]],
-              prop1: p[1],
-            };
-            this.watch_list[prop] = watch_list_item;
+      // check whether the property is already in the watchlist
+      let duplicate = this.watch_list.some((wl_item) => wl_item.label === prop);
 
-            break;
-          case 3:
-            watch_list_item = {
-              label: prop,
-              model: this._model_engine.models[p[0]],
-              prop1: p[1],
-              prop2: p[2],
-            };
-            this.watch_list[prop] = watch_list_item;
-            break;
+      // if the property is not yet present then process it
+      if (!duplicate) {
+        // process the property as it has shape MODEL.prop1.prop2
+        let processed_prop = this._find_model_prop(prop);
+
+        // check whether the property is found and if so, add it to the watchlist
+        if (processed_prop !== null) {
+          this.watch_list.push(processed_prop);
+        } else {
+          success = false;
         }
       }
     });
+
+    return success;
   }
 
   add_to_watchlist_slow(properties) {
+    // define a return object
+    let success = true;
+
     // first clear all data
     this.clear_data_slow();
 
+    // check whether property is a string
     if (typeof properties === "string") {
+      // convert string to a list
       properties = [properties];
     }
 
-    // add all the desired properties
+    // add to the watchlist
     properties.forEach((prop) => {
-      // split the property
-      let p = prop.split(".");
-      let watch_list_item = {
-        label: "",
-        model: "",
-        prop1: "",
-        prop2: "",
-      };
-      if (this._model_engine.models[p[0]]) {
-        switch (p.length) {
-          case 2:
-            watch_list_item = {
-              label: prop,
-              model: this._model_engine.models[p[0]],
-              prop1: p[1],
-            };
-            this.watch_list_slow[prop] = watch_list_item;
+      // check whether the property is already in the watchlist
+      let duplicate = this.watch_list_slow.some((wl_item) => wl_item.label === prop);
 
-            break;
-          case 3:
-            watch_list_item = {
-              label: prop,
-              model: this._model_engine.models[p[0]],
-              prop1: p[1],
-              prop2: p[2],
-            };
-            this.watch_list_slow[prop] = watch_list_item;
-            break;
+      // if the property is not yet present then process it
+      if (!duplicate) {
+        // process the property as it has shape MODEL.prop1.prop2
+        let processed_prop = this._find_model_prop(prop);
+
+        // check whether the property is found and if so, add it to the watchlist
+        if (processed_prop !== null) {
+          this.watch_list_slow.push(processed_prop);
+        } else {
+          success = false;
         }
       }
     });
+
+    return success;
   }
 
   clean_up() {
@@ -210,69 +184,112 @@ export default class DataCollector {
   }
 
   clean_up_slow() {
-    let disabledModels = [];
+    let disabledModels_slow = [];
 
     Object.entries(this.watch_list_slow).forEach(([dc_name, dc_item]) => {
       if (!dc_item.model.is_enabled) {
         // remove this item from the data-collector
-        disabledModels.push(dc_name);
+        disabledModels_slow.push(dc_name);
       }
     });
 
     // remove the disabled models
-    disabledModels.forEach((dm) => {
-      delete this.watch_list[dm];
+    disabledModels_slow.forEach((dm) => {
+      delete this.watch_list_slow[dm];
     });
+
   }
 
   collect_data(model_clock) {
+
+    // collect data at specific intervals set by the sample_interval
     if (this._interval_counter >= this.sample_interval) {
-      // reset the counter
+      // reset the interval counter
       this._interval_counter = 0;
 
-      // define a data object
-      let data_object = { time: parseFloat(model_clock.toFixed(3)) };
+      // declare a data object holding the current model time
+      const data_object = { time: Math.round(model_clock * 10000) / 10000 };
 
-      // iterate over the watchlist
-      Object.values(this.watch_list).forEach((fast_item) => {
-        let value = fast_item.model[fast_item.prop1];
-
-        if (fast_item.prop2) {
-          value = fast_item.model[fast_item.prop1][fast_item.prop2];
+      // process the watch_list
+      this.watch_list.forEach((parameter) => {
+        // get the value of the model variable as stated in the watchlist
+        let value = parameter.model[parameter.prop1];
+        if (parameter.prop2 !== null) {
+          value = value[parameter.prop2] || 0;
         }
 
-        if (!fast_item.model["is_enabled"]) {
-          value = NaN;
-        }
-
-        // complete the data_object
-        data_object[fast_item.label] = value;
+        // add the value to the data object
+        data_object[parameter.label] = value;
       });
+
+      // add the data object to the collected data list
       this.collected_data.push(data_object);
     }
 
     if (this._interval_counter_slow >= this.sample_interval_slow) {
-      // reset the counter
+      // reset the interval counter
       this._interval_counter_slow = 0;
 
-      // define a data object
-      let data_object = { time: parseFloat(model_clock.toFixed(3)) };
+      // declare a data object holding the current model time
+      const data_object_slow = { time: Math.round(model_clock * 10000) / 10000 };
 
-      // iterate over the watchlist
-      Object.values(this.watch_list_slow).forEach((slow_item) => {
-        let value = slow_item.model[slow_item.prop1];
-
-        if (slow_item.prop2) {
-          value = slow_item.model[slow_item.prop1][slow_item.prop2];
+      // process the watch_list
+      this.watch_list_slow.forEach((parameter) => {
+        // get the value of the model variable as stated in the watchlist
+        let value = parameter.model[parameter.prop1];
+        if (parameter.prop2 !== null) {
+          value = value[parameter.prop2] || 0;
         }
 
-        // complete the data_object
-        data_object[slow_item.label] = value;
+        // add the value to the data object
+        data_object_slow[parameter.label] = value;
       });
-      this.collected_data_slow.push(data_object);
+
+      // add the data object to the collected data list
+      this.collected_data_slow.push(data_object_slow);
     }
 
-    this._interval_counter += this._t;
-    this._interval_counter_slow += this._t;
+    // increase the interval counter
+    this._interval_counter += this.modeling_stepsize;
+    this._interval_counter_slow += this.modeling_stepsize;
+  }
+
+  _find_model_prop(prop) {
+    // split the model from the prop
+    const t = prop.split(".");
+
+    // if only 1 property is present
+    if (t.length === 2) {
+      // try to find the parameter in the model
+      if (t[0] in this.model.models) {
+        if (t[1] in this.model.models[t[0]]) {
+          const r = this.model.models[t[0]][t[1]];
+          return {
+            label: prop,
+            model: this.model.models[t[0]],
+            prop1: t[1],
+            prop2: null,
+            ref: r,
+          };
+        }
+      }
+    }
+
+    // if 2 properties are present
+    if (t.length === 3) {
+      // try to find the parameter in the model
+      if (t[0] in this.model.models) {
+        if (t[1] in this.model.models[t[0]]) {
+          return {
+            label: prop,
+            model: this.model.models[t[0]],
+            prop1: t[1],
+            prop2: t[2],
+          };
+        }
+      }
+    }
+
+    return null;
   }
 }

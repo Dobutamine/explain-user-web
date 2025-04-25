@@ -266,7 +266,7 @@ export default {
           if (result) {
             this.errorText = ""
             console.log(`State ${this.state.name} loaded`)
-            explain.loadModelDefinition(this.state.model_definition);
+            explain.build(this.state.model_definition);
             if (this.user.defaultState === this.name) {
               this.default = true;
             } else {
@@ -287,7 +287,7 @@ export default {
           if (result) {
             this.errorText = ""
             console.log(`State ${this.state.name} loaded`)
-            explain.loadModelDefinition(this.state.model_definition);
+            explain.build(this.state.model_definition);
             if (this.user.defaultState === this.name) {
               this.default = true;
             } else {
@@ -309,7 +309,7 @@ export default {
           if (result) {
             this.errorText = ""
             console.log(`Default state ${this.state.name} loaded`)
-            explain.loadModelDefinition(this.state.model_definition);
+            explain.build(this.state.model_definition);
             this.state.saved = true;
             this.$router.push("/explain");
           } else {
