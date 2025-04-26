@@ -127,17 +127,22 @@
           @click="setStateAsDefault">
           <q-tooltip> set current state as default </q-tooltip></q-btn>
 
-        <q-btn flat round dense size="sm" icon="fa-solid fa-folder" color="white" class="q-ml-sm"
+        <q-btn flat round dense size="sm" icon="fa-solid fa-download" color="white" class="q-ml-sm"
           @click="getAllUserStates">
           <q-tooltip> get states from server </q-tooltip></q-btn>
 
-        <q-btn flat round dense size="sm" icon="fa-solid fa-save" color="white" class="q-mr-sm q-ml-sm"
+        <q-btn flat round dense size="sm" icon="fa-solid fa-upload" color="white" class="q-mr-sm q-ml-sm"
           @click="saveState">
           <q-tooltip> save model state to server </q-tooltip></q-btn>
 
-        <q-btn flat round dense size="sm" icon="fa-solid fa-file-export" color="white" class="q-mr-sm"
-          @click="download">
-          <q-tooltip> export model state to disk </q-tooltip></q-btn>
+        <q-btn flat round dense size="sm" icon="fa-brands fa-js" color="white" class="q-mr-sm"
+          @click="download_json">
+          <q-tooltip> export model state to disk (json) </q-tooltip></q-btn>
+
+          <q-btn flat round dense size="sm" icon="fa-brands fa-python" color="white" class="q-mr-sm"
+          @click="download_py">
+          <q-tooltip> export model state to disk (python) </q-tooltip></q-btn>
+
 
         <q-btn flat round dense size="sm" :icon="butIcon" :color="butColor" class="q-mr-sm" @click="togglePlay">
           <q-tooltip> start/stop model </q-tooltip></q-btn>
@@ -348,8 +353,15 @@ export default defineComponent({
       }
       this.showInputPopup = false
     },
-    download() {
+    download_py() {
       this.state_destination = "local"
+      this.state_format = "python"
+      this.stopRt()
+      explain.saveModelState()
+    },
+    download_json() {
+      this.state_destination = "local"
+      this.state_format = "json"
       this.stopRt()
       explain.saveModelState()
     },
