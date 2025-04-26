@@ -495,6 +495,16 @@ const _model_step = function () {
   model.model_time_total += model.modeling_stepsize;
 };
 
+const save_state = function() {
+  let saved_state = { tim: "tested"}
+  postMessage({
+    type: "state_saved",
+    message: "",
+    payload: saved_state,
+  });
+  
+}
+
 // define the local model functions
 const _model_step_rt = function () {
   // so the rt_interval determines how often the model is calculated

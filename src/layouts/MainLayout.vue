@@ -31,7 +31,7 @@
             {{ popupMessage }}
           </q-card-section>
 
-          <q-card-actions align="right">
+          <q-card-actions>
             <q-btn flat label="Close" size="sm" color="primary" v-close-popup />
           </q-card-actions>
         </q-card>
@@ -47,7 +47,7 @@
             <q-input v-model="userInput" label="new name" filled clearable @keyup.enter="submitInput" />
           </q-card-section>
 
-          <q-card-actions align="right">
+          <q-card-actions>
             <q-btn flat label="Cancel" color="primary" size="sm" v-close-popup />
             <q-btn flat label="Submit" color="primary" size="sm" @click="submitInput" />
           </q-card-actions>
@@ -211,7 +211,8 @@ export default defineComponent({
       sharedStateList: [],
       userInput: "",
       durations: [1, 2, 3, 5, 10, 20, 30, 60, 120, 240, 360, 600, 1200, 1800],
-      current_model_definition: 'baseline_neonate'
+      current_model_definition: 'baseline_neonate',
+      state_destination: "server"
     }
   },
   methods: {
@@ -317,7 +318,9 @@ export default defineComponent({
         explain.calculate(parseInt(this.selectedDuration));
       }
     },
-    calculationReady(e) {
+    statusUpdate() {
+      this.statusMessage = "STATUS: " + explain.statusMessage
+      this.$bus.emit('status', explain.statusMessage)
       if (this.statusMessage.includes("calculation ready")) {
         this.calcRunning = false;
         this.butCalcCaption = "CALCULATE";
@@ -329,30 +332,29 @@ export default defineComponent({
         }
       }
     },
-    statusUpdate() {
-      this.statusMessage = "STATUS: " + explain.statusMessage
-      this.$bus.emit('status', explain.statusMessage)
-      this.calculationReady();
+    reload() {
+      explain.restart();
+      this.$bus.emit('reset')
     },
-    // not tested
-    uploadDefinition() {
-      this.definition.definition = { ...explain.modelDefinition }
-      this.definition.name = explain.modelDefinition.name
-      this.definition.saveDefinitionToServer(this.general.apiUrl, this.user.name, this.user.token)
-    },
-    // not tested
-    download() {
-      this.stopRt()
-      explain.saveModelState("local")
-    },
-    // not tested
     saveState() {
       this.stopRt()
       this.selectedState = this.state.name
       this.showSaveStatePopUp = true
     },
-    // not tested
+    submitInput() {
+      if (this.userInput.length > 0) {
+        this.state.renameState(this.userInput, this.user.name)
+      }
+      this.showInputPopup = false
+    },
+    download() {
+      this.state_destination = "local"
+      this.stopRt()
+      explain.saveModelState()
+    },
     upload() {
+      this.state_destination = "server"
+      this.stopRt()
       if (this.state.protected) {
         if (this.selectedState !== this.state.name) {
           this.state.protected = false
@@ -360,34 +362,38 @@ export default defineComponent({
       }
       this.state.name = this.selectedState
       this.showSaveStatePopUp = false
-      explain.saveModelState("server")
+      explain.saveModelState()
     },
-    // not tested
-    reload() {
-      explain.restartModelDefinition();
-      this.$bus.emit('reset')
-    },
-    // not tested
-    submitInput() {
-      if (this.userInput.length > 0) {
-        this.state.renameState(this.userInput, this.user.name)
+    stateSaved() {
+      if (this.state_destination === "server") {
+        this.uploadStateToServer()
+      } else {
+        this.downloadStateToLocal()
       }
-      this.showInputPopup = false
     },
-    // not tested
+    // not finished
+    downloadStateToLocal() {
+      console.log("Saved to local")
+      console.log(explain.savedState)
+
+    },
+    // not finished
     uploadStateToServer() {
-      this.state.model_definition = { ...explain.modelDefinition }
-      this.state.saveStateToServer(this.general.apiUrl, this.user.name, this.user.token).then((t) => {
-        if (t.result) {
-          this.popupClass = "text-h6"
-          this.$bus.emit('show_popup', { title: "Success!", message: t.message })
-          this.state.saved = true;
-        } else {
-          this.popupClass = "text-h6 text-negative"
-          this.$bus.emit('show_popup', { title: "Error!", message: t.message })
-          this.state.saved = false
-        }
-      })
+      console.log("Saved to server")
+      console.log(explain.savedState)
+
+      // this.state.model_definition = { ...explain.modelDefinition }
+      // this.state.saveStateToServer(this.general.apiUrl, this.user.name, this.user.token).then((t) => {
+      //   if (t.result) {
+      //     this.popupClass = "text-h6"
+      //     this.$bus.emit('show_popup', { title: "Success!", message: t.message })
+      //     this.state.saved = true;
+      //   } else {
+      //     this.popupClass = "text-h6 text-negative"
+      //     this.$bus.emit('show_popup', { title: "Error!", message: t.message })
+      //     this.state.saved = false
+      //   }
+      // })
     },
   },
   beforeUnmount() {
@@ -404,7 +410,8 @@ export default defineComponent({
     document.removeEventListener("prop_value", (e) => this.$bus.emit("prop_value", e.detail));
     document.removeEventListener("model_props", (e) => this.$bus.emit("model_props", e.detail));
     document.removeEventListener("model_interface", (e) => this.$bus.emit("model_interface", e.detail));
-    document.removeEventListener("state_saved", this.uploadStateToServer);
+    document.removeEventListener("state_saved", this.stateSaved);
+    
   },
   mounted() {
     try {
@@ -473,9 +480,10 @@ export default defineComponent({
     document.addEventListener("model_interface", (e) => this.$bus.emit("model_interface", e.detail));
 
     try {
-      document.removeEventListener("state_saved", this.uploadStateToServer);
+      document.removeEventListener("state_saved", this.stateSaved);
     } catch { }
-    document.addEventListener("state_saved", this.uploadStateToServer);
+    document.addEventListener("state_saved", this.stateSaved);
+
   }
 })
 </script>

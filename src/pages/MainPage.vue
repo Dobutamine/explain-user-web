@@ -356,9 +356,17 @@ export default defineComponent({
         })
       })
     },
+    modelReady() {
+      // make sure the modelengine watches everything which is visible on the main screen.
+      this.updateWatchlist()
+
+      // get the model state
+      explain.getModelState()
+    }
   },
   beforeUnmount() {
     this.$bus.off("reset", this.updateWatchlist)
+    this.$bus.off("model_ready", this.modelReady)
   },
   mounted() {
     // return if the user is not logged in
@@ -373,17 +381,11 @@ export default defineComponent({
     let h = this.$q.screen.height - this.screen_offset;
     this.screen_height = "height: " + h + "px; background: black";
 
-    // make sure the modelengine watches everything which is visible on the main screen.
-    this.updateWatchlist()
-
-    // calculate 1 second of model
-    explain.calculate(1);
-
-    // get the model state
-    explain.getModelState()
+    // if the mode is ready prepare
+    this.$bus.on("model_ready", this.modelReady)
 
     // if the models resets make sure the watchlist is up to date
-    this.$bus.on("reset", this.updateWatchlist)
+    this.$bus.on("reset", this.modelReady)
   }
 })
 </script>

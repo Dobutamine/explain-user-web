@@ -12,6 +12,9 @@ export default class Model {
   // declare an object holding the model state
   modelState = {};
 
+  // declare an object holding a saved model state
+  savedState = {}
+
   // declare object holding the generated messages
   info_message = "";
   error_message = "";
@@ -123,6 +126,11 @@ export default class Model {
         case "model_types":
           const _model_types_event = new CustomEvent("model_types", { detail: e.data.payload, bubbles: true, cancelable: true, composed: false });
           document.dispatchEvent(_model_types_event)
+          break;
+        case "state_saved":
+          this.savedState = {...e.data.payload}
+          const _state_saved_event = new CustomEvent("state_saved");
+          document.dispatchEvent(_state_saved_event)
           break;
         default:
           console.log("Unknown message type received from model engine");
