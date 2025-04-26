@@ -206,6 +206,6 @@ export const useStateStore = defineStore("state", {
             "State is protected. Please store state under a different name.",
         };
       }
-    },
+    }
   },
 });

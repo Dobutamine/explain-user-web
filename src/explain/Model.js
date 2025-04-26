@@ -128,7 +128,7 @@ export default class Model {
           document.dispatchEvent(_model_types_event)
           break;
         case "state_saved":
-          this.savedState = {...e.data.payload}
+          this.savedState = this._processModelState({...e.data.payload})
           const _state_saved_event = new CustomEvent("state_saved");
           document.dispatchEvent(_state_saved_event)
           break;
@@ -349,39 +349,18 @@ export default class Model {
     });
   }
 
-  download_model_state_json() {
-    let current_date = new Date();
-    let modelStateCopy = this._processModelStateForDownloading();
-    let filename =
-      modelStateCopy["name"] +
-      "_" +
-      current_date.toLocaleTimeString() +
-      ".json";
-    let jsonString = JSON.stringify(modelStateCopy, null, 2); // Convert object to JSON string
-    this._download_object(jsonString, filename);
-  }
-
-  download_model_state_python() {
-    console.log('Python saved')
-    let current_date = new Date();
-    let modelStateCopy = this._processModelStateForDownloading();
-    let filename =
-      modelStateCopy["name"] + "_" + current_date.toLocaleTimeString() + ".py";
-    let pythonString = JSON.stringify(modelStateCopy, null, 2); // Convert object to JSON string
-    // convert the true and false texts
-    pythonString = pythonString.replace(/\btrue\b/g, "True");
-    pythonString = pythonString.replace(/\bfalse\b/g, "False");
-
-    this._download_object(pythonString, filename);
-  }
-
-  _processModelStateForDownloading() {
-    // transfrom the modelstate object to a serializable object by removing
-    let modelStateCopy = { ...this.modelState };
-    delete modelStateCopy["DataCollector"];
-    delete modelStateCopy["TaskScheduler"];
+  _processModelState(model_state) {
+    // transfrom the modelstate object to a serializable object by removing the helper objects
+    delete model_state["DataCollector"];
+    delete model_state["TaskScheduler"];
+    // remove the ncc counters
+    for (const key in model_state) {
+      if (key.startsWith("ncc")) {
+        delete model_state[key];
+      }
+    }
     // iterate over all model and delete the local attributes
-    Object.values(modelStateCopy.models).forEach((m) => {
+    Object.values(model_state.models).forEach((m) => {
       for (const key in m) {
         if (key.startsWith("_")) {
           delete m[key];
@@ -395,8 +374,8 @@ export default class Model {
             })
             // replace
             key_names.forEach( key_name => {
-              m['components'][key_name] = modelStateCopy.models[key_name]
-              delete modelStateCopy.models[key_name]
+              m['components'][key_name] = model_state.models[key_name]
+              delete model_state.models[key_name]
             })
           }
 
@@ -404,22 +383,6 @@ export default class Model {
         delete m["model_interface"];
       }
     });
-    return modelStateCopy;
+    return model_state;
   }
-
-  _download_object(object_string, filename) {
-    const blob = new Blob([object_string], { type: "application/json" }); // Create a blob with JSON content
-    const url = URL.createObjectURL(blob); // Create a URL for the blob
-
-    // Create a temporary anchor element and trigger download
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a); // Append the anchor to the document
-    a.click(); // Trigger the download
-
-    document.body.removeChild(a); // Remove the anchor from the document
-    URL.revokeObjectURL(url); // Clean up the URL object
-  }
-
 }

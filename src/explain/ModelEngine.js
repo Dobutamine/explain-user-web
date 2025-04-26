@@ -496,11 +496,10 @@ const _model_step = function () {
 };
 
 const save_state = function() {
-  let saved_state = { tim: "tested"}
   postMessage({
     type: "state_saved",
     message: "",
-    payload: saved_state,
+    payload: model,
   });
   
 }

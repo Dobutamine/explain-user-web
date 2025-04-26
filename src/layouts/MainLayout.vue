@@ -212,7 +212,8 @@ export default defineComponent({
       userInput: "",
       durations: [1, 2, 3, 5, 10, 20, 30, 60, 120, 240, 360, 600, 1200, 1800],
       current_model_definition: 'baseline_neonate',
-      state_destination: "server"
+      state_destination: "server",
+      state_format: "json"
     }
   },
   methods: {
@@ -373,27 +374,69 @@ export default defineComponent({
     },
     // not finished
     downloadStateToLocal() {
-      console.log("Saved to local")
-      console.log(explain.savedState)
+      if (this.state_format === 'json') {
+        this.downloadModelStateJson()
+      } else {
+        this.downloadModelStatePython()
+      }
+    },
+    downloadModelStateJson() {
+      let current_date = new Date();
+      let modelStateCopy = {
+        user: this.state.user.toLowerCase(),
+        name: this.state.name,
+        protected: this.state.protected,
+        shared: this.state.shared,
+        dateCreated: current_date.toLocaleDateString() + " " + current_date.toLocaleTimeString(),
+        dateLastUpdated: current_date.toLocaleDateString() + " " + current_date.toLocaleTimeString(),
+        diagram_definition: {...this.state.diagram_definition},
+        model_definition: {...explain.savedState},
+        configuration: {...this.state.configuration}
+      }
+      let filename = modelStateCopy["name"] + "_" + current_date.toLocaleTimeString() + ".json";
+      let jsonString = JSON.stringify(modelStateCopy, null, 2); // Convert object to JSON string
+      this.download_object(jsonString, filename);
+      console.log("Save to local disk in json format.")
+    },
+    downloadModelStatePython() {
+      let current_date = new Date();
+      let modelStateCopy = {...explain.savedState}
+      let filename = modelStateCopy["name"] + "_" + current_date.toLocaleTimeString() + ".py";
+      let pythonString = JSON.stringify(modelStateCopy, null, 2); // Convert object to JSON string
+      // convert the true and false texts
+      pythonString = pythonString.replace(/\btrue\b/g, "True");
+      pythonString = pythonString.replace(/\bfalse\b/g, "False");
+      this.download_object(pythonString, filename);
+      console.log("Save to local disk in python format.")
+    },
+    download_object(object_string, filename) {
+      const blob = new Blob([object_string], { type: "application/json" }); // Create a blob with JSON content
+      const url = URL.createObjectURL(blob); // Create a URL for the blob
 
+      // Create a temporary anchor element and trigger download
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a); // Append the anchor to the document
+      a.click(); // Trigger the download
+
+      document.body.removeChild(a); // Remove the anchor from the document
+      URL.revokeObjectURL(url); // Clean up the URL object
     },
     // not finished
     uploadStateToServer() {
-      console.log("Saved to server")
-      console.log(explain.savedState)
-
-      // this.state.model_definition = { ...explain.modelDefinition }
-      // this.state.saveStateToServer(this.general.apiUrl, this.user.name, this.user.token).then((t) => {
-      //   if (t.result) {
-      //     this.popupClass = "text-h6"
-      //     this.$bus.emit('show_popup', { title: "Success!", message: t.message })
-      //     this.state.saved = true;
-      //   } else {
-      //     this.popupClass = "text-h6 text-negative"
-      //     this.$bus.emit('show_popup', { title: "Error!", message: t.message })
-      //     this.state.saved = false
-      //   }
-      // })
+      this.state.model_definition = { ...explain.savedState }
+      this.state.saveStateToServer(this.general.apiUrl, this.user.name, this.user.token).then((t) => {
+        if (t.result) {
+          this.popupClass = "text-h6"
+          this.$bus.emit('show_popup', { title: "Success!", message: t.message })
+          this.state.saved = true;
+        } else {
+          this.popupClass = "text-h6 text-negative"
+          this.$bus.emit('show_popup', { title: "Error!", message: t.message })
+          this.state.saved = false
+        }
+      })
     },
   },
   beforeUnmount() {
