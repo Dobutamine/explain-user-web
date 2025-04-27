@@ -18,7 +18,6 @@
 import * as models from "./ModelIndex";
 import DataCollector from "./helpers/DataCollector";
 import TaskScheduler from "./helpers/TaskScheduler";
-import { calc_blood_composition } from "./helpers/BloodComposition";
 
 // store all imported models in a list to be able to instantiate them dynamically
 let available_models = [];
@@ -408,7 +407,7 @@ const get_model_interface = function (model_name) {
 
 const get_model_types = function () {
   let types = []
-  Object.values(models).forEach(mt => {
+  Object.values(available_models).forEach(mt => {
     types.push(mt.model_type)
   })
   let types_filtered = [...new Set(types)];

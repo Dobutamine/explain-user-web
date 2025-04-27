@@ -59,6 +59,7 @@
                   </div>
                 </div>
               </div>
+
               <!-- list -->
               <div v-if="field.type == 'list'">
                 <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
@@ -70,6 +71,7 @@
                   </div>
                 </div>
               </div>
+
               <!-- multiple list -->
               <div v-if="field.type == 'multiple-list'">
                 <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
@@ -83,6 +85,7 @@
                 </div>
               </div>
             </div>
+
             <!-- error message -->
             <div v-if="newModelErrorFlag" :class="newModelErrorClass" :style="{ 'font-size': '12px' }">
               {{ newModelErrorMessage }}
@@ -238,6 +241,28 @@
 
 import { explain } from "../boot/explain";
 
+/*
+Model interface object structure
+model_interface = [
+  {
+    caption: <string>,
+    target: <string>,
+    type: <string> number/boolean/factor/string/list/multiple-list/function,
+    args: [
+          caption: <string>
+          target: <string>
+          type: <string> number/boolean/factor/string/list/multiple-list
+          factor: <number>
+          delta: <number>
+          rounding: <number>
+    ],
+    factor: <number>,
+    delta: <number>,
+    rounding: <number>
+  }
+]
+*/
+
 
 export default {
   setup() {
@@ -338,6 +363,7 @@ export default {
       this.resetNewModel()
 
       // get the model interface of the selected model
+      console.log(this.selectedModelType)
       explain.getModelInterface(this.selectedModelType)
     },
     processModelInterface(model_type, model_props) {
@@ -618,25 +644,16 @@ export default {
   },
   beforeUnmount() {
     this.state_changed = false
-    document.removeEventListener("model_interface", (data) => { this.processModelInterface(data.model_type, data.model_props) });
-    document.removeEventListener("model_types", (data) => { this.processAvailableModelTypes(data.model_types) });
+    this.$bus.off("state", this.processAvailableModels)
+    this.$bus.off("model_interface", this.processModelInterface)
+    this.$bus.o("model_ready", () => explain.getModelTypes())
   },
   mounted() {
-    try {
-      document.removeEventListener("model_interface", (data) => { this.processModelInterface(data.model_type, data.model_props) });
-    } catch { }
-    document.addEventListener("model_interface", (data) => { this.processModelInterface(data.model_type, data.model_props) });
-
-    try {
-      document.removeEventListener("model_types", (data) => { this.processAvailableModelTypes(data.model_types) });
-    } catch { }
-    document.addEventListener("model_types", (data) => { this.processAvailableModelTypes(data.model_types) });
-
-    // get all available model types
-    explain.getModelTypes()
-
     // update if state changes
     this.$bus.on("state", this.processAvailableModels)
+    this.$bus.on("model_interface", this.processModelInterface)
+    this.$bus.on("model_types", (e) => this.processAvailableModelTypes(e))
+    explain.getModelTypes()
 
   },
 };

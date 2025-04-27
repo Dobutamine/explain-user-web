@@ -10,8 +10,7 @@
           <div class="q-mt-sm text-secondary" @click="selectEnabled(category)" style="font-size: small;">
             {{ category.caption }}
           </div>
-          <q-btn v-if="category.enabled" @click="selectAdvanced(category)" class="q-ma-sm"
-            :color="category.advancedColor" dense size="xs" icon="fa-solid fa-ellipsis"></q-btn>
+          <q-btn v-if="category.enabled" @click="selectAdvanced(category)" class="q-ma-sm" :color="category.advancedColor" dense size="xs" icon="fa-solid fa-ellipsis"></q-btn>
         </div>
         <div v-if="!category.advanced">
           <div v-for="(controller, controller_name) in controllers.items" :key="controller_name">
@@ -154,84 +153,54 @@
 <script>
 import { explain } from "../boot/explain";
 
+/*
+CONTROLLER DEFINITION
+"<controller_name>":
+    "title": <string> title of the controller
+    "enabled": <boolean>
+    "categories": {
+      "<category_name>":
+          "caption": <string> caption of the catgerory
+          "enabled": <boolean> 
+          "advanced": <boolean>
+    },
+    "items": {
+      <item_name>:
+          "caption": <string>
+          "category": <string> name of the category to which this items belongs
+          "enabled": <boolean>
+          "advanced": <boolean>
+          "linked": <boolean>
+          "link_button": <boolean>
+          "linked_caption": <string>
+          "type": <string> "factor/number/string/boolean"
+          "caller": <string> "direct/function"
+          "function_name": <string>
+          "model": <string>
+          "prop": <string>
+          "min": <number>
+          "max": <number>
+          "step": <number>
+          "rounding": <number>
+    }
+*/
 export default {
   props: {
     config: Object,
   },
   data() {
     return {
-      title: "CIRCULATORY SYSTEM",
+      title: "",
       advanced: false,
       isEnabled: true,
       enabled: true,
+      enabledIcon: "fa-solid fa-chevron-down",
+      disabledIcon: "fa-solid fa-chevron-up",
+      enabledColor: "transparent",
+      advancedColor: "transparent",
       controllers: {
-        categories: {
-          heart: {
-            caption: "Heart",
-            enabled: true,
-            advanced: false,
-            enabledIcon: "fa-solid fa-chevron-down",
-            enabledColor: "transparent",
-            advancedColor: "transparent",
-          },
-          circulation: {
-            caption: "Circulation",
-            enabled: true,
-            advanced: false,
-            enabledIcon: "fa-solid fa-chevron-down",
-            enabledColor: "transparent",
-            advancedColor: "transparent",
-          },
-          shunts: {
-            caption: "Shunts",
-            enabled: true,
-            advanced: false,
-            enabledIcon: "fa-solid fa-chevron-down",
-            enabledColor: "transparent",
-            advancedColor: "transparent",
-          }
-        },
-        items: {
-          left_contractility: {
-            caption: "left heart contractility",
-            category: "heart",
-            enabled: true,
-            advanced: true,
-            linked: true,
-            link_button: true,
-            link_color: "transparent",
-            linked_caption: "heart contractility L/R",
-            linked_to: "right_contractility",
-            type: "factor",
-            model: "LV",
-            prop: "el_max_factor",
-            model_value: 0.0,
-            slider_value: 0.0,
-            display_value: 0.0,
-            min: -10.0,
-            max: 10.0,
-            step: 0.05
-          },
-          right_contractility: {
-            caption: "right heart contractility",
-            category: "heart",
-            enabled: true,
-            advanced: false,
-            linked: true,
-            link_color: "transparent",
-            link_button: false,
-            linked_to: "",
-            type: "factor",
-            model: "RV",
-            prop: "el_max_factor",
-            model_value: 0.0,
-            slider_value: 0.0,
-            display_value: 0.0,
-            min: -10.0,
-            max: 10.0,
-            step: 0.05
-          }
-        }
+        categories: {},
+        items: {}
       },
     };
   },
@@ -384,31 +353,45 @@ export default {
     processModelState() {
       if (explain.modelState.models) {
         if (this.controllers.items) {
-          for (let [controller_name, controller] of Object.entries(this.controllers.items)) {
+          for (let [_, controller] of Object.entries(this.controllers.items)) {
             switch (controller.type) {
               case 'factor':
-                controller.model_value = explain.modelState.models[controller.model][controller.prop]
-                controller.slider_value = this.translateValueToSlider(controller.model_value)
-                if (!isNaN(controller.model_value)) {
-                  controller.display_value = controller.model_value.toFixed(controller.rounding)
+                try {
+                  controller.model_value = explain.modelState.models[controller.model][controller.prop]
+                  controller.slider_value = this.translateValueToSlider(controller.model_value)
+                  if (!isNaN(controller.model_value)) {
+                    controller.display_value = controller.model_value.toFixed(controller.rounding)
+                  }
+                } catch {
+                  console.log(controller.model, controller.prop)
                 }
                 break;
               case 'number':
-                controller.model_value = explain.modelState.models[controller.model][controller.prop]
-                controller.slider_value = controller.model_value
-                if (!isNaN(controller.model_value)) {
-                  controller.display_value = controller.model_value.toFixed(controller.rounding)
+                try {
+                  controller.model_value = explain.modelState.models[controller.model][controller.prop]
+                  controller.slider_value = controller.model_value
+                  if (!isNaN(controller.model_value)) {
+                    controller.display_value = controller.model_value.toFixed(controller.rounding)
+                  }
+                } catch {
+                  console.log(controller.model, controller.prop)
                 }
                 break;
               case 'string':
-                controller.model_value = explain.modelState.models[controller.model][controller.prop]
-                controller.slider_value = controller.model_value
-                controller.display_value = controller.model_value
+                try {
+                  controller.model_value = explain.modelState.models[controller.model][controller.prop]
+                  controller.slider_value = controller.model_value
+                  controller.display_value = controller.model_value
+                } catch {}
                 break;
               case 'boolean':
-                controller.model_value = explain.modelState.models[controller.model][controller.prop]
-                controller.slider_value = controller.model_value
-                controller.display_value = controller.model_value
+                try {
+                  controller.model_value = explain.modelState.models[controller.model][controller.prop]
+                  controller.slider_value = controller.model_value
+                  controller.display_value = controller.model_value
+                } catch {
+                  console.log(controller.model, controller.prop)
+                }
                 break;
             }
           }
@@ -417,10 +400,9 @@ export default {
     },
   },
   beforeUnmount() {
-
+    this.$bus.off("state", this.processModelState)
   },
   mounted() {
-    this.$bus.on("state", this.processModelState)
     // copy the configuration object
     this.controllers = { ...this.config }
     // build the controllers object
@@ -442,6 +424,8 @@ export default {
         }
       })
     }
+    
+    this.$bus.on("state", this.processModelState)
 
   },
 };
