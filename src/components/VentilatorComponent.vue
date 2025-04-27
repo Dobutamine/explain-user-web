@@ -27,9 +27,7 @@
           { label: 'OFF', value: 'OFF' },
           { label: 'PC', value: 'PC' },
           { label: 'PRVC', value: 'PRVC' },
-          { label: 'PS', value: 'PS' },
-          { label: 'VC', value: 'VC' },
-          { label: 'HFOV', value: 'HFOV' },
+          { label: 'PSV', value: 'PSV' },
         ]" @update:model-value="update_ventilator_setttings" />
 
       </div>
@@ -69,7 +67,7 @@
     <!-- ventilator controls -->
 
     <div v-if="isEnabled && ventilator_running" class="text-overline justify-center q-gutter-sm row">
-      <div v-if="mode != 'HFOV'" class="q-mr-sm text-center">
+      <div  class="q-mr-sm text-center">
         <div>{{ pip_caption }}</div>
         <q-knob show-value font-size="12px" v-model="pip_cmh2o" size="50px" :min="0" :max="50" :step="1"
           :thickness="0.22" color="teal" track-color="grey-3" class="col"
@@ -78,7 +76,7 @@
         </q-knob>
         <div :style="{ fontSize: '10px' }">cmh2o</div>
       </div>
-      <div v-if="mode != 'HFOV'" class="q-mr-sm text-center">
+      <div  class="q-mr-sm text-center">
         <div>peep</div>
         <q-knob show-value font-size="12px" v-model="peep_cmh2o" size="50px" :min="0" :max="20" :step="1"
           :thickness="0.22" color="teal" track-color="grey-3" class="col"
@@ -87,7 +85,7 @@
         </q-knob>
         <div :style="{ fontSize: '10px' }">cmH2O</div>
       </div>
-      <div v-if="mode != 'HFOV'" class="q-mr-sm text-center">
+      <div  class="q-mr-sm text-center">
         <div class="knob-label">t insp</div>
         <q-knob show-value font-size="12px" v-model="insp_time" size="50px" :min="0.1" :max="2.0" :step="0.05"
           :thickness="0.22" color="teal" track-color="grey-3" class="col"
@@ -96,7 +94,7 @@
         </q-knob>
         <div :style="{ fontSize: '10px' }">sec</div>
       </div>
-      <div v-if="mode != 'HFOV'" class="q-mr-sm text-center">
+      <div  class="q-mr-sm text-center">
         <div class="knob-label">freq</div>
         <q-knob show-value font-size="12px" v-model="freq" :min="0" :max="70" :step="1" size="50px" :thickness="0.22"
           color="teal" track-color="grey-3" class="col" @update:model-value="update_ventilator_setttings">
@@ -104,7 +102,7 @@
         </q-knob>
         <div :style="{ fontSize: '10px' }">/min</div>
       </div>
-      <div v-if="mode != 'HFOV'" class="q-mr-sm text-center">
+      <div  class="q-mr-sm text-center">
         <div class="knob-label">flow</div>
         <q-knob show-value font-size="12px" v-model="insp_flow" size="50px" :thickness="0.22" :min="0" :max="20"
           :step="1" color="teal" track-color="grey-3" class="col" @update:model-value="update_ventilator_setttings">
@@ -112,7 +110,7 @@
         </q-knob>
         <div :style="{ fontSize: '10px' }">l/min</div>
       </div>
-      <div v-if="(mode == 'PRVC' || mode == 'VC') && mode != 'HFOV'" class="q-mr-sm text-center">
+      <div v-if="(mode == 'PRVC' || mode == 'VC')" class="q-mr-sm text-center">
         <div class="knob-label">tv</div>
         <q-knob show-value font-size="12px" v-model="tidal_volume" size="50px" :thickness="0.22" :min="1" :max="50"
           :step="1" color="teal" track-color="grey-3" class="col" @update:model-value="update_ventilator_setttings">
@@ -120,44 +118,6 @@
         </q-knob>
         <div :style="{ fontSize: '10px' }">ml</div>
       </div>
-
-      <div v-if="mode == 'HFOV'" class="q-mr-sm text-center">
-        <div class="knob-label">map</div>
-        <q-knob show-value font-size="12px" v-model="hfo_map_cmh2o" size="50px" :thickness="0.22" :min="5" :max="50"
-          :step="1" color="teal" track-color="grey-3" class="col" @update:model-value="update_hfo">
-          {{ hfo_map_cmh2o }}
-        </q-knob>
-        <div :style="{ fontSize: '10px' }">cmh2o</div>
-      </div>
-
-      <div v-if="mode == 'HFOV'" class="q-mr-sm text-center">
-        <div class="knob-label">freq</div>
-        <q-knob show-value font-size="12px" v-model="hfo_freq" size="50px" :thickness="0.22" :min="1" :max="15"
-          :step="1" color="teal" track-color="grey-3" class="col" @update:model-value="update_hfo">
-          {{ hfo_freq }}
-        </q-knob>
-        <div :style="{ fontSize: '10px' }">hz</div>
-      </div>
-
-      <div v-if="mode == 'HFOV'" class="q-mr-sm text-center">
-        <div class="knob-label">amplitude</div>
-        <q-knob show-value font-size="12px" v-model="hfo_amplitude_cmh2o" size="50px" :thickness="0.22" :min="0"
-          :max="75" :step="1" color="teal" track-color="grey-3" class="col" @update:model-value="update_hfo">
-          {{ hfo_amplitude_cmh2o }}
-        </q-knob>
-        <div :style="{ fontSize: '10px' }">cmh2o</div>
-      </div>
-
-      <div v-if="mode == 'HFOV'" class="q-mr-sm text-center">
-        <div class="knob-label">bias flow</div>
-        <q-knob show-value font-size="12px" v-model="hfo_bias_flow" size="50px" :thickness="0.22" :min="1" :max="20"
-          :step="1" color="teal" track-color="grey-3" class="col" @update:model-value="update_hfo">
-          {{ hfo_bias_flow }}
-        </q-knob>
-        <div :style="{ fontSize: '10px' }">l/min</div>
-      </div>
-
-
       <div class="q-mr-sm text-center">
         <div class="knob-label">fio2</div>
         <q-knob show-value font-size="12px" v-model="fio2" size="50px" :thickness="0.22" :min="21" :max="100" :step="1"
@@ -166,7 +126,7 @@
         </q-knob>
         <div :style="{ fontSize: '10px' }">%</div>
       </div>
-      <div v-if="mode != 'HFOV'" class="q-mr-sm text-center">
+      <div  class="q-mr-sm text-center">
         <div class="knob-label">trigger</div>
         <q-knob show-value font-size="12px" v-model="trigger_perc" size="50px" :thickness="0.22" :min="1" :max="50"
           :step="1" color="teal" track-color="grey-3" class="col" @update:model-value="set_trigger">
@@ -305,10 +265,6 @@ export default {
       pip_caption: "pip",
       pip_cmh2o: 14.0,
       peep_cmh2o: 4.0,
-      hfo_map_cmh2o: 10,
-      hfo_amplitude_cmh2o: 20,
-      hfo_freq: 10,
-      hfo_bias_flow: 10,
       freq: 40,
       insp_time: 0.4,
       insp_flow: 8.0,
@@ -415,8 +371,8 @@ export default {
         explain.callModelFunction("Ventilator.set_humidity", [parseFloat(this.humidity / 100.0)])
       }
     },
-    update_hfo() {
-      explain.callModelFunction("Ventilator.set_ventilator_hfov", [this.hfo_map_cmh2o, this.hfo_freq, this.hfo_amplitude_cmh2o, this.hfo_bias_flow])
+    update_() {
+      explain.callModelFunction("Ventilator.set_ventilator_v", [this._map_cmh2o, this._freq, this._amplitude_cmh2o, this._bias_flow])
     },
     update_ventilator_setttings() {
       if (this.update_model) {
@@ -451,13 +407,13 @@ export default {
             this.spont_breathing = false
             this.toggle_spont_breathing()
             break;
-          case "PS":
+          case "PSV":
             if (!this.ventilator_running) {
               this.ventilator_running = true;
               explain.callModelFunction("Ventilator.switch_ventilator", [true])
             }
             if (this.ventilator_running) {
-              explain.callModelFunction("Ventilator.set_ps", [this.pip_cmh2o, this.peep_cmh2o, this.freq, this.insp_time, this.insp_flow])
+              explain.callModelFunction("Ventilator.set_psv", [this.pip_cmh2o, this.peep_cmh2o, this.freq, this.insp_time, this.insp_flow])
             }
             break;
           case "VC":
@@ -473,18 +429,6 @@ export default {
             this.spont_breathing = false
             this.toggle_spont_breathing()
             break;
-          case "HFOV":
-            if (!this.ventilator_running) {
-              this.ventilator_running = true;
-              explain.callModelFunction("Ventilator.switch_ventilator", [true])
-            }
-            if (this.ventilator_running) {
-              this.pip_caption = "pip max"
-              explain.callModelFunction("Ventilator.set_hfov", [this.hfo_map_cmh2o, this.hfo_freq, this.hfo_amplitude_cmh2o, this.hfo_bias_flow])
-
-            }
-            this.spont_breathing = false
-            this.toggle_spont_breathing()
 
         }
       }
@@ -757,10 +701,6 @@ export default {
         this.tidal_volume = explain.modelState.models["Ventilator"].tidal_volume * 1000.0
         this.fio2 = explain.modelState.models["Ventilator"].fio2 * 100.0
         this.trigger_perc = explain.modelState.models["Ventilator"].trigger_volume_perc
-        this.hfo_amplitude_cmh2o = explain.modelState.models["Ventilator"].hfo_amplitude_cmh2o
-        this.hfo_map_cmh2o = explain.modelState.models["Ventilator"].hfo_map_cmh2o
-        this.hfo_freq = explain.modelState.models["Ventilator"].hfo_freq
-        this.hfo_bias_flow = explain.modelState.models["Ventilator"].hfo_bias_flow
         this.spont_breathing = explain.modelState.models["Breathing"].breathing_enabled
 
       }

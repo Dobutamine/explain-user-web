@@ -659,6 +659,7 @@ export default {
       } else {
         this.selectedProp1 = ""
         this.p1 = ""
+        this.dataUpdate()
       }
     },
     selectProp1() {
@@ -669,6 +670,7 @@ export default {
         this.selectedModel1 = ""
         this.p1 = ""
       }
+      this.dataUpdate()
     },
     selectModel2() {
       this.prop2Names = [""]
@@ -686,6 +688,7 @@ export default {
       } else {
         this.selectedProp2 = ""
         this.p2 = ""
+        this.dataUpdate()
       }
     },
     selectProp2() {
@@ -696,6 +699,7 @@ export default {
         this.selectedModel2 = ""
         this.p2 = ""
       }
+      this.dataUpdate()
     },
     selectModel3() {
       this.prop3Names = [""]
@@ -713,6 +717,7 @@ export default {
       } else {
         this.selectedProp3 = ""
         this.p3 = ""
+        this.dataUpdate()
       }
     },
     selectProp3() {
@@ -723,6 +728,7 @@ export default {
         this.selectedModel3 = ""
         this.p3 = ""
       }
+      this.dataUpdate()
     },
     dataUpdateRt() {
       if (this.alive) {
@@ -732,9 +738,16 @@ export default {
 
         // update is every 0.015 ms and the data is sampled with 0.0015 ms resolution (so 3 data points per 0.015 sec = 200 datapoints per second)
         for (let i = 0; i < explain.modelData.length; i++) {
-          this.y1_axis.push(explain.modelData[i][this.p1] * this.chart1_factor)
-          this.y2_axis.push(explain.modelData[i][this.p2] * this.chart2_factor)
-          this.y3_axis.push(explain.modelData[i][this.p3] * this.chart3_factor)
+          if (this.p1 !== '') {
+            this.y1_axis.push(explain.modelData[i][this.p1] * this.chart1_factor)
+          }
+          if (this.p2 !== '') {
+            this.y2_axis.push(explain.modelData[i][this.p2] * this.chart2_factor)
+          }
+          if (this.p3 !== '') {
+            this.y3_axis.push(explain.modelData[i][this.p3] * this.chart3_factor)
+          }
+
           this.x_axis.push(this.seconds)
           this.seconds += 0.005;
         }
@@ -742,9 +755,15 @@ export default {
         if (this.x_axis.length > this.rtWindowValidated * 200.0) {
           let too_many = this.x_axis.length - (this.rtWindowValidated * 200.0)
           this.x_axis.splice(0, too_many)
-          this.y1_axis.splice(0, too_many)
-          this.y2_axis.splice(0, too_many)
-          this.y3_axis.splice(0, too_many)
+          if (this.p1 !== '') {
+            this.y1_axis.splice(0, too_many)
+          }
+          if (this.p2 !== '') {
+            this.y2_axis.splice(0, too_many)
+          }
+          if (this.p3 !== '') {
+            this.y3_axis.splice(0, too_many)
+          }
         }
 
         if (this.redrawTimer > this.redrawInterval) {
@@ -757,7 +776,6 @@ export default {
           if (this.p2 !== '') {
             myChart.data.datasets[1].data = [...this.y2_axis]
           }
-
           if (this.p3 !== '') {
             myChart.data.datasets[2].data = [...this.y3_axis]
           }
@@ -768,7 +786,6 @@ export default {
           if (this.show_summary) {
             this.analyzeDataRt()
           }
-
 
           this.redrawTimer = 0;
           this.chartData = {

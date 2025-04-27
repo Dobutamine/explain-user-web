@@ -211,7 +211,17 @@ export default {
       selectedModelItems: [],
       modelTypes: [],
       selectedDiagramComponent: "",
-      diagramComponentTypes: ["BloodCompartment", "BloodPump", "BloodConnector", "Shunt", "GasCompartment", "GasConnector", "Container", "GasExchanger", "Oxygenator"],
+      diagramComponentTypes: [
+        "BloodCompartment", 
+        "BloodPump", 
+        "BloodConnector", 
+        "Shunt", 
+        "GasCompartment", 
+        "GasConnector", 
+        "Container", 
+        "GasExchanger", 
+        "Oxygenator"
+      ],
       diagramComponentNames: [],
       compEnabled: false,
       compName: "",
@@ -1007,11 +1017,11 @@ export default {
           break;
         case "BloodCompartment":
           this.compPicto = "container.png";
-          models = ["BloodCapacitance", "BloodTimeVaryingElastance"];
+          models = ["BloodCapacitance", "BloodTimeVaryingElastance", "BloodVessel", "HeartChamber", "CapillaryBed", "CoronaryVessel"];
           break;
         case "BloodConnector":
           this.compPicto = "blood.png";
-          models = ["BloodResistor", "BloodValve"];
+          models = ["BloodResistor", "BloodValve", "BloodVesselResistor", "HeartValve"];
           break;
         case "Shunt":
           this.compPicto = "blood.png";
@@ -1019,19 +1029,19 @@ export default {
           break;
         case "GasCompartment":
           this.compPicto = "gas_container.png";
-          models = ["GasCapacitance"];
+          models = ["GasCapacitance", "Airway", "AlveolarSpace"];
           break;
         case "GasConnector":
           this.compPicto = "blood.png";
-          models = ["GasResistor"];
+          models = ["GasResistor", "AirwayResistor"];
           break;
         case "Container":
           this.compPicto = "container.png";
-          models = ["Container"];
+          models = ["Container", "Pericardium", "PleuralSpace", "Thorax"];
           break;
         case "GasExchanger":
           this.compPicto = "exchange.png";
-          models = ["GasExchanger"];
+          models = ["GasExchanger", "BloodDiffusor", "GasDiffusor"];
           break;
         case "Oxygenator":
           this.compPicto = "gas_container.png";
