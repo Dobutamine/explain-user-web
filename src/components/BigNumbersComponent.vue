@@ -1,6 +1,6 @@
 <template>
   <q-card class="q-pb-xs q-pt-xs q-ma-sm" bordered>
-    <div class="q-mt-es row gutter text-overline justify-center" @click="isEnabled = !isEnabled">
+    <div class="q-mt-es row gutter text-overline justify-center" @click="toggle">
       {{ title }}
     </div>
     <div v-if="isEnabled">
@@ -77,17 +77,26 @@ export default {
     };
   },
   methods: {
+    toggle() {
+      this.isEnabled = !this.isEnabled
+      if (this.isEnabled) {
+        this.updateWatchList()
+      }
+    },
     updateWatchList() {
+      if (this.isEnabled) {
       // watch the appropriate properties
-      explain.watchModelPropsSlow([
-        "Monitor.heart_rate", 
-        "Monitor.resp_rate", 
-        "Monitor.spo2_pre",
-        "Monitor.spo2",
-        "Monitor.abp_syst",
-        "Monitor.abp_diast",
-        "Monitor.abp_mean"
-      ])
+        explain.watchModelPropsSlow([
+          "Monitor.heart_rate", 
+          "Monitor.resp_rate", 
+          "Monitor.spo2_pre",
+          "Monitor.spo2",
+          "Monitor.abp_syst",
+          "Monitor.abp_diast",
+          "Monitor.abp_mean"
+        ])
+      }
+
     },
     dataUpdate() {
       if (!this.isEnabled) return;
@@ -108,25 +117,22 @@ export default {
     },
   },
   beforeUnmount() {
+    this.$bus.off("rts", () => this.dataUpdate());
+    this.$bus.off("data", () => this.dataUpdate());
+    this.$bus.off("model_ready", this.updateWatchList)
+    this.$bus.off("reset", this.updateWatchList)
   },
   mounted() {
     this.isEnabled = !this.collapsed;
 
+    // get the realtime slow data
+    this.$bus.on("rts", () => this.dataUpdate());
+    this.$bus.on("data", () => this.dataUpdate());
+    this.$bus.on("model_ready", this.updateWatchList)
+    this.$bus.on("reset", this.updateWatchList)
+
     // watch the big bumber data
     this.updateWatchList();
-
-    // get the realtime slow data
-    this.$bus.on("rts", () => {
-      this.dataUpdate()
-    });
-
-    // get the slow data from a calculation frame
-    this.$bus.on("data", () => {
-      this.dataUpdate()
-    });
-
-    // if the model resets make sure we still get the data in
-    this.$bus.on("reset", this.updateWatchList)
 
   },
 };

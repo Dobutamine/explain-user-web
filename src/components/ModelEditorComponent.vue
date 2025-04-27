@@ -599,7 +599,6 @@ export default {
           })
         }
       })
-      console.log(this.selectedModelProps)
       this.redraw += 1
 
     },

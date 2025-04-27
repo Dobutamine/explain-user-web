@@ -282,6 +282,9 @@ export default {
       y1_axis: [],
       y2_axis: [],
       y3_axis: [],
+      y1_enabled: false,
+      y2_enabled: false,
+      y3_enabled: false,
       chart_fill: false,
       // y1_axis_fill: false,
       // y2_axis_fill: false,
@@ -748,9 +751,16 @@ export default {
           this.redrawTimer = 0;
           const myChart = this.$refs.myTest.chart
           myChart.data.labels = this.x_axis
-          myChart.data.datasets[0].data = [...this.y1_axis]
-          myChart.data.datasets[1].data = [...this.y2_axis]
-          myChart.data.datasets[2].data = [...this.y3_axis]
+          if (this.p1 !== '') {
+            myChart.data.datasets[0].data = [...this.y1_axis]
+          } 
+          if (this.p2 !== '') {
+            myChart.data.datasets[1].data = [...this.y2_axis]
+          }
+
+          if (this.p3 !== '') {
+            myChart.data.datasets[2].data = [...this.y3_axis]
+          }
           requestAnimationFrame(() => {
             myChart.update()
           })

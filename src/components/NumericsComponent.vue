@@ -1,6 +1,6 @@
 <template>
   <q-card class="q-pb-xs q-pt-xs q-ma-sm" bordered>
-    <div class="q-mt-es row gutter text-overline justify-center" @click="isEnabled = !isEnabled">
+    <div class="q-mt-es row gutter text-overline justify-center" @click="toggle">
       {{ title }}
     </div>
     <div v-if="parameters.length > 0 && isEnabled">
@@ -35,6 +35,12 @@ export default {
     };
   },
   methods: {
+    toggle() {
+      this.isEnabled = !this.isEnabled
+      if (this.isEnabled) {
+        this.updateWatchList()
+      }
+    },
     updateWatchList() {
       let _watchList = []
       this.mutableParameters.forEach(param => {
@@ -93,6 +99,9 @@ export default {
     this.$bus.on("reset", () => this.updateWatchList())
     this.$bus.on("rts", () => { this.dataUpdate()});
     this.$bus.on("data", () => { this.dataUpdate()});
+    if (this.isEnabled) {
+      this.updateWatchList()
+    }
   },
 };
 </script>
