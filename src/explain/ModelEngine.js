@@ -66,6 +66,9 @@ self.onmessage = (e) => {
         case "model_types":
             get_model_types(e.data.payload);
             break;
+        case "modeltype_interface":
+            get_modeltype_interface(e.data.payload);
+            break;
         case "model_interface":
           get_model_interface(e.data.payload);
           break;
@@ -395,6 +398,15 @@ const get_model_props = function (model_name) {
   });
 
 }
+const get_modeltype_interface = function (model_type) {
+  const result = available_models.find(item => item.model_type === model_type );
+  let new_sub_model = new result(model, "", model_type);
+  _send({
+    type: "modeltype_interface",
+    message: "",
+    payload: new_sub_model.model_interface,
+  });
+}
 
 const get_model_interface = function (model_name) {
   _send({
@@ -402,7 +414,6 @@ const get_model_interface = function (model_name) {
     message: "",
     payload: model.models[model_name].model_interface,
   });
-
 }
 
 const get_model_types = function () {

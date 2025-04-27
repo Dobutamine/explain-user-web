@@ -123,6 +123,10 @@ export default class Model {
           const _model_interface_event = new CustomEvent("model_interface", { detail: e.data.payload, bubbles: true, cancelable: true, composed: false });
           document.dispatchEvent(_model_interface_event)
           break;
+        case "modeltype_interface":
+          const _modeltype_interface_event = new CustomEvent("modeltype_interface", { detail: e.data.payload, bubbles: true, cancelable: true, composed: false });
+          document.dispatchEvent(_modeltype_interface_event)
+          break;
         case "model_types":
           const _model_types_event = new CustomEvent("model_types", { detail: e.data.payload, bubbles: true, cancelable: true, composed: false });
           document.dispatchEvent(_model_types_event)
@@ -286,6 +290,15 @@ export default class Model {
       type: "GET",
       message: "model_types",
       payload: {},
+    });
+  }
+
+  getModelTypeInterface(model_type) {
+    // get the interface of a specific modeltype
+    this.send({
+      type: "GET",
+      message: "modeltype_interface",
+      payload: model_type,
     });
   }
 

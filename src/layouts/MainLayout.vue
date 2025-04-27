@@ -466,6 +466,7 @@ export default defineComponent({
     document.removeEventListener("model_props", (e) => this.$bus.emit("model_props", e.detail));
     document.removeEventListener("model_interface", (e) => this.$bus.emit("model_interface", e.detail));
     document.removeEventListener("model_types", (e) => this.$bus.emit("model_types", e.detail));
+    document.removeEventListener("modeltype_interface", (e) => this.$bus.emit("modeltype_interface", e.detail));
     document.removeEventListener("state_saved", this.stateSaved);
     
   },
@@ -534,6 +535,11 @@ export default defineComponent({
       document.removeEventListener("model_interface", (e) => this.$bus.emit("model_interface", e.detail));
     } catch {}
     document.addEventListener("model_interface", (e) => this.$bus.emit("model_interface", e.detail));
+
+    try {
+      document.removeEventListener("modeltype_interface", (e) => this.$bus.emit("modeltype_interface", e.detail));
+    } catch {}
+    document.addEventListener("modeltype_interface", (e) => this.$bus.emit("modeltype_interface", e.detail));
 
     try {
       document.removeEventListener("model_types", (e) => this.$bus.emit("model_types", e.detail));

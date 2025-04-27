@@ -364,7 +364,64 @@ export default {
 
       // get the model interface of the selected model
       console.log(this.selectedModelType)
-      explain.getModelInterface(this.selectedModelType)
+      explain.getModelTypeInterface(this.selectedModelType)
+    },
+    processModelTypeInterface(modeltype_interface) {
+      console.log("received model interface ", modeltype_interface)
+      // // we have to convert the model properties to a format which the editor can understand, this is an array of objects and store in selectedNewModelProps
+      // // clear the current selectedNewModelProps holding the new model properties
+      // this.selectedNewModelProps = []
+      // // add a new name and description field
+      // this.selectedNewModelProps.push({
+      //   "caption": "name",
+      //   "target": "name",
+      //   "type": "string",
+      //   "value": "",
+      // })
+      // this.selectedNewModelProps.push({
+      //   "caption": "description",
+      //   "target": "description",
+      //   "type": "string",
+      //   "value": "",
+      // })
+      // // process the model interface
+      // model_props.forEach(prop => {
+      //   if (prop.type == 'number') {
+      //     prop['value'] = prop['default'] * prop['factor']
+      //   } else {
+      //     prop['value'] = prop['default']
+      //   }
+      //   // if the property is a list then add the options to the choices
+      //   if (prop.type == 'list') {
+      //     prop['choices'] = []
+      //     if (prop['option_default']) {
+      //       prop['choices'] = prop['options_default']
+      //     }
+      //     if (prop.options) {
+      //       Object.values(explain.modelState.models).forEach(model => {
+      //         if (prop.options.includes(model.model_type)) {
+      //           prop["choices"].push(model.name)
+      //         }
+      //       })
+
+      //     }
+      //   }
+      //   if (prop.type == 'multiple-list') {
+      //     prop['choices'] = []
+      //     if (prop['option_default']) {
+      //       prop['choices'] = prop['options_default']
+      //     }
+      //     if (prop.options) {
+      //       Object.values(explain.modelState.models).forEach(model => {
+      //         if (prop.options.includes(model.model_type)) {
+      //           prop["choices"].push(model.name)
+      //         }
+      //       })
+      //     }
+      //   }
+      //   this.selectedNewModelProps.push(prop)
+      // })
+      this.redraw += 1
     },
     processModelInterface(model_type, model_props) {
       console.log("received model interface of ", model_type)
@@ -646,12 +703,14 @@ export default {
     this.state_changed = false
     this.$bus.off("state", this.processAvailableModels)
     this.$bus.off("model_interface", this.processModelInterface)
-    this.$bus.o("model_ready", () => explain.getModelTypes())
+    this.$bus.off("modeltype_interface",  this.processModelTypeInterface)
+    this.$bus.off("model_types", (e) => this.processAvailableModelTypes(e))
   },
   mounted() {
     // update if state changes
     this.$bus.on("state", this.processAvailableModels)
-    this.$bus.on("model_interface", this.processModelInterface)
+    this.$bus.on("model_interface",  this.processModelInterface)
+    this.$bus.on("modeltype_interface",  (e) => this.processModelTypeInterface(e))
     this.$bus.on("model_types", (e) => this.processAvailableModelTypes(e))
     explain.getModelTypes()
 
