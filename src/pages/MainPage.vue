@@ -140,7 +140,14 @@
               <q-icon name="fa-solid fa-chart-area" size="xs"></q-icon>
               <q-tooltip>xy chart</q-tooltip>
             </q-tab>
+
+            <q-tab name="task_scheduler">
+              <q-icon name="fa-solid fa-list-check" size="xs"></q-icon>
+              <q-tooltip>task scheduler</q-tooltip>
+            </q-tab>
           </q-tabs>
+
+
           <q-tab-panels v-model="tab_center" keep-alive style="background-color: black">
 
             <q-tab-panel name="diagram">
@@ -203,6 +210,18 @@
                 <XYChartComponent :alive="xy_alive" title="XY Graph" :presets={}></XYChartComponent>
               </q-scroll-area>
             </q-tab-panel>
+
+            <q-tab-panel name="task_scheduler">
+              <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
+                right: '5px',
+                borderRadius: '5px',
+                background: 'black',
+                width: '5px',
+                opacity: 0.5
+              }">
+                <TaskScheduler></TaskScheduler>
+              </q-scroll-area>
+            </q-tab-panel>
           </q-tab-panels>
         </div>
 
@@ -255,6 +274,7 @@ import DiagramComponent from 'src/components/DiagramComponent.vue';
 import NiceController from 'src/components/NiceController.vue';
 import BigNumbersComponent from 'src/components/BigNumbersComponent.vue';
 import DiagramEditorComponent from 'src/components/DiagramEditor.vue';
+import TaskScheduler from 'src/components/TaskScheduler.vue';
 
 import { explain } from 'src/boot/explain';
 
@@ -280,7 +300,8 @@ export default defineComponent({
     HeartComponent,
     DiagramComponent,
     NiceController,
-    DiagramEditorComponent
+    DiagramEditorComponent,
+    TaskScheduler
   },
   data() {
     return {

@@ -14,6 +14,9 @@ export const useStateStore = defineStore("state", {
     },
     model_definition: {},
     configuration: {},
+    tasks: {},
+    presets_time: {},
+    presets_xy: {},
     saved: false,
     default: true,
     prev_diagram_definition: {},
@@ -98,6 +101,9 @@ export const useStateStore = defineStore("state", {
         this.diagram_definition = data.diagram_definition;
         this.model_definition = data.model_definition;
         this.configuration = data.configuration;
+        this.tasks = data.tasks;
+        this.presets_time = data.presets_time;
+        this.presets_xy = data.presets_xy;
         return true;
       } else {
         return false;
@@ -128,7 +134,9 @@ export const useStateStore = defineStore("state", {
         this.diagram_definition = data.diagram_definition;
         this.model_definition = data.model_definition;
         this.configuration = data.configuration;
-
+        this.tasks = data.tasks;
+        this.presets_time = data.presets_time;
+        this.presets_xy = data.presets_xy;
         return true;
       } else {
         return false;
@@ -158,7 +166,9 @@ export const useStateStore = defineStore("state", {
         this.diagram_definition = data.diagram_definition;
         this.model_definition = data.model_definition;
         this.configuration = data.configuration;
-
+        this.tasks = data.tasks;
+        this.presets_time = data.presets_time;
+        this.presets_xy = data.presets_xy;
         return true;
       } else {
         return false;
@@ -187,6 +197,9 @@ export const useStateStore = defineStore("state", {
             diagram_definition: this.diagram_definition,
             model_definition: this.model_definition,
             configuration: this.configuration,
+            tasks: this.tasks,
+            presets_time: this.presets_time,
+            presets_xy: this.presets_xy
           }),
         });
 
