@@ -17,6 +17,7 @@
               icon="fa-solid fa-xmark" @click="cancelAddModel" style="font-size: 8px"><q-tooltip>clear model
                 editor</q-tooltip></q-btn>
           </div>
+
           <div v-if="redraw > 0.0" class="q-ma-sm q-mb-md">
             <div v-for="(field, index) in selectedNewModelProps" :key="index">
               <!-- boolean -->
@@ -37,7 +38,7 @@
             </div>
             <div v-for="(field, index) in selectedNewModelProps" :key="index">
               <!-- number -->
-              <div v-if="field.type == 'number'">
+              <div v-if="field.type == 'number' || field.type == 'factor'">
                 <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
                   <div class="text-white" :style="{ 'font-size': '10px' }">
                     <q-input v-model="field.value" :label="field.caption" :max="field.ul" :min="field.ll"
@@ -228,8 +229,6 @@
             <q-btn class="col-4 q-ma-sm" color="negative" size="xs" dense icon="fa-solid fa-play" @click="updateValue"
               style="font-size: 8px"><q-tooltip>apply property changes</q-tooltip></q-btn>
           </div>
-
-
         </div>
       </q-card>
     </div>
@@ -339,15 +338,14 @@ export default {
             new_model[prop.target] = parseFloat(prop.value / prop.factor)
           }
         }
-
       })
       // set to the model for processing
-      explain.addNewModelToEngine(this.selectedModelType, new_model)
+      explain.addNewModel(new_model)
 
-      // send the model to the diagram editor for rendering
-      if (this.showNewModelInDiagram) {
-        this.$bus.emit("addNewModelToDiagram", new_model)
-      }
+      // // send the model to the diagram editor for rendering
+      // if (this.showNewModelInDiagram) {
+      //   this.$bus.emit("addNewModelToDiagram", new_model)
+      // }
 
       this.resetNewModel()
       this.selectedModelType = ""
@@ -363,64 +361,62 @@ export default {
       this.resetNewModel()
 
       // get the model interface of the selected model
-      console.log(this.selectedModelType)
       explain.getModelTypeInterface(this.selectedModelType)
     },
     processModelTypeInterface(modeltype_interface) {
-      console.log("received model interface ", modeltype_interface)
-      // // we have to convert the model properties to a format which the editor can understand, this is an array of objects and store in selectedNewModelProps
-      // // clear the current selectedNewModelProps holding the new model properties
-      // this.selectedNewModelProps = []
-      // // add a new name and description field
-      // this.selectedNewModelProps.push({
-      //   "caption": "name",
-      //   "target": "name",
-      //   "type": "string",
-      //   "value": "",
-      // })
-      // this.selectedNewModelProps.push({
-      //   "caption": "description",
-      //   "target": "description",
-      //   "type": "string",
-      //   "value": "",
-      // })
-      // // process the model interface
-      // model_props.forEach(prop => {
-      //   if (prop.type == 'number') {
-      //     prop['value'] = prop['default'] * prop['factor']
-      //   } else {
-      //     prop['value'] = prop['default']
-      //   }
-      //   // if the property is a list then add the options to the choices
-      //   if (prop.type == 'list') {
-      //     prop['choices'] = []
-      //     if (prop['option_default']) {
-      //       prop['choices'] = prop['options_default']
-      //     }
-      //     if (prop.options) {
-      //       Object.values(explain.modelState.models).forEach(model => {
-      //         if (prop.options.includes(model.model_type)) {
-      //           prop["choices"].push(model.name)
-      //         }
-      //       })
+      // we have to convert the model properties to a format which the editor can understand, this is an array of objects and store in selectedNewModelProps
+      // clear the current selectedNewModelProps holding the new model properties
+      this.selectedNewModelProps = []
+      // add a new name and description field
+      this.selectedNewModelProps.push({
+        "caption": "name",
+        "target": "name",
+        "type": "string",
+        "value": "",
+      })
+      this.selectedNewModelProps.push({
+        "caption": "description",
+        "target": "description",
+        "type": "string",
+        "value": "",
+      })
+      // process the model interface
+      modeltype_interface.forEach(prop => {
+        if (prop.type == 'number') {
+          prop['value'] = prop['default'] * prop['factor']
+        } else {
+          prop['value'] = prop['default']
+        }
+        //if the property is a list then add the options to the choices
+        if (prop.type == 'list') {
+          prop['choices'] = []
+          if (prop['option_default']) {
+            prop['choices'] = prop['options_default']
+          }
+          if (prop.options) {
+            Object.values(explain.modelState.models).forEach(model => {
+              if (prop.options.includes(model.model_type)) {
+                prop["choices"].push(model.name)
+              }
+            })
 
-      //     }
-      //   }
-      //   if (prop.type == 'multiple-list') {
-      //     prop['choices'] = []
-      //     if (prop['option_default']) {
-      //       prop['choices'] = prop['options_default']
-      //     }
-      //     if (prop.options) {
-      //       Object.values(explain.modelState.models).forEach(model => {
-      //         if (prop.options.includes(model.model_type)) {
-      //           prop["choices"].push(model.name)
-      //         }
-      //       })
-      //     }
-      //   }
-      //   this.selectedNewModelProps.push(prop)
-      // })
+          }
+        }
+        if (prop.type == 'multiple-list') {
+          prop['choices'] = []
+          if (prop['option_default']) {
+            prop['choices'] = prop['options_default']
+          }
+          if (prop.options) {
+            Object.values(explain.modelState.models).forEach(model => {
+              if (prop.options.includes(model.model_type)) {
+                prop["choices"].push(model.name)
+              }
+            })
+          }
+        }
+        this.selectedNewModelProps.push(prop)
+      })
       this.redraw += 1
     },
     processModelInterface(model_type, model_props) {
@@ -697,7 +693,6 @@ export default {
     processAvailableModelTypes(data) {
       this.availableModelTypes = data
     },
-
   },
   beforeUnmount() {
     this.state_changed = false

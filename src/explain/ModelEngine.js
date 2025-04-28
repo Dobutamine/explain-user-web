@@ -110,7 +110,7 @@ self.onmessage = (e) => {
           call_function(JSON.parse(e.data.payload));
           break;
         case "add":
-          add_model_to_engine(e.data.message, e.data.payload);
+          add_model_to_engine(e.data.payload);
           break;
         case "save":
           save_state();
@@ -271,6 +271,37 @@ const build = function (model_definition) {
     return true;
   }
 };
+
+const add_model_to_engine = function (new_model) {
+
+  const base_model = available_models.find(item => item.model_type === new_model.model_type );
+  // make a key value list of the args
+  let arg_list = []
+  Object.keys(new_model).forEach(arg => {
+    let arg_object = { key: arg, value: new_model[arg]}
+    arg_list.push(arg_object)
+  })
+  let new_sub_model = {}
+  try {
+    new_sub_model = new base_model(model, new_model.name);
+    new_sub_model.init_model(arg_list)
+    model.models[new_model.name] = new_sub_model
+    _send({
+      type: "status",
+      message: `Submodel added to the model`,
+      payload: [],
+    });
+  } catch {
+    _send({
+      type: "status",
+      message: `ERROR: failed to add model`,
+      payload: [],
+    });
+  }
+
+
+  console.log(model.models)
+}
 
 const start = function () {
   // start the model in realtime

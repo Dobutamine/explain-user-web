@@ -311,6 +311,16 @@ export default class Model {
     });
   }
 
+
+  addNewModel(model_args) {
+    // get the interface of a specific model
+    this.send({
+      type: "POST",
+      message: "add",
+      payload: model_args,
+    });
+  }
+
   getPropValue(property) {
     // get the value of a specific property with string format model.prop1.prop2
     this.send({
