@@ -113,6 +113,11 @@
             <q-btn v-if="selectedModelName" class="col-1 q-ma-xs q-mt-sm" color="grey-9" size="xs" dense
               icon="fa-solid fa-xmark" @click="cancel" style="font-size: 8px"><q-tooltip>clear model
                 editor</q-tooltip></q-btn>
+            <q-btn v-if="selectedModelName" class="col-1 q-ma-xs q-mt-sm" color="primary" size="xs" dense
+              icon="fa-solid fa-play" @click="cancel" style="font-size: 8px"><q-tooltip>apply changes</q-tooltip></q-btn>
+            <q-btn v-if="selectedModelName" class="col-1 q-ma-xs q-mt-sm" color="red-10" size="xs" dense
+              icon="fa-solid fa-trash" @click="deleteModel" style="font-size: 8px"><q-tooltip>delete model
+                (dangerous!!)</q-tooltip></q-btn>
           </div>
 
 
@@ -222,12 +227,14 @@
             </div>
           </div>
 
-          <div v-if="selectedModelName && state_changed" class="row q-ma-md">
 
-            <q-select label-color="white" class="q-ml-md q-mr-md col" v-model="changeInTime" :options="timeOptions"
+          <div v-if="selectedModelName && state_changed" class="row q-ma-md">
+            <q-select label-color="white" class="col q-ma-sm" v-model="changeInTime" :options="timeOptions"
               label="apply changes in (sec)" style="font-size: 12px" hide-hint dense dark stack-label />
-            <q-btn class="col-4 q-ma-sm" color="negative" size="xs" dense icon="fa-solid fa-play" @click="updateValue"
-              style="font-size: 8px"><q-tooltip>apply property changes</q-tooltip></q-btn>
+          </div>
+          <div v-if="selectedModelName && state_changed" class="row q-ma-md">
+            <q-btn class="col q-ma-sm q-ml-xl q-mr-xl" color="primary" size="sm" dense @click="updateValue"
+              style="font-size: 10px">APPLY CHANGES<q-tooltip>apply property changes</q-tooltip></q-btn>
           </div>
         </div>
       </q-card>
@@ -339,13 +346,8 @@ export default {
           }
         }
       })
-      // set to the model for processing
+      // send to the model for processing
       explain.addNewModel(new_model)
-
-      // // send the model to the diagram editor for rendering
-      // if (this.showNewModelInDiagram) {
-      //   this.$bus.emit("addNewModelToDiagram", new_model)
-      // }
 
       this.resetNewModel()
       this.selectedModelType = ""
@@ -362,6 +364,10 @@ export default {
 
       // get the model interface of the selected model
       explain.getModelTypeInterface(this.selectedModelType)
+    },
+    deleteModel() {
+      console.log(this.selectedModelName)
+      explain.deleteModel(this.selectedModelName)
     },
     processModelTypeInterface(modeltype_interface) {
       // we have to convert the model properties to a format which the editor can understand, this is an array of objects and store in selectedNewModelProps

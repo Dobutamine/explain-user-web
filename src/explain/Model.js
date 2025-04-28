@@ -311,7 +311,6 @@ export default class Model {
     });
   }
 
-
   addNewModel(model_args) {
     // get the interface of a specific model
     this.send({
@@ -321,7 +320,7 @@ export default class Model {
     });
   }
 
-  removeModel(model_name) {
+  deleteModel(model_name) {
     // get the interface of a specific model
     this.send({
       type: "DELETE",
