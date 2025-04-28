@@ -321,6 +321,15 @@ export default class Model {
     });
   }
 
+  removeModel(model_name) {
+    // get the interface of a specific model
+    this.send({
+      type: "DELETE",
+      message: "remove",
+      payload: model_name,
+    });
+  }
+
   getPropValue(property) {
     // get the value of a specific property with string format model.prop1.prop2
     this.send({

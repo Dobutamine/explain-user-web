@@ -126,6 +126,7 @@ self.onmessage = (e) => {
     case "DELETE": // remove a resource
       switch (e.data.message) {
         case "remove":
+          remove_model_from_engine(e.data.payload)
           break;
         case "watchlist":
           clear_watchlist();
@@ -272,6 +273,27 @@ const build = function (model_definition) {
   }
 };
 
+const remove_model_from_engine = function (model_name) {
+  try {
+    delete model.models[model_name]
+    console.log('Removed model from engine: ', model_name)
+    _send({
+      type: "status",
+      message: `Removed submodel from the model. `,
+      payload: [],
+    });
+  } catch {
+    console.log('Error in removing model from engine: ', model_name)
+    _send({
+      type: "status",
+      message: `Error removing submodel from model. `,
+      payload: [],
+    });
+
+  }
+
+}
+
 const add_model_to_engine = function (new_model) {
 
   const base_model = available_models.find(item => item.model_type === new_model.model_type );
@@ -286,12 +308,14 @@ const add_model_to_engine = function (new_model) {
     new_sub_model = new base_model(model, new_model.name);
     new_sub_model.init_model(arg_list)
     model.models[new_model.name] = new_sub_model
+    console.log('Added model to engine: ', new_sub_model)
     _send({
       type: "status",
       message: `Submodel added to the model`,
       payload: [],
     });
   } catch {
+    console.log('Failed to add model to engine: ')
     _send({
       type: "status",
       message: `ERROR: failed to add model`,
@@ -299,8 +323,6 @@ const add_model_to_engine = function (new_model) {
     });
   }
 
-
-  console.log(model.models)
 }
 
 const start = function () {
