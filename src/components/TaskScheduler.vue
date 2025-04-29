@@ -61,8 +61,9 @@
                       <q-select v-if="task.type == 'number' || task.type == 'factor'"  class="q-pa-xs col" v-model="task.in" square label="in time(s)" hide-hint
                       :options="times" dense dark stack-label style="font-size: 12px" @update:model-value="inTimeChanged" />
                     </div>
-                    <div class="col-1 q-mt-md">
-                      <q-btn color="primary" size="xs" dense @click="runPartTask(index)"
+
+                    <div v-if="task.prop" class="col-1 q-mt-md">
+                      <q-btn class="q-ml-sm" color="primary" size="xs" dense @click="runPartTask(index)"
                       icon="fa-solid fa-play" style="font-size: 8px"><q-tooltip>run</q-tooltip></q-btn>
                       <q-btn class="q-ml-sm" color="negative" size="xs" dense @click="removePartTask(index)"
                       icon="fa-solid fa-trash" style="font-size: 8px"><q-tooltip>delete</q-tooltip></q-btn>
