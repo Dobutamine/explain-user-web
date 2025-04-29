@@ -141,11 +141,13 @@
       propChanged(index) {
         const prop_interface = this.task_list[index]._model_interface[this.task_list[index].prop]
         const value = explain.modelState.models[this.task_list[index].model][this.task_list[index].prop]
+        
         this.task_list[index].value = value
         Object.keys(prop_interface).forEach(prop_key => {
           this.task_list[index][prop_key] = prop_interface[prop_key]
         })
         this.task_list[index].target = value
+        
       },
       inTimeChanged() {},
       atTimeChanged() {},

@@ -32,19 +32,19 @@ export class BaseModelClass {
             type: “list”,
             caption: <string> caption,
             target: <number> target property,
-      choices: <list> model types
+            choices: <list> model types
     }
     {
             type: “multiple-list”,
             caption: <string> caption,
             target: <number> target property,
-      choices: <list> model types
+            choices: <list> model types
     }
     {
             type: “function”,
             caption: <string> caption,
             target: <number> target property,
-      args: <list> a list of arguments as above
+            args: <list> a list of arguments as above
     }
   */
   model_interface = []        // model interface list as described above
