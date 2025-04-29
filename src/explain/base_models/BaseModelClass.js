@@ -13,8 +13,8 @@ export class BaseModelClass {
             factor: <number> value factor,
             delta: <number> delta,
             rounding: <number> number of decimals,
-      ul: <number> upper limit
-      ll: <number> lower limit
+            ul: <number> upper limit
+            ll: <number> lower limit
     }
 
     {

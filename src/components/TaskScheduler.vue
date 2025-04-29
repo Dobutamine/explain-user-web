@@ -7,7 +7,7 @@
         <q-card class="q-pb-xs q-pt-xs q-ma-sm" bordered>
             <q-list bordered separator dense>
             <div v-for="(task, index) in task_list" :key="index">
-              <q-item clickable v-ripple dark dense @click="selectTask">
+              <q-item clickable dark dense @click="selectTask">
                 <q-item-section>
                   <div class="q-ma-xs row">
                     <div class="col">
@@ -16,32 +16,38 @@
                     </div>
                     <div class="col">
                       <q-select class="q-pa-xs col" v-model="task.prop" square label="property" hide-hint
-                      :options="task.prop_list" dense dark stack-label style="font-size: 12px" @update:model-value="propChanged(index)" />
+                      :options="Object.keys(task._model_interface)" dense dark stack-label style="font-size: 12px" @update:model-value="propChanged(index)" />
                     </div>
                     <div class="col">
-                      <q-input class="q-pa-xs col" v-model="task.value" label="value" step="0.1" dark hide-hint filled dense stack-label
+                      <q-input v-if="task.type == 'number' || task.type == 'factor'" class="q-pa-xs col" v-model="task.value" label="current value"  dark hide-hint filled dense stack-label
                         style="font-size: 12px" readonly squared>
                       </q-input>
+                      <q-checkbox v-if="task.type == 'boolean'" v-model="task.value" color="primary" size="sm" hide-hint filled dense
+                        style="font-size: 12px" left-label label="current state" class="q-ml-sm q-mt-md">
+                      </q-checkbox>
                     </div>
                     <div class="col">
-                      <q-input class="q-pa-xs col" v-model="task.target" label="target" step="0.1" dark hide-hint filled dense stack-label type="number"
+                      <q-input v-if="task.type == 'number' || task.type == 'factor'" class="q-pa-xs col" v-model="task.target" label="target" :min="task.ll" :max="task.ul" :step="task.delta" dark hide-hint filled dense stack-label type="number"
                         style="font-size: 12px" squared>
                       </q-input>
+                      <q-checkbox v-if="task.type == 'boolean'" v-model="task.target" color="primary" size="sm" hide-hint filled dense
+                        style="font-size: 12px" left-label label="new state" class="q-mt-md">
+                      </q-checkbox>
                     </div>
                     <div class="col">
-                      <q-select class="q-pa-xs col" v-model="task.in" square label="in time(s)" hide-hint
+                      <q-select v-if="task.type == 'number' || task.type == 'factor'"  class="q-pa-xs col" v-model="task.in" square label="in time(s)" hide-hint
                       :options="times" dense dark stack-label style="font-size: 12px" @update:model-value="inTimeChanged" />
                     </div>
-                    <div class="col-1">
+                    <!-- <div class="col-1">
                       <q-btn color="black" size="xs" dense
                       icon="fa-solid fa-chevron-up" style="font-size: 8px" @click="moveUp(index)"><q-tooltip>move up</q-tooltip></q-btn>
                       <q-btn class="q-ml-sm" color="black" size="xs" dense
                       icon="fa-solid fa-chevron-down" style="font-size: 8px" @click="moveDown(index)"><q-tooltip>move down</q-tooltip></q-btn>
-                    </div>
+                    </div> -->
                     <div class="col-1">
-                      <q-btn color="primary" size="xs" dense @click="runPartTask(index)"
-                      icon="fa-solid fa-play" style="font-size: 8px"><q-tooltip>run</q-tooltip></q-btn>
-                      <q-btn class="q-ml-sm" color="negative" size="xs" dense @click="removePartTask(index)"
+                      <!-- <q-btn color="primary" size="xs" dense @click="runPartTask(index)"
+                      icon="fa-solid fa-play" style="font-size: 8px"><q-tooltip>run</q-tooltip></q-btn> -->
+                      <q-btn class="q-ml-md q-mt-md" color="negative" size="sm" dense @click="removePartTask(index)"
                       icon="fa-solid fa-trash" style="font-size: 8px"><q-tooltip>delete</q-tooltip></q-btn>
                     </div>
                   </div>
@@ -72,7 +78,7 @@
     data() {
       return {
         isEnabled: true,
-        title: "TASK SCHEDULER",
+        title: "EVENT SCHEDULER",
         modelNames: [],
         selectedModelName: "",
         modelProps: ["pres"],
@@ -86,21 +92,43 @@
     methods: {
       addTask() {
         let task = {
-          model: "", prop: "", value: 0.0, target: 0.0, in: 5.0, at: 0.0, prop_list: [], type: "", min: 0, max: 0, step: 0
+          model: "", 
+          prop: "", 
+          type: "",
+          caption: "",
+          value: 0.0, 
+          target: 0.0, 
+          in: 5.0, 
+          at: 0.0,
+          ll: -100000,
+          ul: 1000000,
+          delta: 1,
+          _model_interface: {}
         }
         this.task_list.push(task)
 
       },
       modelChanged(index) {
-        // find the property list
-        let model_interface = [...Object.values(explain.modelState.models[this.task_list[index].model].model_interface)]
-        // process
-        this.task_list[index].prop_list = []
-        model_interface.forEach(mi => {
-          this.task_list[index].prop_list.push(mi.target)
+        // find the property list this.task_list[index]._model_interface
+        this.task_list[index]._model_interface = {}
+        this.task_list[index].type = ""
+        this.task_list[index].prop = ""
+        
+        let model_interface= {...Object.values(explain.modelState.models[this.task_list[index].model].model_interface)}
+        // rebuild the model interface object
+        Object.values(model_interface).forEach( _mi => {
+          this.task_list[index]._model_interface[_mi.target] = _mi
         })
       },
-      propChanged(index) {},
+      propChanged(index) {
+        const prop_interface = this.task_list[index]._model_interface[this.task_list[index].prop]
+        const value = explain.modelState.models[this.task_list[index].model][this.task_list[index].prop]
+        this.task_list[index].value = value
+        Object.keys(prop_interface).forEach(prop_key => {
+          this.task_list[index][prop_key] = prop_interface[prop_key]
+        })
+        this.task_list[index].target = value
+      },
       inTimeChanged() {},
       atTimeChanged() {},
       toggle() {
