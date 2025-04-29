@@ -18,36 +18,53 @@
                       <q-select class="q-pa-xs col" v-model="task.prop" square label="property" hide-hint
                       :options="Object.keys(task._model_interface)" dense dark stack-label style="font-size: 12px" @update:model-value="propChanged(index)" />
                     </div>
-                    <div class="col">
-                      <q-input v-if="task.type == 'number' || task.type == 'factor'" class="q-pa-xs col" v-model="task.value" label="current value"  dark hide-hint filled dense stack-label
+
+                    <div v-if="task.type == 'number' || task.type == 'factor'" class="col">
+                      <q-input class="q-pa-xs col" v-model="task.value" label="current value"  dark hide-hint filled dense stack-label
                         style="font-size: 12px" readonly squared>
                       </q-input>
-                      <q-checkbox v-if="task.type == 'boolean'" v-model="task.value" color="primary" size="sm" hide-hint filled dense
+                    </div>
+
+                    <div v-if="task.type == 'boolean'" class="col">
+                      <q-checkbox v-model="task.value" color="primary" size="sm" hide-hint filled dense
                         style="font-size: 12px" left-label label="current state" class="q-ml-sm q-mt-md">
                       </q-checkbox>
                     </div>
-                    <div class="col">
-                      <q-input v-if="task.type == 'number' || task.type == 'factor'" class="q-pa-xs col" v-model="task.target" label="target" :min="task.ll" :max="task.ul" :step="task.delta" dark hide-hint filled dense stack-label type="number"
+
+                    <div v-if="task.type == 'number' || task.type == 'factor'" class="col">
+                      <q-input class="q-pa-xs col" v-model="task.target" label="target" :min="task.ll" :max="task.ul" :step="task.delta" dark hide-hint filled dense stack-label type="number"
                         style="font-size: 12px" squared>
                       </q-input>
-                      <q-checkbox v-if="task.type == 'boolean'" v-model="task.target" color="primary" size="sm" hide-hint filled dense
+                    </div>
+
+                    <div v-if="task.type == 'boolean'" class="col">
+                      <q-checkbox v-model="task.target" color="primary" size="sm" hide-hint filled dense
                         style="font-size: 12px" left-label label="new state" class="q-mt-md">
                       </q-checkbox>
                     </div>
-                    <div class="col">
+
+                    <div v-if="task.type == 'list'" class="col">
+                      <q-select v-model="task.target" :label="task.caption" :options="modelNames"
+                        color="blue" hide-hint filled dense stack-label
+                        style="font-size: 12px" class="q-mb-sm" squared>
+                      </q-select>
+                    </div>
+
+                    <div v-if="task.type == 'multiple-list'" class="col">
+                      <q-select v-model="task.target" :label="task.caption" :options="modelNames"
+                        color="blue" hide-hint filled dense multiple stack-label
+                        style="font-size: 12px" class="q-mb-sm" squared>
+                      </q-select>
+                    </div>
+
+                    <div v-if="task.type == 'number' || task.type == 'factor' || task.type == 'boolean'" class="col">
                       <q-select v-if="task.type == 'number' || task.type == 'factor'"  class="q-pa-xs col" v-model="task.in" square label="in time(s)" hide-hint
                       :options="times" dense dark stack-label style="font-size: 12px" @update:model-value="inTimeChanged" />
                     </div>
-                    <!-- <div class="col-1">
-                      <q-btn color="black" size="xs" dense
-                      icon="fa-solid fa-chevron-up" style="font-size: 8px" @click="moveUp(index)"><q-tooltip>move up</q-tooltip></q-btn>
-                      <q-btn class="q-ml-sm" color="black" size="xs" dense
-                      icon="fa-solid fa-chevron-down" style="font-size: 8px" @click="moveDown(index)"><q-tooltip>move down</q-tooltip></q-btn>
-                    </div> -->
-                    <div class="col-1">
-                      <!-- <q-btn color="primary" size="xs" dense @click="runPartTask(index)"
-                      icon="fa-solid fa-play" style="font-size: 8px"><q-tooltip>run</q-tooltip></q-btn> -->
-                      <q-btn class="q-ml-md q-mt-md" color="negative" size="sm" dense @click="removePartTask(index)"
+                    <div class="col-1 q-mt-md">
+                      <q-btn color="primary" size="xs" dense @click="runPartTask(index)"
+                      icon="fa-solid fa-play" style="font-size: 8px"><q-tooltip>run</q-tooltip></q-btn>
+                      <q-btn class="q-ml-sm" color="negative" size="xs" dense @click="removePartTask(index)"
                       icon="fa-solid fa-trash" style="font-size: 8px"><q-tooltip>delete</q-tooltip></q-btn>
                     </div>
                   </div>
