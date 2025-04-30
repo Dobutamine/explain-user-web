@@ -4,6 +4,11 @@
         {{ title }}
       </div>
       <div v-if="isEnabled">
+        <div v-if="task_list.length > 0" class="col">
+                <q-input class="q-pa-xs col" v-model="eventName" label="event name"  dark hide-hint filled dense stack-label
+                      style="font-size: 12px" squared>
+                </q-input>
+            </div>
         <q-card class="q-pb-xs q-pt-xs q-ma-sm" bordered>
             <q-list bordered separator dense>
             <div v-for="(task, index) in task_list" :key="index">
@@ -159,8 +164,9 @@
         isEnabled: true,
         statusMessage: "no tasks scheduled",
         statusMessageTimer: null,
+        savedState: false,
         title: "EVENT SCHEDULER",
-        eventName: "event_1",
+        eventName: "new_event",
         modelNames: [],
         selectedModelName: "",
         modelProps: ["pres"],
@@ -185,6 +191,8 @@
       cancelTasks() {
         this.task_list = []
         this.statusMessage = "no tasks scheduled"
+        this.savedState = false
+        this.eventName = "new_event"
       },
       modelChanged(index) {
         // find the property list this.task_list[index]._model_interface
@@ -207,7 +215,13 @@
           this.task_list[index][prop_key] = prop_interface[prop_key]
         })
         this.task_list[index].target = value
+        this.statusMessage = ""
         
+        if (!this.eventName.endsWith('*')) {
+          this.eventName = this.eventName + "*"
+        }
+        this.savedState = false
+
       },
       inTimeChanged() {},
       atTimeChanged() {},
@@ -304,7 +318,10 @@
           this.state.tasks = {}
         }
         this.state.tasks[this.eventName] = new_task_list
-        console.log(this.state.tasks)
+        if (this.eventName.endsWith('*')) {
+          this.eventName.slice(0, -1);
+        }
+        this.savedState = true
       },
       runAllTasks() {
         for (let i = 0; i < this.task_list.length; i++) {
@@ -313,6 +330,8 @@
         // clear the list
         this.task_list = []
         this.statusMessage = "no tasks scheduled"
+        this.savedState = false
+        this.eventName = "new_event"
       },
       processAvailableModels() {
         this.modelNames = []
