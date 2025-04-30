@@ -14,7 +14,7 @@
               label="available stored events" hide-hint :options="storedTaskList" dense dark stack-label
               @update:model-value="loadTask" />
         </div>
-        <q-card class="q-pb-xs q-pt-xs q-ma-sm" bordered>
+        <q-card v-if="task_list.length > 0" class="q-pb-xs q-pt-xs q-ma-sm" bordered>
             <q-list bordered separator dense>
             <div v-for="(task, index) in task_list" :key="index">
               <q-item clickable dark dense @click="selectTask">
@@ -144,7 +144,7 @@
             <q-btn v-if="!savedTask" class="col q-ma-sm" color="grey-8" size="sm" dense icon="fa-solid fa-save" @click="saveEventList"
             style="font-size: 10px"><q-tooltip>save event to model</q-tooltip></q-btn>
             <q-btn class="col q-ma-sm" color="negative" size="sm" dense icon="fa-solid fa-trash" @click="deleteEventFromList"
-            style="font-size: 10px"><q-tooltip>delete event from list</q-tooltip></q-btn>
+            style="font-size: 10px"><q-tooltip>delete event from model</q-tooltip></q-btn>
           </div>
       </div>
     </q-card>

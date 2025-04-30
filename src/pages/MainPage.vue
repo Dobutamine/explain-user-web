@@ -143,7 +143,7 @@
 
             <q-tab name="task_scheduler">
               <q-icon name="fa-solid fa-list-check" size="xs"></q-icon>
-              <q-tooltip>task scheduler</q-tooltip>
+              <q-tooltip>event scheduler</q-tooltip>
             </q-tab>
           </q-tabs>
 
@@ -232,6 +232,18 @@
               <q-icon name="fa-solid fa-desktop" size="xs"></q-icon>
               <q-tooltip>monitoring</q-tooltip>
             </q-tab>
+            <q-tab name="circulation">
+              <q-icon name="fa-solid fa-heart" size="xs"></q-icon>
+              <q-tooltip>monitoring</q-tooltip>
+            </q-tab>
+            <q-tab name="respiration">
+              <q-icon name="fa-solid fa-lungs" size="xs"></q-icon>
+              <q-tooltip>monitoring</q-tooltip>
+            </q-tab>
+            <q-tab name="other">
+              <q-icon name="fa-solid fa-list" size="xs"></q-icon>
+              <q-tooltip>monitoring</q-tooltip>
+            </q-tab>
 
           </q-tabs>
           <q-tab-panels v-model="tab_right" keep-alive style="background-color: black">
@@ -245,6 +257,54 @@
               }">
                 <BigNumbersComponent></BigNumbersComponent>
                 <div v-for="enabled_numeric in state.configuration.enabled_monitors.general">
+                  <NumericsComponent :title="state.configuration.monitors[enabled_numeric].title"
+                    :collapsed="state.configuration.monitors[enabled_numeric].collapsed"
+                    :parameters="state.configuration.monitors[enabled_numeric].parameters"></NumericsComponent>
+                </div>
+
+              </q-scroll-area>
+            </q-tab-panel>
+            <q-tab-panel name="circulation">
+              <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
+                right: '5px',
+                borderRadius: '5px',
+                background: 'black',
+                width: '5px',
+                opacity: 0.5
+              }">
+                <div v-for="enabled_numeric in state.configuration.enabled_monitors.circulation">
+                  <NumericsComponent :title="state.configuration.monitors[enabled_numeric].title"
+                    :collapsed="state.configuration.monitors[enabled_numeric].collapsed"
+                    :parameters="state.configuration.monitors[enabled_numeric].parameters"></NumericsComponent>
+                </div>
+
+              </q-scroll-area>
+            </q-tab-panel>
+            <q-tab-panel name="respiration">
+              <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
+                right: '5px',
+                borderRadius: '5px',
+                background: 'black',
+                width: '5px',
+                opacity: 0.5
+              }">
+                <div v-for="enabled_numeric in state.configuration.enabled_monitors.respiration">
+                  <NumericsComponent :title="state.configuration.monitors[enabled_numeric].title"
+                    :collapsed="state.configuration.monitors[enabled_numeric].collapsed"
+                    :parameters="state.configuration.monitors[enabled_numeric].parameters"></NumericsComponent>
+                </div>
+
+              </q-scroll-area>
+            </q-tab-panel>
+            <q-tab-panel name="other">
+              <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
+                right: '5px',
+                borderRadius: '5px',
+                background: 'black',
+                width: '5px',
+                opacity: 0.5
+              }">
+                <div v-for="enabled_numeric in state.configuration.enabled_monitors.other">
                   <NumericsComponent :title="state.configuration.monitors[enabled_numeric].title"
                     :collapsed="state.configuration.monitors[enabled_numeric].collapsed"
                     :parameters="state.configuration.monitors[enabled_numeric].parameters"></NumericsComponent>
