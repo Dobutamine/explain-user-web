@@ -305,6 +305,7 @@ export class Ecls extends BaseModelClass {
     this.temp_gas = 37.0; // temperature of the oxygenator gas (°C)
     this.humidity_gas = 0.5; // humidity of the oxygenator gas (0-1)
     this.pump_rpm = 1500; // rotations of the centrifugal pump (rpm)
+    this.ecls_mode = "VA"
     this.components = {};
 
     // initialize the dependent parameters
