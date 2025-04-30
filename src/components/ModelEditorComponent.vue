@@ -183,9 +183,6 @@
               </div>
 
               <div v-if="field.type == 'function'">
-                <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
-                  {{ field.caption }}
-                </div>
                 <div v-for="(arg, index_arg) in field.args" :key="index_arg">
                   <!-- <div class="q-ml-md q-mr-md text-left text-white" :style="{ 'font-size': '10px' }">
                         {{ arg.caption }}

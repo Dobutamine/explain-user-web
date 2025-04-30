@@ -83,6 +83,7 @@ self.onmessage = (e) => {
           model["DataCollector"].set_sample_interval_slow(e.data.payload);
           break;
         case "property_value":
+          console.log("ModelEngine: task scheduler request: ", e.data.payload )
           set_property(JSON.parse(e.data.payload));
           break;
       }

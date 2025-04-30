@@ -12,6 +12,29 @@ export class Circulation extends BaseModelClass {
     //   delta: 0.01,
     //   rounding: 2,
     // },
+    {
+      target: "change_svr",
+      type: "function",
+      caption: "change_svc",
+      args: [
+        {
+          caption: "u_vol",
+          target: "u_vol",
+          type: "number",
+          factor: 1000.0,
+          delta: 0.1,
+          rounding: 1,
+        },
+        {
+          caption: "timmie",
+          target: "timmie",
+          type: "number",
+          factor: 1000.0,
+          delta: 0.1,
+          rounding: 1,
+        }
+      ]
+    }
   ];
 
   /*
@@ -54,6 +77,9 @@ export class Circulation extends BaseModelClass {
     this._update_counter = 0.0; // update interval counter (s)
   }
 
+  change_svr(factor) {
+    this.sar_factor = factor * 10
+  }
   calc_model() {
     this._update_counter += this._t;
     if (this._update_counter > this._update_interval) {
