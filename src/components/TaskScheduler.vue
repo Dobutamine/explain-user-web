@@ -9,6 +9,11 @@
                 style="font-size: 12px" squared>
           </q-input>
         </div>
+        <div v-if="storedTaskList.length > 0" class="col q-ma-sm q-ml-md q-mr-md">
+          <q-select class="q-pa-xs col" v-model="selectedTask" style="font-size: 12px" square
+              label="available stored events" hide-hint :options="storedTaskList" dense dark stack-label
+              @update:model-value="loadTask" />
+        </div>
         <q-card class="q-pb-xs q-pt-xs q-ma-sm" bordered>
             <q-list bordered separator dense>
             <div v-for="(task, index) in task_list" :key="index">
@@ -128,11 +133,6 @@
         <div class="q-ma-sm text-overline" style="text-align: center;">
           {{statusMessage}}
         </div>
-        <div v-if="storedTaskList.length > 0" class="col q-ma-sm q-ml-md q-mr-md">
-          <q-select class="q-pa-xs col" v-model="selectedTask" style="font-size: 12px" square
-              label="available stored events" hide-hint :options="storedTaskList" dense dark stack-label
-              @update:model-value="loadTask" />
-        </div>
         
         <div class="row q-ma-sm q-ml-xl q-mr-xl">
             <q-btn class="col q-ma-sm" color="primary" size="sm" dense icon="fa-solid fa-add" @click="addTask"
@@ -141,7 +141,7 @@
               style="font-size: 10px"><q-tooltip>run task</q-tooltip></q-btn>
             <q-btn class="col q-ma-sm" color="secondary" size="sm" dense icon="fa-solid fa-cancel" @click="cancelTasks"
             style="font-size: 10px"><q-tooltip>cancel task</q-tooltip></q-btn>
-            <q-btn class="col q-ma-sm" color="grey-8" size="sm" dense icon="fa-solid fa-save" @click="saveEventList"
+            <q-btn v-if="!savedTask" class="col q-ma-sm" color="grey-8" size="sm" dense icon="fa-solid fa-save" @click="saveEventList"
             style="font-size: 10px"><q-tooltip>save task to server</q-tooltip></q-btn>
             <q-btn class="col q-ma-sm" color="negative" size="sm" dense icon="fa-solid fa-trash" @click=""
             style="font-size: 10px"><q-tooltip>delete task from server</q-tooltip></q-btn>
@@ -170,7 +170,7 @@
         isEnabled: true,
         statusMessage: "no tasks scheduled",
         statusMessageTimer: null,
-        savedTask: false,
+        savedTask: true,
         selectedTask: "",
         storedTaskList: [],
         title: "EVENT SCHEDULER",
@@ -187,13 +187,21 @@
     },
     methods: {
       loadTask() {
-
+        // process the saved task
+        this.eventName = this.selectedTask
+        this.task_list = [...this.state.tasks[this.selectedTask]]
+        // process the current values
+        this.task_list.forEach(task => {
+          task.value = explain.modelState.models[task.model][task.prop]
+        })
       },
       addTask() {
         let task = {
           model: "", 
           prop: "", 
           type: "",
+          in: 5,
+          at: 0,
           _model_interface: {}
         }
         this.task_list.push(task)
@@ -204,6 +212,7 @@
         this.statusMessage = "no tasks scheduled"
         this.savedTask = false
         this.eventName = "new_event"
+        this.selectedTask = ""
       },
       modelChanged(index) {
         // find the property list this.task_list[index]._model_interface
@@ -342,7 +351,8 @@
         // clear the list
         this.task_list = []
         this.statusMessage = "no tasks scheduled"
-        this.savedTask = false
+        this.savedTask = true
+        this.selectedTask = ""
         this.eventName = "new_event"
       },
       processAvailableModels() {
