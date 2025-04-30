@@ -138,13 +138,13 @@
             <q-btn class="col q-ma-sm" color="primary" size="sm" dense icon="fa-solid fa-add" @click="addTask"
               style="font-size: 10px"><q-tooltip>add task</q-tooltip></q-btn>
             <q-btn class="col q-ma-sm" color="primary" size="sm" dense icon="fa-solid fa-play" @click="runAllTasks"
-              style="font-size: 10px"><q-tooltip>run task</q-tooltip></q-btn>
+              style="font-size: 10px"><q-tooltip>run event</q-tooltip></q-btn>
             <q-btn class="col q-ma-sm" color="secondary" size="sm" dense icon="fa-solid fa-cancel" @click="cancelTasks"
-            style="font-size: 10px"><q-tooltip>cancel task</q-tooltip></q-btn>
+            style="font-size: 10px"><q-tooltip>cancel event</q-tooltip></q-btn>
             <q-btn v-if="!savedTask" class="col q-ma-sm" color="grey-8" size="sm" dense icon="fa-solid fa-save" @click="saveEventList"
-            style="font-size: 10px"><q-tooltip>save task to server</q-tooltip></q-btn>
-            <q-btn class="col q-ma-sm" color="negative" size="sm" dense icon="fa-solid fa-trash" @click=""
-            style="font-size: 10px"><q-tooltip>delete task from server</q-tooltip></q-btn>
+            style="font-size: 10px"><q-tooltip>save event to model</q-tooltip></q-btn>
+            <q-btn class="col q-ma-sm" color="negative" size="sm" dense icon="fa-solid fa-trash" @click="deleteEventFromList"
+            style="font-size: 10px"><q-tooltip>delete event from list</q-tooltip></q-btn>
           </div>
       </div>
     </q-card>
@@ -206,6 +206,22 @@
         }
         this.task_list.push(task)
         this.statusMessage = ""
+      },
+      deleteEventFromList() {
+        delete this.state.tasks[this.eventName]
+        this.task_list = []
+        this.statusMessage = "no tasks scheduled"
+        this.savedTask = false
+        this.eventName = "new_event"
+        this.selectedTask = ""
+        this.storedTaskList = []
+        if (this.state.tasks) {
+          Object.keys(this.state.tasks).forEach(task_name => {
+            this.storedTaskList.push(task_name)
+          })
+        }
+  
+
       },
       cancelTasks() {
         this.task_list = []
@@ -366,8 +382,8 @@
         this.storedTaskList = []
         if (this.state.tasks) {
           Object.keys(this.state.tasks).forEach(task_name => {
-          this.storedTaskList.push(task_name)
-        })
+            this.storedTaskList.push(task_name)
+          })
         }
       }
     },
