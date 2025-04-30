@@ -4,11 +4,11 @@
         {{ title }}
       </div>
       <div v-if="isEnabled">
-        <div v-if="task_list.length > 0" class="col">
-                <q-input class="q-pa-xs col" v-model="eventName" label="event name"  dark hide-hint filled dense stack-label
-                      style="font-size: 12px" squared>
-                </q-input>
-            </div>
+        <div v-if="task_list.length > 0" class="col q-ma-sm">
+          <q-input class="q-pa-xs col" v-model="eventName" label="current event name"  dark hide-hint filled dense stack-label
+                style="font-size: 12px" squared>
+          </q-input>
+        </div>
         <q-card class="q-pb-xs q-pt-xs q-ma-sm" bordered>
             <q-list bordered separator dense>
             <div v-for="(task, index) in task_list" :key="index">
@@ -128,6 +128,12 @@
         <div class="q-ma-sm text-overline" style="text-align: center;">
           {{statusMessage}}
         </div>
+        <div v-if="storedTaskList.length > 0" class="col q-ma-sm q-ml-md q-mr-md">
+          <q-select class="q-pa-xs col" v-model="selectedTask" style="font-size: 12px" square
+              label="available stored events" hide-hint :options="storedTaskList" dense dark stack-label
+              @update:model-value="loadTask" />
+        </div>
+        
         <div class="row q-ma-sm q-ml-xl q-mr-xl">
             <q-btn class="col q-ma-sm" color="primary" size="sm" dense icon="fa-solid fa-add" @click="addTask"
               style="font-size: 10px"><q-tooltip>add task</q-tooltip></q-btn>
@@ -164,20 +170,25 @@
         isEnabled: true,
         statusMessage: "no tasks scheduled",
         statusMessageTimer: null,
-        savedState: false,
+        savedTask: false,
+        selectedTask: "",
+        storedTaskList: [],
         title: "EVENT SCHEDULER",
         eventName: "new_event",
         modelNames: [],
         selectedModelName: "",
         modelProps: ["pres"],
         selectedModelProp: "",
-        times: [0, 1, 3, 5, 7, 10],
+        times: [0, 1, 3, 5, 10, 20, 30, 60, 120, 240, 300, 600],
         selectedAtTime: 0,
         selectedInTime: 0,
         task_list: []
       };
     },
     methods: {
+      loadTask() {
+
+      },
       addTask() {
         let task = {
           model: "", 
@@ -191,7 +202,7 @@
       cancelTasks() {
         this.task_list = []
         this.statusMessage = "no tasks scheduled"
-        this.savedState = false
+        this.savedTask = false
         this.eventName = "new_event"
       },
       modelChanged(index) {
@@ -220,7 +231,7 @@
         if (!this.eventName.endsWith('*')) {
           this.eventName = this.eventName + "*"
         }
-        this.savedState = false
+        this.savedTask = false
 
       },
       inTimeChanged() {},
@@ -317,11 +328,12 @@
         if (!this.state.tasks) {
           this.state.tasks = {}
         }
-        this.state.tasks[this.eventName] = new_task_list
         if (this.eventName.endsWith('*')) {
-          this.eventName.slice(0, -1);
+          this.eventName = this.eventName.slice(0, -1);
         }
-        this.savedState = true
+        this.state.tasks[this.eventName] = new_task_list
+        this.savedTask = true
+        explain.getModelState()
       },
       runAllTasks() {
         for (let i = 0; i < this.task_list.length; i++) {
@@ -330,7 +342,7 @@
         // clear the list
         this.task_list = []
         this.statusMessage = "no tasks scheduled"
-        this.savedState = false
+        this.savedTask = false
         this.eventName = "new_event"
       },
       processAvailableModels() {
@@ -340,6 +352,13 @@
             this.modelNames = [...Object.keys(explain.modelState.models)].sort();
           }
         } catch { }
+
+        this.storedTaskList = []
+        if (this.state.tasks) {
+          Object.keys(this.state.tasks).forEach(task_name => {
+          this.storedTaskList.push(task_name)
+        })
+        }
       }
     },
     beforeUnmount() {
