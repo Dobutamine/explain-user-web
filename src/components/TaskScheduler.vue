@@ -108,8 +108,8 @@
                       :options="times" dense dark stack-label style="font-size: 12px" @update:model-value="atTimeChanged" />
                     </div>
 
-                    <div v-if="task.prop" class="col-1 q-mt-md">
-                      <q-btn class="q-ml-sm" color="primary" size="xs" dense @click="runPartTask(index)"
+                    <div v-if="task_list.length > 0" class="col-1 q-mt-md">
+                      <q-btn v-if="task.prop" class="q-ml-sm" color="primary" size="xs" dense @click="runPartTask(index)"
                       icon="fa-solid fa-play" style="font-size: 8px"><q-tooltip>run</q-tooltip></q-btn>
                       <q-btn class="q-ml-sm" color="negative" size="xs" dense @click="removePartTask(index)"
                       icon="fa-solid fa-trash" style="font-size: 8px"><q-tooltip>delete</q-tooltip></q-btn>
@@ -120,14 +120,17 @@
             </div>
           </q-list>
         </q-card>
+        <div class="q-ma-sm text-overline" style="text-align: center;">
+          {{statusMessage}}
+        </div>
         <div class="row q-ma-sm q-ml-xl q-mr-xl">
             <q-btn class="col q-ma-sm" color="primary" size="sm" dense icon="fa-solid fa-add" @click="addTask"
               style="font-size: 10px"><q-tooltip>add task</q-tooltip></q-btn>
             <q-btn class="col q-ma-sm" color="primary" size="sm" dense icon="fa-solid fa-play" @click="runAllTasks"
               style="font-size: 10px"><q-tooltip>run task</q-tooltip></q-btn>
-            <q-btn class="col q-ma-sm" color="secondary" size="sm" dense icon="fa-solid fa-cancel" @click=""
+            <q-btn class="col q-ma-sm" color="secondary" size="sm" dense icon="fa-solid fa-cancel" @click="cancelTasks"
             style="font-size: 10px"><q-tooltip>cancel task</q-tooltip></q-btn>
-            <q-btn class="col q-ma-sm" color="grey-8" size="sm" dense icon="fa-solid fa-upload" @click=""
+            <q-btn class="col q-ma-sm" color="grey-8" size="sm" dense icon="fa-solid fa-save" @click="saveEventList"
             style="font-size: 10px"><q-tooltip>save task to server</q-tooltip></q-btn>
             <q-btn class="col q-ma-sm" color="negative" size="sm" dense icon="fa-solid fa-trash" @click=""
             style="font-size: 10px"><q-tooltip>delete task from server</q-tooltip></q-btn>
@@ -138,11 +141,26 @@
   
   <script>
   import { explain } from "../boot/explain";
+  import { useStateStore } from 'src/stores/state';
+  import { useUserStore } from 'src/stores/user';
+
   export default {
+    setup() {
+      const state = useStateStore();
+      const user = useUserStore();
+
+      return {
+        state,
+        user
+      }
+    },
     data() {
       return {
         isEnabled: true,
+        statusMessage: "no tasks scheduled",
+        statusMessageTimer: null,
         title: "EVENT SCHEDULER",
+        eventName: "event_1",
         modelNames: [],
         selectedModelName: "",
         modelProps: ["pres"],
@@ -159,18 +177,14 @@
           model: "", 
           prop: "", 
           type: "",
-          caption: "",
-          value: 0.0, 
-          target: 0.0, 
-          in: 5.0, 
-          at: 0.0,
-          ll: -100000,
-          ul: 1000000,
-          delta: 1,
           _model_interface: {}
         }
         this.task_list.push(task)
-
+        this.statusMessage = ""
+      },
+      cancelTasks() {
+        this.task_list = []
+        this.statusMessage = "no tasks scheduled"
       },
       modelChanged(index) {
         // find the property list this.task_list[index]._model_interface
@@ -280,12 +294,25 @@
       },
       selectTask(e) {
       },
+      saveEventList() {
+        // rebuild the task list 
+        let new_task_list = []
+        this.task_list.forEach(task => {
+          new_task_list.push(task)
+        })
+        if (!this.state.tasks) {
+          this.state.tasks = {}
+        }
+        this.state.tasks[this.eventName] = new_task_list
+        console.log(this.state.tasks)
+      },
       runAllTasks() {
         for (let i = 0; i < this.task_list.length; i++) {
           this.runPartTask(i, false)
         }
         // clear the list
         this.task_list = []
+        this.statusMessage = "no tasks scheduled"
       },
       processAvailableModels() {
         this.modelNames = []

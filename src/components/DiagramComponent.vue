@@ -155,6 +155,7 @@ export default {
 
       // define a pixi app with the canvas as view
       pixiApp = new PIXI.Application({
+        powerPreference: 'high-performance',
         transparent: true,
         antialias: true,
         backgroundColor: 0x111111,
@@ -167,7 +168,6 @@ export default {
           click: false,
           wheel: false,
         }
-
       });
 
       // allow sortable children
