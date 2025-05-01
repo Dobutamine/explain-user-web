@@ -51,7 +51,7 @@
           <div>pump (rpm)</div>
           <q-knob show-value font-size="12px" v-model="pump_rpm" size="50px" :min="0" :max="5000" :step="1"
             :thickness="0.22" color="teal" track-color="grey-3" class="col"
-            @update:model-value="update_ecls_settings">
+            @update:model-value="set_pump_speed">
             {{ pump_rpm }}
           </q-knob>
           <div :style="{ fontSize: '10px' }">cmh2o</div>
@@ -249,6 +249,11 @@
         } else {
           this.rtWindow = 3.0
           explain.setSampleInterval(0.005)
+        }
+      },
+      set_pump_speed() {
+        if (this.update_model) {
+          explain.callModelFunction("Ecls.set_pump_speed", [parseFloat(this.pump_rpm)])
         }
       },
       set_fio2() {

@@ -1019,11 +1019,11 @@ export default {
           break;
         case "BloodConnector":
           this.compPicto = "blood.png";
-          models = ["BloodResistor", "BloodValve", "BloodVesselResistor", "HeartValve"];
+          models = ["BloodVesselResistor", "HeartValve", "Resistor"];
           break;
         case "Shunt":
           this.compPicto = "blood.png";
-          models = ["BloodResistor", "BloodValve"];
+          models = ["BloodVesselResistor", "HeartValve", "Resistor"];
           break;
         case "GasCompartment":
           this.compPicto = "gas_container.png";
@@ -1031,7 +1031,7 @@ export default {
           break;
         case "GasConnector":
           this.compPicto = "blood.png";
-          models = ["GasResistor", "AirwayResistor"];
+          models = ["AirwayResistor", "Resistor"];
           break;
         case "Container":
           this.compPicto = "container.png";

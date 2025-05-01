@@ -86,7 +86,6 @@ export class Resistor extends BaseModelClass {
     this._r_k = 0; // non-linear resistance factor (unitless)
   }
 
-
   calc_model() {
     // find the up- and downstream components and store the references
     this._comp_from = this._model_engine.models[this.comp_from];

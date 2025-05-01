@@ -47,7 +47,7 @@ export class BaseModelClass {
             args: <list> a list of arguments as above
     }
   */
-  model_interface = []        // model interface list as described above
+  static model_interface = []        // model interface list as described above
 
   constructor(model_ref, name = "") {
     // initialize independent properties which all models implement
