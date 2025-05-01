@@ -20,6 +20,7 @@ export class Ecls extends BaseModelClass {
     // independent properties
     this.ecls_running = true              // flag whether the ecls is running
     this.ecls_mode = "VA"                 // ecls mode (VA/VV)
+    this.pres_atm = 760;                  // atmospheric pressure (mmHg)
     this.tubing_clamped = true;           // tubing clamped
     this.tubing_diameter = 0.25           // tubing diameter (inch)
     this.tubing_elastance = 11600         // tubing elastance (mmHg/L)
@@ -29,12 +30,12 @@ export class Ecls extends BaseModelClass {
     this.drainage_cannula_length = 0.11   // drainage cannula length (m)
     this.return_cannula_diameter = 12     // return cannula diameter (Fr)
     this.return_cannula_length = 0.11     // return cannula length (m)
-    this.pump_volume = 0.8                // volume of the pump (l)
+    this.pump_volume = 0.014              // volume of the pump (l)
     this.pump_resistance = 50;            // resistance of the pump (mmHg/l*s)
-    this.pump_elastance = 5000;           // elastance of the pump (mmHg/L)
-    this.oxy_volume = 0.8                 // volume of the oxygenator (l)
+    this.pump_elastance = 15000;          // elastance of the pump (mmHg/L)
+    this.oxy_volume = 0.031               // volume of the oxygenator (l)
     this.oxy_resistance = 50;             // resistance of the oxygenator (mmHg/l*s)
-    this.oxy_elastance = 5000;            // elastance of the oxygenator (mmHg/L)
+    this.oxy_elastance = 15000;           // elastance of the oxygenator (mmHg/L)
     this.oxy_dif_o2 = 0.001;              // oxygenator oxygen diffusion constant (mmol/mmHg)
     this.oxy_dif_co2 = 0.001;             // oxygenator carbon dioxide diffusion constant (mmol/mmHg)
     this.gas_flow = 0.5;                  // gas flowing through the gas part of the oxygenator (L/min)
