@@ -196,8 +196,8 @@ export class Ecls extends BaseModelClass {
     this._tubin.u_vol = this.tubin_volume
     this._tubin.el_base = this.tubing_elastance
 
-    this._tubout.vol = tubout_volume
-    this._tubout.u_vol = tubout_volume
+    this._tubout.vol = this.tubout_volume
+    this._tubout.u_vol = this.tubout_volume
     this._tubout.el_base = this.tubing_elastance
   }
 
@@ -212,6 +212,8 @@ export class Ecls extends BaseModelClass {
     this._oxy.u_vol = this.oxy_volume
     this._oxy.el_base = this.oxy_elastance
   }
+
+
 
 
   _calc_tube_volume(diameter, length) {

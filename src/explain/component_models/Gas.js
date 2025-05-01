@@ -120,6 +120,7 @@ export class Gas extends BaseModelClass {
     // set the atmospheric pressure and global gas temperature in all gas containing models
     Object.values(this._model_engine.models).forEach((model) => {
       if (this._gas_containing_modeltypes.includes(model.model_type)) {
+        console.log('Setting gas properties on: ', model.name)
         model.pres_atm = this.pres_atm;
         model.temp = this.temp;
         model.target_temp = this.temp;
