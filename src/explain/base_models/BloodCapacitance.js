@@ -69,7 +69,6 @@ export class BloodCapacitance extends Capacitance {
   constructor(model_ref, name = "") {
     super(model_ref, name);
 
-
     // initialize addtional independent properties
     this.temp = 0.0; // blood temperature (dgs C)
     this.viscosity = 6.0; // blood viscosity (centiPoise = Pa * s)
