@@ -57,6 +57,8 @@ export class Ecls extends BaseModelClass {
     this.return_resistance = 20;          // resistance of the return cannula (depending on length and diameter) mmHg/l*s
     this.tubin_resistance = 20;           // resistance of the tubing in (depending on length and diameter) mmHg/l*s
     this.tubout_resistance = 20;          // resistance of the tubing out (depending on length and diameter) mmHg/l*s
+    this.tubin_volume = 0.0;              // volume of the tubing in (L)
+    this.tubout_volume = 0.0;             // volume of the tubing out (L)
 
     // local properties - components
     this._drainage = null                 // reference to the drainage cannula (Resistor)
@@ -102,6 +104,14 @@ export class Ecls extends BaseModelClass {
     this._gasoxy = this._model_engine.models["ECLS_GASOXY"]
     this._gasoxy_gasout = this._model_engine.models["ECLS_OXY_GASOUT"]
     this._gasout = this._model_engine.models["ECLS_GASOUT"]
+
+    // setup blood containing system
+    this.calc_resistances()
+    this.calc_tubing_volumes()
+    this.set_pump_volume()
+    this.set_oxygenator_volume()
+
+    // setup gas containing system
   }
 
   calc_model() {
@@ -152,83 +162,57 @@ export class Ecls extends BaseModelClass {
     }
   }
 
-  _set_cannula_resistance() {
-    // diameter in Fr and length in meters
-    let _drainage_res = this._calc_tube_resistance(
-      this.drainage_cannula_diameter * 0.00033,
-      this.drainage_cannula_length);
+  calc_resistances() {
+    // cannula diameter in Fr, tubing diameter in inch and length in meters
 
-    let _return_res = this._calc_tube_resistance(
-        this.return_cannula_diameter * 0.00033,
-        this.return_cannula_length);
-
-    // set the resistances of the cannulas
-    this._drainage.r_for = _drainage_res
-    this._drainage.r_back = _drainage_res
-
-    this._return.r_for = _return_res
-    this._return.r_back = _return_res
+    // RA->TUBIN (drainage cannula)
+    this.drainage_resistance = this._calc_tube_resistance(this.drainage_cannula_diameter * 0.00033, this.drainage_cannula_length);
+    this.tubin_resistance = this._calc_tube_resistance(this.tubing_diameter * 0.0254, this.tubing_in_length);
+    this._drainage.r_for = this.drainage_resistance + this.tubin_resistance
+    this._drainage.r_back = this.drainage_resistance + this.tubin_resistance
+    // set the resistance TUBIN->PUMP
+    this._tubin_pump.r_for = this.pump_resistance;
+    this._tubin_pump.r_back = this.pump_resistance;
+    // PUMP -> OXY
+    this._pump_oxy.r_for = this.oxy_resistance
+    this._pump_oxy.r_back = this.oxy_resistance
+    // OXY -> TUBOUT
+    this.tubout_resistance = this._calc_tube_resistance(this.tubing_diameter * 0.0254, this.tubing_out_length);
+    this._oxy_tubout.r_for =  this.tubout_resistance
+    this._oxy_tubout.r_back = this.tubout_resistance
+    // TUBOUT -> AAR (return cannula)
+    this.return_resistance = this._calc_tube_resistance(this.return_cannula_diameter * 0.00033, this.return_cannula_length);
+    this._return.r_for = this.return_resistance
+    this._return.r_back = this.return_resistance
   }
-  _set_tubing_resistance() {
-    // calculate the resistance of the tubing
+
+  calc_tubing_volumes() {
     // diameter in inch and length in meters
-    let _tubin_res = this._calc_tube_resistance(
-      this.tubing_diameter * 0.0254,
-      this.tubing_in_length);
-
-    let _tubout_res = this._calc_tube_resistance(
-        this.tubing_diameter * 0.0254,
-        this.tubing_in_length);
-
-    this._tubin_pump.r_for = _tubin_res
-    this._tubin_pump.r_back = _tubin_res
-
-    this._oxy_tubout.r_for = _tubout_res
-    this._oxy_tubout.r_back = _tubout_res
-  }
-  
-  _set_tubing_volume() {
-    // diameter in inch and length in meters
-    let _tubin_vol = this._calc_tube_volume(
-      this.tubing_diameter * 0.0254,
-      this.tubing_in_length);
-
-    let _tubout_vol = this._calc_tube_volume(
-        this.tubing_diameter * 0.0254,
-        this.tubing_out_length);
+    this.tubin_volume = this._calc_tube_volume(this.tubing_diameter * 0.0254, this.tubing_in_length);
+    this.tubout_volume = this._calc_tube_volume(this.tubing_diameter * 0.0254, this.tubing_out_length);
     
     // set the volumes of the tubing
-    this._tubin.vol = _tubin_vol
-    this._tubin.u_vol = _tubin_vol
+    this._tubin.vol = this.tubin_volume
+    this._tubin.u_vol = this.tubin_volume
     this._tubin.el_base = this.tubing_elastance
 
-    this._tubout.vol = _tubout_vol
-    this._tubout.u_vol = _tubout_vol
+    this._tubout.vol = tubout_volume
+    this._tubout.u_vol = tubout_volume
     this._tubout.el_base = this.tubing_elastance
   }
 
-  _set_pump_volume() {
-    this._pump_head.vol = this.pump_head_volume
-    this._pump_head.u_vol = this.pump_head_volume
+  set_pump_volume() {
+    this._pump.vol = this.pump_volume
+    this._pump.u_vol = this.pump_volume
+    this._pump.el_base = this.pump_elastance
   }
 
-  _set_pump_resistance() {
-    this._pump_head.vol = this.pump_head_volume
-    this._pump_head.u_vol = this.pump_head_volume
-  }
-
-  _set_oxygenator_volume() {
-    // oxygenator properties
+  set_oxygenator_volume() {
     this._oxy.vol = this.oxy_volume
     this._oxy.u_vol = this.oxy_volume
-  }
-  _set_oxygenator_resistance() {
-
+    this._oxy.el_base = this.oxy_elastance
   }
 
-  _set_gas_properties() {
-
-  }
 
   _calc_tube_volume(diameter, length) {
     // return the volume in liters
