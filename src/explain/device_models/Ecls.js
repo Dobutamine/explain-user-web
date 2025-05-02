@@ -13,10 +13,50 @@ export class Ecls extends BaseModelClass {
       type: "boolean"
     },
     {
-      caption: "ecls clamped",
+      caption: "tubing clamped",
       target: "tubing_clamped",
       type: "boolean"
-    }
+    },
+    {
+      caption: "pump rotations (rpm)",
+      target: "pump_rpm",
+      type: "number",
+      factor: 1.0,
+      delta: 50,
+      rounding: 0,
+      ll: 0,
+      ul: 5000
+    },
+    {
+      caption: "gas flow (l/min)",
+      target: "gas_flow",
+      type: "number",
+      factor: 1.0,
+      delta: 0.1,
+      rounding: 1,
+      ll: 0.0,
+      ul: 10.0,
+    },
+    {
+      caption: "fio2 blender (%)",
+      target: "fio2_gas",
+      type: "number",
+      factor: 100,
+      delta: 1,
+      rounding: 0,
+      ll: 21.0,
+      ul: 100.0,
+    },
+    {
+      caption: "co2 flow (ml/min)",
+      target: "co2_gas_flow",
+      type: "number",
+      factor: 1000,
+      delta: 1,
+      rounding: 0,
+      ll: 0.0,
+      ul: 1000.0,
+    },
   ];
 
   constructor(model_ref, name = "") {
@@ -87,6 +127,9 @@ export class Ecls extends BaseModelClass {
     this._update_counter = 0.0;           // update counter (s)
     this._bloodgas_interval = 1.0;        // interval at which the blood gases are calculated (s)
     this._bloodgas_counter = 0.0;         // counter of the blood gas interval (s)
+    this._blood_flow_avg_time = 1.0    
+    this._blood_flow_avg_counter = 0.0     
+    this._blood_flow_list = []
   }
 
   init_model(args = {}) {
@@ -135,13 +178,22 @@ export class Ecls extends BaseModelClass {
   }
 
   calc_model() {
+    // get an average blood flow
+    // if (this._blood_flow_avg_counter > this._blood_flow_avg_time) {
+    //   this._blood_flow_list.shift();
+    //   this.blood_flow = this._blood_flow_list.reduce((acc, val) => acc + val, 0) / this._blood_flow_list.length;
+    // } else {
+    //   this._blood_flow_avg_counter += this._t
+    // }
+    // this._blood_flow_list.push(this._return.flow * 60)
+
     this._update_counter += this._t
     if (this._update_counter > this._update_interval && this.ecls_running) {
       this._update_counter = 0;
 
       // get the flow
-      this.blood_flow = this._return.flow;
-      
+      this.blood_flow = this._return.flow * 60.0
+
       // get the pressures
       this.p_ven = this._tubin.pres;
       this.p_int = this._pump.pres;
@@ -150,7 +202,18 @@ export class Ecls extends BaseModelClass {
       // calculate the bloodgas
       this.calc_bloodgas()
 
-      // set the clamp
+      // set the pump rpm
+      this._pump.pump_rpm = this.pump_rpm
+
+      // update the gas flow
+      this._gasin_oxy.r_for = (this._gasin.pres - this.pres_atm) / (this.gas_flow / 60.0);
+      this._gasin_oxy.r_back = this._gasin_oxy.r_for;
+
+      // update gas source composition
+      this._fico2_gas = (this.co2_gas_flow * 0.001) / this.gas_flow;
+      calc_gas_composition(this._gasin, this.fio2_gas, this.temp_gas, this.humidity_gas, this._fico2_gas);
+
+      // update the clamp
       this._drainage.no_flow = this.tubing_clamped
       this._return.no_flow = this.tubing_clamped
     }
@@ -161,6 +224,7 @@ export class Ecls extends BaseModelClass {
     this.pump_rpm = new_rpm
     this._pump.pump_rpm = this.pump_rpm
   }
+
   switch_blood_components(state = true) {
     this._drainage.is_enabled = state
     this._drainage.no_flow = this.tubing_clamped
