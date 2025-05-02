@@ -196,7 +196,7 @@ export class Ecls extends BaseModelClass {
  
     this._update_counter += this._t
     this._bloodgas_counter += this._t
-    
+
     if (this._update_counter > this._update_interval) {
       this._update_counter = 0;
 
@@ -204,10 +204,6 @@ export class Ecls extends BaseModelClass {
         this.switch_ecls(this.ecls_running)
         this._prev_ecls_state = this.ecls_running
       }
-
-      // get the flow
-      //this.blood_flow = this._return.flow * 60.0
-      
 
       // get the pressures
       this.p_ven = this._tubin.pres;
@@ -270,6 +266,76 @@ export class Ecls extends BaseModelClass {
   set_co2_flow(new_co2_flow) {
     if (new_co2_flow >= 0) {
       this.co2_gas_flow = new_co2_flow
+    }
+  }
+
+  set_tubing_diameter(new_diameter) {
+    // diameter in inch
+    if (new_diameter > 0) {
+      this.tubing_diameter = new_diameter
+
+      this.tubin_volume = this._calc_tube_volume(this.tubing_diameter * 0.0254, this.tubing_in_length);
+      this.tubout_volume = this._calc_tube_volume(this.tubing_diameter * 0.0254, this.tubing_out_length);
+      this._tubin.u_vol = this.tubin_volume
+      this._tubout.u_vol = this.tubout_volume
+
+      this.tubin_resistance = this._calc_tube_resistance(this.tubing_diameter * 0.0254, this.tubing_in_length);
+      this._drainage.r_for = this.drainage_resistance + this.tubin_resistance
+      this._drainage.r_back = this.drainage_resistance + this.tubin_resistance
+
+      this.tubout_resistance = this._calc_tube_resistance(this.tubing_diameter * 0.0254, this.tubing_out_length);
+      this._oxy_tubout.r_for =  this.tubout_resistance
+      this._oxy_tubout.r_back = this.tubout_resistance
+
+    }
+  }
+
+  set_tubing_in_length(new_length) {
+    // length in m
+    if (new_length > 0) {
+      this.tubing_in_length = new_length
+      this.tubin_volume = this._calc_tube_volume(this.tubing_diameter * 0.0254, this.tubing_in_length);
+      this._tubin.u_vol = this.tubin_volume
+
+      this.tubin_resistance = this._calc_tube_resistance(this.tubing_diameter * 0.0254, this.tubing_in_length);
+      this._drainage.r_for = this.drainage_resistance + this.tubin_resistance
+      this._drainage.r_back = this.drainage_resistance + this.tubin_resistance
+    }
+  }
+
+  set_tubing_out_length(new_length) {
+    // length in m
+    if (new_length > 0) {
+      this.tubing_out_length = new_length
+      this.tubout_volume = this._calc_tube_volume(this.tubing_diameter * 0.0254, this.tubing_out_length);
+      this._tubout.u_vol = this.tubout_volume
+
+      this.tubout_resistance = this._calc_tube_resistance(this.tubing_diameter * 0.0254, this.tubing_out_length);
+      this._oxy_tubout.r_for =  this.tubout_resistance
+      this._oxy_tubout.r_back = this.tubout_resistance
+    }
+
+  }
+
+  set_oxy_volume(new_volume) {
+    // volume in l
+    if (new_volume > 0) {
+      this.oxy_volume = new_volume
+    }
+  }
+
+  set_drainage_origin(new_target) {
+    this._drainage.comp_from = new_target
+  }
+
+  set_return_target(new_target) {
+    this._return.comp_to = new_target
+  }
+
+  set_pump_volume(new_volume) {
+    // volume in l
+    if (new_volume > 0) {
+      this.pump_volume = new_volume
     }
   }
 

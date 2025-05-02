@@ -21,12 +21,12 @@
           <q-toggle class="q-ml-sm q-pb-lg q-mr-sm" v-model="clamped" left-label label="clamped" dense size="sm"
             @update:model-value="set_clamp" />
         </div>
-        <div>
+        <!-- <div>
           <q-btn-toggle v-model="mode" color="grey-9" size="sm" text-color="white" toggle-color="primary" :options="[
             { label: 'VA-ECMO', value: 'VA' },
             { label: 'VV-ECMO', value: 'VV' },
           ]" @update:model-value="update_ecls_settings" />
-        </div>
+        </div> -->
 
 
         <div>
@@ -105,10 +105,9 @@
       </div>
   
       <!-- <div v-if="isEnabled && ecls_running" class="q-mt-md q-mb-md text-overline justify-center q-gutter-xs row">
-        <q-input v-model="et_tube_diameter" @update:model-value="set_ettube_diameter" color="blue" hide-hint filled
+        <q-input v-model="tubing" @update:model-value="set_ettube_diameter" color="blue" hide-hint filled
           label="et tube diameter (mm)" :min="2.0" :max="5.0" :step="0.5" dense stack-label type="number"
           style="font-size: 14px; width: 120px;" class="q-mr-sm text-center" squared>
-  
         </q-input>
         <q-input v-model="et_tube_length" @update:model-value="set_ettube_length" color="blue" hide-hint filled
           label="et tube length (mm)" :min="50" :max="110" :step="5" dense stack-label type="number"

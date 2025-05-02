@@ -54,6 +54,42 @@ export class Resistor extends BaseModelClass {
       target: "r_back_factor",
       type: "factor"
     },
+    {
+      type: "list",
+      caption: "comp from",
+      target: "comp_from",
+      options: [
+        "BloodCapacitance", 
+        "BloodTimeVaryingElastance", 
+        "BloodPump", 
+        "BloodVessel", 
+        "CapillaryBed", 
+        "CoronaryVessel", 
+        "HeartChamber",
+        "Airway",
+        "AlveolarSpace",
+        "GasCapacitance",
+        "BloodPump"
+      ]
+    },
+    {
+      type: "list",
+      caption: "comp to",
+      target: "comp_to",
+      options: [
+        "BloodCapacitance", 
+        "BloodTimeVaryingElastance", 
+        "BloodPump", 
+        "BloodVessel", 
+        "CapillaryBed", 
+        "CoronaryVessel", 
+        "HeartChamber",
+        "Airway",
+        "AlveolarSpace",
+        "GasCapacitance",
+        "BloodPump"
+      ]
+    }
     
   ]
 
