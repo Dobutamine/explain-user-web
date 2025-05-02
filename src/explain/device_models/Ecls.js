@@ -8,6 +8,11 @@ export class Ecls extends BaseModelClass {
   static model_type = "Ecls";
   static model_interface = [
     {
+      caption: "ecls enabled",
+      target: "ecls_running",
+      type: "boolean"
+    },
+    {
       caption: "ecls clamped",
       target: "tubing_clamped",
       type: "boolean"
@@ -18,7 +23,7 @@ export class Ecls extends BaseModelClass {
     super(model_ref, name);
 
     // independent properties
-    this.ecls_running = true              // flag whether the ecls is running
+    this.ecls_running = false             // flag whether the ecls is running
     this.ecls_mode = "VA"                 // ecls mode (VA/VV)
     this.pres_atm = 760;                  // atmospheric pressure (mmHg)
     this.tubing_clamped = true;           // tubing clamped
@@ -131,7 +136,7 @@ export class Ecls extends BaseModelClass {
 
   calc_model() {
     this._update_counter += this._t
-    if (this._update_counter > this._update_interval) {
+    if (this._update_counter > this._update_interval && this.ecls_running) {
       this._update_counter = 0;
 
       // get the flow
@@ -143,7 +148,7 @@ export class Ecls extends BaseModelClass {
       this.p_art = this._tubout.pres;
 
       // calculate the bloodgas
-      //this.calc_bloodgas()
+      this.calc_bloodgas()
 
       // set the clamp
       this._drainage.no_flow = this.tubing_clamped
