@@ -14,16 +14,20 @@
   
       <div v-if="isEnabled" class="q-mt-sm text-overline justify-center q-gutter-xs row">
         <div>
+          <q-toggle class="q-ml-sm q-pb-lg q-mr-sm" v-model="this.ecls_running" left-label label="ECLS running" dense size="sm"
+            @update:model-value="toggleEcls" />
+        </div>
+        <div>
+          <q-toggle class="q-ml-sm q-pb-lg q-mr-sm" v-model="clamped" left-label label="clamped" dense size="sm"
+            @update:model-value="set_clamp" />
+        </div>
+        <div>
           <q-btn-toggle v-model="mode" color="grey-9" size="sm" text-color="white" toggle-color="primary" :options="[
-            { label: 'OFF', value: 'OFF' },
             { label: 'VA-ECMO', value: 'VA' },
             { label: 'VV-ECMO', value: 'VV' },
           ]" @update:model-value="update_ecls_settings" />
         </div>
-        <div>
-          <q-toggle class="q-ml-sm q-pb-lg" v-model="clamped" label="clamp" dense size="sm"
-            @update:model-value="set_clamp" />
-        </div>
+
 
         <div>
           <q-btn-toggle class="q-ml-sm" v-model="curve_param" color="grey-9" size="sm" text-color="white"
@@ -32,7 +36,10 @@
               { label: 'FLOW', value: 'flow' },
             ]" @update:model-value="toggleCurveParam" />
         </div>
-        
+  
+      </div>
+      <!-- ecmo controls -->
+      <div v-if="isEnabled && ecls_running && graph_control" class="text-overline justify-center q-gutter-sm row">
         <div>
           <q-toggle class="q-ml-sm q-pb-lg" v-model="state.configuration.chart_hires" label="hi-res" dense size="sm"
             @update:model-value="toggleHires" />
@@ -42,9 +49,7 @@
             v-model.number="rtWindow" type="number" label="time" filled dense min="1" max="30" hide-bottom-space
             @update:model-value="updateRtWindow" />
         </div>
-  
-      </div>
-      <!-- ecmo controls -->
+        </div>
   
       <div v-if="isEnabled && ecls_running" class="text-overline justify-center q-gutter-sm row">
         <div  class="q-mr-sm text-center">
@@ -231,6 +236,7 @@
         presets: {},
         update_model: true,
         curve_param: "flow",
+        graph_control: false
       };
     },
     methods: {
@@ -251,9 +257,12 @@
           explain.setSampleInterval(0.005)
         }
       },
+      toggleEcls() {
+        explain.callModelFunction("Ecls.switch_ecls", [this.ecls_running])
+      },
       set_pump_speed() {
         if (this.update_model) {
-          explain.callModelFunction("Ecls.set_pump_speed", [parseFloat(this.pump_rpm)])
+          explain.callModelFunction("Ecls.set_pump_rpm", [parseFloat(this.pump_rpm)])
         }
       },
       set_fio2() {
@@ -283,14 +292,9 @@
         if (this.update_model) {
   
           switch (this.mode) {
-            case "OFF":
-              this.ecls_running = false
-              explain.callModelFunction("Ecls.switch_ecls", [false])
-              break;
             case "VA":
               if (!this.ecls_running) {
                 this.ecls_running = true;
-                explain.callModelFunction("Ecls.switch_ecls", [true])
               }
               if (this.ecls_running) {
                 //explain.callModelFunction("Ventilator.set_pc", [this.pump_rpm, this.peep_cmh2o, this.freq, this.insp_time, this.insp_flow])
@@ -299,7 +303,6 @@
             case "VV":
               if (!this.ecls_running) {
                 this.ecls_running = true;
-                explain.callModelFunction("Ecls.switch_ecls", [true])
               }
               if (this.ecls_running) {
                 //explain.callModelFunction("Ventilator.set_prvc", [this.pump_rpm, this.peep_cmh2o, this.freq, this.tidal_volume, this.insp_time, this.insp_flow])
@@ -550,7 +553,7 @@
       },
       processModelState() {
         if (explain.modelState.models) {
-          this.ecls_running = explain.modelState.models["Ecls"].is_enabled
+          this.ecls_running = explain.modelState.models["Ecls"].ecls_running
           if (this.ecls_running) {
             this.mode = explain.modelState.models["Ecls"].ecls_mode
             explain.watchModelProps([

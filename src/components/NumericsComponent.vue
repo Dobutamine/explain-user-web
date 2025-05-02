@@ -91,6 +91,7 @@ export default {
     this.$bus.off("reset", () => this.updateWatchList())
     this.$bus.off("rts", () => { this.dataUpdate()});
     this.$bus.off("data", () => { this.dataUpdate()});
+    this.$bus.off("state", () => { this.dataUpdate()});
   },
   mounted() {
     this.isEnabled = !this.collapsed;
@@ -99,6 +100,7 @@ export default {
     this.$bus.on("reset", () => this.updateWatchList())
     this.$bus.on("rts", () => { this.dataUpdate()});
     this.$bus.on("data", () => { this.dataUpdate()});
+    this.$bus.on("state", () => { this.dataUpdate()});
     if (this.isEnabled) {
       this.updateWatchList()
     }

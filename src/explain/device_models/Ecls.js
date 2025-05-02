@@ -96,8 +96,15 @@ export class Ecls extends BaseModelClass {
     this.p_ven = 0.0;                     // pressure on the drainage side of the ECLS system (mmHg)
     this.p_int = 0.0;                     // pressure between the pump and oxygenator (mmHg)
     this.p_art = 0.0;                     // pressure after the oxygenator on the return side of the ECLS system (mmHg)
+    this.p_tmp = 0.0;                     // transmembrane pressure (mmHg)
     this.pre_oxy_bloodgas = {};           // object holding the blood gas pre-oxygenator
     this.post_oxy_bloodgas = {};          // object holding the blood gas post-oxygenator
+    this.pre_oxy_so2
+    this.pre_oxy_po2
+    this.pre_oxy_pco2
+    this.post_oxy_so2
+    this.post_oxy_po2
+    this.post_oxy_pco2
     this.drainage_resistance = 20;        // resistance of the drainage cannula (depending on length and diameter) mmHg/l*s
     this.return_resistance = 20;          // resistance of the return cannula (depending on length and diameter) mmHg/l*s
     this.tubin_resistance = 20;           // resistance of the tubing in (depending on length and diameter) mmHg/l*s
@@ -192,9 +199,10 @@ export class Ecls extends BaseModelClass {
 
 
     this._update_counter += this._t
+    this._bloodgas_counter += this._t
     if (this._update_counter > this._update_interval) {
       this._update_counter = 0;
-      
+
       if (this.ecls_running != this._prev_ecls_state) {
         this.switch_ecls(this.ecls_running)
         this._prev_ecls_state = this.ecls_running
@@ -207,9 +215,19 @@ export class Ecls extends BaseModelClass {
       this.p_ven = this._tubin.pres;
       this.p_int = this._pump.pres;
       this.p_art = this._tubout.pres;
+      this.p_tmp = this.p_int - this.p_art
 
       // calculate the bloodgas
       this.calc_bloodgas()
+
+      // get the parameters from the bloodgas
+      this.pre_oxy_so2 = this.pre_oxy_bloodgas.so2
+      this.pre_oxy_po2= this.pre_oxy_bloodgas.po2
+      this.pre_oxy_pco2 = this.pre_oxy_bloodgas.pco2
+      
+      this.post_oxy_so2 = this.post_oxy_bloodgas.so2
+      this.post_oxy_po2 = this.post_oxy_bloodgas.po2
+      this.post_oxy_pco2 = this.post_oxy_bloodgas.pco2
 
       // set the pump rpm
       this._pump.pump_rpm = this.pump_rpm
@@ -232,6 +250,10 @@ export class Ecls extends BaseModelClass {
     this.ecls_running = state
     this.switch_blood_components(state)
     this.switch_gas_components(state)
+  }
+
+  set_clamp(state) {
+    this.tubing_clamped = state
   }
   set_pump_rpm(new_rpm) {
     this.pump_rpm = new_rpm
@@ -256,7 +278,6 @@ export class Ecls extends BaseModelClass {
   }
 
   calc_bloodgas() {
-    this._bloodgas_counter += this._t
     if (this._bloodgas_counter > this._bloodgas_interval) {
       this._bloodgas_interval = 0;
 
@@ -272,7 +293,7 @@ export class Ecls extends BaseModelClass {
       }
 
       // calc bloodgas post oxygenator
-      calc_gas_composition(this._tubout)
+      calc_blood_composition(this._tubout)
       this.post_oxy_bloodgas = {
         'ph': this._tubout.ph,
         'pco2': this._tubout.pco2,
