@@ -544,8 +544,7 @@ export class Ecls extends BaseModelClass {
       this._ecls_gasin.calc_model();
       this._ecls_gasoxy.calc_model();
       this._ecls_gasout.calc_model();
-      this._ecls_gasin_oxy.r_for =
-        (this._ecls_gasin.pres - this.pres_atm) / (this.sweep_gas / 60.0);
+      this._ecls_gasin_oxy.r_for = (this._ecls_gasin.pres - this.pres_atm) / (this.sweep_gas / 60.0);
       this._ecls_gasin_oxy.r_back = this._ecls_gasin_oxy.r_for;
     }
   }

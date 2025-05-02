@@ -99,7 +99,7 @@ export class Ecls extends BaseModelClass {
     this._tubout = this._model_engine.models["ECLS_TUBOUT"]
     this._return = this._model_engine.models["ECLS_RETURN"]
 
-    this._gas_in = this._model_engine.models["ECLS_GASIN"]
+    this._gasin = this._model_engine.models["ECLS_GASIN"]
     this._gasin_oxy = this._model_engine.models["ECLS_GASIN_OXY"]
     this._gasoxy = this._model_engine.models["ECLS_GASOXY"]
     this._gasoxy_gasout = this._model_engine.models["ECLS_OXY_GASOUT"]
@@ -112,6 +112,13 @@ export class Ecls extends BaseModelClass {
     this.set_oxygenator_volume()
 
     // setup gas containing system
+    this.set_gas_volumes()
+    this.set_gas_compositions()
+    this.set_gas_flow()
+
+    // turn on the gas circuit
+    this.switch_gas_components(true)
+    
   }
 
   calc_model() {
@@ -213,7 +220,58 @@ export class Ecls extends BaseModelClass {
     this._oxy.el_base = this.oxy_elastance
   }
 
+  switch_gas_components(state = true) {
+    this._gasin.is_enabled = state
+    this._gasin_oxy.is_enabled = state
+    this._gasin_oxy.no_flow = !state
+    this._gasoxy.is_enabled = state
+    this._gasoxy_gasout.is_enabled = state
+    this._gasoxy_gasout.no_flow = !state
+    this._gasout.is_enabled = state
+  }
 
+  set_gas_flow() {
+    if (this.gas_flow > 0) {
+      this._gasin_oxy.no_flow = false
+      this._gasin_oxy.r_for = (this._gasin.pres - this.pres_atm) / (this.gas_flow / 60.0);
+      this._gasin_oxy.r_back = this._gasin_oxy.r_for;
+    } else {
+      this._gasin_oxy.no_flow = true
+    }
+  }
+
+  set_gas_volumes() {
+    // set the gas source pressure at 400 mHg above atmospheric pressure
+    this._gasin.vol = 5.4
+    this._gasin.u_vol = 5.0
+    this._gasin.el_base = 1000
+    this._gasin.fixed_composition = true
+    this._gasin.calc_pressure()
+
+    // set the oxygenator volume
+    this._gasoxy.vol = 0.031
+    this._gasoxy.u_vol = 0.031
+    this._gasoxy.el_base = 10000
+    this._gasoxy.fixed_composition = false
+    this._gasin.calc_pressure()
+
+    // set the gas outlet pressure at atmospheric pressure
+    this._gasout.vol = 5.0
+    this._gasout.u_vol = 5.0
+    this._gasout.el_base = 1000
+    this._gasout.fixed_composition = true
+    this._gasout.calc_pressure()
+  }
+
+  set_gas_compositions() {
+    // calculate the gas composition of the gas source and oxygenator
+    this._fico2_gas = (this.co2_gas_flow * 0.001) / this.gas_flow;
+    calc_gas_composition(this._gasin, this.fio2_gas, this.temp_gas, this.humidity_gas, this._fico2_gas);
+    calc_gas_composition(this._gasoxy, this.fio2_gas, this.temp_gas, this.humidity_gas, this._fico2_gas);
+
+    // calculate the gas composition of the gas outlet
+    calc_gas_composition(this._gasout, 0.205, 20.0, 0.1, 0.0004);
+  }
 
 
   _calc_tube_volume(diameter, length) {
