@@ -104,6 +104,7 @@ export class Ecls extends BaseModelClass {
     this._gasoxy = this._model_engine.models["ECLS_GASOXY"]
     this._gasoxy_gasout = this._model_engine.models["ECLS_OXY_GASOUT"]
     this._gasout = this._model_engine.models["ECLS_GASOUT"]
+    this._gasex = this._model_engine.models["ECLS_GASEX"]
 
     // setup blood containing system
     this.calc_resistances()
@@ -115,6 +116,13 @@ export class Ecls extends BaseModelClass {
     this.set_gas_volumes()
     this.set_gas_compositions()
     this.set_gas_flow()
+    this.set_gas_exchanger()
+
+    // clap the circuit
+    this.tubing_clamped = true;
+
+    // turn on the blood circuit
+    this.switch_blood_components(true)
 
     // turn on the gas circuit
     this.switch_gas_components(true)
@@ -136,8 +144,33 @@ export class Ecls extends BaseModelClass {
 
       // calculate the bloodgas
       //this.calc_bloodgas()
+
+      // set the clamp
+      this._drainage.no_flow = this.tubing_clamped
+      this._return.no_flow = this.tubing_clamped
     }
 
+  }
+
+  set_pump_rpm(new_rpm) {
+    this.pump_rpm = new_rpm
+    this._pump.pump_rpm = this.pump_rpm
+  }
+  switch_blood_components(state = true) {
+    this._drainage.is_enabled = state
+    this._drainage.no_flow = this.tubing_clamped
+    this._tubin.is_enabled = state
+    this._tubin_pump.is_enabled = state
+    this._tubin_pump.no_flow = !state
+    this._pump.is_enabled = state
+    this._pump_oxy.is_enabled = state
+    this._pump_oxy.no_flow = !state
+    this._oxy.is_enabled = state
+    this._oxy_tubout.is_enabled = state
+    this._oxy_tubout.no_flow = !state
+    this._tubout.is_enabled = state
+    this._return.is_enabled = state
+    this._return.no_flow = this.tubing_clamped
   }
 
   calc_bloodgas() {
@@ -202,22 +235,26 @@ export class Ecls extends BaseModelClass {
     this._tubin.vol = this.tubin_volume
     this._tubin.u_vol = this.tubin_volume
     this._tubin.el_base = this.tubing_elastance
+    this._tubin.calc_pressure()
 
     this._tubout.vol = this.tubout_volume
     this._tubout.u_vol = this.tubout_volume
     this._tubout.el_base = this.tubing_elastance
+    this._tubout.calc_pressure()
   }
 
   set_pump_volume() {
     this._pump.vol = this.pump_volume
     this._pump.u_vol = this.pump_volume
     this._pump.el_base = this.pump_elastance
+    this._pump.calc_pressure()
   }
 
   set_oxygenator_volume() {
     this._oxy.vol = this.oxy_volume
     this._oxy.u_vol = this.oxy_volume
     this._oxy.el_base = this.oxy_elastance
+    this._oxy.calc_pressure()
   }
 
   switch_gas_components(state = true) {
@@ -228,6 +265,12 @@ export class Ecls extends BaseModelClass {
     this._gasoxy_gasout.is_enabled = state
     this._gasoxy_gasout.no_flow = !state
     this._gasout.is_enabled = state
+    this._gasex.is_enabled = state
+  }
+
+  set_gas_exchanger() {
+    this._gasex.dif_o2 = this.oxy_dif_o2
+    this._gasex.dif_co2 = this.oxy_dif_co2
   }
 
   set_gas_flow() {
@@ -272,7 +315,6 @@ export class Ecls extends BaseModelClass {
     // calculate the gas composition of the gas outlet
     calc_gas_composition(this._gasout, 0.205, 20.0, 0.1, 0.0004);
   }
-
 
   _calc_tube_volume(diameter, length) {
     // return the volume in liters

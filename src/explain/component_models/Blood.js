@@ -115,7 +115,7 @@ export class Blood extends BaseModelClass {
     Object.values(this._model_engine.models).forEach((model) => {
       if (this._blood_containing_modeltypes.includes(model.model_type)) {
         if (model.to2 == 0.0 && model.tco2 == 0.0) {
-          console.log('Setting blood parameters on: ', model.name)
+          //console.log('Setting blood parameters on: ', model.name)
           model.to2 = this.to2;
           model.tco2 = this.tco2;
           model.solutes = { ...this.solutes };
