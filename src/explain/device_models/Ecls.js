@@ -2,6 +2,7 @@ import { BaseModelClass } from "../base_models/BaseModelClass.js";
 import * as Models from "../ModelIndex.js"
 import { calc_blood_composition } from "../helpers/BloodComposition.js"
 import { calc_gas_composition } from "../helpers/GasComposition.js"
+import RealTimeMovingAverage from "../helpers/RealTimeMovingAverage.js"
 
 export class Ecls extends BaseModelClass {
   // static properties
@@ -138,6 +139,8 @@ export class Ecls extends BaseModelClass {
     this._blood_flow_avg_counter = 0.0     
     this._blood_flow_list = []
     this._prev_ecls_state = false;
+
+    this.flowAverage = new RealTimeMovingAverage(3000);
   }
 
   init_model(args = {}) {
@@ -182,24 +185,18 @@ export class Ecls extends BaseModelClass {
 
     // turn on the gas circuit
     this.switch_gas_components(this.ecls_running)
+
     
   }
 
   calc_model() {
-    // get an average blood flow
-    // if (this._blood_flow_avg_counter > this._blood_flow_avg_time) {
-    //   this._blood_flow_list.shift();
-    //   this.blood_flow = this._blood_flow_list.reduce((acc, val) => acc + val, 0) / this._blood_flow_list.length;
-    // } else {
-    //   this._blood_flow_avg_counter += this._t
-    // }
-    // this._blood_flow_list.push(this._return.flow * 60)
-
-    // check whether there's an ecls state change
-
-
+    if (this.ecls_running) {
+      this.blood_flow = this.flowAverage.addValue(this._return.flow * 60);
+    }
+ 
     this._update_counter += this._t
     this._bloodgas_counter += this._t
+    
     if (this._update_counter > this._update_interval) {
       this._update_counter = 0;
 
@@ -209,7 +206,8 @@ export class Ecls extends BaseModelClass {
       }
 
       // get the flow
-      this.blood_flow = this._return.flow * 60.0
+      //this.blood_flow = this._return.flow * 60.0
+      
 
       // get the pressures
       this.p_ven = this._tubin.pres;
@@ -255,9 +253,24 @@ export class Ecls extends BaseModelClass {
   set_clamp(state) {
     this.tubing_clamped = state
   }
+
   set_pump_rpm(new_rpm) {
     this.pump_rpm = new_rpm
     this._pump.pump_rpm = this.pump_rpm
+  }
+
+  set_fio2(new_fio2) {
+    if (new_fio2 > 1) {
+      this.fio2_gas = new_fio2 / 100
+    } else {
+      this.fio2_gas = new_fio2
+    }
+  }
+
+  set_co2_flow(new_co2_flow) {
+    if (new_co2_flow >= 0) {
+      this.co2_gas_flow = new_co2_flow
+    }
   }
 
   switch_blood_components(state = true) {

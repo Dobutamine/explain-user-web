@@ -36,17 +36,34 @@
               { label: 'FLOW', value: 'flow' },
             ]" @update:model-value="toggleCurveParam" />
         </div>
+        <div>
+          <q-toggle v-model="graph_control" class="q-ml-sm" left-label dense size="sm"><q-icon name="fa-solid fa-chart-simple" size="xs"></q-icon></q-toggle>
+        </div>
   
       </div>
       <!-- ecmo controls -->
       <div v-if="isEnabled && ecls_running && graph_control" class="text-overline justify-center q-gutter-sm row">
         <div>
-          <q-toggle class="q-ml-sm q-pb-lg" v-model="state.configuration.chart_hires" label="hi-res" dense size="sm"
+          <q-toggle v-model="autoscale" left-label label="autoscaling" dense size="sm"
+            @update:model-value="autoscaling" />
+        </div>
+        <div>
+          <q-input v-if="!autoscale"
+            v-model.number="y_min" type="number" left-label label="y-min" min="-1000" max="1000" step="0.1" filled dense hide-bottom-space
+            @update:model-value="autoscaling" />
+        </div>
+        <div>
+          <q-input v-if="!autoscale"
+            v-model.number="y_max" type="number" left-label label="y-max" min="-1000" max="1000" step="0.1" filled dense hide-bottom-space
+            @update:model-value="autoscaling" />
+        </div>
+        <div>
+          <q-toggle v-model="state.configuration.chart_hires" left-label label="hi-res" dense size="sm"
             @update:model-value="toggleHires" />
         </div>
         <div>
-          <q-input v-if="!state.configuration.chart_hires" class="q-ml-sm q-pb-lg"
-            v-model.number="rtWindow" type="number" label="time" filled dense min="1" max="30" hide-bottom-space
+          <q-input v-if="!state.configuration.chart_hires"
+            v-model.number="rtWindow" type="number" left-label label="time" filled dense min="1" max="30" hide-bottom-space
             @update:model-value="updateRtWindow" />
         </div>
         </div>
@@ -164,6 +181,8 @@
             grid: {
               color: '#333333'
             },
+            min: -0.5,
+            max: 1,
             border: {
               display: false
             }
@@ -196,7 +215,7 @@
         rtWindow: 3,
         rtWindowValidated: 3,
         analysisEnabled: true,
-        autoscaleEnabled: true,
+        autoscaleEnabled: false,
         autoscale: false,
         loopMode: false,
         isEnabled: true,
@@ -210,8 +229,8 @@
         mode: "OFF",
         x_min: 2,
         x_max: 15.0,
-        y_min: 0,
-        y_max: 25,
+        y_min: -0.2,
+        y_max: 1,
         multipliersEnabled: true,
         scaling: false,
         chart_title: "flow (l/min)",
@@ -243,9 +262,15 @@
       toggleCurveParam() {
         if (this.curve_param == "pres") {
           this.p1 = "Ecls.p_ven"
+          this.y_min = -50
+          this.y_max = 120
+          this.autoscaling()
         }
         if (this.curve_param == "flow") {
           this.p1 = "Ecls.blood_flow"
+          this.y_min = -0.2
+          this.y_max = 1.0
+          this.autoscaling()
         }
       },
       toggleHires() {
