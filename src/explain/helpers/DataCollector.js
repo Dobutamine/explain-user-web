@@ -213,13 +213,15 @@ export default class Datacollector {
       // process the watch_list
       this.watch_list.forEach((parameter) => {
         // get the value of the model variable as stated in the watchlist
-        let value = parameter.model[parameter.prop1];
-        if (parameter.prop2 !== null) {
-          value = value[parameter.prop2] || 0;
+        if (parameter.model.is_enabled) {
+          let value = parameter.model[parameter.prop1];
+          if (parameter.prop2 !== null) {
+            value = value[parameter.prop2] || 0;
+          }
+          // add the value to the data object
+          data_object[parameter.label] = value;
         }
 
-        // add the value to the data object
-        data_object[parameter.label] = value;
       });
 
       // add the data object to the collected data list

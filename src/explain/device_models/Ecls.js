@@ -130,6 +130,7 @@ export class Ecls extends BaseModelClass {
     this._blood_flow_avg_time = 1.0    
     this._blood_flow_avg_counter = 0.0     
     this._blood_flow_list = []
+    this._prev_ecls_state = false;
   }
 
   init_model(args = {}) {
@@ -170,10 +171,10 @@ export class Ecls extends BaseModelClass {
     this.tubing_clamped = true;
 
     // turn on the blood circuit
-    this.switch_blood_components(true)
+    this.switch_blood_components(this.ecls_running)
 
     // turn on the gas circuit
-    this.switch_gas_components(true)
+    this.switch_gas_components(this.ecls_running)
     
   }
 
@@ -187,9 +188,17 @@ export class Ecls extends BaseModelClass {
     // }
     // this._blood_flow_list.push(this._return.flow * 60)
 
+    // check whether there's an ecls state change
+
+
     this._update_counter += this._t
-    if (this._update_counter > this._update_interval && this.ecls_running) {
+    if (this._update_counter > this._update_interval) {
       this._update_counter = 0;
+      
+      if (this.ecls_running != this._prev_ecls_state) {
+        this.switch_ecls(this.ecls_running)
+        this._prev_ecls_state = this.ecls_running
+      }
 
       // get the flow
       this.blood_flow = this._return.flow * 60.0
@@ -217,9 +226,13 @@ export class Ecls extends BaseModelClass {
       this._drainage.no_flow = this.tubing_clamped
       this._return.no_flow = this.tubing_clamped
     }
-
   }
 
+  switch_ecls(state) {
+    this.ecls_running = state
+    this.switch_blood_components(state)
+    this.switch_gas_components(state)
+  }
   set_pump_rpm(new_rpm) {
     this.pump_rpm = new_rpm
     this._pump.pump_rpm = this.pump_rpm
