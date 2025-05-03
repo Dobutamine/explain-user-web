@@ -3,6 +3,23 @@
       <div class="q-mt-es row gutter text-overline justify-center" @click="isEnabled = !isEnabled">
         {{ title }}
       </div>
+
+      <div v-if="isEnabled && ecls_running" class="row justify-center">
+        <div class="q-ma-sm q-gutter-xs row items-center">
+            <q-input v-model="blood_flow" label-color="white" hide-hint readonly filled dense stack-label label="Flow"
+              style="max-width: 90px; font-size: 16px" squared />
+            <q-input v-model="p_ven" label-color="red" hide-hint filled readonly dense stack-label label="P ven"
+              style="max-width: 90px; font-size: 16px" squared />
+            <q-input v-model="p_int" label-color="cyan" hide-hint filled readonly dense stack-label label="P int"
+              style="max-width: 90px; font-size: 16px" squared />
+            <q-input v-model="p_art" label-color="green" hide-hint filled readonly dense stack-label label="P art"
+              style="max-width: 90px; font-size: 16px" squared />
+            <q-input v-model="p_tmp" color="blue" hide-hint filled readonly dense stack-label label="P tmp"
+              style="max-width: 90px; font-size: 16px" squared />
+            <q-input v-model="svo2" color="blue" hide-hint filled readonly dense stack-label label="SvO2 (%)"
+              style="max-width: 90px; font-size: 16px" squared />
+        </div>
+      </div>
   
   
       <!-- chart -->
@@ -100,20 +117,7 @@
           <div :style="{ fontSize: '10px' }">l/min</div>
         </div>
       </div>
-      <div v-if="isEnabled && ecls_running" class="row justify-center">
-        <div class="q-ma-sm q-gutter-xs row items-center">
-            <q-input v-model="blood_flow" color="blue" hide-hint filled readonly dense stack-label label="Flow (l/min)"
-              style="max-width: 100px; font-size: 16px" squared />
-            <q-input v-model="p_ven" color="blue" hide-hint filled readonly dense stack-label label="P ven"
-              style="max-width: 100px; font-size: 16px" squared />
-            <q-input v-model="p_int" color="blue" hide-hint filled readonly dense stack-label label="P int"
-              style="max-width: 100px; font-size: 16px" squared />
-            <q-input v-model="p_art" color="blue" hide-hint filled readonly dense stack-label label="P art"
-              style="max-width: 100px; font-size: 16px" squared />
-            <q-input v-model="p_tmp" color="blue" hide-hint filled readonly dense stack-label label="P tmp"
-              style="max-width: 100px; font-size: 16px" squared />
-        </div>
-      </div>
+
   
       <div v-if="isEnabled && ecls_running && advanced" class="q-mt-md q-mb-md text-overline justify-center q-gutter-xs row">
         <q-input v-model="tubing_diameter" @update:model-value="set_tubing_diameter" color="blue" hide-hint filled
@@ -258,7 +262,7 @@
         y_max: 1,
         multipliersEnabled: true,
         scaling: false,
-        chart_title: "pressure (mmHg) (l/min)",
+        chart_title: "pressure (mmHg)",
         chart1_factor: 1.0,
         chart2_factor: 1.0,
         chart3_factor: 1.0,
@@ -295,6 +299,7 @@
         p_ven: 0.0,
         p_art: 0.0,
         p_tmp: 0.0,
+        svo2: 0.0,
 
       };
     },
@@ -513,6 +518,8 @@
         this.p_ven = explain.modelData[0]['Ecls.p_ven'].toFixed(1)
         this.p_art = explain.modelData[0]['Ecls.p_art'].toFixed(1)
         this.p_tmp = explain.modelDataSlow[0]['Ecls.p_tmp'].toFixed(1)
+        this.svo2 = explain.modelDataSlow[0]['Ecls.pre_oxy_so2'].toFixed(0)
+
       },
       dataUpdateRt() {
   

@@ -89,7 +89,7 @@ export class Ecls extends BaseModelClass {
     this.co2_gas_flow = 0.4;              // added carbon dioxide gas flow (L/min)
     this.temp_gas = 37.0;                 // temperature of the oxygenator gas (°C)
     this.humidity_gas = 0.5;              // humidity of the oxygenator gas (0-1)
-    this.pump_rpm = 1500;                 // rotations of the centrifugal pump (rpm)
+    this.pump_rpm = 2250;                 // rotations of the centrifugal pump (rpm)
     this.pump_flow = 0.8                  // set pump flow on a roller pump (l/min)
 
     // dependent properties
