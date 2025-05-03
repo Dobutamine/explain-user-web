@@ -84,17 +84,17 @@
   
       <div v-if="isEnabled && ecls_running" class="text-overline justify-center q-gutter-sm row">
         <div  class="q-mr-sm text-center">
-          <div>pump (rpm)</div>
-          <q-knob show-value font-size="12px" v-model="pump_rpm" size="50px" :min="0" :max="5000" :step="1"
+          <div>pump</div>
+          <q-knob show-value font-size="12px" v-model="pump_rpm" size="60px" :min="0" :max="5000" :step="1"
             :thickness="0.22" color="teal" track-color="grey-3" class="col"
             @update:model-value="set_pump_speed">
             {{ pump_rpm }}
           </q-knob>
-          <div :style="{ fontSize: '10px' }">cmh2o</div>
+          <div :style="{ fontSize: '10px' }">rpm</div>
         </div>
         <div class="q-mr-sm text-center">
           <div class="knob-label">gas flow</div>
-          <q-knob show-value font-size="12px" v-model="sweep_gas" size="50px" :thickness="0.22" :min="0" :max="5" :step="0.1"
+          <q-knob show-value font-size="12px" v-model="sweep_gas" size="60px" :thickness="0.22" :min="0" :max="5" :step="0.1"
             color="teal" track-color="grey-3" class="col" @update:model-value="set_sweep_gas">
             {{ sweep_gas }}
           </q-knob>
@@ -102,7 +102,7 @@
         </div>
         <div class="q-mr-sm text-center">
           <div class="knob-label">fio2</div>
-          <q-knob show-value font-size="12px" v-model="fio2" size="50px" :thickness="0.22" :min="21" :max="100" :step="1"
+          <q-knob show-value font-size="12px" v-model="fio2" size="60px" :thickness="0.22" :min="21" :max="100" :step="1"
             color="teal" track-color="grey-3" class="col" @update:model-value="set_fio2">
             {{ fio2 }}
           </q-knob>
@@ -110,7 +110,7 @@
         </div>
         <div class="q-mr-sm text-center">
           <div class="knob-label">co2 flow</div>
-          <q-knob show-value font-size="12px" v-model="co2_gas_flow" size="50px" :thickness="0.22" :min="0" :max="1" :step="0.1"
+          <q-knob show-value font-size="12px" v-model="co2_gas_flow" size="60px" :thickness="0.22" :min="0" :max="1" :step="0.1"
             color="teal" track-color="grey-3" class="col" @update:model-value="set_co2_flow">
             {{ co2_gas_flow }}
           </q-knob>
@@ -588,7 +588,7 @@
           this.y2_axis = explain.modelData.map((item) => { return item[this.p2] * this.chart2_factor; });
           data_set_pres2 = {
             data: this.y2_axis,
-            borderColor: 'rgb(192, 0, 0)',
+            borderColor: 'rgb(0, 192, 0)',
             borderWidth: 1,
             pointStyle: false
           }
@@ -598,7 +598,7 @@
           this.y3_axis = explain.modelData.map((item) => { return item[this.p3] * this.chart3_factor; });
           data_set_pres3 = {
             data: this.y3_axis,
-            borderColor: 'rgb(192, 0, 0)',
+            borderColor: 'rgb(0, 192, 192)',
             borderWidth: 1,
             pointStyle: false
           }
