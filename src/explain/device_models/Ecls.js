@@ -141,6 +141,9 @@ export class Ecls extends BaseModelClass {
     this._prev_ecls_state = false;
 
     this.flowAverage = new RealTimeMovingAverage(3000);
+    this.pVenAverage = new RealTimeMovingAverage(300);
+    this.pIntAverage = new RealTimeMovingAverage(300);
+    this.pArtAverage = new RealTimeMovingAverage(300);
   }
 
   init_model(args = {}) {
@@ -206,9 +209,11 @@ export class Ecls extends BaseModelClass {
       }
 
       // get the pressures
-      this.p_ven = this._tubin.pres;
-      this.p_int = this._pump.pres;
-      this.p_art = this._tubout.pres;
+      this.p_ven = this.pVenAverage.addValue(this._tubin.pres)
+      if (!isNaN(this._pump.pres)) {
+        this.p_int = this.pIntAverage.addValue(this._pump.pres)
+      }
+      this.p_art = this.pArtAverage.addValue(this._tubout.pres)
       this.p_tmp = this.p_int - this.p_art
 
       // calculate the bloodgas

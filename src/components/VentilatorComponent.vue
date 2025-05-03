@@ -10,12 +10,6 @@
       <div class="q-mt-sm row text-overline justify-center">pressure (cmh2o)</div>
       <Line v-if="isEnabled && !show_loops" ref="myTest" id="my-chart-vent-pres" :options="chartOptions"
         :data="chartData" style="max-height: 250px;" />
-      <!-- <div class="row text-overline justify-center">flow (l/min)</div> -->
-      <!-- <Line v-if="isEnabled && !show_loops" id="my-chart-vent-flow" :options="chartOptionsFlow" :data="chartDataFlow"
-        style="max-height: 100px;" />
-      <div class="row text-overline justify-center">volume (ml)</div>
-      <Line v-if="isEnabled" id="my-chart-vent-vol" :options="chartOptionsVol" :data="chartDataVol"
-        style="max-height: 100px;" /> -->
     </div>
 
     <XYChartComponent v-if="isEnabled && show_loops" :alive="show_loops" title="" :presets="presets_loops"
@@ -23,8 +17,11 @@
 
     <div v-if="isEnabled" class="q-mt-sm text-overline justify-center q-gutter-xs row">
       <div>
+          <q-toggle class="q-ml-sm q-pb-lg q-mr-sm" v-model="this.ventilator_running" left-label label="Ventilator" dense size="sm"
+            @update:model-value="toggleVentilator" />
+      </div>
+      <div v-if="ventilator_running">
         <q-btn-toggle v-model="mode" color="grey-9" size="sm" text-color="white" toggle-color="primary" :options="[
-          { label: 'OFF', value: 'OFF' },
           { label: 'PC', value: 'PC' },
           { label: 'PRVC', value: 'PRVC' },
           { label: 'PSV', value: 'PSV' },
@@ -33,14 +30,14 @@
       </div>
 
 
-      <div>
+      <div v-if="ventilator_running">
         <q-btn-toggle class="q-ml-sm" v-model="show_loops" color="grey-9" size="sm" text-color="white"
           toggle-color="primary" :options="[
             { label: 'CURVES', value: false },
             { label: 'LOOPS', value: true },
           ]" />
       </div>
-      <div>
+      <div v-if="ventilator_running">
         <q-btn-toggle class="q-ml-sm" v-model="curve_param" color="grey-9" size="sm" text-color="white"
           toggle-color="primary" :options="[
             { label: 'PRES', value: 'pres' },
@@ -50,7 +47,7 @@
       </div>
 
     </div>
-    <div v-if="isEnabled" class="q-mt-sm text-overline justify-center q-gutter-xs row">
+    <div v-if="isEnabled && ventilator_running" class="q-mt-sm text-overline justify-center q-gutter-xs row">
       <div>
         <q-toggle v-model="spont_breathing" size="sm" label="breathing" @update:model-value="toggle_spont_breathing" />
       </div>
@@ -137,6 +134,17 @@
 
 
 
+    </div>
+    <div v-if="ventilator_running" class="row justify-center">
+        <div class="q-ma-sm q-gutter-xs row items-center">
+          <div v-for="(field, index) in mutableParameters1" :key="index">
+            <div class="col q-mr-xs text-left text-secondary" :style="{ 'font-size': '12px' }">
+              {{ field.label }} {{ field.unit }}
+            </div>
+            <q-input v-model="field.value" color="blue" hide-hint filled readonly dense stack-label
+              style="max-width: 80px; font-size: 16px" squared />
+          </div>
+        </div>
     </div>
 
 
@@ -308,9 +316,74 @@ export default {
       },
       update_model: true,
       curve_param: "pres",
+      mutableParameters1: [
+          {
+            "label": "Flow",
+            "unit": "l/min",
+            "factor": 1,
+            "rounding": 3,
+            "props": [
+              "Ecls.flow"
+            ],
+            "weight_based": false
+          },
+          {
+            "label": "Pven",
+            "unit": "mmHg",
+            "factor": 1,
+            "rounding": 1,
+            "props": [
+              "Ecls.ven_pres"
+            ],
+            "weight_based": false
+          },
+          {
+            "label": "Pint",
+            "unit": "mmHg",
+            "factor": 1,
+            "rounding": 1,
+            "props": [
+              "Ecls.pre_oxy_pres"
+            ],
+            "weight_based": false
+          },
+          {
+            "label": "Part",
+            "unit": "mmHg",
+            "factor": 1,
+            "rounding": 1,
+            "props": [
+              "Ecls.post_oxy_pres"
+            ],
+            "weight_based": false
+          },
+          {
+            "label": "Tmp",
+            "unit": "mmHg",
+            "factor": 1,
+            "rounding": 1,
+            "props": [
+              "Ecls.tmp_pres"
+            ],
+            "weight_based": false
+          },
+          {
+            "label": "SvO2",
+            "unit": "%",
+            "factor": 1,
+            "rounding": 1,
+            "props": [
+              "Ecls.pre_oxy_so2"
+            ],
+            "weight_based": false
+          },
+        ]
     };
   },
   methods: {
+    toggleVentilator() {
+      explain.callModelFunction("Ventilator.switch_ventilator", [this.ventilator_running])
+    },
     toggleCurveParam() {
       if (this.curve_param == "pres") {
         this.p1 = "Ventilator.pres"
@@ -378,12 +451,6 @@ export default {
       if (this.update_model) {
 
         switch (this.mode) {
-          case "OFF":
-            this.ventilator_running = false
-            this.spont_breathing = true
-            this.toggle_spont_breathing()
-            explain.callModelFunction("Ventilator.switch_ventilator", [false])
-            break;
           case "PC":
             if (!this.ventilator_running) {
               this.ventilator_running = true;
@@ -557,9 +624,11 @@ export default {
 
 
     },
+    dataUpdateSlow() {
+      if (this.alive && this.ventilator_running) {}
+    },
     dataUpdateRt() {
-
-      if (this.alive && !this.show_loops) {
+      if (this.alive && this.ventilator_running && !this.show_loops) {
         // update is every 0.015 ms and the data is sampled with 0.005 ms resolution (so 3 data points per 0.015 sec = 200 datapoints per second)
         for (let i = 0; i < explain.modelData.length; i++) {
           this.y1_axis.push(explain.modelData[i][this.p1] * this.chart1_factor)
@@ -682,7 +751,8 @@ export default {
     },
     processModelState() {
       if (explain.modelState.models) {
-        this.ventilator_running = explain.modelState.models["Ventilator"].vent_running
+        this.ventilator_running = explain.modelState.models["Ventilator"].is_enabled
+        console.log(this.ventilator_running)
         if (this.ventilator_running) {
           this.mode = explain.modelState.models["Ventilator"].vent_mode
           explain.watchModelProps(["Ventilator.pres", "Ventilator.flow", "Ventilator.vol", "Ventilator.co2", "Ventilator.etco2", "Breathing.breathing_enabled"])
@@ -702,15 +772,29 @@ export default {
         this.fio2 = explain.modelState.models["Ventilator"].fio2 * 100.0
         this.trigger_perc = explain.modelState.models["Ventilator"].trigger_volume_perc
         this.spont_breathing = explain.modelState.models["Breathing"].breathing_enabled
-
       }
     }
   },
+  beforeUnmount() {
+    this.$bus.off("rtf", () => { if (this.ventilator_running) { this.dataUpdateRt() }});
+    this.$bus.off("rts", () => { if (this.ventilator_running) { this.dataUpdateSlow() }});
+    this.$bus.off("data", () => { if (this.ventilator_running) this.dataUpdate()})
+    this.$bus.off("state", this.processModelState)
+  },
   mounted() {
-    this.$bus.on("rtf", () => this.dataUpdateRt());
-    this.$bus.on("data", () => this.dataUpdate())
+    this.$bus.on("rtf", () => { if (this.ventilator_running) { this.dataUpdateRt() }});
+    this.$bus.on("rts", () => { if (this.ventilator_running) { this.dataUpdateSlow() }});
+    this.$bus.on("data", () => { if (this.ventilator_running) this.dataUpdate()})
     this.$bus.on("state", this.processModelState)
-    explain.watchModelProps(["Ventilator.pres", "Ventilator.flow", "Ventilator.vol", "Ventilator.co2", "Ventilator.etco2", "Breathing.breathing_enabled"])
+
+    explain.watchModelProps([
+      "Ventilator.pres", 
+      "Ventilator.flow", 
+      "Ventilator.vol", 
+      "Ventilator.co2", 
+      "Ventilator.etco2", 
+      "Breathing.breathing_enabled"
+    ])
 
     // check whether hires is enabled
     this.toggleHires()

@@ -7,37 +7,34 @@
   
       <!-- chart -->
       <div>
-        <div class="q-mt-sm row text-overline justify-center"> {{  chart_title }}</div>
+        <div v-if="isEnabled" class="q-mt-sm row text-overline justify-center"> {{  chart_title }}</div>
         <Line v-if="isEnabled" ref="myEclsChart" id="my-chart-ecls" :options="chartOptions"
           :data="chartData" style="max-height: 250px;" />
       </div>
+      
   
       <div v-if="isEnabled" class="q-mt-sm text-overline justify-center q-gutter-xs row">
         <div>
-          <q-toggle class="q-ml-sm q-pb-lg q-mr-sm" v-model="this.ecls_running" left-label label="ECLS running" dense size="sm"
+          <q-toggle class="q-ml-sm q-pb-lg q-mr-sm" v-model="this.ecls_running" left-label label="ECLS" dense size="sm"
             @update:model-value="toggleEcls" />
         </div>
-        <div>
+        <div v-if="ecls_running">
           <q-toggle class="q-ml-sm q-pb-lg q-mr-sm" v-model="clamped" left-label label="clamped" dense size="sm"
             @update:model-value="set_clamp" />
         </div>
-        <!-- <div>
-          <q-btn-toggle v-model="mode" color="grey-9" size="sm" text-color="white" toggle-color="primary" :options="[
-            { label: 'VA-ECMO', value: 'VA' },
-            { label: 'VV-ECMO', value: 'VV' },
-          ]" @update:model-value="update_ecls_settings" />
-        </div> -->
 
-
-        <div>
+        <div v-if="ecls_running">
           <q-btn-toggle class="q-ml-sm" v-model="curve_param" color="grey-9" size="sm" text-color="white"
             toggle-color="primary" :options="[
               { label: 'PRES', value: 'pres' },
               { label: 'FLOW', value: 'flow' },
             ]" @update:model-value="toggleCurveParam" />
         </div>
-        <div>
-          <q-toggle v-model="graph_control" class="q-ml-sm" left-label dense size="sm"><q-icon name="fa-solid fa-chart-simple" size="xs"></q-icon></q-toggle>
+        <div v-if="ecls_running">
+          <q-toggle v-model="graph_control" class="q-ml-sm" left-label dense size="sm"><q-icon name="fa-solid fa-chart-simple" size="xs"></q-icon><q-tooltip>chart options</q-tooltip></q-toggle>
+        </div>
+        <div v-if="ecls_running">
+          <q-toggle v-model="advanced" class="q-ml-sm" left-label dense size="sm"><q-icon name="fa-solid fa-ellipsis" size="xs"></q-icon><q-tooltip>advanced parameters</q-tooltip></q-toggle>
         </div>
   
       </div>
@@ -103,25 +100,37 @@
           <div :style="{ fontSize: '10px' }">l/min</div>
         </div>
       </div>
+      <div v-if="isEnabled && ecls_running" class="row justify-center">
+        <div class="q-ma-sm q-gutter-xs row items-center">
+            <q-input v-model="blood_flow" color="blue" hide-hint filled readonly dense stack-label label="Flow (l/min)"
+              style="max-width: 100px; font-size: 16px" squared />
+            <q-input v-model="p_ven" color="blue" hide-hint filled readonly dense stack-label label="P ven"
+              style="max-width: 100px; font-size: 16px" squared />
+            <q-input v-model="p_int" color="blue" hide-hint filled readonly dense stack-label label="P int"
+              style="max-width: 100px; font-size: 16px" squared />
+            <q-input v-model="p_art" color="blue" hide-hint filled readonly dense stack-label label="P art"
+              style="max-width: 100px; font-size: 16px" squared />
+        </div>
+      </div>
   
-      <!-- <div v-if="isEnabled && ecls_running" class="q-mt-md q-mb-md text-overline justify-center q-gutter-xs row">
-        <q-input v-model="tubing" @update:model-value="set_ettube_diameter" color="blue" hide-hint filled
-          label="et tube diameter (mm)" :min="2.0" :max="5.0" :step="0.5" dense stack-label type="number"
+      <div v-if="isEnabled && ecls_running && advanced" class="q-mt-md q-mb-md text-overline justify-center q-gutter-xs row">
+        <q-input v-model="tubing_diameter" @update:model-value="set_tubing_diameter" color="blue" hide-hint filled
+          label="tubing diameter (mm)" :min="0.25" :max="0.5" :step="0.125" dense stack-label type="number"
           style="font-size: 14px; width: 120px;" class="q-mr-sm text-center" squared>
         </q-input>
-        <q-input v-model="et_tube_length" @update:model-value="set_ettube_length" color="blue" hide-hint filled
-          label="et tube length (mm)" :min="50" :max="110" :step="5" dense stack-label type="number"
+        <q-input v-model="tubing_length" @update:model-value="set_tubing_length" color="blue" hide-hint filled
+          label="tubing length (mm)" :min="0.5" :max="5" :step="0.1" dense stack-label type="number"
           style="font-size: 14px; width: 120px;" class="q-mr-sm text-center" squared>
         </q-input>
-        <q-input v-model="temp" @update:model-value="set_temp" color="blue" hide-hint filled label="temperature (C)"
+        <q-input v-model="oxy_volume" @update:model-value="set_oxy_volume" color="blue" hide-hint filled label="oxy vol (l)"
           :min="0" :max="60" :step="0.1" dense stack-label type="number" style="font-size: 14px; width: 120px;"
           class="q-mr-sm text-center" squared>
         </q-input>
-        <q-input v-model="humidity" @update:model-value="set_humidity" color="blue" hide-hint filled label="humidity (%)"
+        <q-input v-model="pump_volume" @update:model-value="set_pump_volume" color="blue" hide-hint filled label="pump vol (l)"
           :min="0" :max="100" :step="1" dense stack-label type="number" style="font-size: 14px; width: 120px;"
           class="q-mr-sm text-center" squared>
         </q-input>
-      </div> -->
+      </div>
     </q-card>
   </template>
   
@@ -226,6 +235,10 @@
         humidity: 100,
         clamped: false,
         mode: "OFF",
+        tubing_diameter: 0.25,
+        tubing_length: 2,
+        oxy_volume: 0.03,
+        pump_volume: 0.342,
         x_min: 2,
         x_max: 15.0,
         y_min: -0.2,
@@ -235,7 +248,7 @@
         chart_title: "flow (l/min)",
         chart1_factor: 1.0,
         exportEnabled: true,
-        title: "ECLS SYSTEM",
+        title: "EXTRACORPOREAL LIFE SUPPORT",
         selectedModel1: "Ecls",
         selectedProp1: "blood_flow",
         p1: "Ecls.blood_flow",
@@ -254,10 +267,25 @@
         presets: {},
         update_model: true,
         curve_param: "flow",
-        graph_control: false
+        graph_control: false,
+        advanced: false,
+        blood_flow: 0.0,
+        pre_oxy_so2: 0.0,
+        post_oxy_so2: 0.0,
+        p_int: 0.0,
+        p_ven: 0.0,
+        p_art: 0.0,
+        p_tmp: 0.0,
+
       };
     },
     methods: {
+      set_tubing_diameter() {},
+      set_tubing_length() {},
+      set_drainage_origin() {},
+      set_return_target() {},
+      set_oxy_volume() {},
+      set_pump_volume() {},
       toggleCurveParam() {
         if (this.curve_param == "pres") {
           this.p1 = "Ecls.p_ven"
@@ -283,6 +311,26 @@
       },
       toggleEcls() {
         explain.callModelFunction("Ecls.switch_ecls", [this.ecls_running])
+        if (this.ecls_running) {
+          explain.watchModelProps([
+                "Ecls.blood_flow",
+                "Ecls.gas_flow",
+                "Ecls.p_ven", 
+                "Ecls.p_int", 
+                "Ecls.p_art", 
+                "Ecls.pre_oxy_bloodgas", 
+                "Ecls.post_oxy_bloodgas"
+                ])
+          explain.watchModelPropsSlow([
+                "Ecls.pre_oxy_so2",
+                "Ecls.pre_oxy_po2",
+                "Ecls.pre_oxy_pco2",
+                "Ecls.post_oxy_so2",
+                "Ecls.post_oxy_po2",
+                "Ecls.post_oxy_pco2",
+                "Ecls.p_tmp"
+                ])
+        }
       },
       set_pump_speed() {
         if (this.update_model) {
@@ -454,6 +502,13 @@
   
   
       },
+      dataUpdateSlow() {
+        this.blood_flow = explain.modelData[0]['Ecls.blood_flow'].toFixed(3)
+        this.p_int = explain.modelData[0]['Ecls.p_int'].toFixed(1)
+        this.p_ven = explain.modelData[0]['Ecls.p_ven'].toFixed(1)
+        this.p_art = explain.modelData[0]['Ecls.p_art'].toFixed(1)
+        this.p_tmp = explain.modelDataSlow[0]['Ecls.p_tmp'].toFixed(1)
+      },
       dataUpdateRt() {
   
         if (this.alive) {
@@ -582,12 +637,18 @@
             this.mode = explain.modelState.models["Ecls"].ecls_mode
             explain.watchModelProps([
                 "Ecls.blood_flow",
-                "Ecls.gas_flow",
                 "Ecls.p_ven", 
                 "Ecls.p_int", 
-                "Ecls.p_art", 
-                "Ecls.pre_oxy_bloodgas", 
-                "Ecls.post_oxy_bloodgas"
+                "Ecls.p_art",
+                ])
+            explain.watchModelPropsSlow([
+                "Ecls.pre_oxy_so2",
+                "Ecls.pre_oxy_po2",
+                "Ecls.pre_oxy_pco2",
+                "Ecls.post_oxy_so2",
+                "Ecls.post_oxy_po2",
+                "Ecls.post_oxy_pco2",
+                "Ecls.p_tmp"
                 ])
           } else {
             this.mode = "OFF"
@@ -601,18 +662,34 @@
         }
       }
     },
+    beforeUnmount() {
+      this.$bus.off("rtf", () => { if (this.ecls_running) this.dataUpdateRt()});
+      this.$bus.off("rts", () => { if (this.ecls_running) this.dataUpdateSlow()});
+      this.$bus.off("data", () => { if (this.ecls_running) this.dataUpdate()});
+      this.$bus.off("state", this.processModelState)
+
+    },
     mounted() {
-      this.$bus.on("rtf", () => this.dataUpdateRt());
-      this.$bus.on("data", () => this.dataUpdate())
+      this.$bus.on("rtf", () => { if (this.ecls_running) this.dataUpdateRt()});
+      this.$bus.on("rts", () => { if (this.ecls_running) this.dataUpdateSlow()});
+      this.$bus.on("data", () => { if (this.ecls_running) this.dataUpdate()});
       this.$bus.on("state", this.processModelState)
+
       explain.watchModelProps([
         "Ecls.blood_flow",
-        "Ecls.gas_flow",
         "Ecls.p_ven", 
         "Ecls.p_int", 
-        "Ecls.p_art", 
-        "Ecls.pre_oxy_bloodgas", 
-        "Ecls.post_oxy_bloodgas"
+        "Ecls.p_art"
+        ])
+
+      explain.watchModelPropsSlow([
+        "Ecls.pre_oxy_so2",
+        "Ecls.pre_oxy_po2",
+        "Ecls.pre_oxy_pco2",
+        "Ecls.post_oxy_so2",
+        "Ecls.post_oxy_po2",
+        "Ecls.post_oxy_pco2",
+        "Ecls.p_tmp"
         ])
   
       // check whether hires is enabled
