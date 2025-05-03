@@ -23,13 +23,13 @@
             @update:model-value="set_clamp" />
         </div>
 
-        <div v-if="ecls_running">
+        <!-- <div v-if="ecls_running">
           <q-btn-toggle class="q-ml-sm" v-model="curve_param" color="grey-9" size="sm" text-color="white"
             toggle-color="primary" :options="[
               { label: 'PRES', value: 'pres' },
               { label: 'FLOW', value: 'flow' },
             ]" @update:model-value="toggleCurveParam" />
-        </div>
+        </div> -->
         <div v-if="ecls_running">
           <q-toggle v-model="graph_control" class="q-ml-sm" left-label dense size="sm"><q-icon name="fa-solid fa-chart-simple" size="xs"></q-icon><q-tooltip>chart options</q-tooltip></q-toggle>
         </div>
@@ -110,6 +110,8 @@
               style="max-width: 100px; font-size: 16px" squared />
             <q-input v-model="p_art" color="blue" hide-hint filled readonly dense stack-label label="P art"
               style="max-width: 100px; font-size: 16px" squared />
+            <q-input v-model="p_tmp" color="blue" hide-hint filled readonly dense stack-label label="P tmp"
+              style="max-width: 100px; font-size: 16px" squared />
         </div>
       </div>
   
@@ -157,7 +159,18 @@
           borderColor: 'rgb(192, 0, 0)',
           borderWidth: 2,
           pointStyle: false
-        }],
+        },
+        {
+          data: [],
+          borderColor: 'rgb(0, 192, 0, 1.0)',
+          borderWidth: 2,
+          pointStyle: false
+        }, {
+          data: [],
+          borderColor: 'rgb(0, 192, 192, 1.0)',
+          borderWidth: 2,
+          pointStyle: false
+        }]
       })
   
       let chartOptions = shallowRef({
@@ -189,8 +202,8 @@
             grid: {
               color: '#333333'
             },
-            min: -0.5,
-            max: 1,
+            min: -50,
+            max: 120,
             border: {
               display: false
             }
@@ -245,13 +258,17 @@
         y_max: 1,
         multipliersEnabled: true,
         scaling: false,
-        chart_title: "flow (l/min)",
+        chart_title: "pressure (mmHg) (l/min)",
         chart1_factor: 1.0,
+        chart2_factor: 1.0,
+        chart3_factor: 1.0,
         exportEnabled: true,
         title: "EXTRACORPOREAL LIFE SUPPORT",
         selectedModel1: "Ecls",
-        selectedProp1: "blood_flow",
-        p1: "Ecls.blood_flow",
+        selectedProp1: "p_ven",
+        p1: "Ecls.p_ven",
+        p2: "Ecls.p_int",
+        p3: "Ecls.p_art",
         p1_max: 0.0,
         p1_min: 0.0,
         p1_sd: 0.0,
@@ -261,12 +278,14 @@
         seconds: 0,
         x_axis: [],
         y1_axis: [],
+        y2_axis: [],
+        y3_axis: [],
         redrawInterval: 0.015,
         redrawTimer: 0.0,
         debug_mode: true,
         presets: {},
         update_model: true,
-        curve_param: "flow",
+        curve_param: "pres",
         graph_control: false,
         advanced: false,
         blood_flow: 0.0,
@@ -286,20 +305,6 @@
       set_return_target() {},
       set_oxy_volume() {},
       set_pump_volume() {},
-      toggleCurveParam() {
-        if (this.curve_param == "pres") {
-          this.p1 = "Ecls.p_ven"
-          this.y_min = -50
-          this.y_max = 120
-          this.autoscaling()
-        }
-        if (this.curve_param == "flow") {
-          this.p1 = "Ecls.blood_flow"
-          this.y_min = -0.2
-          this.y_max = 1.0
-          this.autoscaling()
-        }
-      },
       toggleHires() {
         if (this.state.configuration.chart_hires) {
           this.rtWindow = 1.0
@@ -512,9 +517,13 @@
       dataUpdateRt() {
   
         if (this.alive) {
-          // update is every 0.015 ms and the data is sampled with 0.005 ms resolution (so 3 data points per 0.015 sec = 200 datapoints per second)
+          // update is every 0.015 ms and the data is sampled with 0.005 ms resolution 
+          // (so 3 data points per 0.015 sec = 200 datapoints per second)
+
           for (let i = 0; i < explain.modelData.length; i++) {
             this.y1_axis.push(explain.modelData[i][this.p1] * this.chart1_factor)
+            this.y2_axis.push(explain.modelData[i][this.p2] * this.chart2_factor)
+            this.y3_axis.push(explain.modelData[i][this.p3] * this.chart3_factor)
             this.x_axis.push(this.seconds)
             this.seconds += 0.005;
           }
@@ -523,6 +532,8 @@
             let too_many = this.x_axis.length - (this.rtWindowValidated * 200.0)
             this.x_axis.splice(0, too_many)
             this.y1_axis.splice(0, too_many)
+            this.y2_axis.splice(0, too_many)
+            this.y3_axis.splice(0, too_many)
           }
   
           if (this.redrawTimer > this.redrawInterval) {
@@ -530,6 +541,8 @@
             const myChart = this.$refs.myEclsChart.chart
             myChart.data.labels = this.x_axis
             myChart.data.datasets[0].data = [...this.y1_axis]
+            myChart.data.datasets[1].data = [...this.y2_axis]
+            myChart.data.datasets[2].data = [...this.y3_axis]
             requestAnimationFrame(() => {
               myChart.update()
             })
@@ -550,11 +563,34 @@
       },
       dataUpdate() {
   
-        let data_set_pres = {}
+        let data_set_pres1 = {}
+        let data_set_pres2 = {}
+        let data_set_pres3 = {}
+
         if (this.p1 !== '') {
           this.y1_axis = explain.modelData.map((item) => { return item[this.p1] * this.chart1_factor; });
-          data_set_pres = {
+          data_set_pres1 = {
             data: this.y1_axis,
+            borderColor: 'rgb(192, 0, 0)',
+            borderWidth: 1,
+            pointStyle: false
+          }
+        }
+
+        if (this.p2 !== '') {
+          this.y2_axis = explain.modelData.map((item) => { return item[this.p2] * this.chart2_factor; });
+          data_set_pres2 = {
+            data: this.y2_axis,
+            borderColor: 'rgb(192, 0, 0)',
+            borderWidth: 1,
+            pointStyle: false
+          }
+        }
+
+        if (this.p3 !== '') {
+          this.y3_axis = explain.modelData.map((item) => { return item[this.p3] * this.chart3_factor; });
+          data_set_pres3 = {
+            data: this.y3_axis,
             borderColor: 'rgb(192, 0, 0)',
             borderWidth: 1,
             pointStyle: false
@@ -565,7 +601,7 @@
   
         this.chartData = {
           labels: this.x_axis,
-          datasets: [data_set_pres]
+          datasets: [data_set_pres1, data_set_pres2, data_set_pres3]
         }
   
         if (this.show_summary) {
@@ -575,6 +611,8 @@
         this.seconds = 0
         this.x_axis = []
         this.y1_axis = []
+        this.y2_axis = []
+        this.y3_axis = []
   
       },
       exportData() {
