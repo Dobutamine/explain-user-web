@@ -329,6 +329,17 @@ export class Ecls extends BaseModelClass {
     this.pump_rpm = new_rpm
     this._pump.pump_rpm = this.pump_rpm
   }
+  set_gas_flow(new_gas_flow) {
+    if (new_gas_flow > 0) {
+      this.gas_flow = new_gas_flow
+      this._gasin_oxy.no_flow = false
+      this._gasin_oxy.r_for = (this._gasin.pres - this.pres_atm) / (this.gas_flow / 60.0);
+      this._gasin_oxy.r_back = this._gasin_oxy.r_for;
+    } else {
+      this._gasin_oxy.no_flow = true
+    }
+  }
+
 
   set_fio2(new_fio2) {
     if (new_fio2 > 1) {
@@ -339,7 +350,6 @@ export class Ecls extends BaseModelClass {
   }
 
   set_co2_flow(new_co2_flow) {
-    console.log(new_co2_flow)
     if (new_co2_flow >= 0) {
       this.co2_gas_flow = new_co2_flow
     }
@@ -577,15 +587,7 @@ export class Ecls extends BaseModelClass {
     this._gasex.dif_co2 = this.oxy_dif_co2
   }
 
-  set_gas_flow() {
-    if (this.gas_flow > 0) {
-      this._gasin_oxy.no_flow = false
-      this._gasin_oxy.r_for = (this._gasin.pres - this.pres_atm) / (this.gas_flow / 60.0);
-      this._gasin_oxy.r_back = this._gasin_oxy.r_for;
-    } else {
-      this._gasin_oxy.no_flow = true
-    }
-  }
+
 
   set_gas_volumes() {
     // set the gas source pressure at 400 mHg above atmospheric pressure

@@ -334,7 +334,7 @@
         pump_occlusive: false,
         cannulation_sites: [],
         cannulation_model_options: ["HeartChamber", "BloodVessel"],
-        ecls_mode_options: ["VA-ECMO", "VV-ECMO", "LVAD", "RVAD", "BIVAD", "WHOMB"]
+        ecls_mode_options: ["VA-ECMO", "VV-ECMO"] // ["VA-ECMO", "VV-ECMO", "LVAD", "RVAD", "BIVAD", "WHOMB"]
       };
     },
     methods: {
