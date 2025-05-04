@@ -333,8 +333,6 @@ export default defineComponent({
           this.first_run = false
           this.statusMessage = "STATUS: model loaded succesfully."
         }
-
-      
         this.calcRunning = false;
         this.butCalcCaption = "CALCULATE";
         this.butCalcColor = "white";

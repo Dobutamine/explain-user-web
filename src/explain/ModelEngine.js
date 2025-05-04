@@ -265,11 +265,6 @@ const build = function (model_definition) {
       message: "",
       payload: [],
     });
-    _send({
-      type: "status",
-      message: "model build successful",
-      payload: [],
-    });
     return true;
   }
 };

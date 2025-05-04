@@ -296,7 +296,8 @@ export class Ecls extends BaseModelClass {
         this._is_pump_circuit = false
         break;
     }
-    console.log(new_mode)
+    this.switch_blood_components(this.ecls_running)
+    this.switch_gas_components(this.ecls_running)
   }
 
   set_clamp(state) {
