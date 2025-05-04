@@ -218,7 +218,8 @@ export default defineComponent({
       durations: [1, 2, 3, 5, 10, 20, 30, 60, 120, 240, 360, 600, 1200, 1800],
       current_model_definition: 'baseline_neonate',
       state_destination: "server",
-      state_format: "json"
+      state_format: "json",
+      first_run: true
     }
   },
   methods: {
@@ -328,6 +329,12 @@ export default defineComponent({
       this.statusMessage = "STATUS: " + explain.statusMessage
       this.$bus.emit('status', explain.statusMessage)
       if (this.statusMessage.includes("calculation ready")) {
+        if (this.first_run) {
+          this.first_run = false
+          this.statusMessage = "STATUS: model ready"
+        }
+
+      
         this.calcRunning = false;
         this.butCalcCaption = "CALCULATE";
         this.butCalcColor = "white";
@@ -479,7 +486,11 @@ export default defineComponent({
     try {
       document.removeEventListener("model_ready", () => this.$bus.emit("model_ready"));
     } catch {}
-    document.addEventListener("model_ready", () => this.$bus.emit("model_ready"));
+    document.addEventListener("model_ready", () => {
+      this.first_run = true;
+      explain.calculate(1)
+      this.$bus.emit("model_ready")
+    });
 
     try {
       document.removeEventListener("error", () => this.$bus.emit("model_failed"));

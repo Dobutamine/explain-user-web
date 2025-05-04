@@ -87,7 +87,8 @@ export default class Model {
           document.dispatchEvent(this._status_event)
           break;
         case "model_ready":
-          document.dispatchEvent(this._model_ready_event);
+          const model_ready_event = new CustomEvent("model_ready", { detail: e.data.payload, bubbles: true, cancelable: true, composed: false });
+          document.dispatchEvent(model_ready_event);
           break;
         case "rt_start":
           document.dispatchEvent(this._rt_start_event);
