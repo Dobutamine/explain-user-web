@@ -272,7 +272,6 @@ export class Ecls extends BaseModelClass {
       if (total_gas_flow > 0) {
         added_fico2 = (this.co2_gas_flow * 0.001 / total_gas_flow);
       }
-      console.log(added_fico2)
       this._fico2_gas = 0.0004 + added_fico2
 
       calc_gas_composition(this._gasin, this.fio2_gas, this.temp_gas, this.humidity_gas, this._fico2_gas);
@@ -616,7 +615,7 @@ export class Ecls extends BaseModelClass {
     let total_gas_flow = this.gas_flow + (this.co2_gas_flow / 1000.0)
     let added_fico2 = 0.0
     if (total_gas_flow > 0) {
-      added_fico2 = (this.co2_gas_flow / total_gas_flow);
+      added_fico2 = (this.co2_gas_flow * 0.001 / total_gas_flow);
     }
     this._fico2_gas = 0.0004 + added_fico2
 
