@@ -739,7 +739,16 @@ export default {
         this.update_component('ECLS_RE')
       } catch { }
     })
-    this.$bus.off("ecls_state_changed", (state) => console.log(state))
+    this.$bus.off("ecls_state_changed", (state) => { 
+      if (state) {
+        this.selected_shunts.push('ECLS')
+        this.selected_shunts = [...new Set(this.selected_shunts)];
+        this.toggleShunts()
+      } else {
+        this.selected_shunts.filter(item => item !== 'ECLS');
+        this.toggleShunts()
+      }
+    })
   },
   mounted() {
     // initialize and build the diagram
@@ -775,7 +784,16 @@ export default {
       } catch { }
 
     })
-    this.$bus.on("ecls_state_changed", (state) => console.log(state))
+    this.$bus.on("ecls_state_changed", (state) => { 
+      if (state) {
+        this.selected_shunts.push('ECLS')
+        this.selected_shunts = [...new Set(this.selected_shunts)];
+        this.toggleShunts()
+      } else {
+        this.selected_shunts = this.selected_shunts.filter(item => item !== 'ECLS');
+        this.toggleShunts()
+      }
+    })
   },
 };
 

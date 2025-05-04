@@ -65,7 +65,7 @@ export class Ecls extends BaseModelClass {
 
     // independent properties
     this.ecls_running = false             // flag whether the ecls is running
-    this.ecls_mode = "VA-ECMO"            // ecls mode (VA-ECMO/VV-ECMO/RVAD/LVAD/BIVAD/ARTWHOMB)
+    this.ecls_mode = "VA-ECMO"            // ecls mode (VA-ECMO/VV-ECMO/RVAD/LVAD/BIVAD/WHOMB)
     this.pres_atm = 760;                  // atmospheric pressure (mmHg)
     this.tubing_clamped = true;           // tubing clamped
     this.tubing_diameter = 0.25           // tubing diameter (inch)
@@ -131,6 +131,8 @@ export class Ecls extends BaseModelClass {
     this._gasoxy = null                   // reference to the oxygenator (GasCapacitance)
     this._gasoxy_out = null               // reference to the connector between the oxygenator and the outside gas compartment (Resistor)
     this._gasout = null                   // reference to the outside air compartment
+    this._is_oxy_circuit = true
+    this._is_pump_circuit = true;
 
     // local properties - others
     this._fico2_gas = 0.0004;             // fractional carbon dioxide content of the ECLS gas
@@ -157,19 +159,23 @@ export class Ecls extends BaseModelClass {
     this._drainage = this._model_engine.models['ECLS_DRAINAGE']
     this._tubin = this._model_engine.models["ECLS_TUBIN"]
     this._tubin_pump = this._model_engine.models["ECLS_TUBIN_PUMP"]
+    this._tubin_oxy = this._model_engine.models["ECLS_TUBIN_OXY"]
     this._pump = this._model_engine.models["ECLS_PUMP"]
     this._pump_oxy = this._model_engine.models["ECLS_PUMP_OXY"]
+    this._pump_tubout = this._model_engine.models["ECLS_PUMP_TUBOUT"]
     this._oxy = this._model_engine.models["ECLS_OXY"]
     this._oxy_tubout = this._model_engine.models["ECLS_OXY_TUBOUT"]
     this._tubout = this._model_engine.models["ECLS_TUBOUT"]
     this._return = this._model_engine.models["ECLS_RETURN"]
-
     this._gasin = this._model_engine.models["ECLS_GASIN"]
     this._gasin_oxy = this._model_engine.models["ECLS_GASIN_OXY"]
     this._gasoxy = this._model_engine.models["ECLS_GASOXY"]
     this._gasoxy_gasout = this._model_engine.models["ECLS_OXY_GASOUT"]
     this._gasout = this._model_engine.models["ECLS_GASOUT"]
     this._gasex = this._model_engine.models["ECLS_GASEX"]
+
+    // set the correct ecls mode
+    this.set_ecls_mode(this.ecls_mode)
 
     // setup blood containing system
     this._drainage.comp_from = this.drainage_origin
@@ -261,8 +267,38 @@ export class Ecls extends BaseModelClass {
     this.switch_gas_components(state)
   }
 
-  set_ecls_mode(new_mode) {}
-  
+  set_ecls_mode(new_mode) {
+    // (VA-ECMO/VV-ECMO/RVAD/LVAD/BIVAD/ARTWHOMB)
+    this.ecls_mode = new_mode
+    switch (this.ecls_mode) {
+      case "VA-ECMO":
+        this._is_oxy_circuit = true
+        this._is_pump_circuit = true
+        break;
+      case "VV-ECMO":
+        this._is_oxy_circuit = true
+        this._is_pump_circuit = true
+        break;
+      case "RVAD":
+        this._is_oxy_circuit = false
+        this._is_pump_circuit = true
+        break;
+      case "LVAD":
+        this._is_oxy_circuit = false
+        this._is_pump_circuit = true
+        break;
+      case "BIVAD":
+        this._is_oxy_circuit = false
+        this._is_pump_circuit = true
+        break;
+      case "WHOMB":
+        this._is_oxy_circuit = true
+        this._is_pump_circuit = false
+        break;
+    }
+    console.log(new_mode)
+  }
+
   set_clamp(state) {
     this.tubing_clamped = state
   }
@@ -354,7 +390,6 @@ export class Ecls extends BaseModelClass {
     this._return.comp_to = new_target
   }
 
-
   set_pump_volume(new_volume) {
     // volume in l
     if (new_volume > 0) {
@@ -366,14 +401,44 @@ export class Ecls extends BaseModelClass {
     this._drainage.is_enabled = state
     this._drainage.no_flow = this.tubing_clamped
     this._tubin.is_enabled = state
+
+    if (this._is_pump_circuit) {
+      this._pump.is_enabled = state
+      this._pump_oxy.is_enabled = state
+      this._pump_oxy.no_flow = !state
+
+      this._tubin_oxy.is_enabled = false
+      this._tubin_oxy.no_flow = true
+
+    } else {
+      this._pump.is_enabled = false
+      this._pump_oxy.is_enabled = false
+      this._pump_oxy.no_flow = true
+
+      this._tubin_oxy.is_enabled = state
+      this._tubin_oxy.no_flow = !state
+    }
+
     this._tubin_pump.is_enabled = state
     this._tubin_pump.no_flow = !state
-    this._pump.is_enabled = state
-    this._pump_oxy.is_enabled = state
-    this._pump_oxy.no_flow = !state
-    this._oxy.is_enabled = state
-    this._oxy_tubout.is_enabled = state
-    this._oxy_tubout.no_flow = !state
+
+    if (this._is_oxy_circuit) {
+      this._oxy.is_enabled = state
+      this._oxy_tubout.is_enabled = state
+      this._oxy_tubout.no_flow = !state
+
+      this._pump_tubout.is_enabled = false
+      this._pump_tubout.no_flow = true
+
+    } else {
+      this._oxy.is_enabled = false
+      this._oxy_tubout.is_enabled = false
+      this._oxy_tubout.no_flow = true
+
+      this._pump_tubout.is_enabled = state
+      this._pump_tubout.no_flow = !state
+    }
+
     this._tubout.is_enabled = state
     this._return.is_enabled = state
     this._return.no_flow = this.tubing_clamped
@@ -463,14 +528,25 @@ export class Ecls extends BaseModelClass {
   }
 
   switch_gas_components(state = true) {
-    this._gasin.is_enabled = state
-    this._gasin_oxy.is_enabled = state
-    this._gasin_oxy.no_flow = !state
-    this._gasoxy.is_enabled = state
-    this._gasoxy_gasout.is_enabled = state
-    this._gasoxy_gasout.no_flow = !state
-    this._gasout.is_enabled = state
-    this._gasex.is_enabled = state
+    if (this._is_oxy_circuit) {
+      this._gasin.is_enabled = state
+      this._gasin_oxy.is_enabled = state
+      this._gasin_oxy.no_flow = !state
+      this._gasoxy.is_enabled = state
+      this._gasoxy_gasout.is_enabled = state
+      this._gasoxy_gasout.no_flow = !state
+      this._gasout.is_enabled = state
+      this._gasex.is_enabled = state
+    } else {
+      this._gasin.is_enabled = false
+      this._gasin_oxy.is_enabled = false
+      this._gasin_oxy.no_flow = true
+      this._gasoxy.is_enabled = false
+      this._gasoxy_gasout.is_enabled = false
+      this._gasoxy_gasout.no_flow = true
+      this._gasout.is_enabled = false
+      this._gasex.is_enabled = false
+    }
   }
 
   set_gas_exchanger() {
