@@ -85,16 +85,16 @@ export class Ecls extends BaseModelClass {
     this.oxy_volume = 0.031               // volume of the oxygenator (l)
     this.oxy_resistance = 50;             // resistance of the oxygenator (mmHg/l*s)
     this.oxy_elastance = 15000;           // elastance of the oxygenator (mmHg/L)
-    this.oxy_dif_o2 = 0.001;              // oxygenator oxygen diffusion constant (mmol/mmHg)
-    this.oxy_dif_co2 = 0.001;             // oxygenator carbon dioxide diffusion constant (mmol/mmHg)
+    this.oxy_dif_o2 = 0.0001;             // oxygenator oxygen diffusion constant (mmol/mmHg)
+    this.oxy_dif_co2 = 0.0001;            // oxygenator carbon dioxide diffusion constant (mmol/mmHg)
     this.gas_flow = 0.5;                  // gas flowing through the gas part of the oxygenator (L/min)
     this.fio2_gas = 0.3;                  // fractional oxygen content of the oxygenator gas
     this.co2_gas_flow = 0.0;              // added carbon dioxide gas flow (ml/min)
     this.temp_gas = 37.0;                 // temperature of the oxygenator gas (°C)
     this.humidity_gas = 0.5;              // humidity of the oxygenator gas (0-1)
     this.pump_rpm = 2250;                 // rotations of the centrifugal pump (rpm)
-    this.pump_flow = 0.8                  // set pump flow on a roller pump (l/min)
 
+    
     // dependent properties
     this.blood_flow = 0.0;                // ECLS blood flow (L/min)
     this.p_ven = 0.0;                     // pressure on the drainage side of the ECLS system (mmHg)
