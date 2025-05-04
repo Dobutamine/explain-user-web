@@ -331,7 +331,7 @@ export default defineComponent({
       if (this.statusMessage.includes("calculation ready")) {
         if (this.first_run) {
           this.first_run = false
-          this.statusMessage = "STATUS: model ready"
+          this.statusMessage = "STATUS: model loaded succesfully."
         }
 
       
