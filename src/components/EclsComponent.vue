@@ -32,27 +32,55 @@
   
       <div v-if="isEnabled" class="q-mt-sm text-overline justify-center q-gutter-xs row">
         <div>
-          <q-toggle class="q-ml-sm q-pb-lg q-mr-sm" v-model="this.ecls_running" left-label label="ECLS" dense size="sm"
-            @update:model-value="toggleEcls" />
+          <q-toggle class="q-ml-sm q-pb-lg q-mr-sm" v-model="this.ecls_running" left-label dense size="xs"
+            @update:model-value="toggleEcls">
+            <q-icon name="fa-solid fa-power-off" size="xs"></q-icon>
+            <q-tooltip>ECLS on/off</q-tooltip>
+          </q-toggle>
         </div>
-        <div v-if="ecls_running">
-          <q-toggle class="q-ml-sm q-pb-lg q-mr-sm" v-model="clamped" left-label label="clamped" dense size="sm"
-            @update:model-value="set_clamp" />
+        <div>
+          <q-toggle class="q-ml-sm q-pb-lg q-mr-sm" v-model="clamped" left-label dense size="xs"
+            @update:model-value="set_clamp">
+            <q-icon name="fa-solid fa-road-lock" size="xs"></q-icon>
+            <q-tooltip>clamp circuit</q-tooltip>
+          </q-toggle>
+        </div>
+        <div>
+          <q-toggle v-model="pump_occlusive" class="q-ml-sm q-pb-lg q-mr-sm" left-label dense size="xs" @update:model-value="set_pump_occlusive">
+            <q-icon name="fa-solid fa-arrow-down-up-lock" size="xs"></q-icon>
+            <q-tooltip>occlusive pump?</q-tooltip></q-toggle>
+        </div>
+        <div>
+          <q-select v-model="ecls_mode" label="ecls mode" :options="ecls_mode_options"
+            @update:model-value="set_ecls_mode" color="blue" hide-hint filled dense stack-label
+            style="width: 110px; font-size: 12px" class="q-mb-sm" squared>
+            </q-select>
         </div>
 
-        <!-- <div v-if="ecls_running">
-          <q-btn-toggle class="q-ml-sm" v-model="curve_param" color="grey-9" size="sm" text-color="white"
-            toggle-color="primary" :options="[
-              { label: 'PRES', value: 'pres' },
-              { label: 'FLOW', value: 'flow' },
-            ]" @update:model-value="toggleCurveParam" />
+        <div>
+          <q-select v-model="drainage_origin" label="drainage" :options="cannulation_sites"
+            @update:model-value="set_drainage_origin" color="blue" hide-hint filled dense stack-label
+            style="width: 100px; font-size: 12px" class="q-mb-sm" squared>
+            <q-tooltip>site where the blood is drained from</q-tooltip>
+            </q-select>
+        </div>
+        <div>
+          <q-select v-model="return_target" label="return" :options="cannulation_sites"
+            @update:model-value="set_return_target" color="blue" hide-hint filled dense stack-label
+            style="width: 100px; font-size: 12px" class="q-mb-sm" squared>
+            <q-tooltip>site where the blood is returned to</q-tooltip>
+            </q-select>
+        </div>
+        <!-- <div>
+          <q-toggle v-model="advanced" class="q-ml-xs q-pb-lg q-mr-md" left-label dense size="xs">
+            <q-icon name="fa-solid fa-ellipsis" size="xs"></q-icon>
+            <q-tooltip>advanced parameters</q-tooltip></q-toggle>
         </div> -->
+
         <div v-if="ecls_running">
           <q-toggle v-model="graph_control" class="q-ml-sm" left-label dense size="sm"><q-icon name="fa-solid fa-chart-simple" size="xs"></q-icon><q-tooltip>chart options</q-tooltip></q-toggle>
         </div>
-        <div v-if="ecls_running">
-          <q-toggle v-model="advanced" class="q-ml-sm" left-label dense size="sm"><q-icon name="fa-solid fa-ellipsis" size="xs"></q-icon><q-tooltip>advanced parameters</q-tooltip></q-toggle>
-        </div>
+
   
       </div>
       <!-- ecmo controls -->
@@ -92,7 +120,7 @@
           </q-knob>
           <div :style="{ fontSize: '10px' }">rpm</div>
         </div>
-        <div class="q-mr-sm text-center">
+        <div v-if="ecls_mode.includes('ECMO') || ecls_mode =='WHOMB'" class="q-mr-sm text-center">
           <div class="knob-label">gas flow</div>
           <q-knob show-value font-size="12px" v-model="sweep_gas" size="60px" :thickness="0.22" :min="0" :max="5" :step="0.1"
             color="teal" track-color="grey-3" class="col" @update:model-value="set_sweep_gas">
@@ -100,7 +128,7 @@
           </q-knob>
           <div :style="{ fontSize: '10px' }">l/min</div>
         </div>
-        <div class="q-mr-sm text-center">
+        <div v-if="ecls_mode.includes('ECMO') || ecls_mode =='WHOMB'" class="q-mr-sm text-center">
           <div class="knob-label">fio2</div>
           <q-knob show-value font-size="12px" v-model="fio2" size="60px" :thickness="0.22" :min="21" :max="100" :step="1"
             color="teal" track-color="grey-3" class="col" @update:model-value="set_fio2">
@@ -108,7 +136,7 @@
           </q-knob>
           <div :style="{ fontSize: '10px' }">%</div>
         </div>
-        <div class="q-mr-sm text-center">
+        <div v-if="ecls_mode.includes('ECMO') || ecls_mode =='WHOMB'" class="q-mr-sm text-center">
           <div class="knob-label">co2 flow</div>
           <q-knob show-value font-size="12px" v-model="co2_gas_flow" size="60px" :thickness="0.22" :min="0" :max="1" :step="0.1"
             color="teal" track-color="grey-3" class="col" @update:model-value="set_co2_flow">
@@ -119,16 +147,16 @@
       </div>
 
   
-      <div v-if="isEnabled && ecls_running && advanced" class="q-mt-md q-mb-md text-overline justify-center q-gutter-xs row">
+      <div v-if="isEnabled && advanced" class="q-mt-md q-mb-md text-overline justify-center q-gutter-xs row">
         <q-input v-model="tubing_diameter" @update:model-value="set_tubing_diameter" color="blue" hide-hint filled
           label="tubing diameter (mm)" :min="0.25" :max="0.5" :step="0.125" dense stack-label type="number"
           style="font-size: 14px; width: 120px;" class="q-mr-sm text-center" squared>
         </q-input>
         <q-input v-model="tubing_length" @update:model-value="set_tubing_length" color="blue" hide-hint filled
-          label="tubing length (mm)" :min="0.5" :max="5" :step="0.1" dense stack-label type="number"
+          label="tubing length (m)" :min="0.5" :max="5" :step="0.1" dense stack-label type="number"
           style="font-size: 14px; width: 120px;" class="q-mr-sm text-center" squared>
         </q-input>
-        <q-input v-model="oxy_volume" @update:model-value="set_oxy_volume" color="blue" hide-hint filled label="oxy vol (l)"
+        <q-input v-if="ecls_mode.includes('ECMO') || ecls_mode =='WHOMB'" v-model="oxy_volume" @update:model-value="set_oxy_volume" color="blue" hide-hint filled label="oxy vol (l)"
           :min="0" :max="60" :step="0.1" dense stack-label type="number" style="font-size: 14px; width: 120px;"
           class="q-mr-sm text-center" squared>
         </q-input>
@@ -300,14 +328,73 @@
         p_art: 0.0,
         p_tmp: 0.0,
         svo2: 0.0,
-
+        drainage_origin: "RA",
+        return_target: "AAR",
+        ecls_mode: "ECMO",
+        pump_occlusive: false,
+        cannulation_sites: [],
+        cannulation_model_options: ["HeartChamber", "BloodVessel"],
+        ecls_mode_options: ["VA-ECMO", "VV-ECMO", "LVAD", "RVAD", "BIVAD", "WHOMB"]
       };
     },
     methods: {
       set_tubing_diameter() {},
       set_tubing_length() {},
-      set_drainage_origin() {},
-      set_return_target() {},
+      set_ecls_mode() {
+        switch (this.ecls_mode) {
+          case "VA-ECMO":
+            this.drainage_origin = "RA"
+            this.set_drainage_origin()
+            this.return_target = "AAR"
+            this.set_return_target()
+            break;
+          case "VV-ECMO":
+          this.drainage_origin = "RA"
+            this.set_drainage_origin()
+            this.return_target = "RA"
+            this.set_return_target()
+            break;
+          case "LVAD":
+            this.drainage_origin = "LV"
+            this.set_drainage_origin()
+            this.return_target = "AA"
+            this.set_return_target()
+            break;
+          case "RVAD":
+            this.drainage_origin = "RV"
+            this.set_drainage_origin()
+            this.return_target = "PA"
+            this.set_return_target()
+            break;
+          case "BIVAD":
+            this.drainage_origin = "LV"
+            this.set_drainage_origin()
+            this.return_target = "AA"
+            this.set_return_target()
+            break;
+          case "WHOMB":
+            this.drainage_origin = "AD"
+            this.set_drainage_origin()
+            this.return_target = "IVCI"
+            this.set_return_target()
+            break;
+        }
+        explain.callModelFunction("Ecls.set_ecls_mode", [this.ecls_mode])
+        this.$bus.emit("update_drainage_site", this.drainage_origin)
+        this.$bus.emit("update_return_site", this.return_target)
+      },
+      set_drainage_origin() {
+        explain.callModelFunction("Ecls.set_drainage_origin", [this.drainage_origin])
+        this.$bus.emit("update_drainage_site", this.drainage_origin)
+      },
+      set_return_target() {
+        explain.callModelFunction("Ecls.set_return_target", [this.return_target])
+        this.$bus.emit("update_return_site", this.return_target)
+      },
+      set_pump_occlusive() {
+        console.log(this.pump_occlusive)
+        explain.callModelFunction("Ecls.set_pump_occlusive", [this.pump_occlusive])
+      },
       set_oxy_volume() {},
       set_pump_volume() {},
       toggleHires() {
@@ -341,6 +428,7 @@
                 "Ecls.p_tmp"
                 ])
         }
+        this.$bus.emit("ecls_state_changed", this.ecls_running)
       },
       set_pump_speed() {
         if (this.update_model) {
@@ -698,12 +786,24 @@
           } else {
             this.mode = "OFF"
           }
+          this.drainage_origin = explain.modelState.models["Ecls"].drainage_origin
+          this.return_target = explain.modelState.models["Ecls"].return_target
           this.temp = explain.modelState.models["Ecls"].temp_gas
           this.humidity = explain.modelState.models["Ecls"].humidity_gas * 100.0
           this.pump_rpm = explain.modelState.models["Ecls"].pump_rpm
           this.fio2 = explain.modelState.models["Ecls"].fio2_gas * 100.0
           this.co2_gas_flow = explain.modelState.models["Ecls"].co2_gas_flow
           this.clamped = explain.modelState.models["Ecls"].tubing_clamped
+          this.pump_occlusive = explain.modelState.models["Ecls"].pump_occlusive
+          this.ecls_mode = explain.modelState.models["Ecls"].ecls_mode
+
+          if (this.cannulation_sites.length == 0) {
+            Object.values(explain.modelState.models).forEach(model => {
+              if (this.cannulation_model_options.includes(model.model_type)) {
+                this.cannulation_sites.push(model.name)
+              }
+            })
+          }
         }
       }
     },

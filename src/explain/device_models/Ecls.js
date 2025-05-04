@@ -65,13 +65,15 @@ export class Ecls extends BaseModelClass {
 
     // independent properties
     this.ecls_running = false             // flag whether the ecls is running
-    this.ecls_mode = "VA"                 // ecls mode (VA/VV)
+    this.ecls_mode = "VA-ECMO"            // ecls mode (VA-ECMO/VV-ECMO/RVAD/LVAD/BIVAD/ARTWHOMB)
     this.pres_atm = 760;                  // atmospheric pressure (mmHg)
     this.tubing_clamped = true;           // tubing clamped
     this.tubing_diameter = 0.25           // tubing diameter (inch)
     this.tubing_elastance = 11600         // tubing elastance (mmHg/L)
     this.tubing_in_length = 1.0           // tubing in length (m)
     this.tubing_out_length = 1.0          // tubing out length (m)
+    this.drainage_origin = "RA"           // drainage site 
+    this.return_target = "AAR"            // return target
     this.drainage_cannula_diameter = 12   // drainage cannula diameter (Fr)
     this.drainage_cannula_length = 0.11   // drainage cannula length (m)
     this.return_cannula_diameter = 12     // return cannula diameter (Fr)
@@ -79,6 +81,7 @@ export class Ecls extends BaseModelClass {
     this.pump_volume = 0.014              // volume of the pump (l)
     this.pump_resistance = 50;            // resistance of the pump (mmHg/l*s)
     this.pump_elastance = 15000;          // elastance of the pump (mmHg/L)
+    this.pump_occlusive = false;          
     this.oxy_volume = 0.031               // volume of the oxygenator (l)
     this.oxy_resistance = 50;             // resistance of the oxygenator (mmHg/l*s)
     this.oxy_elastance = 15000;           // elastance of the oxygenator (mmHg/L)
@@ -169,6 +172,9 @@ export class Ecls extends BaseModelClass {
     this._gasex = this._model_engine.models["ECLS_GASEX"]
 
     // setup blood containing system
+    this._drainage.comp_from = this.drainage_origin
+    this._return.comp_to = this.return_target
+    this._pump_oxy.no_back_flow = this.pump_occlusive
     this.calc_resistances()
     this.calc_tubing_volumes()
     this.set_pump_volume()
@@ -180,7 +186,7 @@ export class Ecls extends BaseModelClass {
     this.set_gas_flow()
     this.set_gas_exchanger()
 
-    // clap the circuit
+    // clamp the circuit
     this.tubing_clamped = true;
 
     // turn on the blood circuit
@@ -188,6 +194,7 @@ export class Ecls extends BaseModelClass {
 
     // turn on the gas circuit
     this.switch_gas_components(this.ecls_running)
+
 
     
   }
@@ -231,6 +238,9 @@ export class Ecls extends BaseModelClass {
       // set the pump rpm
       this._pump.pump_rpm = this.pump_rpm
 
+      // set the pump occlusive
+      this._pump_oxy.no_back_flow = this.pump_occlusive
+
       // update the gas flow
       this._gasin_oxy.r_for = (this._gasin.pres - this.pres_atm) / (this.gas_flow / 60.0);
       this._gasin_oxy.r_back = this._gasin_oxy.r_for;
@@ -251,6 +261,8 @@ export class Ecls extends BaseModelClass {
     this.switch_gas_components(state)
   }
 
+  set_ecls_mode(new_mode) {}
+  
   set_clamp(state) {
     this.tubing_clamped = state
   }
@@ -329,6 +341,11 @@ export class Ecls extends BaseModelClass {
     }
   }
 
+  set_pump_occlusive(state) {
+    this.pump_occlusive = state
+    this._pump_oxy.no_back_flow = this.pump_occlusive
+  }
+
   set_drainage_origin(new_target) {
     this._drainage.comp_from = new_target
   }
@@ -336,6 +353,7 @@ export class Ecls extends BaseModelClass {
   set_return_target(new_target) {
     this._return.comp_to = new_target
   }
+
 
   set_pump_volume(new_volume) {
     // volume in l

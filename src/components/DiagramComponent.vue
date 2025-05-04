@@ -739,6 +739,7 @@ export default {
         this.update_component('ECLS_RE')
       } catch { }
     })
+    this.$bus.off("ecls_state_changed", (state) => console.log(state))
   },
   mounted() {
     // initialize and build the diagram
@@ -774,6 +775,7 @@ export default {
       } catch { }
 
     })
+    this.$bus.on("ecls_state_changed", (state) => console.log(state))
   },
 };
 
