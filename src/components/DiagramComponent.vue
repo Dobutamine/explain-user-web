@@ -718,6 +718,9 @@ export default {
 
         } catch { }
       }
+    },
+    changeEclsMode(mode) {
+
     }
   },
   beforeUnmount() { 
@@ -749,6 +752,7 @@ export default {
         this.toggleShunts()
       }
     })
+    this.$bus.off("ecls_mode_change", (mode) => this.changeEclsMode(mode))
   },
   mounted() {
     // initialize and build the diagram
@@ -782,7 +786,6 @@ export default {
         this.state.diagram_definition.components['ECLS_RE'].dbcTo = new_site
         this.update_component('ECLS_RE')
       } catch { }
-
     })
     this.$bus.on("ecls_state_changed", (state) => { 
       if (state) {
@@ -794,6 +797,7 @@ export default {
         this.toggleShunts()
       }
     })
+    this.$bus.on("ecls_mode_change", (mode) => this.changeEclsMode(mode))
   },
 };
 

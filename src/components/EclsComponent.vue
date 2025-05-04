@@ -380,8 +380,7 @@
             break;
         }
         explain.callModelFunction("Ecls.set_ecls_mode", [this.ecls_mode])
-        this.$bus.emit("update_drainage_site", this.drainage_origin)
-        this.$bus.emit("update_return_site", this.return_target)
+        this.$bus.emit("ecls_mode_change", this.ecls_mode)
       },
       set_drainage_origin() {
         explain.callModelFunction("Ecls.set_drainage_origin", [this.drainage_origin])
