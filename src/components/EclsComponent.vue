@@ -410,20 +410,12 @@
         if (this.ecls_running) {
           explain.watchModelProps([
                 "Ecls.blood_flow",
-                "Ecls.gas_flow",
                 "Ecls.p_ven", 
                 "Ecls.p_int", 
                 "Ecls.p_art", 
-                "Ecls.pre_oxy_bloodgas", 
-                "Ecls.post_oxy_bloodgas"
                 ])
           explain.watchModelPropsSlow([
                 "Ecls.pre_oxy_so2",
-                "Ecls.pre_oxy_po2",
-                "Ecls.pre_oxy_pco2",
-                "Ecls.post_oxy_so2",
-                "Ecls.post_oxy_po2",
-                "Ecls.post_oxy_pco2",
                 "Ecls.p_tmp"
                 ])
         }
@@ -775,11 +767,6 @@
                 ])
             explain.watchModelPropsSlow([
                 "Ecls.pre_oxy_so2",
-                "Ecls.pre_oxy_po2",
-                "Ecls.pre_oxy_pco2",
-                "Ecls.post_oxy_so2",
-                "Ecls.post_oxy_po2",
-                "Ecls.post_oxy_pco2",
                 "Ecls.p_tmp"
                 ])
           } else {
@@ -787,6 +774,7 @@
           }
           this.drainage_origin = explain.modelState.models["Ecls"].drainage_origin
           this.return_target = explain.modelState.models["Ecls"].return_target
+          this.sweep_gas = explain.modelState.models["Ecls"].gas_flow
           this.temp = explain.modelState.models["Ecls"].temp_gas
           this.humidity = explain.modelState.models["Ecls"].humidity_gas * 100.0
           this.pump_rpm = explain.modelState.models["Ecls"].pump_rpm
@@ -828,11 +816,6 @@
 
       explain.watchModelPropsSlow([
         "Ecls.pre_oxy_so2",
-        "Ecls.pre_oxy_po2",
-        "Ecls.pre_oxy_pco2",
-        "Ecls.post_oxy_so2",
-        "Ecls.post_oxy_po2",
-        "Ecls.post_oxy_pco2",
         "Ecls.p_tmp"
         ])
   
