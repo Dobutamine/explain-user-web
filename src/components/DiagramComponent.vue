@@ -1,13 +1,5 @@
 <template>
   <q-card class="q-pb-xs q-pt-xs q-ma-sm" bordered>
-    <!-- <div v-if="shuntOptionsVisible" class="row justify-center">
-      <q-btn-toggle v-model="edit_mode" toggle-color="primary" size="sm" :options="[
-        { label: 'NONE', value: 0 },
-        { label: 'EDIT', value: 1 },
-        { label: 'SIZE', value: 2 }
-      ]" />
-    </div> -->
-
     <div class="stage" :style="{ display: display }">
       <canvas id="stage">
       </canvas>
@@ -99,6 +91,12 @@ export default {
         value: 'ECLS',
         description: 'ecls',
         models: ['ECLS_TUBIN', 'ECLS_OXY', 'ECLS_PUMP', 'ECLS_TUBOUT', 'ECLS_DR', 'ECLS_TUBIN_PUMP', 'ECLS_PUMP_OXY', 'ECLS_OXY_TUBOUT', 'ECLS_RE']
+      },
+      {
+        label: 'PLACENTA',
+        value: 'PLACENTA',
+        description: 'placenta',
+        models: []
       }
       ],
       shuntOptionsVisible: true

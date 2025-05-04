@@ -52,7 +52,7 @@ export class Ecls extends BaseModelClass {
       caption: "co2 flow (ml/min)",
       target: "co2_gas_flow",
       type: "number",
-      factor: 1000,
+      factor: 1,
       delta: 1,
       rounding: 0,
       ll: 0.0,
@@ -89,7 +89,7 @@ export class Ecls extends BaseModelClass {
     this.oxy_dif_co2 = 0.001;             // oxygenator carbon dioxide diffusion constant (mmol/mmHg)
     this.gas_flow = 0.5;                  // gas flowing through the gas part of the oxygenator (L/min)
     this.fio2_gas = 0.3;                  // fractional oxygen content of the oxygenator gas
-    this.co2_gas_flow = 0.4;              // added carbon dioxide gas flow (L/min)
+    this.co2_gas_flow = 0.0;              // added carbon dioxide gas flow (ml/min)
     this.temp_gas = 37.0;                 // temperature of the oxygenator gas (°C)
     this.humidity_gas = 0.5;              // humidity of the oxygenator gas (0-1)
     this.pump_rpm = 2250;                 // rotations of the centrifugal pump (rpm)
@@ -103,12 +103,18 @@ export class Ecls extends BaseModelClass {
     this.p_tmp = 0.0;                     // transmembrane pressure (mmHg)
     this.pre_oxy_bloodgas = {};           // object holding the blood gas pre-oxygenator
     this.post_oxy_bloodgas = {};          // object holding the blood gas post-oxygenator
+    this.pre_oxy_ph
+    this.pre_oxy_hco3
+    this.pre_oxy_be
     this.pre_oxy_so2
     this.pre_oxy_po2
     this.pre_oxy_pco2
     this.post_oxy_so2
     this.post_oxy_po2
     this.post_oxy_pco2
+    this.post_oxy_ph
+    this.post_oxy_hco3
+    this.post_oxy_be
     this.drainage_resistance = 20;        // resistance of the drainage cannula (depending on length and diameter) mmHg/l*s
     this.return_resistance = 20;          // resistance of the return cannula (depending on length and diameter) mmHg/l*s
     this.tubin_resistance = 20;           // resistance of the tubing in (depending on length and diameter) mmHg/l*s
@@ -233,10 +239,16 @@ export class Ecls extends BaseModelClass {
       this.calc_bloodgas()
 
       // get the parameters from the bloodgas
+      this.pre_oxy_ph = this.pre_oxy_bloodgas.ph
+      this.pre_oxy_hco3 = this.pre_oxy_bloodgas.hco3
+      this.pre_oxy_be = this.pre_oxy_bloodgas.be
       this.pre_oxy_so2 = this.pre_oxy_bloodgas.so2
       this.pre_oxy_po2= this.pre_oxy_bloodgas.po2
       this.pre_oxy_pco2 = this.pre_oxy_bloodgas.pco2
       
+      this.post_oxy_ph = this.post_oxy_bloodgas.ph
+      this.post_oxy_hco3 = this.post_oxy_bloodgas.hco3
+      this.post_oxy_be = this.post_oxy_bloodgas.be
       this.post_oxy_so2 = this.post_oxy_bloodgas.so2
       this.post_oxy_po2 = this.post_oxy_bloodgas.po2
       this.post_oxy_pco2 = this.post_oxy_bloodgas.pco2
@@ -252,7 +264,17 @@ export class Ecls extends BaseModelClass {
       this._gasin_oxy.r_back = this._gasin_oxy.r_for;
 
       // update gas source composition
-      this._fico2_gas = (this.co2_gas_flow * 0.001) / this.gas_flow;
+      // if the gas flow is 2 l/min and the co2 flow is 0.04 l/min
+      // total flow is 2.04 l/min and fico2 is 0.04
+
+      let total_gas_flow = this.gas_flow + (this.co2_gas_flow / 1000.0)
+      let added_fico2 = 0.0
+      if (total_gas_flow > 0) {
+        added_fico2 = (this.co2_gas_flow * 0.001 / total_gas_flow);
+      }
+      console.log(added_fico2)
+      this._fico2_gas = 0.0004 + added_fico2
+
       calc_gas_composition(this._gasin, this.fio2_gas, this.temp_gas, this.humidity_gas, this._fico2_gas);
 
       // update the clamp
@@ -268,7 +290,7 @@ export class Ecls extends BaseModelClass {
   }
 
   set_ecls_mode(new_mode) {
-    // (VA-ECMO/VV-ECMO/RVAD/LVAD/BIVAD/ARTWHOMB)
+    // (VA-ECMO/VV-ECMO/RVAD/LVAD/BIVAD/WHOMB)
     this.ecls_mode = new_mode
     switch (this.ecls_mode) {
       case "VA-ECMO":
@@ -318,6 +340,7 @@ export class Ecls extends BaseModelClass {
   }
 
   set_co2_flow(new_co2_flow) {
+    console.log(new_co2_flow)
     if (new_co2_flow >= 0) {
       this.co2_gas_flow = new_co2_flow
     }
@@ -590,7 +613,13 @@ export class Ecls extends BaseModelClass {
 
   set_gas_compositions() {
     // calculate the gas composition of the gas source and oxygenator
-    this._fico2_gas = (this.co2_gas_flow * 0.001) / this.gas_flow;
+    let total_gas_flow = this.gas_flow + (this.co2_gas_flow / 1000.0)
+    let added_fico2 = 0.0
+    if (total_gas_flow > 0) {
+      added_fico2 = (this.co2_gas_flow / total_gas_flow);
+    }
+    this._fico2_gas = 0.0004 + added_fico2
+
     calc_gas_composition(this._gasin, this.fio2_gas, this.temp_gas, this.humidity_gas, this._fico2_gas);
     calc_gas_composition(this._gasoxy, this.fio2_gas, this.temp_gas, this.humidity_gas, this._fico2_gas);
 

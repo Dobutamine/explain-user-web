@@ -138,11 +138,11 @@
         </div>
         <div v-if="ecls_mode.includes('ECMO') || ecls_mode =='WHOMB'" class="q-mr-sm text-center">
           <div class="knob-label">co2 flow</div>
-          <q-knob show-value font-size="12px" v-model="co2_gas_flow" size="60px" :thickness="0.22" :min="0" :max="1" :step="0.1"
+          <q-knob show-value font-size="12px" v-model="co2_gas_flow" size="60px" :thickness="0.22" :min="0" :max="100" :step="1"
             color="teal" track-color="grey-3" class="col" @update:model-value="set_co2_flow">
             {{ co2_gas_flow }}
           </q-knob>
-          <div :style="{ fontSize: '10px' }">l/min</div>
+          <div :style="{ fontSize: '10px' }">ml/min</div>
         </div>
       </div>
 
@@ -274,7 +274,7 @@
         isEnabled: true,
         pump_rpm: 1500.0,
         fio2: 21,
-        co2_gas_flow: 0.4,
+        co2_gas_flow: 0.0,
         sweep_gas: 1.0,
         temp: 37.0,
         humidity: 100,
@@ -373,9 +373,9 @@
             this.set_return_target()
             break;
           case "WHOMB":
-            this.drainage_origin = "AD"
+            this.drainage_origin = "UMB_ART"
             this.set_drainage_origin()
-            this.return_target = "IVCI"
+            this.return_target = "UMB_VEN"
             this.set_return_target()
             break;
         }
