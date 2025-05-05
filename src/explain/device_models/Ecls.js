@@ -151,10 +151,10 @@ export class Ecls extends BaseModelClass {
     this._blood_flow_list = []
     this._prev_ecls_state = false;
 
-    this.flowAverage = new RealTimeMovingAverage(3000);
-    this.pVenAverage = new RealTimeMovingAverage(300);
-    this.pIntAverage = new RealTimeMovingAverage(300);
-    this.pArtAverage = new RealTimeMovingAverage(300);
+    this._flowAverage = null
+    this._pVenAverage = null
+    this._pIntAverage = null
+    this._pArtAverage = null
   }
 
   init_model(args = {}) {
@@ -207,13 +207,16 @@ export class Ecls extends BaseModelClass {
     // turn on the gas circuit
     this.switch_gas_components(this.ecls_running)
 
-
+    this._flowAverage = new RealTimeMovingAverage(3000);
+    this._pVenAverage = new RealTimeMovingAverage(300);
+    this._pIntAverage = new RealTimeMovingAverage(300);
+    this._pArtAverage = new RealTimeMovingAverage(300);
     
   }
 
   calc_model() {
     if (this.ecls_running) {
-      this.blood_flow = this.flowAverage.addValue(this._return.flow * 60);
+      this.blood_flow = this._flowAverage.addValue(this._return.flow * 60);
     }
  
     this._update_counter += this._t
@@ -228,11 +231,11 @@ export class Ecls extends BaseModelClass {
       }
 
       // get the pressures
-      this.p_ven = this.pVenAverage.addValue(this._tubin.pres)
+      this.p_ven = this._pVenAverage.addValue(this._tubin.pres)
       if (!isNaN(this._pump.pres)) {
-        this.p_int = this.pIntAverage.addValue(this._pump.pres)
+        this.p_int = this._pIntAverage.addValue(this._pump.pres)
       }
-      this.p_art = this.pArtAverage.addValue(this._tubout.pres)
+      this.p_art = this._pArtAverage.addValue(this._tubout.pres)
       this.p_tmp = this.p_int - this.p_art
 
       // calculate the bloodgas
@@ -264,16 +267,12 @@ export class Ecls extends BaseModelClass {
       this._gasin_oxy.r_back = this._gasin_oxy.r_for;
 
       // update gas source composition
-      // if the gas flow is 2 l/min and the co2 flow is 0.04 l/min
-      // total flow is 2.04 l/min and fico2 is 0.04
-
       let total_gas_flow = this.gas_flow + (this.co2_gas_flow / 1000.0)
       let added_fico2 = 0.0
       if (total_gas_flow > 0) {
         added_fico2 = (this.co2_gas_flow * 0.001 / total_gas_flow);
       }
       this._fico2_gas = 0.0004 + added_fico2
-
       calc_gas_composition(this._gasin, this.fio2_gas, this.temp_gas, this.humidity_gas, this._fico2_gas);
 
       // update the clamp
@@ -340,7 +339,6 @@ export class Ecls extends BaseModelClass {
     }
   }
 
-
   set_fio2(new_fio2) {
     if (new_fio2 > 1) {
       this.fio2_gas = new_fio2 / 100
@@ -405,8 +403,9 @@ export class Ecls extends BaseModelClass {
 
   set_oxy_volume(new_volume) {
     // volume in l
-    if (new_volume > 0) {
+    if (new_volume >= 0) {
       this.oxy_volume = new_volume
+      this._oxy.u_vol = new_volume
     }
   }
 
@@ -425,8 +424,9 @@ export class Ecls extends BaseModelClass {
 
   set_pump_volume(new_volume) {
     // volume in l
-    if (new_volume > 0) {
+    if (new_volume >= 0) {
       this.pump_volume = new_volume
+      this._pump.u_vol = new_volume
     }
   }
 
@@ -586,8 +586,6 @@ export class Ecls extends BaseModelClass {
     this._gasex.dif_o2 = this.oxy_dif_o2
     this._gasex.dif_co2 = this.oxy_dif_co2
   }
-
-
 
   set_gas_volumes() {
     // set the gas source pressure at 400 mHg above atmospheric pressure

@@ -87,6 +87,12 @@ export default {
         models: ['IPS']
       },
       {
+        label: 'LUNGS',
+        value: 'LUNGS',
+        description: 'lungs',
+        models: ['ALL', 'ALR', 'GASEX_LL', 'GASEX_RL']
+      },
+      {
         label: 'ECLS',
         value: 'ECLS',
         description: 'ecls',
@@ -96,7 +102,7 @@ export default {
         label: 'PLACENTA',
         value: 'PLACENTA',
         description: 'placenta',
-        models: []
+        models: ['UMB_ART', 'UMB_VEN', 'PLF', 'AD_UMB_ART', 'UMB_ART_PLF','PLF_UMB_VEN','UMB_VEN_IVCI']
       }
       ],
       shuntOptionsVisible: true
@@ -697,24 +703,45 @@ export default {
       if (this.shuntOptionsVisible) {
         try {
           if (this.state.diagram_definition.components['DA'].enabled) {
-
             this.selected_shunts.push('DA')
-            this.showOrHideShunt(true, ['DA'])
           }
+        } catch {}
+        try {
           if (this.state.diagram_definition.components['FO'].enabled) {
             this.selected_shunts.push('FO')
           }
+        } catch {}
+        
+        try {
           if (this.state.diagram_definition.components['IPS'].enabled) {
             this.selected_shunts.push('IPS')
           }
+        } catch {}
+
+        try {
           if (this.state.diagram_definition.components['VSD'].enabled) {
             this.selected_shunts.push('VSD')
           }
+        } catch {}
+
+        try {
           if (this.state.diagram_definition.components['ECLS'].enabled) {
             this.selected_shunts.push('ECLS')
           }
+        } catch {}
 
-        } catch { }
+        try {
+          if (this.state.diagram_definition.components['ALL'].enabled) {
+            this.selected_shunts.push('LUNGS')
+          }
+        } catch {}
+
+        try {
+          if (this.state.diagram_definition.components['PLF'].enabled) {
+            this.selected_shunts.push('PLACENTA')
+          }
+        } catch {}
+
       }
     },
     changeEclsMode(mode) {

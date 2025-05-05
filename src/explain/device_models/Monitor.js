@@ -35,6 +35,8 @@ export class Monitor extends BaseModelClass {
     this.da = "DA_OUT"; // name of the ductus arteriosus
     this.vsd = "VSD"; // name of the ventricular septal defect
     this.ips = "IPS"; // name of the intrapulmonary shunt
+    this.ua = "AD_UMB_ART"; // name of the umbilical artery connection
+    this.uv = "UMB_VEN_IVCI"; // name of the umbilical vein connection
 
     // Dependent properties
     this.heart_rate = 0.0; // heartrate (bpm)
@@ -118,6 +120,8 @@ export class Monitor extends BaseModelClass {
     this._cor_ra = null; // reference to the coronaries to right atrium connector
     this._aa_br = null; // reference to the ascending aorta to brain connector
     this._ad_kid = null; // reference to the descending aorta to kidneys connector
+    this._ad_umb_art = null; // reference to the umbilical artery connector
+    this._umb_ven_ivci = null ;// reference to the umbilical vein connector
     this._fo = null; // reference to the foramen ovale
     this._da = null; // reference to the ductus arteriosus
     this._vsd = null; // reference to the ventricular septal defect
@@ -150,6 +154,8 @@ export class Monitor extends BaseModelClass {
     this._fo_flow_counter = 0.0;
     this._vsd_flow_counter = 0.0;
     this._ips_flow_counter = 0.0;
+    this._ua_flow_counter = 0.0;
+    this._uv_flow_counter = 0.0;
     this._hr_list = [];
     this._edv_lv_list = [];
     this._edv_rv_list = [];
@@ -197,6 +203,8 @@ export class Monitor extends BaseModelClass {
     this._fo = this._model_engine.models[this.fo] ?? null;
     this._vsd = this._model_engine.models[this.vsd] ?? null;
     this._ips = this._model_engine.models[this.ips] ?? null;
+    this._ad_umb_art = this._model_engine.models[this.ua] ?? null;
+    this._umb_ven_ivci = this._model_engine.models[this.uv] ?? null;
 
     // flag that the model is initialized
     this._is_initialized = true;
@@ -354,6 +362,17 @@ export class Monitor extends BaseModelClass {
         this.ips_flow = (this._ips_flow_counter / this._beats_time) * 60.0;
         this._ips_flow_counter = 0.0;
       }
+
+      if (this._ad_umb_art) {
+        this.ua_flow = (this._ua_flow_counter / this._beats_time) * 60.0;
+        this._ua_flow_counter = 0.0;
+      }
+
+      if (this._umb_ven_ivci) {
+        this.uv_flow = (this._uv_flow_counter / this._beats_time) * 60.0;
+        this._uv_flow_counter = 0.0;
+      }
+
       // reset the counters
       this._beats_counter = 0;
       this._beats_time = 0.0;
@@ -450,5 +469,7 @@ export class Monitor extends BaseModelClass {
     this._fo_flow_counter += this._fo ? this._fo.flow * this._t : 0.0;
     this._vsd_flow_counter += this._vsd ? this._vsd.flow * this._t : 0.0;
     this._ips_flow_counter += this._ips ? this._ips.flow * this._t : 0.0;
+    this._ua_flow_counter += this._ad_umb_art ? this._ad_umb_art.flow * this._t : 0.0;
+    this._uv_flow_counter += this._umb_ven_ivci ? this._umb_ven_ivci.flow * this._t : 0.0;
   }
 }

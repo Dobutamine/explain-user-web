@@ -279,17 +279,25 @@ export class Placenta extends BaseModelClass {
 
   constructor(model_ref, name = "") {
     // initialize the base model class setting all the general properties of the model which all models have in common
+    
+    // Average umbilical cord length at term          : – 55 cm
+    // Mean luminal CSA per artery at 37–39 weeks     : – 0.147 cm² (overall mean across 300 normal pregnancies) DOI: http://dx.doi.org/10.18203/2320-1770.ijrcog20183851
+    // Mean volume of umbilical artery                : 55 * 0.147 = 8.1 cm3 = 8.1 ml per artery => 16.2 ml for two arteries
+    // Mean luminal CSA umbilical vein at 37-39 weeks : - 0.58 cm2
+    // Mean volume of umbilical vein                  : 55 * 0.58 = 31.9 cm3 = 31.9 ml  Spurway J, Logan P, Pak S. The development, structure and blood flow within the umbilical cord with particular reference to the venous system. Australas J Ultrasound Med. 2012 Aug;15(3):97-102. doi: 10.1002/j.2205-0140.2012.tb00013.x. Epub 2015 Dec 31. PMID: 28191152; PMCID: PMC5025097.
+    // Mean volume of fetal part of placenta          : 427 ml DOI: 10.7863/jum.2008.27.11.1583
+
     super(model_ref, name);
 
     // -----------------------------------------------
     // initialize independent parameters
-    this.umb_art_diameter = 0.005; // diameter of the umbilical arteries combined (m)
-    this.umb_art_length = 0.5; // length of the umbilical arteries (m)
-    this.umb_ven_diameter = 0.005; // diameter of the umbilical vein (m)
-    this.umb_ven_length = 0.5; // length of the umbilical vein (m)
-    this.umb_art_res = 30000; // resistance of the umbilical artery (mmHg/L * s)
-    this.umb_ven_res = 30000; // resistance of the umbilical vein (mmHg/L * s)
-    this.plf_u_vol = 0.15; // unstressed volume of the fetal placenta (L)
+    this.umb_art_vol = 0.0162; // volume of two umbilical arteries (l)
+    this.umb_art_res = 7500; // resistance of the umbilical arter (mmHg*s/L)
+    this.umb_ven_vol = 0.0319; // volume of the umbilical vein (l)
+    this.umb_ven_res = 1300; // resistance of the umbilical vein (mmHg*s/L)
+    this.umb_art_diameter = 0.0043; // diameter of a single umbilical artery (m)
+    this.umb_ven_diameter = 0.0086; // diameter of the umbilical vein (m)
+    this.plf_u_vol = 0.427; // unstressed volume of the fetal placenta (L)
     this.plf_el_base = 5000.0; // elastance of the fetal placenta (mmHg/L)
     this.plm_u_vol = 0.5; // unstressed volume of the maternal placenta (L)
     this.plm_el_base = 5000.0; // elastance of the maternal placenta (mmHg/L)
@@ -321,68 +329,40 @@ export class Placenta extends BaseModelClass {
   }
 
   init_model(args = {}) {
-    // set the values of the independent properties
-    args.forEach((arg) => {
-      this[arg["key"]] = arg["value"];
-    });
+    // initialize the super class
+    super.init_model(args)
 
-    Object.keys(this.components).forEach(component_name => {
-      let component = {}
-      switch (this.components[component_name].model_type) {
-        case "BloodCapacitance":
-          component = new BloodCapacitance(this._model_engine, component_name)
-          break;
-        case "Resistor":
-          component = new Resistor(this._model_engine, component_name)
-          break;
-        case "BloodDiffusor":
-          component = new BloodDiffusor(this._model_engine, component_name)
-          break;
-      }
-  
-      let args = [];
-      for (const [key, value] of Object.entries(this.components[component_name])) {
-        args.push({ key, value });
-      }
-      component.init_model(args)
-      this._model_engine.models[component_name] = component
-    })
-
-
-    // get a reference to all ECLS components for performance reasons
+    // store references to the components
+    this._ad_umb_art = this._model_engine.models["AD_UMB_ART"];
     this._umb_art = this._model_engine.models["UMB_ART"];
-    this._umb_ven = this._model_engine.models["UMB_VEN"];
+    this._umb_art_plf = this._model_engine.models["UMB_ART_PLF"]
     this._plf = this._model_engine.models["PLF"];
+    this._plf_umb_ven = this._model_engine.models["PLF_UMB_VEN"]
+    this._umb_ven = this._model_engine.models["UMB_VEN"];
+    this._umb_ven_ivci = this._model_engine.models["UMB_VEN_IVCI"]
+    
     this._plm = this._model_engine.models["PLM"];
     this._pl_gasex = this._model_engine.models["PL_GASEX"];
 
-    // clear the placenta part list
-    this._placenta_parts = [];
-    // add the placenta parts to the list
-    this._placenta_parts.push(
-      this._umb_art,
-      this._umb_ven,
-      this._plf,
-      this._plm,
-      this._pl_gasex
-    );
 
-    // prepare placenta
-    this.set_umb_art_diameter(this.umb_art_diameter);
-    this.set_umb_art_length(this.umb_art_length);
-    this.set_umb_ven_diameter(this.umb_ven_diameter);
-    this.set_umb_ven_length(this.umb_ven_length);
-    this.set_fetal_placenta_volume(this.plf_u_vol);
-    this.set_fetal_placenta_elastance(this.plf_el_base);
-    this.set_maternal_placenta_volume(this.plm_u_vol);
-    this.set_maternal_placenta_elastance(this.plm_el_base);
-    this.set_maternal_to2(this.mat_to2);
-    this.set_maternal_tco2(this.mat_tco2);
-    this.set_dif_o2(this.dif_o2);
-    this.set_dif_co2(this.dif_co2);
+    // // prepare fetal placental system
+    // this.set_umb_art_diameter(this.umb_art_diameter);
+    // this.set_umb_art_length(this.umb_art_length);
+    // this.set_umb_ven_diameter(this.umb_ven_diameter);
+    // this.set_umb_ven_length(this.umb_ven_length);
+    // this.set_fetal_placenta_volume(this.plf_u_vol);
+    // this.set_fetal_placenta_elastance(this.plf_el_base);
 
-    // clamp the umbilical cord
-    this.clamp_umbilical_cord(true);
+    // // prepare maternal placental system
+    // this.set_maternal_placenta_volume(this.plm_u_vol);
+    // this.set_maternal_placenta_elastance(this.plm_el_base);
+    // this.set_maternal_to2(this.mat_to2);
+    // this.set_maternal_tco2(this.mat_tco2);
+    // this.set_dif_o2(this.dif_o2);
+    // this.set_dif_co2(this.dif_co2);
+
+    // // clamp the umbilical cord
+    // this.clamp_umbilical_cord(true);
 
     // flag that the model is initialized
     this._is_initialized = true;
@@ -391,33 +371,33 @@ export class Placenta extends BaseModelClass {
   }
 
   calc_model() {
-    // increase the update counter
-    this._update_counter += this._t;
-    if (this._update_counter > this._update_interval) {
-      this._update_counter = 0.0;
+    // // increase the update counter
+    // this._update_counter += this._t;
+    // if (this._update_counter > this._update_interval) {
+    //   this._update_counter = 0.0;
 
-      // store the maternal po2 and pco2
-      this.mat_po2 = this._plm.po2;
-      this.mat_pco2 = this._plm.pco2;
+    //   // store the maternal po2 and pco2
+    //   this.mat_po2 = this._plm.po2;
+    //   this.mat_pco2 = this._plm.pco2;
 
-      // store the arterial and venous flows
-      this.umb_art_flow = this._umb_art.flow * 60.0;
-      this.umb_ven_flow = this._umb_ven.flow * 60.0;
+    //   // store the arterial and venous flows
+    //   this.umb_art_flow = this._umb_art.flow * 60.0;
+    //   this.umb_ven_flow = this._umb_ven.flow * 60.0;
 
-      // determine the area of the umbilical artery and veins depending on the diameter
-      let ua_area =
-        Math.pow((this.umb_art_diameter * 0.001) / 2.0, 2.0) * Math.PI; // in m^2
-      let uv_area =
-        Math.pow((this.umb_ven_diameter * 0.001) / 2.0, 2.0) * Math.PI; // in m^2
+    //   // determine the area of the umbilical artery and veins depending on the diameter
+    //   let ua_area =
+    //     Math.pow((this.umb_art_diameter * 0.001) / 2.0, 2.0) * Math.PI; // in m^2
+    //   let uv_area =
+    //     Math.pow((this.umb_ven_diameter * 0.001) / 2.0, 2.0) * Math.PI; // in m^2
 
-      // calculate the velocity = flow_rate (in m^3/s) / (pi * radius^2) in m/s
-      if (ua_area > 0) {
-        this.umb_art_velocity = ((this.umb_art_flow * 0.001) / ua_area) * 1.4;
-      }
-      if (uv_area > 0) {
-        this.umb_ven_velocity = ((this.umb_ven_flow * 0.001) / uv_area) * 1.4;
-      }
-    }
+    //   // calculate the velocity = flow_rate (in m^3/s) / (pi * radius^2) in m/s
+    //   if (ua_area > 0) {
+    //     this.umb_art_velocity = ((this.umb_art_flow * 0.001) / ua_area) * 1.4;
+    //   }
+    //   if (uv_area > 0) {
+    //     this.umb_ven_velocity = ((this.umb_ven_flow * 0.001) / uv_area) * 1.4;
+    //   }
+    // }
   }
 
   switch_placenta(state) {
@@ -441,51 +421,12 @@ export class Placenta extends BaseModelClass {
     this._umb_ven.no_flow = state;
   }
 
-  set_umb_art_diameter(new_diameter) {
-    this.umb_art_diameter = new_diameter;
-    // calculate the resistance
-    this.umb_art_res = this.calc_tube_resistance(
-      this.umb_art_diameter,
-      this.umb_art_length
-    );
-    // reset the umbilical artery resistance
-    this.set_umb_art_resistance(this.umb_art_res);
-  }
-
-  set_umb_art_length(new_length) {
-    this.umb_art_length = new_length;
-    // calculate the resistance
-    this.umb_art_res = this.calc_tube_resistance(
-      this.umb_art_diameter,
-      this.umb_art_length
-    );
-    // reset the umbilical artery resistance
-    this.set_umb_art_resistance(this.umb_art_res);
-  }
 
   set_umb_art_resistance(new_res) {
     // reset the umbilical artery resistance
     this.umb_art_res = new_res;
     this._umb_art.r_for = this.umb_art_res;
     this._umb_art.r_back = this._umb_art.r_for;
-  }
-
-  set_umb_ven_diameter(new_diameter) {
-    this.umb_ven_diameter = new_diameter;
-    this.umb_ven_res = this.calc_tube_resistance(
-      this.umb_ven_diameter,
-      this.umb_ven_length
-    );
-    this.set_umb_ven_resistance(this.umb_ven_res);
-  }
-
-  set_umb_ven_length(new_length) {
-    this.umb_ven_length = new_length;
-    this.umb_ven_res = this.calc_tube_resistance(
-      this.umb_ven_diameter,
-      this.umb_ven_length
-    );
-    this.set_umb_ven_resistance(this.umb_ven_res);
   }
 
   set_umb_ven_resistance(new_res) {
@@ -512,16 +453,6 @@ export class Placenta extends BaseModelClass {
     this._plm.tco2 = new_tco2;
   }
 
-  set_maternal_solutes(new_solutes) {
-    Object.keys(new_solutes).forEach((key) => {
-      this._plm.solutes[key] = new_solutes[key];
-    });
-  }
-
-  set_maternal_solute(solute_name, solute_conc) {
-    this._plm.solutes[solute_name] = solute_conc
-  }
-
   set_maternal_placenta_volume(new_volume) {
     this._plm.u_vol = new_volume;
     this._plm.vol = new_volume;
@@ -541,27 +472,4 @@ export class Placenta extends BaseModelClass {
     this._pl_gasex.dif_co2 = this.dif_co2;
   }
 
-  calc_tube_volume(diameter, length) {
-    // return the volume in liters
-    return Math.PI * Math.pow(0.5 * diameter, 2) * length * 1000.0;
-  }
-
-  calc_tube_resistance(diameter, length, viscosity = 6.0) {
-    // resistance is calculated using Poiseuille's Law: R = (8 * n * L) / (PI * r^4)
-    // resistance is in mmHg * s / l
-    // L = length in meters, r = radius in meters, n = viscosity in centiPoise
-
-    // convert viscosity from centiPoise to Pa * s
-    let n_pas = viscosity / 1000.0;
-
-    // calculate radius in meters
-    let radius_meters = diameter / 2;
-
-    // calculate the resistance in Pa/m3
-    let res = (8.0 * n_pas * length) / (Math.PI * Math.pow(radius_meters, 4));
-
-    // convert resistance of Pa/m3 to mmHg/l
-    res = res * 0.00000750062;
-    return res;
-  }
 }

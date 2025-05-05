@@ -10,6 +10,16 @@ export class BloodVessel extends BloodCapacitance {
       type: "boolean"
     },
     {
+      caption: "volume",
+      target: "vol",
+      unit: "mL",
+      type: "number",
+      range:[0, 100],
+      factor: 1000.0,
+      delta: 0.1,
+      rounding: 1
+    },
+    {
       caption: "unstressed volume",
       target: "u_vol",
       unit: "mL",

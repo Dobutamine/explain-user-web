@@ -5,6 +5,11 @@ export class BloodVesselResistor extends Resistor {
   static model_type = "BloodVesselResistor";
   model_interface = [
     {
+      caption: "model is enabled",
+      target: "is_enabled",
+      type: "boolean"
+    },
+    {
       caption: "no flow allowed",
       target: "no_flow",
       type: "boolean",

@@ -391,11 +391,14 @@
         this.$bus.emit("update_return_site", this.return_target)
       },
       set_pump_occlusive() {
-        console.log(this.pump_occlusive)
         explain.callModelFunction("Ecls.set_pump_occlusive", [this.pump_occlusive])
       },
-      set_oxy_volume() {},
-      set_pump_volume() {},
+      set_oxy_volume() {
+        explain.callModelFunction("Ecls.set_oxy_volume", [this.oxy_volume])
+      },
+      set_pump_volume() {
+        explain.callModelFunction("Ecls.set_pump_volume", [this.pump_volume])
+      },
       toggleHires() {
         if (this.state.configuration.chart_hires) {
           this.rtWindow = 1.0

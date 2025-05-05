@@ -5,6 +5,16 @@ export class Coronaries extends BaseModelClass {
   static model_type = "Coronaries";
   static model_interface = [
     {
+      caption: "model is enabled",
+      target: "is_enabled",
+      type: "boolean"
+    },
+    {
+      caption: "myocardial oxygen balance",
+      target: "mob_active",
+      type: "boolean"
+    },
+    {
       caption: "minimal to2 (mmol/l)",
       target: "to2_min",
       type: "number",

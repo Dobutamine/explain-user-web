@@ -5,6 +5,11 @@ export class Resistor extends BaseModelClass {
   static model_type = "Resistor";
   model_interface = [
     {
+      caption: "model is enabled",
+      target: "is_enabled",
+      type: "boolean"
+    },
+    {
       caption: "no flow allowed",
       target: "no_flow",
       type: "boolean",

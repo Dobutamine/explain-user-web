@@ -6,6 +6,11 @@ export class GasExchanger extends BaseModelClass {
   static model_type = "GasExchanger";
   model_interface = [
     {
+      caption: "model is enabled",
+      target: "is_enabled",
+      type: "boolean"
+    },
+    {
       caption: "oxygen diffusion constant",
       target: "dif_o2",
       type: "number",

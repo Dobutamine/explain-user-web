@@ -6,6 +6,11 @@ export class BloodDiffusor extends BaseModelClass {
   static model_type = "BloodDiffusor";
   model_interface = [
     {
+      caption: "model is enabled",
+      target: "is_enabled",
+      type: "boolean"
+    },
+    {
       caption: "oxygen diffusion constant",
       target: "dif_o2",
       type: "number",
@@ -94,21 +99,35 @@ export class BloodDiffusor extends BaseModelClass {
     // diffuse the gases, where diffusion is partial pressure-driven
     let do2 = (this._comp_blood1.po2 - this._comp_blood2.po2) * _dif_o2 * this._t;
     // update the concentrations
-    this._comp_blood1.to2 = (this._comp_blood1.to2 * this._comp_blood1.vol - do2) / this._comp_blood1.vol;
-    this._comp_blood2.to2 = (this._comp_blood2.to2 * this._comp_blood2.vol + do2) / this._comp_blood2.vol;
+    if (!this._comp_blood1.fixed_composition) {
+      this._comp_blood1.to2 = (this._comp_blood1.to2 * this._comp_blood1.vol - do2) / this._comp_blood1.vol;
+    }
+    if (!this._comp_blood2.fixed_composition) {
+      this._comp_blood2.to2 = (this._comp_blood2.to2 * this._comp_blood2.vol + do2) / this._comp_blood2.vol;
+    }
+
 
     let dco2 = (this._comp_blood1.pco2 - this._comp_blood2.pco2) * _dif_co2 * this._t;
     // update the concentrations
-    this._comp_blood1.tco2 = (this._comp_blood1.tco2 * this._comp_blood1.vol - dco2) / this._comp_blood1.vol;
-    this._comp_blood2.tco2 = (this._comp_blood2.tco2 * this._comp_blood2.vol + dco2) / this._comp_blood2.vol;
+    if (!this._comp_blood1.fixed_composition) {
+      this._comp_blood1.tco2 = (this._comp_blood1.tco2 * this._comp_blood1.vol - dco2) / this._comp_blood1.vol;
+    }
+    if (!this._comp_blood2.fixed_composition) {
+      this._comp_blood2.tco2 = (this._comp_blood2.tco2 * this._comp_blood2.vol + dco2) / this._comp_blood2.vol;
+    }
+
 
     // diffuse the solutes, where the diffusion is concentration gradient-driven
     Object.keys(this.dif_solutes).forEach((sol) => {
       let dif = this.dif_solutes[sol] * this.dif_solutes_factor;
       let dsol = (this._comp_blood1.solutes[sol] - this._comp_blood2.solutes[sol]) * dif * this._t;
       // update the concentration
-      this._comp_blood1.solutes[sol] = (this._comp_blood1.solutes[sol] * this._comp_blood1.vol - dsol) / this._comp_blood1.vol;
-      this._comp_blood2.solutes[sol] = (this._comp_blood2.solutes[sol] * this._comp_blood2.vol + dsol) / this._comp_blood2.vol;
+      if (!this._comp_blood1.fixed_composition) {
+        this._comp_blood1.solutes[sol] = (this._comp_blood1.solutes[sol] * this._comp_blood1.vol - dsol) / this._comp_blood1.vol;
+      }
+      if (!this._comp_blood2.fixed_composition) {
+        this._comp_blood2.solutes[sol] = (this._comp_blood2.solutes[sol] * this._comp_blood2.vol + dsol) / this._comp_blood2.vol;
+      }
     });
   }
 }
