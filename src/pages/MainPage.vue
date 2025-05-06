@@ -136,6 +136,12 @@
               <q-tooltip>extracorporeal life support</q-tooltip>
             </q-tab>
 
+            <q-tab name="placenta">
+              <!-- <q-icon name="fa-solid fa-lungs" size="xs"></q-icon> -->
+              FETAL
+              <q-tooltip>fetal life</q-tooltip>
+            </q-tab>
+
 
             <q-tab name="time_chart">
               <q-icon name="fa-solid fa-chart-line" size="xs"></q-icon>
@@ -202,6 +208,18 @@
                 opacity: 0.5
               }">
                 <EclsComponent :alive="ecls_alive"></EclsComponent>
+              </q-scroll-area>
+            </q-tab-panel>
+
+            <q-tab-panel name="placenta">
+              <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
+                right: '5px',
+                borderRadius: '5px',
+                background: 'black',
+                width: '5px',
+                opacity: 0.5
+              }">
+                <PlacentaComponent :alive="placenta_alive"></PlacentaComponent>
               </q-scroll-area>
             </q-tab-panel>
 
@@ -354,6 +372,7 @@ import BigNumbersComponent from 'src/components/BigNumbersComponent.vue';
 import DiagramEditorComponent from 'src/components/DiagramEditor.vue';
 import TaskScheduler from 'src/components/TaskScheduler.vue';
 import EclsComponent from 'src/components/EclsComponent.vue';
+import PlacentaComponent from 'src/components/PlacentaComponent.vue';
 
 import { explain } from 'src/boot/explain';
 
@@ -381,7 +400,8 @@ export default defineComponent({
     NiceController,
     DiagramEditorComponent,
     TaskScheduler,
-    EclsComponent
+    EclsComponent,
+    PlacentaComponent
   },
   data() {
     return {
@@ -393,6 +413,7 @@ export default defineComponent({
       ventilator_alive: true,
       heart_alive: false,
       ecls_alive:true,
+      placenta_alive: true,
       xy_alive: true,
       diagram_alive: true,
       screen_offset: 135.0,
@@ -416,6 +437,7 @@ export default defineComponent({
           this.xy_alive = false
           this.diagram_alive = false
           this.ecls_alive = false
+          this.placenta_alive = false
           break;
         case "ecls":
           this.ecls_alive = true
@@ -424,6 +446,7 @@ export default defineComponent({
           this.chart_alive = false
           this.xy_alive = false
           this.diagram_alive = false
+          this.placenta_alive = false
           break;
         case "heart":
           this.ventilator_alive = false
@@ -432,6 +455,7 @@ export default defineComponent({
           this.xy_alive = false
           this.diagram_alive = false
           this.ecls_alive = false
+          this.placenta_alive = false
           break;
         case "time_chart":
           this.ventilator_alive = false
@@ -440,6 +464,7 @@ export default defineComponent({
           this.xy_alive = false
           this.diagram_alive = false
           this.ecls_alive = false
+          this.placenta_alive = false
           break;
         case "xy_chart":
           this.ventilator_alive = false
@@ -448,6 +473,7 @@ export default defineComponent({
           this.xy_alive = true
           this.diagram_alive = false
           this.ecls_alive = false
+          this.placenta_alive = false
           break;
         case "diagram":
           this.ventilator_alive = false
@@ -456,6 +482,16 @@ export default defineComponent({
           this.xy_alive = false
           this.diagram_alive = true
           this.ecls_alive = false
+          this.placenta_alive = false
+          break;
+        case "placenta":
+          this.ventilator_alive = false
+          this.heart_alive = false
+          this.chart_alive = false
+          this.xy_alive = false
+          this.diagram_alive = false
+          this.ecls_alive = false
+          this.placenta_alive = true
           break;
 
 

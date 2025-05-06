@@ -540,7 +540,12 @@ const get_model_data_slow = function () {
 const _model_step = function () {
   // iterate over all models
   Object.values(model.models).forEach((model_component) => {
-    model_component.step_model();
+    try {
+      model_component.step_model();
+    } catch {
+      console.log(model_component)
+    }
+
   });
 
   // call the datacollector

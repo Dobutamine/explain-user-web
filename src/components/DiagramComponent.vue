@@ -777,6 +777,16 @@ export default {
         this.toggleShunts()
       }
     })
+    this.$bus.off("placenta_state_changed", (state) => { 
+      if (state) {
+        this.selected_shunts.push('PLACENTA')
+        this.selected_shunts = [...new Set(this.selected_shunts)];
+        this.toggleShunts()
+      } else {
+        this.selected_shunts = this.selected_shunts.filter(item => item !== 'PLACENTA');
+        this.toggleShunts()
+      }
+    })
     this.$bus.off("ecls_mode_change", (mode) => this.changeEclsMode(mode))
   },
   mounted() {
@@ -822,6 +832,17 @@ export default {
         this.toggleShunts()
       }
     })
+    this.$bus.on("placenta_state_changed", (state) => { 
+      if (state) {
+        this.selected_shunts.push('PLACENTA')
+        this.selected_shunts = [...new Set(this.selected_shunts)];
+        this.toggleShunts()
+      } else {
+        this.selected_shunts = this.selected_shunts.filter(item => item !== 'PLACENTA');
+        this.toggleShunts()
+      }
+    })
+    
     this.$bus.on("ecls_mode_change", (mode) => this.changeEclsMode(mode))
   },
 };
