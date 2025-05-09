@@ -1,9 +1,7 @@
 
 
 import { BaseModelClass } from "../base_models/BaseModelClass.js";
-import { BloodCapacitance } from "../base_models/BloodCapacitance.js";
-import { BloodDiffusor } from "../base_models/BloodDiffusor.js"
-import { Resistor } from "../base_models/Resistor";
+
 
 export class Placenta extends BaseModelClass {
   // static properties
@@ -288,28 +286,28 @@ export class Placenta extends BaseModelClass {
     // Mean volume of fetal part of placenta          : 427 ml DOI: 10.7863/jum.2008.27.11.1583
 
     super(model_ref, name);
-
     // -----------------------------------------------
     // initialize independent parameters
     this.placenta_running = false
     this.umb_art_vol = 0.0162; // volume of two umbilical arteries (l)
+    this.umb_art_el_base = 20000.0; // elastance of the umbilical arteries (mmHg/L)
     this.umb_art_res = 7500; // resistance of the umbilical arter (mmHg*s/L)
     this.umb_ven_vol = 0.0319; // volume of the umbilical vein (l)
+    this.umb_ven_el_base = 1000.0; // elastance of the umbilical vein (mmHg/L)
     this.umb_ven_res = 1300; // resistance of the umbilical vein (mmHg*s/L)
     this.umb_art_diameter = 0.0043; // diameter of a single umbilical artery (m)
     this.umb_ven_diameter = 0.0086; // diameter of the umbilical vein (m)
-    this.plf_u_vol = 0.427; // unstressed volume of the fetal placenta (L)
-    this.plf_el_base = 5000.0; // elastance of the fetal placenta (mmHg/L)
-    this.plm_u_vol = 0.5; // unstressed volume of the maternal placenta (L)
+    this.plf_res = 50.0; // resistance of the fetal placenta (mmHg*s/L)
+    this.plf_vol = 0.427; // unstressed volume of the fetal placenta (L)
+    this.plf_el_base = 25000.0; // elastance of the fetal placenta (mmHg/L)
+    this.plm_vol = 0.5; // unstressed volume of the maternal placenta (L)
     this.plm_el_base = 5000.0; // elastance of the maternal placenta (mmHg/L)
     this.dif_o2 = 0.01; // diffusion constant of oxygen (mmol/mmHg)
     this.dif_co2 = 0.01; // diffusion constant of carbon dioxide (mmol/mmHg)
     this.mat_to2 = 6.5; // maternal total oxygen concentration (mmol/L)
     this.mat_tco2 = 23.0; // maternal total carbon dioxide concentration (mmol/L)
     this.umb_clamped = true; // flags whether the umbilical vessels are clamped or not
-    this.placenta_mode = "WHOMB"; // WHOMB / ECLS
-    this.drainage_origin = "AD"
-    this.return_target = "IVCI"
+
     // -----------------------------------------------
     // initialize dependent parameters
     this.umb_art_flow = 0.0; // flow in the umbilical artery (L/s)
@@ -321,104 +319,143 @@ export class Placenta extends BaseModelClass {
 
     // -----------------------------------------------
     // local parameters
-    this._umb_art = null; // reference to the umbilical artery (BloodResistor)
-    this._umb_ven = null; // reference to the umbilical vein (BloodResistor)
-    this._plm = null; // reference to the fetal placenta (BloodCapacitance)
-    this._plf = null; // reference to the maternal placenta (BloodCapacitance)
-    this._pl_gasex = null; // reference to the gas exchanger between fetal and maternal placenta (GasExchanger)
-    this._placenta_parts = []; // list holding all placental parts
     this._update_interval = 0.015; // update interval of the placenta model (s)
     this._update_counter = 0.0; // counter of the update interval (s)
   }
+  init_model(args = {}) {
+    super.init_model(args);
 
+    // build the placenta model
+    this.build_placenta();
+
+    // switch the placenta state
+    this.switch_placenta(this.placenta_running);
+  }
   calc_model() {
+    this._update_counter += this._t;
+    if (this._update_counter > this._update_interval) {
+      this._update_counter = 0.0;
+
+      // update the resistances
+      this._model_engine.models["AD_UMB_ART"].no_flow = this.umb_clamped
+      this._model_engine.models["UMB_VEN_IVCI"].no_flow = this.umb_clamped
+
+      this._model_engine.models["AD_UMB_ART"].r_for = this.umb_art_res;
+      this._model_engine.models["AD_UMB_ART"].r_back = this.umb_art_res;
+
+      this._model_engine.models["UMB_ART_PLF"].r_for = this.plf_res;
+      this._model_engine.models["UMB_ART_PLF"].r_back = this.plf_res;
+
+      this._model_engine.models["PLF_UMB_VEN"].r_for = this.umb_ven_res;
+      this._model_engine.models["PLF_UMB_VEN"].r_back = this.umb_ven_res;
+
+      // update the elastances
+      this._model_engine.models["UMB_ART"].el_base = this.umb_art_el_base;
+      this._model_engine.models["UMB_VEN"].el_base = this.umb_ven_el_base;
+      this._model_engine.models["PLF"].el_base = this.plf_el_base;
+
+      // update the unstressed volumes
+      this._model_engine.models["UMB_ART"].u_vol = this.umb_art_vol;
+      this._model_engine.models["UMB_VEN"].u_vol = this.umb_ven_vol;
+      this._model_engine.models["PLF"].u_vol = this.plf_vol;
+
+
+      // update the diffusion of oxygen and carbon dioxide
+      this._model_engine.models["PL_GASEX"].dif_o2 = this.dif_o2;
+      this._model_engine.models["PL_GASEX"].dif_co2 = this.dif_co2;
+
+      // update the maternal to2 and tco2
+      this._model_engine.models["PLM"].to2 = this.mat_to2;
+      this._model_engine.models["PLM"].tco2 = this.mat_tco2;
+      
+    }
   }
 
   switch_placenta(state) {
-    // switch the calculations of the placenta model
     this.placenta_running = state
-
+    // umbilical arteries
     this._model_engine.models["AD_UMB_ART"].is_enabled = state
     this._model_engine.models["AD_UMB_ART"].no_flow = this.umb_clamped
-
     this._model_engine.models["UMB_ART"].is_enabled = state
     this._model_engine.models["UMB_ART_PLF"].is_enabled = state
     this._model_engine.models["UMB_ART_PLF"].no_flow  = !state
-
+    // fetal and maternal part of the placenta
     this._model_engine.models["PLF"].is_enabled = state
     this._model_engine.models["PLF_UMB_VEN"].is_enabled = state
     this._model_engine.models["PLF_UMB_VEN"].no_flow = !state
-
+    this._model_engine.models["PLM"].is_enabled = state
+    this._model_engine.models["PL_GASEX"].is_enabled = state
+    // umbilical vein
     this._model_engine.models["UMB_VEN"].is_enabled = state
     this._model_engine.models["UMB_VEN_IVCI"].is_enabled = state
     this._model_engine.models["UMB_VEN_IVCI"].no_flow = this.umb_clamped
-    
-    this._model_engine.models["PLM"].is_enabled = state
-    this._model_engine.models["PL_GASEX"].is_enabled = state
-
   }
-
+  build_placenta() {
+    // resistor between descdending aorta and umbilical arteries
+    this._model_engine.models["AD_UMB_ART"].no_flow = this.umb_clamped
+    this._model_engine.models["AD_UMB_ART"].no_back_flow = false
+    this._model_engine.models["AD_UMB_ART"].r_for = this.umb_art_res;
+    this._model_engine.models["AD_UMB_ART"].r_back = this.umb_art_res;
+    // bloodvessel model of the umbilical arteries
+    this._model_engine.models["UMB_ART"].vol = this.umb_art_vol;
+    this._model_engine.models["UMB_ART"].u_vol = this.umb_art_vol;
+    this._model_engine.models["UMB_ART"].el_base = this.umb_art_el_base;
+    // resistor between umbilical arteries and fetal placenta
+    this._model_engine.models["UMB_ART_PLF"].no_flow = !this.placenta_running
+    this._model_engine.models["UMB_ART_PLF"].no_back_flow = false
+    this._model_engine.models["UMB_ART_PLF"].r_for = this.plf_res;
+    this._model_engine.models["UMB_ART_PLF"].r_back = this.plf_res;
+    // fetal placenta
+    this._model_engine.models["PLF"].vol = this.plf_vol;
+    this._model_engine.models["PLF"].u_vol = this.plf_vol;
+    this._model_engine.models["PLF"].el_base = this.plf_el_base;
+    this._model_engine.models["PL_GASEX"].dif_o2 = this.dif_o2;
+    this._model_engine.models["PL_GASEX"].dif_co2 = this.dif_co2;
+    // maternal placenta
+    this._model_engine.models["PLM"].vol = this.plm_vol;
+    this._model_engine.models["PLM"].u_vol = this.plm_vol;
+    this._model_engine.models["PLM"].el_base = this.plm_el_base;
+    // resistor between fetal placenta and umbilical vein
+    this._model_engine.models["PLF_UMB_VEN"].no_flow = !this.placenta_running
+    this._model_engine.models["PLF_UMB_VEN"].no_back_flow = false
+    this._model_engine.models["PLF_UMB_VEN"].r_for = this.umb_ven_res;
+    this._model_engine.models["PLF_UMB_VEN"].r_back = this.umb_ven_res;
+    // bloodvessel model of the umbilical vein
+    this._model_engine.models["UMB_VEN"].vol = this.umb_ven_vol;
+    this._model_engine.models["UMB_VEN"].u_vol = this.umb_ven_vol;
+    this._model_engine.models["UMB_VEN"].el_base = this.umb_ven_el_base;
+    // resistor between umbilical vein and inferior vena cava
+    this._model_engine.models["UMB_VEN_IVCI"].no_flow = this.umb_clamped
+    this._model_engine.models["UMB_VEN_IVCI"].no_back_flow = false
+    this._model_engine.models["UMB_VEN_IVCI"].r_for = 50;
+    this._model_engine.models["UMB_VEN_IVCI"].r_back = 50;
+  }
   clamp_umbilical_cord(state) {
     // determines whether or not the umbilical vessels are clamped by setting the no_flow property
     this.umb_clamped = state;
-    this._umb_art.no_flow = state;
-    this._umb_ven.no_flow = state;
   }
-
-  set_mode(new_mode) {}
-
-  set_return_target(new_target) {}
-
-  set_drainage_origin(new_drainage) {}
-
-  set_umb_art_resistance(new_res) {
-    // reset the umbilical artery resistance
+  set_umbilical_arteries_resistance(new_res) {
+    // reset the umbilical arteries resistance
     this.umb_art_res = new_res;
-    this._umb_art.r_for = this.umb_art_res;
-    this._umb_art.r_back = this._umb_art.r_for;
   }
-
-  set_umb_ven_resistance(new_res) {
+  set_umbilical_vein_resistance(new_res) {
     // reset the umbilical vein resistance
     this.umb_ven_res = new_res;
-    this._umb_ven.r_for = this.umb_ven_res;
-    this._umb_ven.r_back = this._umb_art.r_for;
   }
-
-  set_fetal_placenta_volume(new_volume) {
-    this._plf.u_vol = new_volume;
-    this._plf.vol = new_volume;
+  set_fetal_placenta_resistance(new_res) {  
+    // reset the fetal placenta resistance
+    this.plf_res = new_res;
   }
-
-  set_fetal_placenta_elastance(new_elastance) {
-    this._plf.el_base = new_elastance;
-  }
-
-  set_maternal_to2(new_to2) {
-    this._plm.to2 = new_to2;
-  }
-
-  set_maternal_tco2(new_tco2) {
-    this._plm.tco2 = new_tco2;
-  }
-
-  set_maternal_placenta_volume(new_volume) {
-    this._plm.u_vol = new_volume;
-    this._plm.vol = new_volume;
-  }
-
-  set_maternal_placenta_elastance(new_elastance) {
-    this._plm.el_base = new_elastance;
-  }
-
   set_dif_o2(new_dif_o2) {
     this.dif_o2 = new_dif_o2;
-    this._pl_gasex.dif_o2 = this.dif_o2;
   }
-
   set_dif_co2(new_dif_co2) {
     this.dif_co2 = new_dif_co2;
-    this._pl_gasex.dif_co2 = this.dif_co2;
   }
-
+  set_mat_to2(new_to2) {
+    this.mat_to2 = new_to2;
+  }
+  set_mat_tco2(new_tco2) {
+    this.mat_tco2 = new_tco2;
+  }
 }

@@ -32,33 +32,12 @@
         </div>
         <div>
           <q-toggle class="q-ml-sm q-pb-lg q-mr-sm" v-model="clamped" left-label dense size="xs"
-            @update:model-value="set_clamp">
-            <q-icon name="fa-solid fa-road-lock" size="xs"></q-icon>
+            @update:model-value="clampUmbilicalCord">
+            <q-icon name="fa-solid fa-road-lock" size=  "xs"></q-icon>
             <q-tooltip>clamp umbilical cord</q-tooltip>
           </q-toggle>
         </div>
 
-        <div>
-          <q-select v-model="placenta_mode" label="placenta mode" :options="placenta_mode_options"
-            @update:model-value="set_placenta_mode" color="blue" hide-hint filled dense stack-label
-            style="width: 110px; font-size: 12px" class="q-mb-sm" squared>
-            </q-select>
-        </div>
-
-        <div>
-          <q-select v-model="drainage_origin" label="drainage" :options="cannulation_sites"
-            @update:model-value="set_drainage_origin" color="blue" hide-hint filled dense stack-label
-            style="width: 100px; font-size: 12px" class="q-mb-sm" squared>
-            <q-tooltip>site where the blood is drained from</q-tooltip>
-            </q-select>
-        </div>
-        <div>
-          <q-select v-model="return_target" label="return" :options="cannulation_sites"
-            @update:model-value="set_return_target" color="blue" hide-hint filled dense stack-label
-            style="width: 100px; font-size: 12px" class="q-mb-sm" squared>
-            <q-tooltip>site where the blood is returned to</q-tooltip>
-            </q-select>
-        </div>
 
         <div v-if="placenta_running">
           <q-toggle v-model="graph_control" class="q-ml-sm" left-label dense size="sm"><q-icon name="fa-solid fa-chart-simple" size="xs"></q-icon><q-tooltip>chart options</q-tooltip></q-toggle>
@@ -66,7 +45,7 @@
 
   
       </div>
-      <!-- ecmo controls -->
+      <!-- placenta controls -->
       <div v-if="isEnabled && placenta_running && graph_control" class="text-overline justify-center q-gutter-sm row">
         <div>
           <q-toggle v-model="autoscale" left-label label="autoscaling" dense size="sm"
@@ -98,7 +77,7 @@
           <div class="knob-label">art res</div>
           <q-knob show-value font-size="12px" v-model="umb_art_res" size="60px" :min="0" :max="5000" :step="1"
             :thickness="0.22" color="teal" track-color="grey-3" class="col"
-            @update:model-value="set_umb_art_res">
+            @update:model-value="setUmbilicalArteriesResistance">
             {{ umb_art_res }}
           </q-knob>
           <div :style="{ fontSize: '10px' }">rpm</div>
@@ -106,7 +85,7 @@
         <div class="q-mr-sm text-center">
           <div class="knob-label">ven res</div>
           <q-knob show-value font-size="12px" v-model="umb_ven_res" size="60px" :thickness="0.22" :min="0" :max="5" :step="0.1"
-            color="teal" track-color="grey-3" class="col" @update:model-value="set_umb_ven_res">
+            color="teal" track-color="grey-3" class="col" @update:model-value="setUmbilicalVeinResistance">
             {{ umb_ven_res }}
           </q-knob>
           <div :style="{ fontSize: '10px' }">l/min</div>
@@ -114,7 +93,7 @@
         <div class="q-mr-sm text-center">
           <div class="knob-label">mat to2</div>
           <q-knob show-value font-size="12px" v-model="mat_to2" size="60px" :thickness="0.22" :min="21" :max="100" :step="1"
-            color="teal" track-color="grey-3" class="col" @update:model-value="set_mat_to2">
+            color="teal" track-color="grey-3" class="col" @update:model-value="setMatTO2">
             {{ mat_to2 }}
           </q-knob>
           <div :style="{ fontSize: '10px' }">%</div>
@@ -122,7 +101,7 @@
         <div class="q-mr-sm text-center">
           <div class="knob-label">mat tco2</div>
           <q-knob show-value font-size="12px" v-model="mat_tco2" size="60px" :thickness="0.22" :min="0" :max="100" :step="1"
-            color="teal" track-color="grey-3" class="col" @update:model-value="set_mat_tco2">
+            color="teal" track-color="grey-3" class="col" @update:model-value="setMatTCO2">
             {{ mat_tco2 }}
           </q-knob>
           <div :style="{ fontSize: '10px' }">ml/min</div>
@@ -229,7 +208,6 @@
     },
     data() {
       return {
-        placenta_running: false,
         presetsEnabled: true,
         showPresets: false,
         show_summary: false,
@@ -276,88 +254,75 @@
         curve_param: "pres",
         graph_control: false,
         advanced: false,
-
-        umb_cord_length: 0.55,
+        // model independent parameters
+        placenta_running: false,
+        clamped: false,
         umb_art_res: 7500,
-        umb_art_vol: 0.0162,
-        umb_art_diameter: 0.0043,
         umb_ven_res: 1300,
-        umb_ven_vol: 0.0319,
-        umb_ven_diameter: 0.0086,
+        fetal_placenta_res: 50,
         dif_o2: 0.01,
         dif_co2: 0.01,
         mat_to2: 6.5,
         mat_tco2: 23.0,
-
+        //model dependent variables
         umb_art_flow: 0.0,
         umb_art_velocity: 0.0,
         umb_ven_flow: 0.0,
         umb_ven_velocity: 1.0,
         mat_po2: 0.0,
-        mat_pco2: 0.0,
-
-        clamped: false,
-        mode: "OFF",
-        tubing_diameter: 0.25,
-        tubing_length: 2,
-        oxy_volume: 0.03,
-        pump_volume: 0.342,
-
-        drainage_origin: "AD",
-        return_target: "IVCI",
-        placenta_mode: "WHOMB",
-        placenta_mode_options: ["WHOMB", "ECLS"],
-        cannulation_sites: [],
-        cannulation_model_options: ["HeartChamber", "BloodVessel"],
- 
+        mat_pco2: 0.0
       };
     },
     methods: {
-      set_mat_tco2() {},
-      set_mat_to2() {},
-      set_umb_art_res() {},
-      set_umb_ven_res() {},
-      set_placenta_mode() {
-        switch (this.placenta_mode) {
-          case "WHOMB":
-            this.drainage_origin = "AD"
-            this.set_drainage_origin()
-            this.return_target = "IVCI"
-            this.set_return_target()
-            break;
-          case "ECLS":
-            this.drainage_origin = "AD"
-            this.set_drainage_origin()
-            this.return_target = "IVCI"
-            this.set_return_target()
-            break;
-        }
-        explain.callModelFunction("Placenta.set_mode", [this.placenta_mode])
-        this.$bus.emit("placenta_mode_change", this.placenta_mode)
-      },
-      set_drainage_origin() {
-        explain.callModelFunction("Placenta.set_drainage_origin", [this.drainage_origin])
-        this.$bus.emit("update_placenta_drainage_site", this.drainage_origin)
-      },
-      set_return_target() {
-        explain.callModelFunction("Placenta.set_return_target", [this.return_target])
-        this.$bus.emit("update_placenta_return_site", this.return_target)
-      },
-      set_clamp() {
-        explain.callModelFunction("Placenta.clamp_umbilical_cord", [this.clamped])
-      },
+      // switch on/off the placenta model
       togglePlacenta() {
         explain.callModelFunction("Placenta.switch_placenta", [this.placenta_running])
+        // if the placenta model is turned on we want to watch some parameters
         if (this.placenta_running) {
+          // high resolution parameters of the placenta model
           explain.watchModelProps([
                 "Placenta.umb_art_flow",
                 "Placenta.umb_ven_flow", 
                 ])
+          // low resolution parameters of the placenta model
           explain.watchModelPropsSlow([])
         }
+        // send a message that the placenta model state has changed (mainly for the diagram controller)
         this.$bus.emit("placenta_state_changed", this.placenta_running)
       },
-
+      // clamp the umbilical cord
+      clampUmbilicalCord() {
+        explain.callModelFunction("Placenta.clamp_umbilical_cord", [this.clamped])
+      },
+      // change the resistance of the umbilical arteries
+      setUmbilicalArteriesResistance() {
+        explain.callModelFunction("Placenta.set_umbilical_arteries_resistance", [this.umb_art_res])
+      },
+      // change the resistance of the umbilical vein
+      setUmbilicalVeinResistance() {
+       explain.callModelFunction("Placenta.set_umbilical_vein_resistance", [this.umb_ven_res])
+      },
+      // change the resistance of the fetal placenta
+      setFetalPlacentaResistance() {
+        explain.callModelFunction("Placenta.set_fetal_placenta_resistance", [this.fetal_placenta_res])
+      }, 
+      // change the diffusion coefficient of oxygen
+      setDiffO2() {
+        explain.callModelFunction("Placenta.set_dif_o2", [this.dif_o2])
+      },
+      // change the diffusion coefficient of carbon dioxide
+      setDiffCO2() {
+        explain.callModelFunction("Placenta.set_dif_co2", [this.dif_co2])
+      },
+      // change maternal total oxygen content
+      setMatTO2() {
+        explain.callModelFunction("Placenta.set_mat_to2", [this.mat_to2])
+      },
+      // change materna. total co2 content
+      setMatTCO2() {
+        explain.callModelFunction("Placenta.set_mat_tco2", [this.mat_tco2])
+      },
+      // component and graph functions
       toggleHires() {
         if (this.state.configuration.chart_hires) {
           this.rtWindow = 1.0
@@ -646,27 +611,13 @@
       processModelState() {
         if (explain.modelState.models) {
           this.placenta_running = explain.modelState.models["Placenta"].placenta_running
-          if (this.placenta_running) {
-            this.mode = explain.modelState.models["Placenta"].placenta_mode
-            explain.watchModelProps([
-                "Placenta.umb_art_flow"
-                ])
-            explain.watchModelPropsSlow([])
-          } else {
-            this.mode = "OFF"
-          }
-          this.placenta_running = explain.modelState.models["Placenta"].placenta_running
-          this.drainage_origin = explain.modelState.models["Placenta"].drainage_origin
-          this.return_target = explain.modelState.models["Placenta"].return_target
-
-          if (this.cannulation_sites.length == 0) {
-            Object.values(explain.modelState.models).forEach(model => {
-              if (this.cannulation_model_options.includes(model.model_type)) {
-                this.cannulation_sites.push(model.name)
-              }
-            })
-          }
-        }
+          this.umb_art_res = explain.modelState.models["Placenta"].umb_art_res
+          this.umb_ven_res = explain.modelState.models["Placenta"].umb_ven_res
+          this.fetal_placenta_res = explain.modelState.models["Placenta"].fetal_placenta_res
+          this.dif_o2 = explain.modelState.models["Placenta"].dif_o2
+          this.dif_co2 = explain.modelState.models["Placenta"].dif_co2
+          this.mat_to2 = explain.modelState.models["Placenta"].mat_to2
+          this.mat_tco2 = explain.modelState.models["Placenta"].mat_tco2
       }
     },
     beforeUnmount() {
@@ -674,7 +625,6 @@
       this.$bus.off("rts", () => { if (this.placenta_running) this.dataUpdateSlow()});
       this.$bus.off("data", () => { if (this.placenta_running) this.dataUpdate()});
       this.$bus.off("state", this.processModelState)
-
     },
     mounted() {
       this.$bus.on("rtf", () => { if (this.placenta_running) this.dataUpdateRt()});
@@ -682,15 +632,14 @@
       this.$bus.on("data", () => { if (this.placenta_running) this.dataUpdate()});
       this.$bus.on("state", this.processModelState)
 
-      explain.watchModelProps([
-        "Placenta.umb_art_flow",
-        ])
+      explain.watchModelProps(["Placenta.umb_art_flow"])
 
       explain.watchModelPropsSlow([])
   
       // check whether hires is enabled
       this.toggleHires()
     },
+  }
   };
   </script>
   
