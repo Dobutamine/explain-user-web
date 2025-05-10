@@ -196,15 +196,59 @@ export class Circulation extends BaseModelClass {
     // local properties
     this._update_interval = 0.015; // update interval (s)
     this._update_counter = 0.0; // update interval counter (s)
+    this._prev_sar_factor = 1.0; // systemic arterial resistance factor
+    this._prev_par_factor = 1.0; // pulmonary arterial resistance factor
+    this._prev_sae_factor = 1.0; // systemic arterial elastance factor
+    this._prev_pae_factor = 1.0; // pulmonary arterial elastance factor
+    this._prev_svr_factor = 1.0; // systemic venous resistance factor
+    this._prev_sve_factor = 1.0; // systemic venous elastance factor
+    this._prev_pvr_factor = 1.0; // pulmonary venous resistance factor
+    this._prev_pve_factor = 1.0; // pulmonary venous elastance factor
+    this._prev_cape_factor = 1.0; // capillary elastance factor
   }
 
-  change_svr(factor) {
-    this.sar_factor = factor * 10
-  }
   calc_model() {
     this._update_counter += this._t;
     if (this._update_counter > this._update_interval) {
       this._update_counter = 0.0;
+
+      if (this.sar_factor !== this._prev_sar_factor) {
+        this.change_systemic_arterial_resistance(this.sar_factor);
+        this._prev_sar_factor = this.sar_factor;
+      }
+
+      if (this.par_factor !== this._prev_par_factor) {
+        this.change_pulmonary_arterial_resistance(this.par_factor);
+        this._prev_par_factor = this.par_factor;
+      }
+      if (this.sae_factor !== this._prev_sae_factor) {
+        this.change_systemic_arterial_elastance(this.sae_factor);
+        this._prev_sae_factor = this.sae_factor;
+      }
+      if (this.pae_factor !== this._prev_pae_factor) {
+        this.change_pulmonary_arterial_elastance(this.pae_factor);
+        this._prev_pae_factor = this.pae_factor;
+      }
+      if (this.svr_factor !== this._prev_svr_factor) {
+        this.change_systemic_venous_resistance(this.svr_factor);
+        this._prev_svr_factor = this.svr_factor;
+      }
+      if (this.sve_factor !== this._prev_sve_factor) {
+        this.change_systemic_venous_elastance(this.sve_factor);
+        this._prev_sve_factor = this.sve_factor;
+      }
+      if (this.pvr_factor !== this._prev_pvr_factor) {
+        this.change_pulmonary_venous_resistance(this.pvr_factor);
+        this._prev_pvr_factor = this.pvr_factor;
+      }
+      if (this.pve_factor !== this._prev_pve_factor) {
+        this.change_pulmonary_venous_elastance(this.pve_factor);
+        this._prev_pve_factor = this.pve_factor;
+      }
+      if (this.cape_factor !== this._prev_cape_factor) {
+        this.change_capillary_elastance(this.cape_factor);
+        this._prev_cape_factor = this.cape_factor;
+      }
     }
   }
 
