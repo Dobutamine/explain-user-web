@@ -5,6 +5,18 @@ export class BloodCapacitance extends Capacitance {
   static model_type = "BloodCapacitance";
   model_interface = [
     {
+      caption: "model type",
+      target: "model_type",
+      type: "string",
+      readonly: true
+    },
+    {
+      caption: "description",
+      target: "description",
+      type: "string",
+      readonly: true
+    },
+    {
       caption: "enabled",
       target: "is_enabled",
       type: "boolean"

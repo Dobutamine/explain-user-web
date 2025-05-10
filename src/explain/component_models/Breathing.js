@@ -5,6 +5,23 @@ export class Breathing extends BaseModelClass {
   static model_type = "Breathing";
   static model_interface = [
     {
+      caption: "model type",
+      target: "model_type",
+      type: "string",
+      readonly: true
+    },
+    {
+      caption: "description",
+      target: "description",
+      type: "string",
+      readonly: true
+    },
+    {
+      caption: "enabled",
+      target: "is_enabled",
+      type: "boolean"
+    },
+    {
       caption: "spont breathing enabled",
       target: "breathing_enabled",
       type: "boolean",

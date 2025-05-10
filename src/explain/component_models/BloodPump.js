@@ -5,19 +5,36 @@ export class BloodPump extends BloodCapacitance {
   static model_type = "BloodPump";
   model_interface = [
     {
-      caption: "unstressed volume (mL)",
+      caption: "model type",
+      target: "model_type",
+      type: "string",
+      readonly: true
+    },
+    {
+      caption: "description",
+      target: "description",
+      type: "string",
+      readonly: true
+    },
+    {
+      caption: "enabled",
+      target: "is_enabled",
+      type: "boolean"
+    },
+    {
+      caption: "unstressed volume (L)",
       target: "u_vol",
       type: "number",
-      delta: 0.1,
-      factor: 1000.0,
+      factor: 1.0,
+      delta: 0.001,
       rounding: 3
     },
     {
-      caption: "elastance pump (mmHg/mL)",
+      caption: "elastance pump (mmHg/L)",
       target: "el_base",
-      delta: 0.1,
-      factor: 0.001,
-      rounding: 3,
+      factor: 1,
+      delta: 1,
+      rounding: 0,
       type: "number"
     },
     {

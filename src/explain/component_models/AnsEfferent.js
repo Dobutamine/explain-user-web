@@ -1,3 +1,4 @@
+import { readonly } from "vue";
 import { BaseModelClass } from "../base_models/BaseModelClass";
 
 export class AnsEfferent extends BaseModelClass {
@@ -5,35 +6,56 @@ export class AnsEfferent extends BaseModelClass {
   static model_type = "AnsEfferent";
   model_interface = [
     {
-      caption: "minimum of the input (firing rate is 0.0)",
-      target: "min_value",
-      type: "number",
-      delta: 0.1,
-      factor: 1.0,
-      rounding: 3,
+      caption: "model type",
+      target: "model_type",
+      type: "string",
+      readonly: true
     },
     {
-      caption: "maximum of the input (firing rate is 1.0)",
-      target: "max_value",
-      type: "number",
-      delta: 0.1,
-      factor: 1.0,
-      rounding: 3,
+      caption: "description",
+      target: "description",
+      type: "string",
+      readonly: true
     },
     {
-      caption: "setpoint of the input (firing rate is 0.5)",
-      target: "set_value",
+      caption: "enabled",
+      target: "is_enabled",
+      type: "boolean"
+    },
+    {
+      caption: "target model name",
+      target: "target_model",
+      type: "string",
+      readonly: true
+    },
+    {
+      caption: "target model property",
+      target: "target_prop",
+      type: "string",
+      readonly: true
+    },
+    {
+      caption: "effect size at max firing_rate of 1",
+      target: "effect_at_max_firing_rate",
       type: "number",
-      delta: 0.1,
       factor: 1.0,
-      rounding: 3,
+      delta: 0.1,
+      rounding: 1,
+    },
+    {
+      caption: "effect size at min firing_rate of 0",
+      target: "effect_at_min_firing_rate",
+      type: "number",
+      factor: 1.0,
+      delta: 0.1,
+      rounding: 1,
     },
     {
       caption: "timeconstant (s)",
-      target: "time_constant",
+      target: "tc",
       type: "number",
-      delta: 0.1,
       factor: 1.0,
+      delta: 0.1,
       rounding: 1,
     },
   ];

@@ -6,6 +6,23 @@ export class Ans extends BaseModelClass {
   static model_type = "Ans";
   static model_interface = [
     {
+      caption: "model type",
+      target: "model_type",
+      type: "string",
+      readonly: true
+    },
+    {
+      caption: "description",
+      target: "description",
+      type: "string",
+      readonly: true
+    },
+    {
+      caption: "enabled",
+      target: "is_enabled",
+      type: "boolean"
+    },
+    {
       caption: "ANS active",
       target: "ans_active",
       type: "boolean",

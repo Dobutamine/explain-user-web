@@ -54,14 +54,21 @@ export class BaseModelClass {
   // model interface list as described above
   model_interface = [
     {
-      caption: "enabled",
-      target: "is_enabled",
-      type: "boolean"
+      caption: "model type",
+      target: "model_type",
+      type: "string",
+      readonly: true
     },
     {
       caption: "description",
       target: "description",
-      type: "string"
+      type: "string",
+      readonly: true
+    },
+    {
+      caption: "enabled",
+      target: "is_enabled",
+      type: "boolean"
     }
   ]
 

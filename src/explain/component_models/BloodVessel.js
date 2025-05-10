@@ -5,37 +5,45 @@ export class BloodVessel extends BloodCapacitance {
   static model_type = "BloodVessel";
   model_interface = [
     {
-      caption: "model is enabled",
+      caption: "model type",
+      target: "model_type",
+      type: "string",
+      readonly: true
+    },
+    {
+      caption: "description",
+      target: "description",
+      type: "string",
+      readonly: true
+    },
+    {
+      caption: "enabled",
       target: "is_enabled",
       type: "boolean"
     },
     {
-      caption: "volume",
+      caption: "volume (L)",
       target: "vol",
-      unit: "mL",
       type: "number",
-      range:[0, 100],
-      factor: 1000.0,
-      delta: 0.1,
-      rounding: 1
+      factor: 1.0,
+      delta: 0.001,
+      rounding: 3
     },
     {
-      caption: "unstressed volume",
+      caption: "unstressed volume (L)",
       target: "u_vol",
-      unit: "mL",
       type: "number",
-      range:[0, 100],
-      factor: 1000.0,
-      delta: 0.1,
-      rounding: 1
+      factor: 1.0,
+      delta: 0.001,
+      rounding: 3,
     },
     {
-      caption: "elastance baseline (mmHg/mL)",
+      caption: "elastance baseline (mmHg/L)",
       target: "el_base",
       type: "number",
-      factor: 0.001,
-      delta: 0.1,
-      rounding: 1,
+      factor: 1,
+      delta: 1,
+      rounding: 0,
     },
     {
       caption: "elastance non linear k",
@@ -44,22 +52,6 @@ export class BloodVessel extends BloodCapacitance {
       factor: 1,
       delta: 1,
       rounding: 0,
-    },
-    {
-      caption: "resistance elastance coupling factor",
-      target: "alpha",
-      type: "number",
-      factor: 1,
-      delta: 0.1,
-      rounding: 0.1,
-    },
-    {
-      caption: "ans sensitivity (0-1)",
-      target: "ans_sensitivity",
-      type: "number",
-      factor: 1,
-      delta: 0.1,
-      rounding: 0.1,
     },
     {
       caption: "temperature (C)",
@@ -78,20 +70,20 @@ export class BloodVessel extends BloodCapacitance {
       rounding: 0.1,
     },
     {
-      caption: "ans resistance factor",
-      target: "r_ans_factor",
-      type: "factor",
-      range: [-1, 1],
-      delta: 0.01,
-      hidden: true
+      caption: "resistance elastance coupling factor",
+      target: "alpha",
+      type: "number",
+      factor: 1,
+      delta: 0.1,
+      rounding: 0.1,
     },
     {
-      caption: "circulation resistance factor",
-      target: "r_circ_factor",
-      type: "factor",
-      range: [-1, 1],
-      delta: 0.01,
-      hidden: true
+      caption: "ans sensitivity (0-1)",
+      target: "ans_sensitivity",
+      type: "number",
+      factor: 1,
+      delta: 0.1,
+      rounding: 0.1,
     },
     {
       caption: "unstressed volume factor",

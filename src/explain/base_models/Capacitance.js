@@ -5,6 +5,18 @@ export class Capacitance extends BaseModelClass {
   static model_type = "Capacitance";
   model_interface = [
     {
+      caption: "model type",
+      target: "model_type",
+      type: "string",
+      readonly: true
+    },
+    {
+      caption: "description",
+      target: "description",
+      type: "string",
+      readonly: true
+    },
+    {
       caption: "enabled",
       target: "is_enabled",
       type: "boolean"

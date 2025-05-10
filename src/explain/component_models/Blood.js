@@ -6,6 +6,23 @@ export class Blood extends BaseModelClass {
   static model_type = "Blood";
   static model_interface = [
     {
+      caption: "model type",
+      target: "model_type",
+      type: "string",
+      readonly: true
+    },
+    {
+      caption: "description",
+      target: "description",
+      type: "string",
+      readonly: true
+    },
+    {
+      caption: "enabled",
+      target: "is_enabled",
+      type: "boolean"
+    },
+    {
       caption: "set temperature (C)",
       target: "set_temperature",
       type: "function",
@@ -40,6 +57,52 @@ export class Blood extends BaseModelClass {
       ]
     },
     {
+      caption: "set total oxygen concentration (mmol/l)",
+      target: "set_to2",
+      type: "function",
+      args:[
+        {
+          caption: "new total oxygen concentration",
+          target: "to2",
+          type: "number",
+          factor: 1,
+          delta: 0.1,
+          rounding: 1,
+          ul: 20.0,
+          ll: 0.0,
+        },
+        {
+          target: "site",
+          caption: "change in site",
+          type: "list",
+          options: ["BloodCapacitance", "BloodTimeVaryingElastance", "BloodVessel", "HeartChamber", "CapillaryBed", "CoronaryVessel", "BloodPump"],
+        },
+      ]
+    },  
+    {
+      caption: "set total carbon dioxide concentration (mmol/l)",
+      target: "set_tco2",
+      type: "function",
+      args:[
+        {
+          caption: "new total carbon dioxide concentration",
+          target: "tco2",
+          type: "number",
+          factor: 1,
+          delta: 0.1,
+          rounding: 1,
+          ul: 20.0,
+          ll: 0.0,
+        },
+        {
+          target: "site",
+          caption: "change in site",
+          type: "list",
+          options: ["BloodCapacitance", "BloodTimeVaryingElastance", "BloodVessel", "HeartChamber", "CapillaryBed", "CoronaryVessel", "BloodPump"],
+        },
+      ]
+    },
+    {
       caption: "set solute concentration",
       target: "set_solute",
       type: "function",
@@ -49,7 +112,7 @@ export class Blood extends BaseModelClass {
           caption: "solute name",
           type: "list",
           custom_options: true,
-          options: ["na", "k"]
+          choices: ["na", "k", "ca", "cl", "lact", "mg", "albumin", "phosphates", "uma", "hemoglobin"],
         },
         {
           target: "solute_value",
@@ -66,7 +129,7 @@ export class Blood extends BaseModelClass {
           target: "site",
           caption: "change in site",
           type: "list",
-          options: ["BloodCapacitance", "BloodTimeVaryingElastance"]
+          options: ["BloodCapacitance", "BloodTimeVaryingElastance", "BloodVessel", "HeartChamber", "CapillaryBed", "CoronaryVessel", "BloodPump"],
         },
       ]
     },

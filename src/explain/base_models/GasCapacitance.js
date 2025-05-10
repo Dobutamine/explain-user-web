@@ -5,6 +5,18 @@ export class GasCapacitance extends Capacitance {
   static model_type = "GasCapacitance";
   model_interface = [
     {
+      caption: "model type",
+      target: "model_type",
+      type: "string",
+      readonly: true
+    },
+    {
+      caption: "description",
+      target: "description",
+      type: "string",
+      readonly: true
+    },
+    {
       caption: "enabled",
       target: "is_enabled",
       type: "boolean"

@@ -5,7 +5,19 @@ export class BloodVesselResistor extends Resistor {
   static model_type = "BloodVesselResistor";
   model_interface = [
     {
-      caption: "model is enabled",
+      caption: "model type",
+      target: "model_type",
+      type: "string",
+      readonly: true
+    },
+    {
+      caption: "description",
+      target: "description",
+      type: "string",
+      readonly: true
+    },
+    {
+      caption: "enabled",
       target: "is_enabled",
       type: "boolean"
     },
@@ -60,9 +72,9 @@ export class BloodVesselResistor extends Resistor {
       type: "factor"
     },
     {
-      caption: "blood compartment from",
-      target: "comp_from",
       type: "list",
+      caption: "comp from",
+      target: "comp_from",
       options: [
         "BloodCapacitance", 
         "BloodTimeVaryingElastance", 
@@ -70,22 +82,25 @@ export class BloodVesselResistor extends Resistor {
         "BloodVessel", 
         "CapillaryBed", 
         "CoronaryVessel", 
-        "HeartChamber"
+        "HeartChamber",
+        "BloodPump"
       ]
     },
     {
-      caption: "blood compartment to",
-      target: "comp_to",
       type: "list",
+      caption: "comp to",
+      target: "comp_to",
       options: [
         "BloodCapacitance", 
         "BloodTimeVaryingElastance", 
-        "BloodPump", "BloodVessel", 
+        "BloodPump", 
+        "BloodVessel", 
         "CapillaryBed", 
         "CoronaryVessel", 
-        "HeartChamber"
+        "HeartChamber",
+        "BloodPump"
       ]
-    },
+    }
     
   ]
 

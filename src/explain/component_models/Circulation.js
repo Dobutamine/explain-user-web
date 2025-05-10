@@ -4,36 +4,157 @@ export class Circulation extends BaseModelClass {
   // static properties
   static model_type = "Circulation";
   static model_interface = [
-    // {
-    //   caption: "syst arterial resistance factor",
-    //   target: "syst_art_res_factor",
-    //   type: "number",
-    //   factor: 1.0,
-    //   delta: 0.01,
-    //   rounding: 2,
-    // },
     {
-      target: "change_svr",
-      type: "function",
-      caption: "change_svc",
-      args: [
-        {
-          caption: "u_vol",
-          target: "u_vol",
-          type: "number",
-          factor: 1000.0,
-          delta: 0.1,
-          rounding: 1,
-        },
-        {
-          caption: "timmie",
-          target: "timmie",
-          type: "number",
-          factor: 1000.0,
-          delta: 0.1,
-          rounding: 1,
-        }
-      ]
+      caption: "model type",
+      target: "model_type",
+      type: "string",
+      readonly: true
+    },
+    {
+      caption: "description",
+      target: "description",
+      type: "string",
+      readonly: true
+    },
+    {
+      caption: "enabled",
+      target: "is_enabled",
+      type: "boolean"
+    },
+    {
+      caption:"systemic arterial resistance factor",
+      target: "sar_factor",
+      type: "number",
+      factor: 1,
+      delta: 0.1,
+      rounding: 1,  
+    },
+    {
+      caption:"systemic arterial resistors",
+      target: "syst_art_resistors",
+      type: "list",
+      options:["BloodResistor", "BloodVesselResistor", "HeartValve"],
+      hidden: true,
+    },
+    {
+      caption:"systemic arterial elastance factor",
+      target: "sae_factor",
+      type: "number",
+      factor: 1,
+      delta: 0.1,
+      rounding: 1,  
+    },
+    {
+      caption:"systemic arterial_capacitances",
+      target: "syst_art_capacitances",
+      type: "list",
+      options:["BloodCapacitance", "BloodVesselCapacitance", "BloodPump", "HeartChamber", "CoronaryVessel", "CapillaryBed"],
+      hidden: true,
+    },
+    {
+      caption:"pulmonary arterial resistance factor",
+      target: "par_factor",
+      type: "number",
+      factor: 1,
+      delta: 0.1,
+      rounding: 1,  
+    },
+    {
+      caption:"pulmonry arterial resistors",
+      target: "pulm_art_resistors",
+      type: "list",
+      options:["BloodResistor", "BloodVesselResistor", "HeartValve"],
+      hidden: true,
+    },
+    {
+      caption:"pulmonary arterial elastance factor",
+      target: "pae_factor",
+      type: "number",
+      factor: 1,
+      delta: 0.1,
+      rounding: 1,  
+    },
+    {
+      caption:"pulmonary arterial capacitances",
+      target: "pulm_art_capacitances",
+      type: "list",
+      options:["BloodCapacitance", "BloodVesselCapacitance", "BloodPump", "HeartChamber", "CoronaryVessel", "CapillaryBed"],
+      hidden: true,
+    },
+    {
+      caption:"systemic venous resistance factor",
+      target: "svr_factor",
+      type: "number",
+      factor: 1,
+      delta: 0.1,
+      rounding: 1,  
+    },
+    {
+      caption:"systemic venous resistors",
+      target: "syst_ven_resistors",
+      type: "list",
+      options:["BloodResistor", "BloodVesselResistor", "HeartValve"],
+      hidden: true,
+    },
+    {
+      caption:"systemic venous elastance factor",
+      target: "sve_factor",
+      type: "number",
+      factor: 1,
+      delta: 0.1,
+      rounding: 1,  
+    },
+    {
+      caption:"systemic venous capacitances",
+      target: "syst_ven_capacitances",
+      type: "list",
+      options:["BloodCapacitance", "BloodVesselCapacitance", "BloodPump", "HeartChamber", "CoronaryVessel", "CapillaryBed"],
+      hidden: true,
+    },
+    {
+      caption:"pulmonary venous resistance factor",
+      target: "pvr_factor",
+      type: "number",
+      factor: 1,
+      delta: 0.1,
+      rounding: 1,  
+    },
+    {
+      caption:" pulmonary venous resistors",
+      target: "pulm_ven_resistors",
+      type: "list",
+      options:["BloodResistor", "BloodVesselResistor", "HeartValve"],
+      hidden: true,
+    },
+    {
+      caption:"pulmonary venous elastance factor",
+      target: "pve_factor",
+      type: "number",
+      factor: 1,
+      delta: 0.1,
+      rounding: 1,    
+    },
+    {
+      caption:"pulmonary venous capacitances",
+      target: "pulm_ven_capacitances",
+      type: "list",
+      options:["BloodCapacitance", "BloodVesselCapacitance", "BloodPump", "HeartChamber", "CoronaryVessel", "CapillaryBed"],
+      hidden: true,
+    },
+    {
+      caption:"capillary elastance factor",
+      target:"cape_factor",
+      type:"number",
+      factor: 1,
+      delta: 0.1,
+      rounding: 1, 
+    },
+    {
+      caption:"capillary capacitances",
+      target: "cap_capacitances",
+      type: "list",
+      options:["BloodCapacitance", "BloodVesselCapacitance","CapillaryBed"],
+      hidden: true,
     }
   ];
 
