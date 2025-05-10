@@ -75,7 +75,7 @@
       <div v-if="isEnabled && placenta_running" class="text-overline justify-center q-gutter-sm row">
         <div  class="q-mr-sm text-center">
           <div class="knob-label">art res</div>
-          <q-knob show-value font-size="12px" v-model="umb_art_res" size="60px" :min="0" :max="5000" :step="1"
+          <q-knob show-value font-size="12px" v-model="umb_art_res" size="60px" :min="50" :max="500000000" :step="10"
             :thickness="0.22" color="teal" track-color="grey-3" class="col"
             @update:model-value="setUmbilicalArteriesResistance">
             {{ umb_art_res }}
@@ -84,7 +84,7 @@
         </div>
         <div class="q-mr-sm text-center">
           <div class="knob-label">ven res</div>
-          <q-knob show-value font-size="12px" v-model="umb_ven_res" size="60px" :thickness="0.22" :min="0" :max="5" :step="0.1"
+          <q-knob show-value font-size="12px" v-model="umb_ven_res" size="60px" :thickness="0.22" :min="50" :max="5000000" :step="10"
             color="teal" track-color="grey-3" class="col" @update:model-value="setUmbilicalVeinResistance">
             {{ umb_ven_res }}
           </q-knob>
@@ -92,7 +92,7 @@
         </div>
         <div class="q-mr-sm text-center">
           <div class="knob-label">mat to2</div>
-          <q-knob show-value font-size="12px" v-model="mat_to2" size="60px" :thickness="0.22" :min="21" :max="100" :step="1"
+          <q-knob show-value font-size="12px" v-model="mat_to2" size="60px" :thickness="0.22" :min="0" :max="100" :step="1"
             color="teal" track-color="grey-3" class="col" @update:model-value="setMatTO2">
             {{ mat_to2 }}
           </q-knob>
@@ -231,7 +231,7 @@
         exportEnabled: true,
         title: "FETAL CIRCULATION",
         selectedModel1: "Placenta",
-        selectedProp1: "p_ven",
+        selectedProp1: "umb_art_flow",
         p1: "Placenta.umb_art_flow",
         p2: "",
         p3: "",
@@ -256,7 +256,7 @@
         advanced: false,
         // model independent parameters
         placenta_running: false,
-        clamped: false,
+        clamped: true,
         umb_art_res: 7500,
         umb_ven_res: 1300,
         fetal_placenta_res: 50,
@@ -611,6 +611,7 @@
       processModelState() {
         if (explain.modelState.models) {
           this.placenta_running = explain.modelState.models["Placenta"].placenta_running
+          this.clamped = explain.modelState.models["Placenta"].umb_clamped
           this.umb_art_res = explain.modelState.models["Placenta"].umb_art_res
           this.umb_ven_res = explain.modelState.models["Placenta"].umb_ven_res
           this.fetal_placenta_res = explain.modelState.models["Placenta"].fetal_placenta_res
@@ -620,26 +621,25 @@
           this.mat_tco2 = explain.modelState.models["Placenta"].mat_tco2
       }
     },
+  },
     beforeUnmount() {
       this.$bus.off("rtf", () => { if (this.placenta_running) this.dataUpdateRt()});
       this.$bus.off("rts", () => { if (this.placenta_running) this.dataUpdateSlow()});
       this.$bus.off("data", () => { if (this.placenta_running) this.dataUpdate()});
-      this.$bus.off("state", this.processModelState)
+      this.$bus.off("state", () => this.processModelState())
     },
     mounted() {
       this.$bus.on("rtf", () => { if (this.placenta_running) this.dataUpdateRt()});
       this.$bus.on("rts", () => { if (this.placenta_running) this.dataUpdateSlow()});
       this.$bus.on("data", () => { if (this.placenta_running) this.dataUpdate()});
-      this.$bus.on("state", this.processModelState)
+      this.$bus.on("state", () => this.processModelState())
 
       explain.watchModelProps(["Placenta.umb_art_flow"])
-
       explain.watchModelPropsSlow([])
-  
+
       // check whether hires is enabled
       this.toggleHires()
     },
-  }
   };
   </script>
   

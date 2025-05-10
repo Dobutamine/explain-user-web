@@ -5,25 +5,25 @@ export class Container extends BaseModelClass {
   static model_type = "Container";
   model_interface = [
     {
-      caption: "model is enabled",
+      caption: "enabled",
       target: "is_enabled",
       type: "boolean"
     },
     {
-      caption: "unstressed volume (mL)",
+      caption: "unstressed volume (L)",
       target: "u_vol",
       type: "number",
-      factor: 1000.0,
-      delta: 0.1,
-      rounding: 1,
+      factor: 1.0,
+      delta: 0.001,
+      rounding: 3,
     },
     {
-      caption: "elastance baseline (mmHg/mL)",
+      caption: "elastance baseline (mmHg/L)",
       target: "el_base",
       type: "number",
-      factor: 0.001,
-      delta: 0.1,
-      rounding: 1,
+      factor: 1,
+      delta: 1,
+      rounding: 0,
     },
     {
       caption: "elastance non linear k",
@@ -32,6 +32,23 @@ export class Container extends BaseModelClass {
       factor: 1,
       delta: 1,
       rounding: 0,
+    },
+    {
+      caption: "contained compartments",
+      target: "contained_components",
+      type: "multiple-list",
+      options: [
+        "GasCapacitance",
+        "Airway",
+        "AlveolarSpace",
+        "BloodCapacitance", 
+        "BloodTimeVaryingElastance", 
+        "BloodPump", 
+        "BloodVessel", 
+        "CapillaryBed", 
+        "CoronaryVessel", 
+        "HeartChamber"
+      ]
     },
     {
       caption: "unstressed volume factor",

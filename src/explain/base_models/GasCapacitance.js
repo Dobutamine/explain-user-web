@@ -5,25 +5,30 @@ export class GasCapacitance extends Capacitance {
   static model_type = "GasCapacitance";
   model_interface = [
     {
-      caption: "model is enabled",
+      caption: "enabled",
       target: "is_enabled",
       type: "boolean"
     },
     {
-      caption: "unstressed volume (mL)",
-      target: "u_vol",
-      type: "number",
-      factor: 1000.0,
-      delta: 0.1,
-      rounding: 1,
+      caption: "fixed gas composition",
+      target: "fixed_composition",
+      type: "boolean"
     },
     {
-      caption: "elastance baseline (mmHg/mL)",
+      caption: "unstressed volume (L)",
+      target: "u_vol",
+      type: "number",
+      factor: 1.0,
+      delta: 0.001,
+      rounding: 3,
+    },
+    {
+      caption: "elastance baseline (mmHg/L)",
       target: "el_base",
       type: "number",
-      factor: 0.001,
-      delta: 0.1,
-      rounding: 1,
+      factor: 1,
+      delta: 1,
+      rounding: 0,
     },
     {
       caption: "elastance non linear k",
@@ -32,6 +37,22 @@ export class GasCapacitance extends Capacitance {
       factor: 1,
       delta: 1,
       rounding: 0,
+    },
+    {
+      caption: "target temperature (dgs C)",
+      target: "target_temp",
+      type: "number",
+      factor: 1,
+      delta: 0.1,
+      rounding: 1,
+    },
+    {
+      caption: "atmospheric pressure (mmHg)",
+      target: "pres_atm",
+      type: "number",
+      factor: 1,
+      delta: 1,
+      rounding: 0
     },
     {
       caption: "unstressed volume factor",
@@ -59,24 +80,7 @@ export class GasCapacitance extends Capacitance {
     this.pres_mus = 0.0; // external pressure from outside muscles (mmHg)
     this.pres_rel = 0.0; // relative pressure
     this.fixed_composition = false; // flag for fixed gas composition
-
-    // general factors
-    this.ans_activity_factor = 1.0;
-
-    // unstressed volume factors
-    this.u_vol_resp_factor = 1.0;
-    this.u_vol_ans_factor = 1.0;
-    this.u_vol_drug_factor = 1.0;
-
-    // elastance factors
-    this.el_base_resp_factor = 1.0;
-    this.el_base_ans_factor = 1.0;
-    this.el_base_drug_factor = 1.0;
-
-    // non-linear elastance factors
-    this.el_k_resp_factor = 1.0;
-    this.el_k_ans_factor = 1.0;
-    this.el_k_drug_factor = 1.0;
+    this.target_temp = 0.0; // target temperature (dgs C)
 
     // dependent properties
     this.ctotal = 0.0; // total gas molecule concentration (mmol/l)
@@ -85,7 +89,6 @@ export class GasCapacitance extends Capacitance {
     this.cn2 = 0.0; // nitrogen concentration (mmol/l)
     this.cother = 0.0; // other gases concentration (mmol/l)
     this.ch2o = 0.0; // water vapor concentration (mmol/l)
-    this.target_temp = 0.0; // target temperature (dgs C)
     this.humidity = 0.0; // humidity (fraction)
     this.po2 = 0.0; // partial pressure of oxygen (mmHg)
     this.pco2 = 0.0; // partial pressure of carbon dioxide (mmHg)
@@ -120,32 +123,13 @@ export class GasCapacitance extends Capacitance {
     this.calc_gas_composition();
   }
 
-  calc_elastances() {
-    this._el = this.el_base +
-      (this.el_base_factor - 1) * this.el_base +
-      (this.el_base_resp_factor - 1) * this.el_base +
-      (this.el_base_ans_factor - 1) * this.el_base * this.ans_activity_factor +
-      (this.el_base_drug_factor - 1) * this.el_base;
-
-    this._el_k = this.el_k +
-      (this.el_k_factor - 1) * this.el_k +
-      (this.el_k_resp_factor - 1) * this.el_k +
-      (this.el_k_ans_factor - 1) * this.el_k * this.ans_activity_factor +
-      (this.el_k_drug_factor - 1) * this.el_k;
-  
-  }
-
-  calc_volumes() {
-    this._u_vol = this.u_vol +
-      (this.u_vol_factor - 1) * this._u_vol +
-      (this.u_vol_resp_factor - 1) * this._u_vol +
-      (this.u_vol_ans_factor - 1) * this._u_vol * this.ans_activity_factor +
-      (this.u_vol_drug_factor - 1) * this._u_vol;
-  }
 
   calc_pressure() {
     // calculate the current recoil pressure of the capacitance
     this.pres_in = this._el_k * Math.pow(this.vol - this._u_vol, 2) + this._el * (this.vol - this._u_vol);
+
+    // calculate the total pressure by incorporating the external pressures
+    this.pres = this.pres_in + this.pres_ext;
 
     // calculate the total pressure
     this.pres = this.pres_in + this.pres_ext + this.pres_cc + this.pres_mus + this.pres_atm;

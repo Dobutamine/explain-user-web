@@ -6,7 +6,7 @@ export class BloodDiffusor extends BaseModelClass {
   static model_type = "BloodDiffusor";
   model_interface = [
     {
-      caption: "model is enabled",
+      caption: "enabled",
       target: "is_enabled",
       type: "boolean"
     },
@@ -15,7 +15,7 @@ export class BloodDiffusor extends BaseModelClass {
       target: "dif_o2",
       type: "number",
       factor: 1.0,
-      delta: 0.01,
+      delta: 0.001,
       rounding: 3,
     },
     {
@@ -23,8 +23,23 @@ export class BloodDiffusor extends BaseModelClass {
       target: "dif_co2",
       type: "number",
       factor: 1.0,
-      delta: 0.01,
+      delta: 0.001,
       rounding: 3,
+    },
+    {
+      caption: "oxygen diffusion factor",
+      target: "dif_o2_factor",
+      type: "factor"
+    },
+    {
+      caption: "carbon dioxide diffusion factor",
+      target: "dif_co2_factor",
+      type: "factor"
+    },
+    {
+      caption: "solute diffusion factor",
+      target: "dif_solutes_factor",
+      type: "factor"
     },
     {
       caption: "blood component 1",
@@ -60,7 +75,6 @@ export class BloodDiffusor extends BaseModelClass {
         "Venule"
       ]
     }
-
   ];
 
   constructor(model_ref, name = "") {
@@ -71,7 +85,7 @@ export class BloodDiffusor extends BaseModelClass {
     this.comp_blood2 = "PLM"; // name of the second blood-containing model
     this.dif_o2 = 0.01; // diffusion constant for o2 (mmol/mmHg * s)
     this.dif_co2 = 0.01; // diffusion constant for co2 (mmol/mmHg * s)
-    this.dif_solutes = {}; // diffusion constants for the different solutes (mmol/mmol * s)
+    this.dif_solutes = {}; // diffusion constant for the different solutes (mmol/mmol * s)
 
     // factors
     this.dif_o2_factor = 1.0;

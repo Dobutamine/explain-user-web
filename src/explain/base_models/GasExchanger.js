@@ -6,7 +6,7 @@ export class GasExchanger extends BaseModelClass {
   static model_type = "GasExchanger";
   model_interface = [
     {
-      caption: "model is enabled",
+      caption: "enabled",
       target: "is_enabled",
       type: "boolean"
     },

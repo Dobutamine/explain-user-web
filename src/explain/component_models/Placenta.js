@@ -291,10 +291,11 @@ export class Placenta extends BaseModelClass {
     this.placenta_running = false
     this.umb_art_vol = 0.0162; // volume of two umbilical arteries (l)
     this.umb_art_el_base = 20000.0; // elastance of the umbilical arteries (mmHg/L)
-    this.umb_art_res = 7500; // resistance of the umbilical arter (mmHg*s/L)
+    this.umb_art_res = 7200; // resistance of the umbilical arter (mmHg*s/L)
     this.umb_ven_vol = 0.0319; // volume of the umbilical vein (l)
     this.umb_ven_el_base = 1000.0; // elastance of the umbilical vein (mmHg/L)
-    this.umb_ven_res = 1300; // resistance of the umbilical vein (mmHg*s/L)
+    this.umb_ven_res = 1000; // resistance of the umbilical vein (mmHg*s/L)
+    this.umb_length = 0.55; // umbilical cord length (m)
     this.umb_art_diameter = 0.0043; // diameter of a single umbilical artery (m)
     this.umb_ven_diameter = 0.0086; // diameter of the umbilical vein (m)
     this.plf_res = 50.0; // resistance of the fetal placenta (mmHg*s/L)
@@ -304,7 +305,7 @@ export class Placenta extends BaseModelClass {
     this.plm_el_base = 5000.0; // elastance of the maternal placenta (mmHg/L)
     this.dif_o2 = 0.01; // diffusion constant of oxygen (mmol/mmHg)
     this.dif_co2 = 0.01; // diffusion constant of carbon dioxide (mmol/mmHg)
-    this.mat_to2 = 6.5; // maternal total oxygen concentration (mmol/L)
+    this.mat_to2 = 6.85; // maternal total oxygen concentration (mmol/L)
     this.mat_tco2 = 23.0; // maternal total carbon dioxide concentration (mmol/L)
     this.umb_clamped = true; // flags whether the umbilical vessels are clamped or not
 
@@ -332,8 +333,11 @@ export class Placenta extends BaseModelClass {
     this.switch_placenta(this.placenta_running);
   }
   calc_model() {
+      // get data
+      this.umb_art_flow = this._model_engine.models["AD_UMB_ART"].flow * 60.0
+
     this._update_counter += this._t;
-    if (this._update_counter > this._update_interval) {
+    if (this._update_counter > this._update_interval && this.placenta_running) {
       this._update_counter = 0.0;
 
       // update the resistances
@@ -367,11 +371,14 @@ export class Placenta extends BaseModelClass {
       // update the maternal to2 and tco2
       this._model_engine.models["PLM"].to2 = this.mat_to2;
       this._model_engine.models["PLM"].tco2 = this.mat_tco2;
+
+
       
     }
   }
 
   switch_placenta(state) {
+    this.is_enabled = state
     this.placenta_running = state
     // umbilical arteries
     this._model_engine.models["AD_UMB_ART"].is_enabled = state
@@ -390,6 +397,7 @@ export class Placenta extends BaseModelClass {
     this._model_engine.models["UMB_VEN_IVCI"].is_enabled = state
     this._model_engine.models["UMB_VEN_IVCI"].no_flow = this.umb_clamped
   }
+
   build_placenta() {
     // resistor between descdending aorta and umbilical arteries
     this._model_engine.models["AD_UMB_ART"].no_flow = this.umb_clamped
