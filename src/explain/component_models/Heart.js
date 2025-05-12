@@ -1,9 +1,27 @@
+import { capitalize } from "vue";
 import { BaseModelClass } from "../base_models/BaseModelClass";
 
 export class Heart extends BaseModelClass {
   // static properties
   static model_type = "Heart";
   static model_interface = [
+    {
+      caption: "model type",
+      target: "model_type",
+      type: "string",
+      readonly: true
+    },
+    {
+      caption: "description",
+      target: "description",
+      type: "string",
+      readonly: true
+    },
+    {
+      caption: "enabled",
+      target: "is_enabled",
+      type: "boolean"
+    },
     {
       caption: "reference heart rate (bpm)",
       target: "heart_rate_ref",
@@ -43,8 +61,7 @@ export class Heart extends BaseModelClass {
       delta: 0.0001,
       factor: 1.0,
       rounding: 4,
-    },
-
+    }
   ];
 
   constructor(model_ref, name = "") {
@@ -56,7 +73,6 @@ export class Heart extends BaseModelClass {
     this.qrs_time = 0.075; // qrs time (s)
     this.qt_time = 0.25; // qt time (s)
     this.av_delay = 0.0005; // delay in the AV-node (s)
-
 
     this.hr_mob_factor = 1.0; // heart rate factor of the myocardial oxygen balance model
     this.hr_temp_factor = 1.0; // heart rate factor of temperature (not implemented yet)
@@ -76,6 +92,7 @@ export class Heart extends BaseModelClass {
     this.cardiac_cycle_running = 0; // signal whether or not the cardiac cycle is running (0 = not, 1 = running)
     this.cardiac_cycle_time = 0.353; // cardiac cycle time (s)
 
+  
     this.lv_edv = 0.0
     this.lv_esv = 0.0
     this.lv_edp = 0.0
@@ -232,8 +249,7 @@ export class Heart extends BaseModelClass {
     }
 
     // calculate heart rate from the reference value and influencing factors
-    this.heart_rate =
-      this.heart_rate_ref +
+    this.heart_rate = this.heart_rate_ref +
       (this.ans_hr_factor - 1.0) * this.heart_rate_ref * this.ans_activity_factor +
       (this.hr_mob_factor - 1.0) * this.heart_rate_ref +
       (this.hr_temp_factor - 1.0) * this.heart_rate_ref +
@@ -327,12 +343,11 @@ export class Heart extends BaseModelClass {
     this._la.ans_activity_factor = this.ans_activity_factor;
     this._ra.ans_activity_factor = this.ans_activity_factor;
 
+    // update the contractility factor as determined by the autonomic nervous system
     this._lv.el_max_ans_factor = this.ans_cont_factor;
     this._rv.el_max_ans_factor = this.ans_cont_factor;
     this._la.el_max_ans_factor = this.ans_cont_factor;
     this._ra.el_max_ans_factor = this.ans_cont_factor;
-    this._coronaries.ans_factor = this.ans_cont_factor;
-
 
     // calculate atrial activation factor
     let _atrial_duration = this.pq_time / this._t;

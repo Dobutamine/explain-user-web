@@ -123,8 +123,9 @@ export class BloodVessel extends BloodCapacitance {
     this.el_base_factor = 1.0;                // elastance change factor
     this.el_k_factor = 1.0;                   // elastance change factor
     this.u_vol_factor = 1.0;                  // unstressed volume change factor
-    this.ans_factor = 1.0;                    // ans vaso-active control factor coming from the autonomic nervous system model
-    this.circ_factor = 1.0;                   // vaso-active control factor coming from the circulation model
+    this.ans_res_factor = 1.0;                // ans vaso-active control factor coming from the autonomic nervous system model
+    this.circ_res_factor = 1.0;               // vaso-active control factor coming from the circulation model
+    this.circ_el_factor = 1.0;                // elastance change factor coming from the circulation model
   }
 
   calc_model() {
@@ -138,21 +139,21 @@ export class BloodVessel extends BloodCapacitance {
     // update the resistances of the associated bloodvessel resistances
     Object.keys(this.components).forEach(res => {
       this._model_engine.models[res].ans_sens = this.ans_sens
-      this._model_engine.models[res].ans_factor = this.ans_factor
-      this._model_engine.models[res].circ_factor = this.circ_factor
+      this._model_engine.models[res].ans_factor = this.ans_res_factor
+      this._model_engine.models[res].circ_factor = this.circ_res_factor
     })
   }
 
   calc_elastances() {
     // calculate the elastance factors depending ans and circulation model factors and the alpha factor
-    let _ans_factor = Math.pow(this.ans_factor, this.alpha)
-    let _circ_factor = Math.pow(this.circ_factor, this.alpha)
-
+    let _ans_elas_res_factor = Math.pow(this.ans_res_factor, this.alpha)
+    let _circ_elas_res_factor = Math.pow(this.circ_res_factor, this.alpha)
 
     this._el = this.el_base + 
         (this.el_base_factor - 1) * this.el_base +
-        (_ans_factor - 1) * this.el_base * this.ans_sens +
-        (_circ_factor - 1) * this.el_base
+        (_ans_elas_res_factor - 1) * this.el_base * this.ans_sens +
+        (_circ_elas_res_factor - 1) * this.el_base +
+        (this.circ_el_factor - 1) * this.el_base
 
     this._el_k = this.el_k + 
         (this.el_k_factor - 1) * this.el_k

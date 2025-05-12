@@ -1,3 +1,4 @@
+import { capitalize } from "vue";
 import { BaseModelClass } from "../base_models/BaseModelClass";
 
 /*
@@ -156,6 +157,63 @@ export class Circulation extends BaseModelClass {
       rounding: 1
     },
     {
+      caption: "syst art elastance factor",
+      target: "save_factor",
+      type: "number",
+      factor: 1.0,
+      delta: 0.1,
+      rounding: 1
+    },
+    {
+      caption: "pulm art elastance factor",
+      target: "pave_factor",
+      type: "number",
+      factor: 1.0,
+      delta: 0.1,
+      rounding: 1
+    },
+    {
+      caption: "syst ven elastance factor",
+      target: "svve_factor",
+      type: "number",
+      factor: 1.0,
+      delta: 0.1,
+      rounding: 1
+    },
+    {
+      caption: "pulm ven elastance factor",
+      target: "pvve_factor",
+      type: "number",
+      factor: 1.0,
+      delta: 0.1,
+      rounding: 1
+    },
+    {
+      caption: "syst cap elastance factor",
+      target: "sce_factor",
+      type: "number",
+      factor: 1.0,
+      delta: 0.1,
+      rounding: 1
+    },
+    {
+      caption: "pulm cap elastance factor",
+      target: "pce_factor",
+      type: "number",
+      factor: 1.0,
+      delta: 0.1,
+      rounding: 1
+    },
+    
+    {
+      caption : "adrenergic factor for ANS (0-1)",
+      target : "ans_res_factor",
+      type : "number",
+      factor : 1.0,
+      delta : 0.01,
+      rounding : 2  
+    },
+    {
       caption: "arterial elas-res coupling",
       target: "alpha_arteries",
       type: "number",
@@ -298,12 +356,14 @@ export class Circulation extends BaseModelClass {
     this._prev_pvvr_factor = 1.0;       // previous pulmonary venous vascular resistance factor
     this._prev_scr_factor = 1.0;        // previous systemic capillary resistance factor
     this._prev_pcr_factor = 1.0;        // previous pulmonary capillary resistance factor
+
     this._prev_save_factor = 1.0;       // previous systemic arterial elastance factor
     this._prev_pave_factor = 1.0;       // previous pulmonary arterial elastance factor
     this._prev_svve_factor = 1.0;       // previous systemic venous elastance factor
     this._prev_pvve_factor = 1.0;       // previous pulmonary venous elastance factor
     this._prev_svce_factor = 1.0;       // previous systemic capillary elastance factor
     this._prev_pvce_factor = 1.0;       // previous pulmonary capillary elastance factor
+
     this._prev_ans_res_factor = 1.0;    // previous adrenergic factor for ANS
     this._ans_res_update = false;       // flag to indicate if the ANS resistance update is needed
   }
@@ -350,6 +410,42 @@ export class Circulation extends BaseModelClass {
         this.pulmonary_capillary_vascular_resistance();
         this._prev_pcr_factor = this.pcr_factor;
       }
+
+      // update systemic arterial elastance
+      if (this.save_factor != this._prev_save_factor) {
+        this.systemic_arterial_elastance();
+        this._prev_save_factor = this.save_factor;
+      }
+
+      // update pulmonary arterial elastance
+      if (this.pave_factor != this._prev_pave_factor) {
+        this.pulmonary_arterial_elastance();
+        this._prev_pave_factor = this.pave_factor;
+      }
+
+      // update systemic venous elastance
+      if (this.svve_factor != this._prev_svve_factor) {
+        this.systemic_venous_elastance();
+        this._prev_svve_factor = this.svve_factor;
+      }
+
+      // update pulmonary venous elastance
+      if (this.pvve_factor != this._prev_pvve_factor) {
+        this.pulmonary_venous_elastance();
+        this._prev_pvve_factor = this.pvve_factor;
+      }
+
+      // update systemic capillary elastance
+      if (this.sce_factor != this._prev_sce_factor) {
+        this.systemic_capillary_elastance();
+        this._prev_sce_factor = this.sce_factor;
+      }
+
+      // update pulmonary capillary elastance
+      if (this.pce_factor != this._prev_pce_factor) {
+        this.pulmonary_capillary_elastance();
+        this._prev_pce_factor = this.pce_factor;
+      }
     }
   }
 
@@ -362,19 +458,20 @@ export class Circulation extends BaseModelClass {
     }
   }
 
+  // update the resistances
   systemic_arterial_vascular_resistance() {
     this.systemic_arteries.forEach((model) => {
       this._model_engine.models[model].ans_sens = this.ans_sens_arteries;
-      this._model_engine.models[model].ans_factor = this.ans_res_factor;
       this._model_engine.models[model].alpha_arteries = this.alpha_arteries;
-      this._model_engine.models[model].circ_factor = this.savr_factor;
+      this._model_engine.models[model].ans_res_factor = this.ans_res_factor;
+      this._model_engine.models[model].circ_res_factor = this.savr_factor;
     });
 
     this.systemic_arterioles.forEach((model) => {
-        this._model_engine.models[model].ans_sens = this.ans_sens_arterioles;
-        this._model_engine.models[model].ans_factor = this.ans_res_factor;
+      this._model_engine.models[model].ans_sens = this.ans_sens_arterioles;
       this._model_engine.models[model].alpha_arterioles = this.alpha_arterioles;
-      this._model_engine.models[model].circ_factor = this.savr_factor;
+      this._model_engine.models[model].ans_res_factor = this.ans_res_factor;
+      this._model_engine.models[model].circ_res_factor = this.savr_factor;
     });
 
   }
@@ -382,64 +479,100 @@ export class Circulation extends BaseModelClass {
   systemic_venous_vascular_resistance() {
     this.systemic_veins.forEach((model) => {
         this._model_engine.models[model].ans_sens = this.ans_sens_veins
-        this._model_engine.models[model].ans_factor = this.ans_res_factor;
         this._model_engine.models[model].alpha_veins = this.alpha_veins;
-        this._model_engine.models[model].circ_factor = this.svvr_factor;
+        this._model_engine.models[model].ans_res_factor = this.ans_res_factor;
+        this._model_engine.models[model].circ_res_factor = this.svvr_factor;
       });
     this.systemic_venules.forEach((model) => {
         this._model_engine.models[model].ans_sens = this.ans_sens_venules;
-        this._model_engine.models[model].ans_factor = this.ans_res_factor;
         this._model_engine.models[model].alpha_venules = this.alpha_venules;
-        this._model_engine.models[model].circ_factor = this.svvr_factor;
+        this._model_engine.models[model].ans_res_factor = this.ans_res_factor;
+        this._model_engine.models[model].circ_res_factor = this.svvr_factor;
     });
   }
 
   systemic_capillary_vascular_resistance() {
     this.systemic_capillaries.forEach((model) => {
         this._model_engine.models[model].ans_sens = this.ans_sens_capillaries;
-        this._model_engine.models[model].ans_factor = this.ans_res_factor;
         this._model_engine.models[model].alpha_capillaries = this.alpha_capillaries;
-        this._model_engine.models[model].circ_factor = this.scr_factor;
+        this._model_engine.models[model].ans_res_factor = this.ans_res_factor;
+        this._model_engine.models[model].circ_res_factor = this.scr_factor;
     });
   }
 
   pulmonary_arterial_vascular_resistance() {
     this.pulmonary_arteries.forEach((model) => {
         this._model_engine.models[model].ans_sens = this.ans_sens_arteries;
-        this._model_engine.models[model].ans_factor = this.ans_res_factor;
         this._model_engine.models[model].alpha_arteries = this.alpha_arteries;
-        this._model_engine.models[model].circ_factor = this.pavr_factor;
+        this._model_engine.models[model].ans_res_factor = this.ans_res_factor;
+        this._model_engine.models[model].circ_res_factor = this.pavr_factor;
       });
     this.pulmonary_arterioles.forEach((model) => {
-         this._model_engine.models[model].ans_sens = this.ans_sens_arterioles;
-         this._model_engine.models[model].ans_factor = this.ans_res_factor;
+        this._model_engine.models[model].ans_sens = this.ans_sens_arterioles;
         this._model_engine.models[model].alpha_arterioles = this.alpha_arterioles;
-        this._model_engine.models[model].circ_factor = this.pavr_factor;
+        this._model_engine.models[model].ans_res_factor = this.ans_res_factor;
+        this._model_engine.models[model].circ_res_factor = this.pavr_factor;
     });
   }
 
   pulmonary_venous_vascular_resistance() {
     this.pulmonary_veins.forEach((model) => {
       this._model_engine.models[model].ans_sens = this.ans_sens_veins
-      this._model_engine.models[model].ans_factor = this.ans_res_factor;
       this._model_engine.models[model].alpha_veins = this.alpha_veins;
-      this._model_engine.models[model].circ_factor = this.pvvr_factor;
+      this._model_engine.models[model].ans_factor = this.ans_res_factor;
+      this._model_engine.models[model].circ_res_factor = this.pvvr_factor;
     });
     this.pulmonary_venules.forEach((model) => {
       this._model_engine.models[model].ans_sens = this.ans_sens_venules;
-      this._model_engine.models[model].ans_factor = this.ans_res_factor;
       this._model_engine.models[model].alpha_venules = this.alpha_venules;
-      this._model_engine.models[model].circ_factor = this.pvvr_factor;
+      this._model_engine.models[model].ans_res_factor = this.ans_res_factor;
+      this._model_engine.models[model].circ_res_factor = this.pvvr_factor;
     });
   }
 
   pulmonary_capillary_vascular_resistance() {
     this.pulmonary_capillaries.forEach((model) => {
       this._model_engine.models[model].ans_sens = this.ans_sens_capillaries;
-      this._model_engine.models[model].ans_factor = this.ans_res_factor;
       this._model_engine.models[model].alpha_capillaries = this.alpha_capillaries;
-      this._model_engine.models[model].circ_factor = this.pcr_factor;
+      this._model_engine.models[model].ans_res_factor = this.ans_res_factor;
+      this._model_engine.models[model].circ_res_factor = this.pcr_factor;
     });
   }
 
+  // update the elastances
+  systemic_arterial_elastance() {
+    this.systemic_arteries.forEach((model) => {
+      this._model_engine.models[model].circ_el_factor = this.save_factor;
+    });
+  }
+
+  systemic_venous_elastance() {
+    this.systemic_veins.forEach((model) => {
+      this._model_engine.models[model].circ_el_factor = this.svve_factor;
+    });
+  }
+
+  systemic_capillary_elastance() {
+    this.systemic_capillaries.forEach((model) => {
+      this._model_engine.models[model].circ_el_factor = this.sce_factor;
+    });
+  }
+
+  pulmonary_arterial_elastance() {
+    this.pulmonary_arteries.forEach((model) => {
+      this._model_engine.models[model].circ_el_factor = this.pave_factor;
+    });
+  }
+
+  pulmonary_venous_elastance() {
+    this.pulmonary_veins.forEach((model) => {
+      this._model_engine.models[model].circ_el_factor = this.pvve_factor;
+    });
+  }
+
+  pulmonary_capillary_elastance() {
+    this.pulmonary_capillaries.forEach((model) => {
+      this._model_engine.models[model].circ_el_factor = this.pce_factor;
+    });
+  }
 }
