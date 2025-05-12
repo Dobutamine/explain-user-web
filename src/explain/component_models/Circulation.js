@@ -314,7 +314,7 @@ export class Circulation extends BaseModelClass {
       this._update_counter = 0.0;
 
       // ans control of the systemic and pulmonary circulation
-      this.ans_control();
+      this.ans_resistance_control();
 
       // update systemic arterial vascular resistance
       if (this.savr_factor != this._prev_savr_factor || this._ans_res_update) {
@@ -353,7 +353,7 @@ export class Circulation extends BaseModelClass {
     }
   }
 
-  ans_control() {
+  ans_resistance_control() {
     // update the ANS resistance factor
     this._ans_res_update = false;
     if (this.ans_res_factor != this._prev_ans_res_factor) {
