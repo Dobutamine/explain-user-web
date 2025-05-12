@@ -57,10 +57,13 @@ export class Heart extends BaseModelClass {
     this.qt_time = 0.25; // qt time (s)
     this.av_delay = 0.0005; // delay in the AV-node (s)
 
-    this.hr_ans_factor = 1.0; // heart rate factor of the autonomic nervous system
+
     this.hr_mob_factor = 1.0; // heart rate factor of the myocardial oxygen balance model
     this.hr_temp_factor = 1.0; // heart rate factor of temperature (not implemented yet)
     this.hr_drug_factor = 1.0; // heart rate factor of the drug model (not implemented yet)
+
+    this.ans_hr_factor = 1.0;       // heart rate factor of the autonomic nervous system
+    this.ans_cont_factor = 1.0;     // contractility factor of the autonomic nervous system
     this.ans_activity_factor = 1.0; // global activity factor of the autonomic nervous system
 
     // initialize dependent properties
@@ -231,9 +234,7 @@ export class Heart extends BaseModelClass {
     // calculate heart rate from the reference value and influencing factors
     this.heart_rate =
       this.heart_rate_ref +
-      (this.hr_ans_factor - 1.0) *
-        this.heart_rate_ref *
-        this.ans_activity_factor +
+      (this.ans_hr_factor - 1.0) * this.heart_rate_ref * this.ans_activity_factor +
       (this.hr_mob_factor - 1.0) * this.heart_rate_ref +
       (this.hr_temp_factor - 1.0) * this.heart_rate_ref +
       (this.hr_drug_factor - 1.0) * this.heart_rate_ref;
@@ -320,6 +321,19 @@ export class Heart extends BaseModelClass {
   }
 
   calc_varying_elastance() {
+    // incorporate the ans factor on contractility
+    this._lv.ans_activity_factor = this.ans_activity_factor;
+    this._rv.ans_activity_factor = this.ans_activity_factor;
+    this._la.ans_activity_factor = this.ans_activity_factor;
+    this._ra.ans_activity_factor = this.ans_activity_factor;
+
+    this._lv.el_max_ans_factor = this.ans_cont_factor;
+    this._rv.el_max_ans_factor = this.ans_cont_factor;
+    this._la.el_max_ans_factor = this.ans_cont_factor;
+    this._ra.el_max_ans_factor = this.ans_cont_factor;
+    this._coronaries.ans_factor = this.ans_cont_factor;
+
+
     // calculate atrial activation factor
     let _atrial_duration = this.pq_time / this._t;
     if (this.ncc_atrial >= 0 && this.ncc_atrial < _atrial_duration) {
