@@ -114,13 +114,17 @@ export class BloodVessel extends BloodCapacitance {
   constructor(model_ref, name = "") {
     super(model_ref, name);
 
-    // initialize addtional independent properties
-    this.alpha = 1.0                        // determines relation between resistance change and elastance change
-    this.ans_sensitivity = 0.0;             // sensitivity for autonomic control (vasoconstriction/vasodilatation)
+    // initialize addtional independent properties  
+    this.alpha = 0.5                          // determines relation between resistance change and elastance change. Veins/venules: 0.75, arterioles: 0.63, large arteries: 0.5
+    this.ans_sens = 0.0;                      // sensitivity of this blood vessel for autonomic control. 0.0 is no effect, 1.0 is full effect
 
-    // resistance factors
-    this.r_ans_factor = 1.0;                // resistance change due to the autonomic nervous system
-    this.r_circ_factor = 1.0;               // resistance change due by the circulatory model
+
+    // property factors
+    this.el_base_factor = 1.0;                // elastance change factor
+    this.el_k_factor = 1.0;                   // elastance change factor
+    this.u_vol_factor = 1.0;                  // unstressed volume change factor
+    this.ans_factor = 1.0;                    // ans vaso-active control factor coming from the autonomic nervous system model
+    this.circ_factor = 1.0;                   // vaso-active control factor coming from the circulation model
   }
 
   calc_model() {
@@ -131,24 +135,24 @@ export class BloodVessel extends BloodCapacitance {
   }
 
   calc_resistances() {
-    // update the resistances of the associated bloodvesselresistances
+    // update the resistances of the associated bloodvessel resistances
     Object.keys(this.components).forEach(res => {
-      this._model_engine.models[res].ans_sensitivity = this.ans_sensitivity
-      this._model_engine.models[res].r_ans_factor = this.r_ans_factor
-      this._model_engine.models[res].r_circ_factor = this.r_circ_factor
+      this._model_engine.models[res].ans_sens = this.ans_sens
+      this._model_engine.models[res].ans_factor = this.ans_factor
+      this._model_engine.models[res].circ_factor = this.circ_factor
     })
   }
 
   calc_elastances() {
-    // change in elastance due to ans influence (vasoconstriction/vasodilatation)
-    let _ans_factor = Math.pow(this.r_ans_factor, 0.25 * this.alpha)
-    let _r_circ_factor = Math.pow(this.r_circ_factor, 0.25 * this.alpha)
+    // calculate the elastance factors depending ans and circulation model factors and the alpha factor
+    let _ans_factor = Math.pow(this.ans_factor, this.alpha)
+    let _circ_factor = Math.pow(this.circ_factor, this.alpha)
 
 
     this._el = this.el_base + 
         (this.el_base_factor - 1) * this.el_base +
-        (_ans_factor - 1) * this.el_base * this.ans_sensitivity +
-        (_r_circ_factor - 1) * this.el_base * this.ans_sensitivity
+        (_ans_factor - 1) * this.el_base * this.ans_sens +
+        (_circ_factor - 1) * this.el_base
 
     this._el_k = this.el_k + 
         (this.el_k_factor - 1) * this.el_k

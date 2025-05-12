@@ -152,10 +152,31 @@ export class Coronaries extends BaseModelClass {
     },
   ];
 
-  /**
-   * The myocardial oxygen balance (Mob) class models the dynamic oxygen use and carbon dioxide production (metabolism) of the heart
-   * and models the effect on the heart (heartrate and contractility).
-   */
+  /*
+  The Coronaries class models the dynamic oxygen use and carbon dioxide production (metabolism) of the heart and models the effect on the heart (heartrate and contractility).
+   
+  The coronary arteries do receive autonomic innervation, but it plays a relatively minor role compared with local metabolic control:
+
+  Sympathetic nerves
+  - release norepinephrine, which binds α₁-receptors on vascular smooth muscle to produce vasoconstriction.
+  - at the same time, circulating epinephrine (from the adrenal medulla) activates β₂-receptors in the coronaries, causing vasodilation.
+  - net effect in vivo: during exercise or stress, the increase in myocardial metabolism (↑ adenosine, ↑ CO₂, ↓ O₂, etc.) overwhelms any α-mediated constriction, 
+    so the coronaries actually dilate to match the increased demand.
+
+  Parasympathetic (vagal) nerves
+  - release acetylcholine acting on M₃-receptors to produce a modest vasodilation.
+  - parasympathetic tone in the coronary vessels at rest is very low, so the effect on the basal coronary flow is small.
+
+  Dominant control mechanism: local metabolic autoregulation
+  - The heart tightly matches perfusion to workload. As myocardial O₂ consumption rises, local metabolites (especially adenosine) accumulate and cause powerful **vasodilation**.
+  - Conversely, when demand falls, metabolite levels drop and the vessels **constrict**.
+
+  Bottom line:
+  - Coronary vessels are innervated by both sympathetic and parasympathetic fibers.
+  - In practice, metabolic factors (adenosine, O₂/CO₂ levels, pH) are the primary regulators of coronary blood flow, with autonomic input providing only a modulatory overlay.
+  
+  */
+
   constructor(model_ref, name = "") {
     super(model_ref, name);
 

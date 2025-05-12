@@ -3,346 +3,74 @@ import { BaseModelClass } from "../base_models/BaseModelClass";
 export class Circulation extends BaseModelClass {
   // static properties
   static model_type = "Circulation";
-  static model_interface = [
-    {
-      caption: "model type",
-      target: "model_type",
-      type: "string",
-      readonly: true
-    },
-    {
-      caption: "description",
-      target: "description",
-      type: "string",
-      readonly: true
-    },
-    {
-      caption: "enabled",
-      target: "is_enabled",
-      type: "boolean"
-    },
-    {
-      caption:"systemic arterial resistance factor",
-      target: "sar_factor",
-      type: "number",
-      factor: 1,
-      delta: 0.1,
-      rounding: 1,  
-    },
-    {
-      caption:"systemic arterial resistors",
-      target: "syst_art_resistors",
-      type: "list",
-      options:["BloodResistor", "BloodVesselResistor", "HeartValve"],
-      hidden: true,
-    },
-    {
-      caption:"systemic arterial elastance factor",
-      target: "sae_factor",
-      type: "number",
-      factor: 1,
-      delta: 0.1,
-      rounding: 1,  
-    },
-    {
-      caption:"systemic arterial_capacitances",
-      target: "syst_art_capacitances",
-      type: "list",
-      options:["BloodCapacitance", "BloodVesselCapacitance", "BloodPump", "HeartChamber", "CoronaryVessel", "CapillaryBed"],
-      hidden: true,
-    },
-    {
-      caption:"pulmonary arterial resistance factor",
-      target: "par_factor",
-      type: "number",
-      factor: 1,
-      delta: 0.1,
-      rounding: 1,  
-    },
-    {
-      caption:"pulmonry arterial resistors",
-      target: "pulm_art_resistors",
-      type: "list",
-      options:["BloodResistor", "BloodVesselResistor", "HeartValve"],
-      hidden: true,
-    },
-    {
-      caption:"pulmonary arterial elastance factor",
-      target: "pae_factor",
-      type: "number",
-      factor: 1,
-      delta: 0.1,
-      rounding: 1,  
-    },
-    {
-      caption:"pulmonary arterial capacitances",
-      target: "pulm_art_capacitances",
-      type: "list",
-      options:["BloodCapacitance", "BloodVesselCapacitance", "BloodPump", "HeartChamber", "CoronaryVessel", "CapillaryBed"],
-      hidden: true,
-    },
-    {
-      caption:"systemic venous resistance factor",
-      target: "svr_factor",
-      type: "number",
-      factor: 1,
-      delta: 0.1,
-      rounding: 1,  
-    },
-    {
-      caption:"systemic venous resistors",
-      target: "syst_ven_resistors",
-      type: "list",
-      options:["BloodResistor", "BloodVesselResistor", "HeartValve"],
-      hidden: true,
-    },
-    {
-      caption:"systemic venous elastance factor",
-      target: "sve_factor",
-      type: "number",
-      factor: 1,
-      delta: 0.1,
-      rounding: 1,  
-    },
-    {
-      caption:"systemic venous capacitances",
-      target: "syst_ven_capacitances",
-      type: "list",
-      options:["BloodCapacitance", "BloodVesselCapacitance", "BloodPump", "HeartChamber", "CoronaryVessel", "CapillaryBed"],
-      hidden: true,
-    },
-    {
-      caption:"pulmonary venous resistance factor",
-      target: "pvr_factor",
-      type: "number",
-      factor: 1,
-      delta: 0.1,
-      rounding: 1,  
-    },
-    {
-      caption:" pulmonary venous resistors",
-      target: "pulm_ven_resistors",
-      type: "list",
-      options:["BloodResistor", "BloodVesselResistor", "HeartValve"],
-      hidden: true,
-    },
-    {
-      caption:"pulmonary venous elastance factor",
-      target: "pve_factor",
-      type: "number",
-      factor: 1,
-      delta: 0.1,
-      rounding: 1,    
-    },
-    {
-      caption:"pulmonary venous capacitances",
-      target: "pulm_ven_capacitances",
-      type: "list",
-      options:["BloodCapacitance", "BloodVesselCapacitance", "BloodPump", "HeartChamber", "CoronaryVessel", "CapillaryBed"],
-      hidden: true,
-    },
-    {
-      caption:"capillary elastance factor",
-      target:"cape_factor",
-      type:"number",
-      factor: 1,
-      delta: 0.1,
-      rounding: 1, 
-    },
-    {
-      caption:"capillary capacitances",
-      target: "cap_capacitances",
-      type: "list",
-      options:["BloodCapacitance", "BloodVesselCapacitance","CapillaryBed"],
-      hidden: true,
-    }
-  ];
+  static model_interface = []
 
   /*
     The Circulation class is not a model but houses methods that influence groups of models. In case
     of the circulation class, these groups contain models related to blood circulation.
-    For example, the method `change_systemic_vascular_resistance` influences systemic vascular resistance
-    by setting the `r_for_factor`, `r_back_factor`, and `el_base_factor` of the BloodResistors and BloodCapacitances
-    stored in a list called `svr_targets`.
     */
   constructor(model_ref, name = "") {
     super(model_ref, name);
 
     // -----------------------------------------------
     // independent properties
-    this.syst_art_capacitances = [],
-    this.syst_art_resistors = [],
-    this.syst_ven_capacitances = [],
-    this.syst_ven_resistors = [],
-    this.pulm_art_capacitances = [],
-    this.pulm_art_resistors = [],
-    this.pulm_ven_capacitances = [],
-    this.pulm_ven_resistors = [],
-    this.cap_capacitances = []
+    // -----------------------------------------------
+    this.alpha_arteries = 0.5;          // elastance-resistance dependency alpha for arteries
+    this.alpha_arterioles = 0.63;       // elastance-resistance dependency alpha for arterioles
+    this.alpha_veins = 0.75;            // elastance-resistance dependency alpha for veins
+    this.alpha_venules = 0.75;          // elastance-resistance dependency alpha for venules
 
-    this.sar_factor = 1.0; // systemic arterial resistance factor
-    this.par_factor = 1.0; // pulmonary arterial resistance factor
-    this.sae_factor = 1.0; // systemic arterial elastance factor
-    this.pae_factor = 1.0; // pulmonary arterial elastance factor
-    this.svr_factor = 1.0; // systemic venous resistance factor
-    this.sve_factor = 1.0; // systemic venous elastance factor
-    this.pvr_factor = 1.0; // pulmonary venous resistance factor
-    this.pve_factor = 1.0; // pulmonary venous elastance factor
-    this.cape_factor = 1.0; // capillary elastance factor
+    this.systemic_arteries = [];        // list of systemic arteries
+    this.systemic_arterioles = [];      // list of systemic arterioles
+    this.systemic_veins = [];           // list of systemic veins
+    this.systemic_venules = [];         // list of systemic venules
+    this.systemic_capillaries = [];     // list of systemic capillaries 
+
+    this.pulmonary_arteries = [];       // list of pulmonary arteries
+    this.pulmonary_arterioles = [];     // list of pulmonary arterioles
+    this.pulmonary_veins = [];          // list of pulmonary veins 
+    this.pulmonary_venules = [];        // list of pulmonary venules
+    this.pulmonary_capillaries = [];    // list of pulmonary capillaries
+
+    this.savr_factor = 1.0;             // systemic arterial vascular resistance factor
+    this.pavr_factor = 1.0;             // pulmonary arterial vascular resistance factor
+    this.svvr_factor = 1.0;             // systemic venous vascular resistance factor
+    this.pvvr_factor = 1.0;             // pulmonary venous vascular resistance factor
+    this.svcr_factor = 1.0;             // systemic capillary resistance factor
+    this.pvcr_factor = 1.0;             // pulmonary capillary resistance factor
+    
+    this.save_factor = 1.0;             // systemic arterial elastance factor
+    this.pave_factor = 1.0;             // pulmonary arterial elastance factor
+    this.svve_factor = 1.0;             // systemic venous elastance factor
+    this.pvve_factor = 1.0;             // pulmonary venous elastance factor
+    this.svce_factor = 1.0;             // systemic capillary elastance factor
+    this.pvce_factor = 1.0;             // pulmonary capillary elastance factor
+
     // -----------------------------------------------
     // dependent properties
-
     // -----------------------------------------------
     // local properties
-    this._update_interval = 0.015; // update interval (s)
-    this._update_counter = 0.0; // update interval counter (s)
-    this._prev_sar_factor = 1.0; // systemic arterial resistance factor
-    this._prev_par_factor = 1.0; // pulmonary arterial resistance factor
-    this._prev_sae_factor = 1.0; // systemic arterial elastance factor
-    this._prev_pae_factor = 1.0; // pulmonary arterial elastance factor
-    this._prev_svr_factor = 1.0; // systemic venous resistance factor
-    this._prev_sve_factor = 1.0; // systemic venous elastance factor
-    this._prev_pvr_factor = 1.0; // pulmonary venous resistance factor
-    this._prev_pve_factor = 1.0; // pulmonary venous elastance factor
-    this._prev_cape_factor = 1.0; // capillary elastance factor
+    this._update_interval = 0.015;      // update interval (s)
+    this._update_counter = 0.0;         // update interval counter (s)
+
+    this._prev_savr_factor = 1.0;       // previous systemic arterial vascular resistance factor
+    this._prev_pavr_factor = 1.0;       // previous pulmonary arterial vascular resistance factor
+    this._prev_svvr_factor = 1.0;       // previous systemic venous vascular resistance factor
+    this._prev_pvvr_factor = 1.0;       // previous pulmonary venous vascular resistance factor
+    this._prev_svcr_factor = 1.0;       // previous systemic capillary resistance factor
+    this._prev_pvcr_factor = 1.0;       // previous pulmonary capillary resistance factor
+    this._prev_save_factor = 1.0;       // previous systemic arterial elastance factor
+    this._prev_pave_factor = 1.0;       // previous pulmonary arterial elastance factor
+    this._prev_svve_factor = 1.0;       // previous systemic venous elastance factor
+    this._prev_pvve_factor = 1.0;       // previous pulmonary venous elastance factor
+    this._prev_svce_factor = 1.0;       // previous systemic capillary elastance factor
+    this._prev_pvce_factor = 1.0;       // previous pulmonary capillary elastance factor
   }
 
   calc_model() {
     this._update_counter += this._t;
     if (this._update_counter > this._update_interval) {
       this._update_counter = 0.0;
-
-      if (this.sar_factor !== this._prev_sar_factor) {
-        this.change_systemic_arterial_resistance(this.sar_factor);
-        this._prev_sar_factor = this.sar_factor;
-      }
-
-      if (this.par_factor !== this._prev_par_factor) {
-        this.change_pulmonary_arterial_resistance(this.par_factor);
-        this._prev_par_factor = this.par_factor;
-      }
-      if (this.sae_factor !== this._prev_sae_factor) {
-        this.change_systemic_arterial_elastance(this.sae_factor);
-        this._prev_sae_factor = this.sae_factor;
-      }
-      if (this.pae_factor !== this._prev_pae_factor) {
-        this.change_pulmonary_arterial_elastance(this.pae_factor);
-        this._prev_pae_factor = this.pae_factor;
-      }
-      if (this.svr_factor !== this._prev_svr_factor) {
-        this.change_systemic_venous_resistance(this.svr_factor);
-        this._prev_svr_factor = this.svr_factor;
-      }
-      if (this.sve_factor !== this._prev_sve_factor) {
-        this.change_systemic_venous_elastance(this.sve_factor);
-        this._prev_sve_factor = this.sve_factor;
-      }
-      if (this.pvr_factor !== this._prev_pvr_factor) {
-        this.change_pulmonary_venous_resistance(this.pvr_factor);
-        this._prev_pvr_factor = this.pvr_factor;
-      }
-      if (this.pve_factor !== this._prev_pve_factor) {
-        this.change_pulmonary_venous_elastance(this.pve_factor);
-        this._prev_pve_factor = this.pve_factor;
-      }
-      if (this.cape_factor !== this._prev_cape_factor) {
-        this.change_capillary_elastance(this.cape_factor);
-        this._prev_cape_factor = this.cape_factor;
-      }
-    }
-  }
-
-  // ELASTANCES
-  // change systemic arterial elastance
-  change_systemic_arterial_elastance(factor) {
-    if (!isNaN(factor)) {
-      if (factor > 0.0) {
-        this.syst_art_capacitances.forEach((capacitance) => {
-          this._model_engine.models[capacitance].el_base_circ_factor = factor;
-        });
-      }
-    }
-  }
-  // change pulmonary arterial elastance
-  change_pulmonary_arterial_elastance(factor) {
-    if (!isNaN(factor)) {
-      if (factor > 0.0) {
-        this.pulm_art_capacitances.forEach((capacitance) => {
-          this._model_engine.models[capacitance].el_base_circ_factor = factor;
-        });
-      }
-    }
-  }
-  // change systemic venous elastance
-  change_systemic_venous_elastance(factor) {
-    if (!isNaN(factor)) {
-      if (factor > 0.0) {
-        this.syst_ven_capacitances.forEach((capacitance) => {
-          this._model_engine.models[capacitance].el_base_circ_factor = factor;
-        });
-      }
-    }
-  }
-  // change pulmonary venous elastance
-  change_pulmonary_venous_elastance(factor) {
-    if (!isNaN(factor)) {
-      if (factor > 0.0) {
-        this.pulm_ven_capacitances.forEach((capacitance) => {
-          this._model_engine.models[capacitance].el_base_circ_factor = factor;
-        });
-      }
-    }
-  }
-  // change capillaries elastance
-  change_capillary_elastance(factor) {
-    if (!isNaN(factor)) {
-      if (factor > 0.0) {
-        this.cap_capacitances.forEach((capacitance) => {
-          this._model_engine.models[capacitance].el_base_circ_factor = factor;
-        });
-      }
-    }
-  }
-
-  // RESISTANCES
-  // change systemic vascular resistance
-  change_systemic_arterial_resistance(factor) {
-    if (!isNaN(factor)) {
-      if (factor > 0.0) {
-        this.syst_art_resistors.forEach((resistor) => {
-          this._model_engine.models[resistor].r_circ_factor = factor;
-        });
-      }
-    }
-  }
-  // change pulmonary vascular resistance
-  change_pulmonary_arterial_resistance(factor) {
-    if (!isNaN(factor)) {
-      if (factor > 0.0) {
-        this.pulm_art_resistors.forEach((resistor) => {
-          this._model_engine.models[resistor].r_circ_factor = factor;
-        });
-      }
-    }
-  }
-  // change systemic venous resistance
-  change_systemic_venous_resistance(factor) {
-    if (!isNaN(factor)) {
-      if (factor > 0.0) {
-        this.syst_ven_resistors.forEach((resistor) => {
-          this._model_engine.models[resistor].r_circ_factor = factor;
-        });
-      }
-    }
-  }
-  // change pulmonary venous resistance
-  change_pulmonary_venous_resistance(factor) {
-    if (!isNaN(factor)) {
-      if (factor > 0.0) {
-        this.pulm_ven_resistors.forEach((resistor) => {
-          this._model_engine.models[resistor].r_circ_factor = factor;
-        });
-      }
     }
   }
 }
