@@ -542,8 +542,9 @@ const _model_step = function () {
   Object.values(model.models).forEach((model_component) => {
     try {
       model_component.step_model();
-    } catch {
-      console.log(model_component)
+    } catch(e) {
+      console.log("Step model error: ", model_component.name);
+      console.log(e)
     }
 
   });
