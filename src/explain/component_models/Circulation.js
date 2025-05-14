@@ -449,6 +449,7 @@ export class Circulation extends BaseModelClass {
     }
   }
 
+  // update the ANS resistance factor
   ans_resistance_control() {
     // update the ANS resistance factor
     this._ans_res_update = false;

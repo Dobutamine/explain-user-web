@@ -11,14 +11,11 @@ export { Resistor } from "./base_models/Resistor";
 
 // import the component modelsç
 export { Airway } from "./component_models/Airway";
-export { AirwayResistor } from "./component_models/AirwayResistor";
 export { AnsAfferent } from "./component_models/AnsAfferent";
 export { AnsEfferent } from "./component_models/AnsEfferent";
 export { AlveolarSpace } from "./component_models/AlveolarSpace";
 export { BloodPump } from "./component_models/BloodPump";
-export { BloodVesselResistor } from "./component_models/BloodVesselResistor";
 export { BloodVessel } from "./component_models/BloodVessel";
-export { CapillaryBed } from "./component_models/CapillaryBed";
 export { CoronaryVessel } from "./component_models/CoronaryVessel";
 export { HeartChamber } from "./component_models/HeartChamber";
 export { HeartValve } from "./component_models/HeartValve";

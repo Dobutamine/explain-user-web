@@ -206,7 +206,7 @@ const build = function (model_definition) {
       ];
     } else {
       errors += 1;
-      console.log("not found: ", sub_model_def.model_type);
+      console.log("Model type not found: ", sub_model_def.model_type);
       _send({
         type: "status",
         message: "ERROR: " + sub_model_def.model_type + " model not found",
@@ -228,6 +228,7 @@ const build = function (model_definition) {
       try {
         model_comp.init_model(args);
       } catch (e) {
+        console.log("ModelEngine: model initialization error: ", model_comp.name);
         console.log(e);
         errors += 1;
         _send({
