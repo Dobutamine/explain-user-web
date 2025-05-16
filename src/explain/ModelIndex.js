@@ -9,7 +9,7 @@ export { GasDiffusor } from "./base_models/GasDiffusor"
 export { GasExchanger } from "./base_models/GasExchanger";
 export { Resistor } from "./base_models/Resistor";
 
-// import the component modelsç
+// import the component models
 export { Airway } from "./component_models/Airway";
 export { AnsAfferent } from "./component_models/AnsAfferent";
 export { AnsEfferent } from "./component_models/AnsEfferent";

@@ -1,4 +1,10 @@
 import { BloodCapacitance } from "../base_models/BloodCapacitance";
+import { Resistor } from "../base_models/Resistor";
+
+/*
+The BloodVessel class extends the BloodCapacitance class and adds a Resistor to represent a blood vessel in the model.
+So a BloodVessel has a resistance and has flow properties.
+*/
 
 export class BloodVessel extends BloodCapacitance {
   // static properties
@@ -132,6 +138,7 @@ export class BloodVessel extends BloodCapacitance {
 
     // initialize addtional independent properties making this a blood vessel
     this.inputs = [];                         // list of inputs for this blood vessel
+    this.outputs = [];                        // list of outputs for this blood vessel
     this.r_for = 50;                          // baseline resistance for forward flow
     this.r_back = 50;                         // baseline resistance for backward flow
     this.r_k = 0.0;                           // baseline resistance non linear k
@@ -142,8 +149,8 @@ export class BloodVessel extends BloodCapacitance {
 
     // dependent properties
     this.flow = 0.0;                          // net flow through this blood vessel
-    this.flow_in = 0.0;                       // inflow from the input blood vessels
-    this.flow_out = 0.0;                      // outflow to the output blood vessels
+    this.flow_forward = 0.0;                  // forward flow from the input blood vessels
+    this.flow_backward = 0.0;                 // backward flow to the input blood vessels
     this.r_for_calc = 0.0;                    // calculated forward resistance
     this.r_back_calc = 0.0;                   // calculated backward resistance
     
@@ -158,92 +165,73 @@ export class BloodVessel extends BloodCapacitance {
     this.ans_res_factor = 1.0;                // ans vaso-active control factor coming from the autonomic nervous system model
     this.circ_res_factor = 1.0;               // vaso-active control factor coming from the circulation model
     this.circ_el_factor = 1.0;                // elastance change factor coming from the circulation model
+
+    // local properties
+    this._resistors = {};                   // list of connectors for this blood vessel
   }
 
-  init_model(args = {}) {
+  // override the parent class method
+  init_model(args={}) {
+    // call parent class method
     super.init_model(args);
 
-  }
+    // initialize the resistor with the inputs
+    this.inputs.forEach((inputName) => { 
+      let res = new Resistor(this._model_engine, inputName + "_" + this.name);
+      let args = [
+        { key: "name", value: inputName + "_" + this.name},
+        { key: "description", value: "input connector for " + this.name },
+        { key: "is_enabled", value: this.is_enabled },
+        { key: "model_type", value: "Resistor" },
+        { key: "r_for", value: this.r_for },
+        { key: "r_back", value: this.r_back },
+        { key: "r_k", value: this.r_k },
+        { key: "no_flow", value: this.no_flow },
+        { key: "no_back_flow", value: this.no_back_flow },
+        { key: "comp_from", value: inputName },
+        { key: "comp_to", value: this.name }
+      ]
+      // initialize the resistor with the arguments
+      res.init_model(args);
 
+      // add the resistor to the list of models
+      this._model_engine.models[inputName + "_" + this.name] = res;
+
+      // add the resistor to the dictionary of connectors
+      this._resistors[inputName + "_" + this.name] = res;
+    });
+  }
   calc_model() {
+    // call this class specific calculation methods
     this.calc_resistances();
     this.calc_elastances();
-    this.calc_flows();
-    this.calc_volumes();
+
+    // call parent class methods
+    this.calc_volumes();  
     this.calc_pressure();
+
+    this.get_flows();
   }
 
-  calc_flows() {
-    // reset and early-exit
-    if (this.no_flow) {
-      this.flow = this.flow_in = this.flow_out = 0;
-      return;
-    }
-    // cache constants
-    const {
-      inputs,
-      pres: thisPres,
-      no_back_flow: noBackFlow,
-      _t: dt,
-      _model_engine: engine,
-      r_for, r_back, r_k,
-      r_factor,      // multiplier for forward/back resistances
-      r_k_factor     // multiplier for flow‐dependent stiffness
-    } = this;
+  get_flows() {
+    this.flow = 0.0;
+    this.flow_forward = 0.0;
+    this.flow_backward = 0.0;
 
-    // precompute the static (non‐flow dependent) parts
-    const baseRFor  = r_for  * r_factor;
-    const baseRBack = r_back * r_factor;
-    const baseRk    = r_k    * r_k_factor;
-
-    // local accumulators
-    let flow    = 0;
-    let flowIn  = 0;
-    let flowOut = 0;
-
-    // iterate over each connected vessel
-    for (const inputName of inputs) {
-      const compFrom = engine.models[inputName];
-      const presFrom = compFrom.pres;
-
-      // flow‐dependent term (only needs computing once)
-      const sqFlow = flow * flow;
-
-      // dynamic resistances
-      const rFor  = baseRFor  + baseRk * sqFlow;
-      const rBack = baseRBack + baseRk * sqFlow;
-
-      // compute net in/out for this connection
-      let fIn = 0, fOut = 0;
-      if (presFrom > thisPres) {
-        fIn = (presFrom - thisPres) / rFor;
-        this.volume_in(fIn * dt, compFrom);
-        compFrom.volume_out(fIn * dt);
-      } else if (!noBackFlow) {
-        fOut = (thisPres - presFrom) / rBack;
-        compFrom.volume_in(fOut * dt, this);
-        this.volume_out(fOut * dt);
+    Object.values(this._resistors).forEach((resistor) => {
+      if (resistor.is_enabled) {
+        if (resistor.flow > 0) {
+          this.flow_forward += resistor.flow;
+        } else {
+          this.flow_backward += -resistor.flow;
+        }
       }
-
-      // accumulate
-      flowIn  += fIn;
-      flowOut += fOut;
-      flow    += fIn - fOut;
-    }
-
-    // write back once
-    this.flow     = flow;
-    this.flow_in  = flowIn;
-    this.flow_out = flowOut;
+    });
+    // calculate the net flow through this blood vessel
+    this.flow_net_in = this.flow_forward - this.flow_backward;
   }
 
   calc_resistances() {
-    // update the resistances of the associated bloodvessel resistances
-    Object.keys(this.components).forEach(res => {
-      this._model_engine.models[res].ans_sens = this.ans_sens
-      this._model_engine.models[res].ans_factor = this.ans_res_factor
-      this._model_engine.models[res].circ_factor = this.circ_res_factor
-    })
   }
 
   calc_elastances() {
