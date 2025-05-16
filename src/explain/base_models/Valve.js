@@ -1,8 +1,8 @@
 import { BaseModelClass } from "./BaseModelClass";
 
-export class Resistor extends BaseModelClass {
+export class Valve extends BaseModelClass {
   // static properties
-  static model_type = "Resistor";
+  static model_type = "Valve";
   model_interface = [
     {
       caption: "model type",

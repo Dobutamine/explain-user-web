@@ -1,4 +1,5 @@
 import { BloodTimeVaryingElastance } from "../base_models/BloodTimeVaryingElastance";
+import { Valve } from "../base_models/Valve";
 
 export class HeartChamber extends BloodTimeVaryingElastance {
   // static properties
@@ -82,6 +83,24 @@ export class HeartChamber extends BloodTimeVaryingElastance {
   constructor(model_ref, name = "") {
     super(model_ref, name);
 
+    // initialize addtional independent properties making this a blood vessel
+    this.inputs = [];                         // list of inputs for this blood vessel
+    this.r_for = 50;                          // baseline resistance for forward flow
+    this.r_back = 50;                         // baseline resistance for backward flow
+    this.r_k = 0.0;                           // baseline resistance non linear k
+    this.no_flow = false;                     // flag whether this blood vessel is a no flow vessel
+    this.no_back_flow = false;                // flag whether this blood vessel is a no back flow vessel  
+    this.alpha = 0.5                          // determines relation between resistance change and elastance change. Veins/venules: 0.75, arterioles: 0.63, large arteries: 0.5
+    this.ans_sens = 0.0;                      // sensitivity of this blood vessel for autonomic control. 0.0 is no effect, 1.0 is full effect
+
+    // dependent properties
+    this.flow = 0.0;                          // net flow through this blood vessel
+    this.flow_forward = 0.0;                  // forward flow from the input blood vessels
+    this.flow_backward = 0.0;                 // backward flow to the input blood vessels
+    this.r_for_calc = 0.0;                    // calculated forward resistance
+    this.r_back_calc = 0.0;                   // calculated backward resistance
+    
+
     // initialize independent properties
     this.pres_cc = 0.0; // external pressure from chest compressions (mmHg)
     this.pres_mus = 0.0; // external pressure from outside muscles (mmHg)
@@ -92,9 +111,81 @@ export class HeartChamber extends BloodTimeVaryingElastance {
     // elastance factors
     this.el_min_ans_factor = 1.0;
     this.el_min_mob_factor = 1.0;
-
     this.el_max_ans_factor = 1.0;
     this.el_max_mob_factor = 1.0;
+    this.el_k_factor = 1.0;                   // elastance change factor
+    this.u_vol_factor = 1.0;                  // unstressed volume change factor
+    this.r_factor = 1.0;                      // resistance change factor
+    this.r_for_factor = 1.0;                  // forward resistance change factor
+    this.r_back_factor = 1.0;                 // backward resistance change factor
+    this.r_k_factor = 1.0;                    // resistance non linear k change factor
+    this.ans_res_factor = 1.0;                // ans vaso-active control factor coming from the autonomic nervous system model
+    this.circ_res_factor = 1.0;               // vaso-active control factor coming from the circulation model
+    this.circ_el_factor = 1.0;                // elastance change factor coming from the circulation model
+
+    // local properties
+    this._resistors = {};                     // list of connectors for this blood vessel
+  }
+  init_model(args={}) {
+    // call parent class method
+    super.init_model(args);
+
+    // initialize the resistor with the inputs
+    this.inputs.forEach((inputName) => { 
+      let res = new Valve(this._model_engine, inputName + "_" + this.name);
+      let args = [
+        { key: "name", value: inputName + "_" + this.name},
+        { key: "description", value: "input connector for " + this.name },
+        { key: "is_enabled", value: this.is_enabled },
+        { key: "model_type", value: "Resistor" },
+        { key: "r_for", value: this.r_for },
+        { key: "r_back", value: this.r_back },
+        { key: "r_k", value: this.r_k },
+        { key: "no_flow", value: this.no_flow },
+        { key: "no_back_flow", value: this.no_back_flow },
+        { key: "comp_from", value: inputName },
+        { key: "comp_to", value: this.name }
+      ]
+      // initialize the resistor with the arguments
+      res.init_model(args);
+
+      // add the resistor to the list of models
+      this._model_engine.models[inputName + "_" + this.name] = res;
+
+      // add the resistor to the dictionary of connectors
+      this._resistors[inputName + "_" + this.name] = res;
+    });
+  }
+
+   calc_model() {
+    // call this class specific calculation methods
+    this.calc_resistances();
+    this.calc_elastances();
+
+    // call parent class methods
+    this.calc_volumes();  
+    this.calc_pressure();
+
+    this.get_flows();
+  }
+
+
+  get_flows() {
+    this.flow = 0.0;
+    this.flow_forward = 0.0;
+    this.flow_backward = 0.0;
+
+    Object.values(this._resistors).forEach((resistor) => {
+      if (resistor.is_enabled) {
+        if (resistor.flow > 0) {
+          this.flow_forward += resistor.flow;
+        } else {
+          this.flow_backward += -resistor.flow;
+        }
+      }
+    });
+    // calculate the net flow through this blood vessel
+    this.flow_net_in = this.flow_forward - this.flow_backward;
   }
 
   // override the elastance calculation
@@ -114,11 +205,9 @@ export class HeartChamber extends BloodTimeVaryingElastance {
           (this.el_k_factor - 1) * this.el_k
   }
 
-  // override the unstressed volume calculation
-  calc_volumes() {
-    this._u_vol = this.u_vol +
-      (this.u_vol_factor - 1) * this.u_vol
+  calc_resistances() {
   }
+
 
   // override the pressure calculation
   calc_pressure() {

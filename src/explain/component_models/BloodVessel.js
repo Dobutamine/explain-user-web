@@ -138,7 +138,6 @@ export class BloodVessel extends BloodCapacitance {
 
     // initialize addtional independent properties making this a blood vessel
     this.inputs = [];                         // list of inputs for this blood vessel
-    this.outputs = [];                        // list of outputs for this blood vessel
     this.r_for = 50;                          // baseline resistance for forward flow
     this.r_back = 50;                         // baseline resistance for backward flow
     this.r_k = 0.0;                           // baseline resistance non linear k
@@ -201,6 +200,7 @@ export class BloodVessel extends BloodCapacitance {
       this._resistors[inputName + "_" + this.name] = res;
     });
   }
+  
   calc_model() {
     // call this class specific calculation methods
     this.calc_resistances();

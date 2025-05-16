@@ -8,6 +8,7 @@ export { GasCapacitance } from "./base_models/GasCapacitance";
 export { GasDiffusor } from "./base_models/GasDiffusor"
 export { GasExchanger } from "./base_models/GasExchanger";
 export { Resistor } from "./base_models/Resistor";
+export { Valve } from "./base_models/Valve";
 
 // import the component models
 export { Airway } from "./component_models/Airway";
