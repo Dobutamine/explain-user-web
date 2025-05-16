@@ -3,38 +3,47 @@
 export { BloodCapacitance } from "./base_models/BloodCapacitance";
 export { BloodDiffusor } from "./base_models/BloodDiffusor";
 export { BloodTimeVaryingElastance } from "./base_models/BloodTimeVaryingElastance";
+export { BloodVessel } from "./base_models/BloodVessel";
 export { Container } from "./base_models/Container";
 export { GasCapacitance } from "./base_models/GasCapacitance";
 export { GasDiffusor } from "./base_models/GasDiffusor"
 export { GasExchanger } from "./base_models/GasExchanger";
 export { Resistor } from "./base_models/Resistor";
 export { Valve } from "./base_models/Valve";
+export { Gas } from "./component_models/Gas";
+export { Blood } from "./component_models/Blood";
 
 // import the component models
-export { Airway } from "./component_models/Airway";
-export { AnsAfferent } from "./component_models/AnsAfferent";
-export { AnsEfferent } from "./component_models/AnsEfferent";
-export { AlveolarSpace } from "./component_models/AlveolarSpace";
-export { BloodPump } from "./component_models/BloodPump";
-export { BloodVessel } from "./component_models/BloodVessel";
-export { CoronaryVessel } from "./component_models/CoronaryVessel";
-export { HeartChamber } from "./component_models/HeartChamber";
-export { HeartValve } from "./component_models/HeartValve";
-export { Pericardium } from "./component_models/Pericardium"
-export { PleuralSpace} from "./component_models/PleuralSpace"
-export { Thorax } from "./component_models/Thorax";
 
-// import the system models
-export { Ans } from "./component_models/Ans";
-export { Blood } from "./component_models/Blood";
+export { Thorax } from "./component_models/Thorax";
+export { PleuralSpace} from "./component_models/airways/PleuralSpace";
+export { UpperAirway } from "./component_models/airways/UpperAirway";
+export { LowerAirway } from "./component_models/airways/LowerAirway";
+export { AlveolarSac } from "./component_models/airways/AlveolarSac";
 export { Breathing } from "./component_models/Breathing";
+export { Respiration } from "./component_models/Respiration";
+
+export { Ans } from "./component_models/ans/Ans";
+export { AnsAfferent } from "./component_models/ans/AnsAfferent";
+export { AnsEfferent } from "./component_models/ans/AnsEfferent";
+
+
+export { Artery } from "./component_models/blood_vessels/Artery";
+export { Arteriole } from "./component_models/blood_vessels/Arteriole";
+export { Capillaries } from "./component_models/blood_vessels/Capillaries";
+export { Vein } from "./component_models/blood_vessels/Vein";
+export { Venule } from "./component_models/blood_vessels/Venule";
+
+export { Heart } from "./component_models/heart/Heart";
+export { HeartChamber } from "./component_models/heart/HeartChamber";
+export { Coronaries } from "./component_models/heart/Coronaries";
+export { CoronaryVessel } from "./component_models/heart/CoronaryVessel";
+export { Pericardium } from "./component_models/heart/Pericardium"
+
+export { BloodPump } from "./component_models/BloodPump";
 export { Circulation } from "./component_models/Circulation";
-export { Coronaries } from "./component_models/Coronaries";
-export { Gas } from "./component_models/Gas";
-export { Heart } from "./component_models/Heart";
 export { Metabolism } from "./component_models/Metabolism";
 export { Placenta } from "./component_models/Placenta";
-export { Respiration } from "./component_models/Respiration";
 export { Shunts } from "./component_models/Shunts";
 
 // import the device models

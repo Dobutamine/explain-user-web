@@ -62,6 +62,15 @@ export class Resistor extends BaseModelClass {
       rounding: 0
     },
     {
+      caption: "inertance",
+      unit: "mmHg*s^2/L",
+      target: "l",
+      type: "number",
+      delta: 0.001,
+      factor: 1.0,
+      rounding: 3
+    },
+    {
       caption: "forward resistance factor",
       target: "r_for_factor",
       type: "factor"
@@ -69,6 +78,16 @@ export class Resistor extends BaseModelClass {
     {
       caption: "backward resistance factor",
       target: "r_back_factor",
+      type: "factor"
+    },
+    {
+      caption: "non linear resistance factor",
+      target: "r_k_factor",
+      type: "factor"
+    },
+    {
+      caption: "inertance factor",
+      target: "l_factor",
       type: "factor"
     },
     {

@@ -1,5 +1,6 @@
-import { BloodCapacitance } from "../base_models/BloodCapacitance";
-import { Resistor } from "../base_models/Resistor";
+import { BloodCapacitance } from "./BloodCapacitance";
+import { Resistor } from "./Resistor";
+import { Valve } from "./Valve";
 
 /*
 The BloodVessel class extends the BloodCapacitance class and adds a Resistor to represent a blood vessel in the model.
@@ -138,6 +139,7 @@ export class BloodVessel extends BloodCapacitance {
 
     // initialize addtional independent properties making this a blood vessel
     this.inputs = [];                         // list of inputs for this blood vessel
+    this.connector = "resistor";              // connector type of the inputs
     this.r_for = 50;                          // baseline resistance for forward flow
     this.r_back = 50;                         // baseline resistance for backward flow
     this.r_k = 0.0;                           // baseline resistance non linear k
@@ -174,9 +176,12 @@ export class BloodVessel extends BloodCapacitance {
     // call parent class method
     super.init_model(args);
 
-    // initialize the resistor with the inputs
+    // initialize a resistor with the inputs
     this.inputs.forEach((inputName) => { 
       let res = new Resistor(this._model_engine, inputName + "_" + this.name);
+      if (this.connector == "valve") {
+        res = new Valve(this._model_engine, inputName + "_" + this.name);
+      }
       let args = [
         { key: "name", value: inputName + "_" + this.name},
         { key: "description", value: "input connector for " + this.name },

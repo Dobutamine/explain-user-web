@@ -1,5 +1,5 @@
-import { BloodTimeVaryingElastance } from "../base_models/BloodTimeVaryingElastance";
-import { Valve } from "../base_models/Valve";
+import { BloodTimeVaryingElastance } from "../../base_models/BloodTimeVaryingElastance";
+import { Valve } from "../../base_models/Valve";
 
 export class HeartChamber extends BloodTimeVaryingElastance {
   // static properties
@@ -85,6 +85,7 @@ export class HeartChamber extends BloodTimeVaryingElastance {
 
     // initialize addtional independent properties making this a blood vessel
     this.inputs = [];                         // list of inputs for this blood vessel
+    this.connector = "";                      // name of the connector for this blood vessel
     this.r_for = 50;                          // baseline resistance for forward flow
     this.r_back = 50;                         // baseline resistance for backward flow
     this.r_k = 0.0;                           // baseline resistance non linear k
@@ -133,6 +134,9 @@ export class HeartChamber extends BloodTimeVaryingElastance {
     // initialize the resistor with the inputs
     this.inputs.forEach((inputName) => { 
       let res = new Valve(this._model_engine, inputName + "_" + this.name);
+      if (this.connector == "valve") {
+        res = new Valve(this._model_engine, inputName + "_" + this.name);
+      }
       let args = [
         { key: "name", value: inputName + "_" + this.name},
         { key: "description", value: "input connector for " + this.name },

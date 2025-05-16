@@ -1,4 +1,4 @@
-import { BloodTimeVaryingElastance } from "../base_models/BloodTimeVaryingElastance";
+import { BloodTimeVaryingElastance } from "../../base_models/BloodTimeVaryingElastance";
 
   /*
   The coronary arteries do receive autonomic innervation, but it plays a relatively minor role compared with local metabolic control:

@@ -1,6 +1,6 @@
-import { BaseModelClass } from "./BaseModelClass";
-import { BloodCapacitance } from "../component_models/BloodCapacitance";
-import { BloodVessel } from "./BloodVessel";
+import { BaseModelClass } from "../../BaseModelClass";
+import { BloodVessel } from "../../base_models/BloodVessel";
+import { BloodCapacitance } from "../../component_models/blood_vessels/BloodCapacitance";
 
 export class CapillaryNetwork extends BaseModelClass {
 

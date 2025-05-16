@@ -1,5 +1,4 @@
-import { capitalize } from "vue";
-import { BaseModelClass } from "../base_models/BaseModelClass";
+import { BaseModelClass } from "../../base_models/BaseModelClass";
 
 export class Heart extends BaseModelClass {
   // static properties
