@@ -145,9 +145,14 @@ export class Resistor extends BaseModelClass {
     this.p2_ext = 0.0;                        // external pressure on the outlet (mmHg)
 
     // general factors
-    this.r_factor = 1.0;
+    this.r_factor = 1.0;                      // persistent resistance factor
+    this.r_factor_step = 1.0;                 // non persistent resistance factor
+
     this.r_k_factor = 1.0;
+    this.r_k_factor_step = 1.0;
+    
     this.l_factor = 1.0;
+    this.l_factor_step = 1.0;
 
     // initialize dependent properties
     this.flow = 0.0;                          // flow f(t) (L/s)
@@ -180,14 +185,31 @@ export class Resistor extends BaseModelClass {
   // calculate resistance
   calc_resistance() {
        // incorporate all factors influencing this resistor
-       this._r_for = this.r_for + (this.r_factor - 1) * this.r_for
-       this._r_back = this.r_back + (this.r_factor - 1) * this.r_back
-       this._r_k = this.r_k + (this.r_k_factor - 1) * this.r_k
+       this._r_for = this.r_for 
+          + (this.r_factor - 1) * this.r_for
+          + (this.r_factor_step - 1) * this.r_for
+
+       this._r_back = this.r_back 
+          + (this.r_factor - 1) * this.r_back
+          + (this.r_factor_step - 1) * this.r_back
+
+       this._r_k = this.r_k 
+          + (this.r_k_factor - 1) * this.r_k
+          + (this.r_k_factor_step - 1) * this.r_k
+
+      // reset the step factors
+      this.r_factor_step = 1.0;
+      this.r_k_factor_step = 1.0;
   }
 
   calc_inertance() {
     // calculate the inertance
-    this._l = this.l + (this.l_factor - 1) * this.l;
+    this._l = this.l 
+      + (this.l_factor - 1) * this.l
+      + (this.l_factor_step - 1) * this.l;
+
+      // reset the step factor
+      this.l_factor_step = 1.0;
   }
 
   calc_flow() {

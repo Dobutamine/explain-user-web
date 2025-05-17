@@ -73,12 +73,15 @@ export class Capacitance extends BaseModelClass {
 
     // unstressed volume factors
     this.u_vol_factor = 1.0;
+    this.u_vol_factor_step = 1.0;
 
     // elastance factors
     this.el_base_factor = 1.0;
+    this.el_base_factor_step = 1.0;
 
     // non-linear elastance factors
     this.el_k_factor = 1.0;
+    this.el_k_factor_step = 1.0;
 
     // initialize dependent properties
     this.vol = 0.0; // volume v(t) (L)
@@ -98,12 +101,26 @@ export class Capacitance extends BaseModelClass {
   }
 
   calc_elastances() {
-    this._el = this.el_base + (this.el_base_factor - 1) * this.el_base
-    this._el_k = this.el_k + (this.el_k_factor - 1) * this.el_k
+    this._el = this.el_base 
+        + (this.el_base_factor - 1) * this.el_base
+        + (this.el_base_factor_step - 1) * this.el_base
+
+    this._el_k = this.el_k 
+        + (this.el_k_factor - 1) * this.el_k
+        + (this.el_k_factor_step - 1) * this.el_k
+
+    // reset the step factors
+    this.el_base_factor_step = 1.0;
+    this.el_k_factor_step = 1.0;
   }
 
   calc_volumes() {
-    this._u_vol = this.u_vol + (this.u_vol_factor - 1) * this.u_vol
+    this._u_vol = this.u_vol 
+        + (this.u_vol_factor - 1) * this.u_vol
+        + (this.u_vol_factor_step - 1) * this.u_vol
+
+    // reset the step factors
+    this.u_vol_factor_step = 1.0;
   }
   
   calc_pressure() {

@@ -145,27 +145,19 @@ export class BloodVessel extends BloodCapacitance {
     this.r_k = 0.0;                           // baseline resistance non linear k
     this.no_flow = false;                     // flag whether this blood vessel is a no flow vessel
     this.no_back_flow = false;                // flag whether this blood vessel is a no back flow vessel  
-    this.alpha = 0.5                          // determines relation between resistance change and elastance change. Veins/venules: 0.75, arterioles: 0.63, large arteries: 0.5
+    this.alpha = 0.0                          // determines relation between resistance change and elastance change. Veins/venules: 0.75, arterioles: 0.63, large arteries: 0.5
     this.ans_sens = 0.0;                      // sensitivity of this blood vessel for autonomic control. 0.0 is no effect, 1.0 is full effect
+    this.ans_activity = 1.0;                  // ans activity factor 
 
     // dependent properties
     this.flow = 0.0;                          // net flow through this blood vessel
     this.flow_forward = 0.0;                  // forward flow from the input blood vessels
     this.flow_backward = 0.0;                 // backward flow to the input blood vessels
-    this.r_for_calc = 0.0;                    // calculated forward resistance
-    this.r_back_calc = 0.0;                   // calculated backward resistance
     
     // property factors
-    this.el_base_factor = 1.0;                // elastance change factor
-    this.el_k_factor = 1.0;                   // elastance change factor
-    this.u_vol_factor = 1.0;                  // unstressed volume change factor
-    this.r_factor = 1.0;                      // resistance change factor
     this.r_for_factor = 1.0;                  // forward resistance change factor
     this.r_back_factor = 1.0;                 // backward resistance change factor
     this.r_k_factor = 1.0;                    // resistance non linear k change factor
-    this.ans_res_factor = 1.0;                // ans vaso-active control factor coming from the autonomic nervous system model
-    this.circ_res_factor = 1.0;               // vaso-active control factor coming from the circulation model
-    this.circ_el_factor = 1.0;                // elastance change factor coming from the circulation model
 
     // local properties
     this._resistors = {};                   // list of connectors for this blood vessel
@@ -215,6 +207,7 @@ export class BloodVessel extends BloodCapacitance {
     this.calc_volumes();  
     this.calc_pressure();
 
+    // get the flows from the resistor
     this.get_flows();
   }
 
@@ -237,20 +230,31 @@ export class BloodVessel extends BloodCapacitance {
   }
 
   calc_resistances() {
+    // set the resistance factors of the associated resistors.
+    Object.values(this._resistors).forEach((resistor) => {
+      resistor.r_for = this.r_for * this.r_for_factor
+      resistor.r_back = this.r_back * this.r_back_factor
+      resistor.r_k = this.r_k * this.r_k_factor
+      resistor.r_factor = 1.0 + (this.ans_activity - 1.0) * this.ans_sens;
+    })
   }
 
   calc_elastances() {
     // calculate the elastance factors depending ans and circulation model factors and the alpha factor
-    let _ans_elas_res_factor = Math.pow(this.ans_res_factor, this.alpha)
-    let _circ_elas_res_factor = Math.pow(this.circ_res_factor, this.alpha)
+    let _ans_elas_factor = Math.pow(this.ans_activity, this.alpha)
 
-    this._el = this.el_base + 
-        (this.el_base_factor - 1) * this.el_base +
-        (_ans_elas_res_factor - 1) * this.el_base * this.ans_sens +
-        (_circ_elas_res_factor - 1) * this.el_base +
-        (this.circ_el_factor - 1) * this.el_base
+    this._el = this.el_base 
+        + (this.el_base_factor - 1) * this.el_base
+        + (this.el_base_factor_step - 1) * this.el_base
+        + (_ans_elas_factor - 1) * this.el_base * this.ans_sens
 
-    this._el_k = this.el_k + 
-        (this.el_k_factor - 1) * this.el_k
+    this._el_k = this.el_k 
+        + (this.el_k_factor - 1) * this.el_k
+        + (this.el_k_factor_step - 1) * this.el_k
+
+    // reset the step factors
+    this.el_base_factor_step = 1.0;
+    this.el_k_factor_step = 1.0;
   }
+
 }
