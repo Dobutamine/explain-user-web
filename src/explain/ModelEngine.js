@@ -201,6 +201,7 @@ const build = function (model_definition) {
       model.models[sub_model_def.name] = new_sub_model;
       
       // copy the model interface object
+      console.log("ModelEngine: copying model interface for: ", sub_model_def.name)
       model.models[sub_model_def.name].model_interface = [
         ...available_models[index].model_interface,
       ];

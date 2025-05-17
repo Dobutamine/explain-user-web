@@ -33,6 +33,7 @@ export { Arteriole } from "./component_models/blood_vessels/Arteriole";
 export { Capillaries } from "./component_models/blood_vessels/Capillaries";
 export { Vein } from "./component_models/blood_vessels/Vein";
 export { Venule } from "./component_models/blood_vessels/Venule";
+export { CapillaryNetwork } from "./component_models/blood_vessels/CapillaryNetwork";
 
 export { Heart } from "./component_models/heart/Heart";
 export { HeartChamber } from "./component_models/heart/HeartChamber";

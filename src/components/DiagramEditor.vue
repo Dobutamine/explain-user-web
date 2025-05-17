@@ -1015,7 +1015,11 @@ export default {
           break;
         case "BloodCompartment":
           this.compPicto = "container.png";
-          models = ["BloodCapacitance", "BloodTimeVaryingElastance", "BloodVessel", "HeartChamber", "CapillaryBed", "CoronaryVessel"];
+          models = [
+            "BloodCapacitance", "BloodTimeVaryingElastance", "BloodVessel", 
+            "HeartChamber", "CapillaryBed", "CoronaryVessel", 
+            "Artery", "Vein", "Venule", 
+            "Arteriole", "Capillaries"];
           break;
         case "BloodConnector":
           this.compPicto = "blood.png";

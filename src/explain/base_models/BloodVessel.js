@@ -233,7 +233,7 @@ export class BloodVessel extends BloodCapacitance {
       }
     });
     // calculate the net flow through this blood vessel
-    this.flow_net_in = this.flow_forward - this.flow_backward;
+    this.flow = this.flow_forward - this.flow_backward;
   }
 
   calc_resistances() {

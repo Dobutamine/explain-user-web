@@ -160,6 +160,12 @@ export class Blood extends BaseModelClass {
       "CapillaryBed",
       "CoronaryVessel",
       "BloodPump",
+      "Capillaries",
+      "CapillaryNetwork",
+      "Arteriole",
+      "Venule",
+      "Artery",
+      "Vein",
     ];
     this._update_interval = 1.0; // interval at which the calculations are done
     this._update_counter = 0.0; // update counter intermediate
