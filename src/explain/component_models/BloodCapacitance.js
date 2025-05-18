@@ -74,13 +74,14 @@ export class BloodCapacitance extends Capacitance {
       type: "factor"
     },
     {
-      caption: "elastance non linear  factor",
+      caption: "elastance non linear factor",
       target: "el_k_factor_ps",
       type: "factor"
     },
   ];
   
   constructor(model_ref, name = "") {
+    // call the parent constructor
     super(model_ref, name);
 
     // initialize independent properties unique to a BloodCapacitance
@@ -116,16 +117,18 @@ export class BloodCapacitance extends Capacitance {
         ((comp_from.solutes[solute] - this.solutes[solute]) * dvol) / this.vol;
     });
 
+    // process the drug concentrations
+    Object.keys(this.drugs).forEach((drug) => {
+      this.drugs[drug] +=
+        ((comp_from.drugs[drug] - this.drugs[drug]) * dvol) / this.vol;
+    });
+
     // process the temperature (treat it as a solute)
     this.temp += ((comp_from.temp - this.temp) * dvol) / this.vol;
 
     // process the viscosity (treat it as a solute)
     this.viscosity += ((comp_from.viscosity - this.viscosity) * dvol) / this.vol;
 
-    // process the drug concentrations
-    Object.keys(this.drugs).forEach((drug) => {
-      this.drugs[drug] +=
-        ((comp_from.drugs[drug] - this.drugs[drug]) * dvol) / this.vol;
-    });
+
   }
 }

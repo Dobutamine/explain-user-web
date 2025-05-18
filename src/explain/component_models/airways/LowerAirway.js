@@ -1,4 +1,4 @@
-import { GasCapacitance } from "../../base_models/GasCapacitance";
+import { GasCapacitance } from "../GasCapacitance";
 
 export class LowerAirway extends GasCapacitance {
   // static properties

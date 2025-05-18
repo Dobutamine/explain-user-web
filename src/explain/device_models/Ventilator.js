@@ -1,6 +1,6 @@
 import { BaseModelClass } from "../base_models/BaseModelClass";
 import { calc_gas_composition } from "../base_models/GasComposition";
-import { GasCapacitance } from "../base_models/GasCapacitance";
+import { GasCapacitance } from "../component_models/GasCapacitance";
 import { Resistor } from "../base_models/Resistor";
 
 export class Ventilator extends BaseModelClass {
