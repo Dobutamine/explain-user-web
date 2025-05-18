@@ -1,4 +1,3 @@
-import { capitalize } from "vue";
 import { BaseModelClass } from "../base_models/BaseModelClass";
 
 /*

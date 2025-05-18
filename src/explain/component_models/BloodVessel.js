@@ -1,5 +1,5 @@
 import { BloodCapacitance } from "./BloodCapacitance";
-import { Resistor } from "./Resistor";
+import { Resistor } from "../base_models/Resistor";
 import { Valve } from "./Valve";
 
 /*

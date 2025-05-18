@@ -1,5 +1,8 @@
-import { Capacitance } from "./Capacitance";
+import { Capacitance } from "../base_models/Capacitance";
 
+// This class represents a blood capacitance model, which is a subclass of the Capacitance class.
+
+// This class adds functionality to handle blood-specific properties such as temperature, viscosity, solute and drug concentrations.
 export class BloodCapacitance extends Capacitance {
   // static properties
   static model_type = "BloodCapacitance";
@@ -45,7 +48,7 @@ export class BloodCapacitance extends Capacitance {
       delta: 1,
       rounding: 0,
     },
-    {
+        {
       caption: "temperature (C)",
       target: "temp",
       type: "number",
@@ -63,17 +66,17 @@ export class BloodCapacitance extends Capacitance {
     },
     {
       caption: "unstressed volume factor",
-      target: "u_vol_factor",
+      target: "u_vol_factor_ps",
       type: "factor"
     },
     {
       caption: "elastance baseline factor",
-      target: "el_base_factor",
+      target: "el_base_factor_ps",
       type: "factor"
     },
     {
       caption: "elastance non linear  factor",
-      target: "el_k_factor",
+      target: "el_k_factor_ps",
       type: "factor"
     },
   ];
@@ -81,13 +84,13 @@ export class BloodCapacitance extends Capacitance {
   constructor(model_ref, name = "") {
     super(model_ref, name);
 
-    // initialize addtional independent properties
-    this.temp = 0.0; // blood temperature (dgs C)
+    // initialize independent properties unique to a BloodCapacitance
+    this.temp = 37.0; // blood temperature (dgs C)
     this.viscosity = 6.0; // blood viscosity (centiPoise = Pa * s)
     this.solutes = {}; // dictionary holding all solutes
     this.drugs = {}; // dictionary holding all drug concentrations
 
-    // initialize additional dependent properties
+    // initialize dependent properties unique to a BloodCapacitance
     this.to2 = 0.0; // total oxygen concentration (mmol/l)
     this.tco2 = 0.0; // total carbon dioxide concentration (mmol/l)
     this.ph = -1.0; // ph (unitless)
@@ -98,12 +101,11 @@ export class BloodCapacitance extends Capacitance {
     this.be = -1.0; // base excess (mmol/l)
   }
   
+  // the method overrides the 'volume_in' method of the Capacitance class and 
+  // adds functionality to update the viscosity, temperature and to2, tco2, solutes and drug concentrations
   volume_in(dvol, comp_from) {
-    // add volume to the capacitance
-    this.vol += dvol;
-
-    // return if the volume is zero or lower
-    if (this.vol <= 0.0) return;
+    // call the parent method from the Capacitance class to update the volume
+    super.volume_in(dvol, comp_from);
 
     // process the gases o2 and co2
     this.to2 += ((comp_from.to2 - this.to2) * dvol) / this.vol;
@@ -113,6 +115,18 @@ export class BloodCapacitance extends Capacitance {
     Object.keys(this.solutes).forEach((solute) => {
       this.solutes[solute] +=
         ((comp_from.solutes[solute] - this.solutes[solute]) * dvol) / this.vol;
+    });
+
+    // process the temperature (treat it as a solute)
+    this.temp += ((comp_from.temp - this.temp) * dvol) / this.vol;
+
+    // process the viscosity (treat it as a solute)
+    this.viscosity += ((comp_from.viscosity - this.viscosity) * dvol) / this.vol;
+
+    // process the drug concentrations
+    Object.keys(this.drugs).forEach((drug) => {
+      this.drugs[drug] +=
+        ((comp_from.drugs[drug] - this.drugs[drug]) * dvol) / this.vol;
     });
   }
 }

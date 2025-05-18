@@ -92,7 +92,7 @@ export class BaseModelClass {
       this[arg["key"]] = arg["value"];
     });
 
-    // build all the sub models of this model
+    // build all the sub models of this model which are defined in the components property
     Object.keys(this.components).forEach(component_name => {
       this._model_engine.models[component_name] = new Models[this.components[component_name].model_type](this._model_engine, component_name)
     })
@@ -106,7 +106,6 @@ export class BaseModelClass {
       this._model_engine.models[component_name].init_model(args)
     })
     
-
     // flag that the model is initialized
     this._is_initialized = true;
   }

@@ -1,4 +1,4 @@
-import { BloodCapacitance } from "../base_models/BloodCapacitance";
+import { BloodCapacitance } from "./BloodCapacitance";
 
 export class BloodPump extends BloodCapacitance {
   // static properties

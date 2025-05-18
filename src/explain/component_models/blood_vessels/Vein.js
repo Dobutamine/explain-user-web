@@ -1,4 +1,4 @@
-import { BloodVessel } from "../../base_models/BloodVessel";
+import { BloodVessel } from "../BloodVessel";
 
 export class Vein extends BloodVessel {
   // static properties

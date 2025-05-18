@@ -1,5 +1,5 @@
 import { BaseModelClass } from "./BaseModelClass";
-import { calc_gas_composition } from "../helpers/GasComposition"
+import { calc_gas_composition } from "./GasComposition"
 
 export class GasDiffusor extends BaseModelClass {
   // static properties
@@ -27,7 +27,7 @@ export class GasDiffusor extends BaseModelClass {
       target: "dif_o2",
       type: "number",
       factor: 1.0,
-      delta: 0.01,
+      delta: 0.001,
       rounding: 3,
     },
     {
@@ -35,7 +35,7 @@ export class GasDiffusor extends BaseModelClass {
       target: "dif_co2",
       type: "number",
       factor: 1.0,
-      delta: 0.01,
+      delta: 0.001,
       rounding: 3,
     },
     {
@@ -43,7 +43,7 @@ export class GasDiffusor extends BaseModelClass {
       target: "dif_n2",
       type: "number",
       factor: 1.0,
-      delta: 0.01,
+      delta: 0.001,
       rounding: 3,
     },
     {
@@ -51,25 +51,38 @@ export class GasDiffusor extends BaseModelClass {
       target: "dif_other",
       type: "number",
       factor: 1.0,
-      delta: 0.01,
+      delta: 0.001,
       rounding: 3,
     },
     {
       caption: "gas component 1",
       target: "comp_gas1",
       type: "list",
-      options: ["GasCapacitance", "AlveolarSpace"]
+      options: [
+        "GasCapacitance", 
+        "LowerAirway",
+        "UpperAirway",
+        "PleuralSpace",
+        "AlveolarSac"
+      ]
     },
     {
       caption: "gas component 2",
       target: "comp_gas2",
       type: "list",
-      options: ["GasCapacitance", "AlveolarSpace"]
+      options: [
+        "GasCapacitance", 
+        "LowerAirway",
+        "UpperAirway",
+        "PleuralSpace",
+        "AlveolarSac"
+      ]
     }
 
   ];
 
   constructor(model_ref, name = "") {
+    // call the parent constructor
     super(model_ref, name);
 
     // initialize independent properties
@@ -80,11 +93,16 @@ export class GasDiffusor extends BaseModelClass {
     this.dif_n2 = 0.01; // diffusion constant for n2 (mmol/mmHg * s)
     this.dif_other = 0.01; // diffusion constant for n2 (mmol/mmHg * s)
 
-    // factors
-    this.dif_o2_factor = 1.0;
-    this.dif_co2_factor = 1.0;
-    this.dif_n2_factor = 1.0;
-    this.dif_other_factor = 1.0
+    // non-persistent property factors. These factors reset to 1.0 after each model step
+    this.dif_o2_factor = 1.0; // non-persistent diffusion factor for o2 (unitless)
+    this.dif_co2_factor = 1.0; // non-persistent diffusion factor for co2 (unitless)
+    this.dif_n2_factor = 1.0; // non-persistent diffusion factor for n2 (unitless)
+    this.dif_other_factor = 1.0; // non-persistent diffusion factor for other gasses (unitless)
+
+    // persistent property factors. These factors are persistent and do not reset
+    this.dif_o2_factor_ps = 1.0; // persistent diffusion factor for o2 (unitless)
+    this.dif_co2_factor_ps = 1.0; // persistent diffusion factor for co2 (unitless)
+    this.dif_n2_factor_ps = 1.0; // persistent diffusion factor for n2 (unitless)
 
     // local variables
     this._comp_gas1 = null; // reference to the first gas-containing model
@@ -92,7 +110,7 @@ export class GasDiffusor extends BaseModelClass {
   }
 
   calc_model() {
-    // find the two blood-containing models and store references
+    // find the two gas-containing models and store references
     this._comp_gas1 = this._model_engine.models[this.comp_gas1];
     this._comp_gas2 = this._model_engine.models[this.comp_gas2];
 
@@ -101,13 +119,25 @@ export class GasDiffusor extends BaseModelClass {
     calc_gas_composition(this._comp_gas2);
 
     // incorporate the factors
-    let _dif_o2 = this.dif_o2 * this.dif_o2_factor;
-    let _dif_co2 = this.dif_co2 * this.dif_co2_factor;
-    let _dif_n2 = this.dif_n2 * this.dif_n22_factor;
-    let _dif_other = this.dif_other * this.dif_other_factor;
+    const _dif_o2 = this.dif_o2 
+        + (this.dif_o2_factor - 1) * this.dif_o2
+        + (this.dif_o2_factor_ps - 1) * this.dif_o2;
+
+    const _dif_co2 = this.dif_co2
+        + (this.dif_co2_factor - 1) * this.dif_co2
+        + (this.dif_co2_factor_ps - 1) * this.dif_co2;
+
+    const _dif_n2 = this.dif_n2
+        + (this.dif_n2_factor - 1) * this.dif_n2
+        + (this.dif_n2_factor_ps - 1) * this.dif_n2;
+    
+    const _dif_other = this.dif_other
+        + (this.dif_other_factor - 1) * this.dif_other
+        + (this.dif_other_factor_ps - 1) * this.dif_other;
 
     // diffuse the gases, where diffusion is partial pressure-driven
     let do2 = (this._comp_gas1.po2 - this._comp_gas2.po2) * _dif_o2 * this._t;
+
     // update the concentrations
     this._comp_gas1.co2 = (this._comp_gas1.co2 * this._comp_gas1.vol - do2) / this._comp_gas1.vol;
     this._comp_gas2.co2 = (this._comp_gas2.co2 * this._comp_gas2.vol + do2) / this._comp_gas2.vol;
@@ -126,6 +156,12 @@ export class GasDiffusor extends BaseModelClass {
     // update the concentrations
     this._comp_gas1.cother = (this._comp_gas1.cother * this._comp_gas1.vol - dother) / this._comp_gas1.vol;
     this._comp_gas2.cother = (this._comp_gas2.cother * this._comp_gas2.vol + dother) / this._comp_gas2.vol;
+
+    // reset the non-persistent factors
+    this.dif_o2_factor = 1.0;
+    this.dif_co2_factor = 1.0;
+    this.dif_n2_factor = 1.0;
+    this.dif_other_factor = 1.0;
 
   }
 }

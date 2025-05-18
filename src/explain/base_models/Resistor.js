@@ -24,18 +24,12 @@ export class Resistor extends BaseModelClass {
     {
       caption: "no flow allowed",
       target: "no_flow",
-      type: "boolean",
-      delta: 1,
-      factor: 1.0,
-      rounding: 0
+      type: "boolean"
     },
     {
       caption: "no back flow allowed",
       target: "no_back_flow",
-      type: "boolean",
-      delta: 1,
-      factor: 1.0,
-      rounding: 0
+      type: "boolean"
     },
     {
       caption: "forward resistance",
@@ -54,7 +48,7 @@ export class Resistor extends BaseModelClass {
       rounding: 0
     },
     {
-      caption: "non linear resistance factor",
+      caption: "non linear resistance coefficient",
       target: "r_k",
       type: "number",
       delta: 1,
@@ -71,17 +65,12 @@ export class Resistor extends BaseModelClass {
       rounding: 3
     },
     {
-      caption: "forward resistance factor",
-      target: "r_for_factor",
+      caption: "resistance factor",
+      target: "r_factor",
       type: "factor"
     },
     {
-      caption: "backward resistance factor",
-      target: "r_back_factor",
-      type: "factor"
-    },
-    {
-      caption: "non linear resistance factor",
+      caption: "non linear resistance coefficient factor",
       target: "r_k_factor",
       type: "factor"
     },
@@ -99,13 +88,16 @@ export class Resistor extends BaseModelClass {
         "BloodTimeVaryingElastance", 
         "BloodPump", 
         "BloodVessel", 
-        "CapillaryBed", 
+        "Artery",
+        "Arteriole",
+        "Vein",
+        "Venule",
+        "Capillaries",
         "CoronaryVessel", 
         "HeartChamber",
         "Airway",
         "AlveolarSpace",
-        "GasCapacitance",
-        "BloodPump"
+        "GasCapacitance"
       ]
     },
     {
@@ -117,56 +109,61 @@ export class Resistor extends BaseModelClass {
         "BloodTimeVaryingElastance", 
         "BloodPump", 
         "BloodVessel", 
-        "CapillaryBed", 
+        "Artery",
+        "Arteriole",
+        "Vein",
+        "Venule",
+        "Capillaries",
         "CoronaryVessel", 
         "HeartChamber",
         "Airway",
         "AlveolarSpace",
-        "GasCapacitance",
-        "BloodPump"
+        "GasCapacitance"
       ]
     }
     
   ]
 
   constructor(model_ref, name = "") {
+    // call the constructor of the parent class
     super(model_ref, name);
 
     // initialize independent properties
-    this.r_for = 1.0;                         // forward flow resistance Rf (mmHg*s/l)
-    this.r_back = 1.0;                        // backward flow resistance Rb (mmHg*s/l )
-    this.r_k = 0.0;                           // non-linear resistance factor K1 (unitless)
-    this.l = 0.0;                             // intertance L (mmHg*s^2/L)
-    this.comp_from = "";                      // holds the name of the upstream component
-    this.comp_to = "";                        // holds the name of the downstream component
-    this.no_flow = false;                     // flags whether flow is allowed across this resistor
-    this.no_back_flow = false;                // flags whether backflow is allowed across this resistor
-    this.p1_ext = 0.0;                        // external pressure on the inlet (mmHg)
-    this.p2_ext = 0.0;                        // external pressure on the outlet (mmHg)
+    this.r_for = 1.0; // forward flow resistance Rf (mmHg*s/l)
+    this.r_back = 1.0; // backward flow resistance Rb (mmHg*s/l )
+    this.r_k = 0.0; // non-linear resistance coefficient K1 (unitless)
+    this.l = 0.0; // intertance L (mmHg*s^2/L)
+    this.comp_from = ""; // holds the name of the upstream component
+    this.comp_to = ""; // holds the name of the downstream component
+    this.no_flow = false; // flags whether flow is allowed across this resistor
+    this.no_back_flow = false; // flags whether backflow is allowed across this resistor
+    this.p1_ext = 0.0; // external pressure on the inlet (mmHg)
+    this.p2_ext = 0.0; // external pressure on the outlet (mmHg)
 
-    // general factors
-    this.r_factor = 1.0;                      // persistent resistance factor
-    this.r_factor_step = 1.0;                 // non persistent resistance factor
+    // non-persistent property factors. These factors reset to 1.0 after each model step
+    this.r_factor = 1.0; // non-persistent resistance factor
+    this.r_k_factor = 1.0; // non-persistent non-linear coefficient factor
+    this.l_factor = 1.0; // non-persistent inertance factor
 
-    this.r_k_factor = 1.0;
-    this.r_k_factor_step = 1.0;
-    
-    this.l_factor = 1.0;
-    this.l_factor_step = 1.0;
+     // persistent property factors. These factors are persistent and do not reset
+    this.r_factor_ps = 1.0; //  persistent resistance factor
+    this.r_k_factor_ps = 1.0; // persistent non-linear coefficient factor
+    this.l_factor_ps = 1.0; // persistent inertance factor
 
     // initialize dependent properties
-    this.flow = 0.0;                          // flow f(t) (L/s)
+    this.flow = 0.0;  // flow f(t) (L/s)
 
     // local variables
-    this._comp_from = {};                     // holds a reference to the upstream component
-    this._comp_to = {};                       // holds a reference to the downstream component
-    this._r_for = 1000;                       // forward resistance (mmHg/L*s)
-    this._r_back = 1000;                      // backward resistance (mmHg/L*s)
-    this._r_k = 0;                            // non-linear resistance factor (unitless)
-    this._l = 0.0;                            // intertance (mmHg*s^2/L)
-    this._prev_flow = 0.0;                    // previous flow (L/s)
+    this._comp_from = {}; // holds a reference to the upstream component
+    this._comp_to = {}; // holds a reference to the downstream component
+    this._r_for = 1000;  // calculated forward resistance (mmHg/L*s)
+    this._r_back = 1000; // calculated backward resistance (mmHg/L*s)
+    this._r_k = 0; // calculated non-linear resistance factor (unitless)
+    this._l = 0.0; // calculated intertance (mmHg*s^2/L)
+    this._prev_flow = 0.0; // flow from previous model step (L/s)
   }
 
+  // this routine is called in every model step by the ModelEngine Class
   calc_model() {
     // find the up- and downstream components and store the references
     this._comp_from = this._model_engine.models[this.comp_from];
@@ -187,29 +184,29 @@ export class Resistor extends BaseModelClass {
        // incorporate all factors influencing this resistor
        this._r_for = this.r_for 
           + (this.r_factor - 1) * this.r_for
-          + (this.r_factor_step - 1) * this.r_for
+          + (this.r_factor_ps - 1) * this.r_for
 
        this._r_back = this.r_back 
           + (this.r_factor - 1) * this.r_back
-          + (this.r_factor_step - 1) * this.r_back
+          + (this.r_factor_ps - 1) * this.r_back
 
        this._r_k = this.r_k 
           + (this.r_k_factor - 1) * this.r_k
-          + (this.r_k_factor_step - 1) * this.r_k
+          + (this.r_k_factor_ps - 1) * this.r_k
 
-      // reset the step factors
-      this.r_factor_step = 1.0;
-      this.r_k_factor_step = 1.0;
+      // reset the non persistent factors
+      this.r_factor = 1.0;
+      this.r_k_factor = 1.0;
   }
 
   calc_inertance() {
     // calculate the inertance
     this._l = this.l 
       + (this.l_factor - 1) * this.l
-      + (this.l_factor_step - 1) * this.l;
+      + (this.l_factor_ps - 1) * this.l;
 
-      // reset the step factor
-      this.l_factor_step = 1.0;
+      // reset the non persistent factors
+      this.l_factor = 1.0;
   }
 
   calc_flow() {
@@ -233,14 +230,13 @@ export class Resistor extends BaseModelClass {
 
     // calculate the forward flow between two components
     if (_p1_t >= _p2_t) {
+      // calculate the forward flow
       this.flow = (_p1_t - _p2_t - this._r_k * Math.pow(this.flow, 2) - this._l * (this.flow - this._prev_flow)) / this._r_for;
 
-      // update the volumes of the connected components
-      let vol_not_removed = this._comp_from.volume_out(this.flow * this._t);
-      this._comp_to.volume_in(
-        this.flow * this._t - vol_not_removed,
-        this._comp_from
-      );
+      // update the volumes of the connected components but do not remove the volume which could not be removed from the upstream component (to prevent volume loss)
+      const vol_not_removed = this._comp_from.volume_out(this.flow * this._t);
+      this._comp_to.volume_in(this.flow * this._t - vol_not_removed, this._comp_from);
+
       // store the previous flow
       this._prev_flow = this.flow;
       
@@ -250,14 +246,13 @@ export class Resistor extends BaseModelClass {
 
     // calculate the backward flow between two components
     if (_p1_t < _p2_t && !this.no_back_flow) {
+      // calculate the backward flow
       this.flow = (_p1_t - _p2_t + this._r_k * Math.pow(this.flow, 2) + this.l * (this.flow - this._prev_flow)) / this._r_back;
 
-      // update the volumes of the connected components
+      // update the volumes of the connected components but do not remove the volume which could not be removed from the upstream component (to prevent volume loss)
       let vol_not_removed = this._comp_to.volume_out(-this.flow * this._t);
-      this._comp_from.volume_in(
-        -this.flow * this._t - vol_not_removed,
-        this._comp_to
-      );
+      this._comp_from.volume_in(-this.flow * this._t - vol_not_removed,this._comp_to);
+
       // store the previous flow
       this._prev_flow = this.flow;
 

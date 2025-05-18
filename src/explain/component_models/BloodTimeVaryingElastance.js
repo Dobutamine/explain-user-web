@@ -1,4 +1,4 @@
-import { TimeVaryingElastance } from "./TimeVaryingElastance";
+import { TimeVaryingElastance } from "../base_models/TimeVaryingElastance";
 
 export class BloodTimeVaryingElastance extends TimeVaryingElastance {
   // static properties
