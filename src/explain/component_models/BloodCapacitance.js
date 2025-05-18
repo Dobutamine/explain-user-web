@@ -1,7 +1,6 @@
 import { Capacitance } from "../base_models/Capacitance";
 
 // This class represents a blood capacitance model, which is a subclass of the Capacitance class.
-
 // This class adds functionality to handle blood-specific properties such as temperature, viscosity, solute and drug concentrations.
 export class BloodCapacitance extends Capacitance {
   // static properties
@@ -48,7 +47,7 @@ export class BloodCapacitance extends Capacitance {
       delta: 1,
       rounding: 0,
     },
-        {
+    {
       caption: "temperature (C)",
       target: "temp",
       type: "number",
