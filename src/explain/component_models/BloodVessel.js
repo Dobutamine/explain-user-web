@@ -1,6 +1,5 @@
 import { BloodCapacitance } from "./BloodCapacitance";
 import { Resistor } from "../base_models/Resistor";
-import { Valve } from "./Valve";
 
 /*
 The BloodVessel class extends the BloodCapacitance class and adds a Resistor to represent a blood vessel in the model.
@@ -198,11 +197,12 @@ export class BloodVessel extends BloodCapacitance {
       // create a new resistor for each input
       let res = new Resistor(this._model_engine, inputName + "_" + this.name);
 
-      // check whether the resistor already exists (for example in case of a saved state)
+      // check whether the resistor already exists (in case of a saved state)
       if (this._model_engine.models[inputName + "_" + this.name]) {
         // store a reference to the existing resistor
         this._resistors[inputName + "_" + this.name] = this._model_engine.models[inputName + "_" + this.name];
         // do not create a new resistor
+        console.log("Resistor already exists: " + inputName + "_" + this.name);
         return
       }
 
@@ -247,7 +247,7 @@ export class BloodVessel extends BloodCapacitance {
       resistor.no_flow = this.no_flow
       resistor.p1_ext = this.p1_ext
       resistor.p2_ext = this.p2_ext
-      
+
       resistor.l = this._l
       resistor.r_factor = this.r_factor
       resistor.r_factor_ps = this.r_factor_ps
