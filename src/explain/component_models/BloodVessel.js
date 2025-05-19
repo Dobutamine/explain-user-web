@@ -29,6 +29,16 @@ export class BloodVessel extends BloodCapacitance {
       type: "boolean"
     },
     {
+      caption: "no flow allowed",
+      target: "no_flow",
+      type: "boolean"
+    },
+    {
+      caption: "no back flow allowed",
+      target: "no_back_flow",
+      type: "boolean"
+    },
+    {
       caption: "volume (L)",
       target: "vol",
       type: "number",
@@ -188,9 +198,12 @@ export class BloodVessel extends BloodCapacitance {
       // create a new resistor for each input
       let res = new Resistor(this._model_engine, inputName + "_" + this.name);
 
-      // if the connector type is a valve, create a valve instead of a resistor
-      if (this.connector_type == "valve") {
-        res = new Valve(this._model_engine, inputName + "_" + this.name);
+      // check whether the resistor already exists (for example in case of a saved state)
+      if (this._model_engine.models[inputName + "_" + this.name]) {
+        // store a reference to the existing resistor
+        this._resistors[inputName + "_" + this.name] = this._model_engine.models[inputName + "_" + this.name];
+        // do not create a new resistor
+        return
       }
 
       // set the properties of the resistor
@@ -229,7 +242,18 @@ export class BloodVessel extends BloodCapacitance {
       resistor.r_for = this._r_for
       resistor.r_back = this._r_back
       resistor.r_k = this._r_k
+
+      resistor.no_back_flow = this.no_back_flow
+      resistor.no_flow = this.no_flow
+      resistor.p1_ext = this.p1_ext
+      resistor.p2_ext = this.p2_ext
+      
       resistor.l = this._l
+      resistor.r_factor = this.r_factor
+      resistor.r_factor_ps = this.r_factor_ps
+      resistor.r_k_factor = this.r_k_factor
+      resistor.l_factor = this.l_factor
+      resistor.l_factor_ps = this.l_factor_ps
     })
 
     // call parent class methods
