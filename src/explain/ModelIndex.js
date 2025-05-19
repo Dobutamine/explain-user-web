@@ -16,12 +16,12 @@ export { BloodVessel } from "./component_models/BloodVessel";
 export { BloodPump } from "./component_models/BloodPump";
 
 export { Valve } from "./component_models/Valve";
-export { Artery } from "./component_models/blood_vessels/Artery";
-export { Arteriole } from "./component_models/blood_vessels/Arteriole";
-export { Capillaries } from "./component_models/blood_vessels/Capillaries";
-export { Vein } from "./component_models/blood_vessels/Vein";
-export { Venule } from "./component_models/blood_vessels/Venule";
-export { CapillaryNetwork } from "./component_models/blood_vessels/CapillaryNetwork";
+export { Artery } from "./component_models/Artery";
+export { Arteriole } from "./component_models/Arteriole";
+export { Capillaries } from "./component_models/Capillaries";
+export { Vein } from "./component_models/Vein";
+export { Venule } from "./component_models/Venule";
+export { MicroVascularUnit } from "./component_models/MicroVascularUnit";
 export { Placenta } from "./component_models/Placenta";
 export { Shunts } from "./component_models/Shunts";
 

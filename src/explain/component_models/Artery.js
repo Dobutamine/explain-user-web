@@ -1,4 +1,4 @@
-import { BloodVessel } from "../BloodVessel";
+import { BloodVessel } from "./BloodVessel";
 
 export class Artery extends BloodVessel {
   // static properties
