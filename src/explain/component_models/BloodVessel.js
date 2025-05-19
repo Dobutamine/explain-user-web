@@ -292,6 +292,9 @@ export class BloodVessel extends BloodCapacitance {
     this._l = this.l
       + (this.l_factor - 1) * this.l
       + (this.l_factor_ps - 1) * this.l
+
+    // reset the non persistent factors
+    this.l_factor = 1.0;
   }
 
   calc_resistances() {
@@ -309,6 +312,10 @@ export class BloodVessel extends BloodCapacitance {
     this._r_k = this.r_k 
       + (this.r_k_factor - 1) * this.r_k
       + (this.r_k_factor_ps - 1) * this.r_k
+
+     // reset the non persistent factors
+    this.r_factor = 1.0;
+    this.r_k_factor = 1.0;
   }
 
   calc_elastances() {

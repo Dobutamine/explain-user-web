@@ -135,9 +135,15 @@ export class MicroVascularUnit extends BaseModelClass {
         { key: "r_k", value: this.r_k * this.res_dist.art },
         { key: "no_flow", value: this.no_flow }
     ]
-    this.components.art.init_model(args_art);
-    // add the arteriole to the model engine
-    this._model_engine.models[this.name + "_IN"] = this.components.art;
+
+    // check whether this arteriole already exists (in case of a saved state)
+    if (this._model_engine.models[this.name + "_IN"]) {
+      this.components.art = this._model_engine.models[this.name + "_IN"];
+    } else {
+      this.components.art.init_model(args_art);
+      // add the arteriole to the model engine
+      this._model_engine.models[this.name + "_IN"] = this.components.art;
+    }
 
     // initialize the capillary part of the network
     let args_cap = [
@@ -155,9 +161,14 @@ export class MicroVascularUnit extends BaseModelClass {
         { key: "r_k", value: this.r_k * this.res_dist.cap },
         { key: "no_flow", value: this.no_flow }
     ]
-    this.components.cap.init_model(args_cap);
-    // add the capillary to the model engine
-    this._model_engine.models[this.name + "_CAP"] = this.components.cap;
+    // check whether this capillary already exists (in case of a saved state)
+    if (this._model_engine.models[this.name + "_CAP"]) {
+      this.components.cap = this._model_engine.models[this.name + "_CAP"];
+    } else {
+      this.components.cap.init_model(args_cap);
+      // add the capillary to the model engine
+      this._model_engine.models[this.name + "_CAP"] = this.components.cap;
+  }
 
     // initialize the venule part of the network
     let args_ven = [
@@ -175,9 +186,15 @@ export class MicroVascularUnit extends BaseModelClass {
         { key: "r_k", value: this.r_k * this.res_dist.ven },
         { key: "no_flow", value: this.no_flow }
     ]
-    this.components.ven.init_model(args_ven);
-    // add the venule to the model engine
-    this._model_engine.models[this.name + "_OUT"] = this.components.ven;
+    // check whether this venous already exists (in case of a saved state)
+    if (this._model_engine.models[this.name + "_OUT"]) {
+      this.components.ven = this._model_engine.models[this.name + "_OUT"];
+    } else {
+      // initialize the venule part of the network
+      this.components.ven.init_model(args_ven);
+      // add the venule to the model engine
+      this._model_engine.models[this.name + "_OUT"] = this.components.ven;
+    }
   }
 
   calc_model() {
@@ -190,10 +207,44 @@ export class MicroVascularUnit extends BaseModelClass {
     // update the ans activity according the sensitivity of the whole MVU
     let _ans_activity = 1.0 + (this.ans_activity - 1.0) * this.ans_sens;
 
-    // update the ans activity according the sensitivity of the components
+    // send the ans activity to the components
     this.components.art.ans_activity = _ans_activity;
     this.components.cap.ans_activity = _ans_activity;
     this.components.ven.ans_activity = _ans_activity;
+
+    // calculate the resistance, elastance and inertance
+    this.calc_resistance();
+    this.calc_elastance();
+    this.calc_inertance();
+    this.calc_volume();
+
+    // update the components with the calculated properties
+    this.components.art.r_for = this._r_for_art;
+    this.components.art.r_back = this._r_back_art;
+    this.components.art.r_k = this._r_k;
+    this.components.art.el_base = this._el_art;
+    this.components.art.el_k = this._el_k_art;
+    this.components.art.u_vol = this._u_vol_art;
+    this.components.art.l = this._l;
+    this.components.art.no_flow = this.no_flow;
+
+    this.components.cap.r_for = this._r_for_cap;
+    this.components.cap.r_back = this._r_back_cap;
+    this.components.cap.r_k = this._r_k;
+    this.components.cap.el_base = this._el_cap;
+    this.components.cap.el_k = this._el_k_cap;
+    this.components.cap.u_vol = this._u_vol_cap;
+    this.components.cap.l = this._l;
+    this.components.cap.no_flow = this.no_flow;
+
+    this.components.ven.r_for = this._r_for_ven;
+    this.components.ven.r_back = this._r_back_ven;
+    this.components.ven.r_k = this._r_k;
+    this.components.ven.el_base = this._el_ven;
+    this.components.ven.el_k = this._el_k_ven;
+    this.components.ven.u_vol = this._u_vol_ven;
+    this.components.ven.l = this._l;
+    this.components.ven.no_flow = this.no_flow;
 
     // get the pressures and flows from the components
     this.pres = this.components.cap.pres;
@@ -217,6 +268,77 @@ export class MicroVascularUnit extends BaseModelClass {
     this.be = this.components.cap.be;
     this.temp = this.components.cap.temp;
     this.viscosity = this.components.cap.viscosity;
+  }
 
+  calc_resistance() {
+    // calculate the resistances depending on the ans acitvity and resistance property factors
+    this._r_for = this.r_for 
+      + (this.r_factor - 1) * this.r_for
+      + (this.r_factor_ps - 1) * this.r_for
+
+    this._r_back = this.r_back
+      + (this.r_factor - 1) * this.r_back
+      + (this.r_factor_ps - 1) * this.r_back
+
+    this._r_k = this.r_k 
+      + (this.r_k_factor - 1) * this.r_k
+
+    // distribute the resistance to the different parts of the MVU
+    this._r_for_art = this._r_for * this.res_dist.art;
+    this._r_back_art = this._r_back * this.res_dist.art;
+
+    this._r_for_cap = this._r_for * this.res_dist.cap;
+    this._r_back_cap = this._r_back * this.res_dist.cap;
+
+    this._r_for_ven = this._r_for * this.res_dist.ven;
+    this._r_back_ven = this._r_back * this.res_dist.ven;
+
+    // reset the non persistent factors
+    this.r_factor = 1.0;
+    this.r_k_factor = 1.0;
+
+  }
+  calc_elastance() {
+    // calculate the elastance factors depending on the ans activity and the elastance factors
+    this._el = this.el_base 
+        + (this.el_base_factor - 1) * this.el_base
+        + (this.el_base_factor_ps - 1) * this.el_base
+
+    // calculate the elastance factors depending on the ans activity and the elastance factors
+    this._el_k = this.el_k 
+        + (this.el_k_factor - 1) * this.el_k
+        + (this.el_k_factor_ps - 1) * this.el_k
+
+    // distribute the elastance to the different parts of the MVU
+    this._el_art = this._el * this.el_distr.art;
+    this._el_cap = this._el * this.el_distr.cap;
+    this._el_ven = this._el * this.el_distr.ven;
+
+    // reset the non persistent factors
+    this.el_base_factor = 1.0;
+    this.el_k_factor = 1.0;
+  }
+  calc_inertance() {
+    // calulate the inertance depending on the ans activity and the elastance-resistance coupling factor
+    this._l = this.l
+      + (this.l_factor - 1) * this.l
+      + (this.l_factor_ps - 1) * this.l
+
+    // reset the non persistent factors
+    this.l_factor = 1.0;
+  }
+  calc_volume() {
+    // calculate the unstressed volume incorporating the factors
+    this._u_vol = this.u_vol 
+        + (this.u_vol_factor - 1) * this.u_vol
+        + (this.u_vol_factor_ps - 1) * this.u_vol
+
+    // distribute the unstressed volume to the different parts of the MVU
+    this._u_vol_art = this._u_vol * this.vol_dist.art;
+    this._u_vol_cap = this._u_vol * this.vol_dist.cap;
+    this._u_vol_ven = this._u_vol * this.vol_dist.ven;
+
+    // reset the non persistent factors
+    this.u_vol_factor = 1.0;
   }
 }
