@@ -3,7 +3,6 @@ import { BloodVessel } from "./BloodVessel";
 export class Capillaries extends BloodVessel {
   // static properties
   static model_type = "Capillaries";
-  model_interface = []
 
   constructor(model_ref, name = "") {
     super(model_ref, name);

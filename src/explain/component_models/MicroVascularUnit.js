@@ -79,29 +79,34 @@ export class MicroVascularUnit extends BaseModelClass {
     this._el_art = 0.0; // calculated elastance in the arterioles (mmHg/L)
     this._el_cap = 0.0; // calculated elastance in the capillaries (mmHg/L)
     this._el_ven = 0.0; // calculated elastance in the venules (mmHg/L)
-    this._r_for = 0.0; // calculated forward resistance (mmHg/L*s)
-    this._r_back = 0.0; // calculated backward resistance (mmHg/L*s)
+
+    this._r_for = 1000; // calculated forward resistance (mmHg/L*s)
+    this._r_back = 1000; // calculated backward resistance (mmHg/L*s)
     this._r_k = 0.0; // calculated non-linear resistance factor (unitless)
+
     this._r_for_art = 0.0; // calculated resistance in the arterioles (mmHg/L*s)
     this._r_back_art = 0.0; // calculated resistance in the arterioles (mmHg/L*s)
+    
     this._r_for_cap = 0.0; // calculated resistance in the capillaries (mmHg/L*s)
     this._r_back_cap = 0.0; // calculated resistance in the capillaries (mmHg/L*s)
+    
     this._r_for_ven = 0.0; // calculated resistance in the venules (mmHg/L*s)
     this._r_back_ven = 0.0; // calculated resistance in the venules (mmHg/L*s)
+
     this._l = 0.0; // calculated intertance (mmHg*s^2/L)
+
     this._u_vol = 0.0; // calculated unstressed volume (L)
     this._u_vol_art = 0.0; // calculated unstressed volume in the arterioles (L)
     this._u_vol_cap = 0.0; // calculated unstressed volume in the capillaries (L)
     this._u_vol_ven = 0.0; // calculated unstressed volume in the venules (L)
+
     this._el_k = 0.0; // calculated elastance non-linear k (unitless)
     this._el_k_art = 0.0; // calculated elastance non-linear k in the arterioles (unitless)
     this._el_k_cap = 0.0; // calculated elastance non-linear k in the capillaries (unitless)
     this._el_k_ven = 0.0; // calculated elastance non-linear k in the venules (unitless)
-    this._r_for = 1000;  // calculated forward resistance (mmHg/L*s)
-    this._r_back = 1000; // calculated backward resistance (mmHg/L*s)
-    this._r_k = 0; // calculated non-linear resistance factor (unitless)
-    this._l = 0.0; // calculated intertance (mmHg*s^2/L)
 
+    this._update_counter = 0.0; // update counter for the model
+    this._update_interval = 0.015; // update interval for the model (s)
   }
   init_model(args={}) {
     // call the parent initializer method
@@ -176,58 +181,19 @@ export class MicroVascularUnit extends BaseModelClass {
   }
 
   calc_model() {
+    this._update_counter += this._t;
+    if (this._update_counter < this._update_interval) return;
+
+    // reset the update counter
+    this._update_counter = 0.0;
+
     // update the ans activity according the sensitivity of the whole MVU
-    // so a ans sens of 1.0 that ans_activity is transferred to the components
-    // and an ans sens of 0.0 that none of the ans activity is transferred
-    let _ans_activity = this.ans_sens * this.ans_activity; // THIS IS WRONG!!!
+    let _ans_activity = 1.0 + (this.ans_activity - 1.0) * this.ans_sens;
 
     // update the ans activity according the sensitivity of the components
     this.components.art.ans_activity = _ans_activity;
     this.components.cap.ans_activity = _ans_activity;
     this.components.ven.ans_activity = _ans_activity;
-
-    // update the property factors and ans activity
-    this.components.art.r_factor = this.r_factor
-    this.components.art.r_factor_ps = this.r_factor_ps
-    this.components.art.r_k_factor = this.r_k_factor
-    this.components.art.r_k_factor_ps = this.r_k_factor_ps
-    this.components.art.l_factor = this.l_factor
-    this.components.art.l_factor_ps = this.l_factor_ps
-    this.components.art.u_vol_factor = this.u_vol_factor
-    this.components.art.u_vol_factor_ps = this.u_vol_factor_ps
-    this.components.art.el_base_factor = this.el_base_factor
-    this.components.art.el_base_factor_ps = this.el_base_factor_ps
-    this.components.art.el_k_factor = this.el_k_factor
-    this.components.art.el_k_factor_ps = this.el_k_factor_ps
-    this.components.art.ans_activity = this.ans_activity
-
-    this.components.cap.r_factor = this.r_factor
-    this.components.cap.r_factor_ps = this.r_factor_ps
-    this.components.cap.r_k_factor = this.r_k_factor
-    this.components.cap.r_k_factor_ps = this.r_k_factor_ps
-    this.components.cap.l_factor = this.l_factor
-    this.components.cap.l_factor_ps = this.l_factor_ps
-    this.components.cap.u_vol_factor = this.u_vol_factor
-    this.components.cap.u_vol_factor_ps = this.u_vol_factor_ps
-    this.components.cap.el_base_factor = this.el_base_factor
-    this.components.cap.el_base_factor_ps = this.el_base_factor_ps
-    this.components.cap.el_k_factor = this.el_k_factor
-    this.components.cap.el_k_factor_ps = this.el_k_factor_ps
-    this.components.cap.ans_activity = this.ans_activity
-
-    this.components.ven.r_factor = this.r_factor
-    this.components.ven.r_factor_ps = this.r_factor_ps
-    this.components.ven.r_k_factor = this.r_k_factor
-    this.components.ven.r_k_factor_ps = this.r_k_factor_ps
-    this.components.ven.l_factor = this.l_factor
-    this.components.ven.l_factor_ps = this.l_factor_ps
-    this.components.ven.u_vol_factor = this.u_vol_factor
-    this.components.ven.u_vol_factor_ps = this.u_vol_factor_ps
-    this.components.ven.el_base_factor = this.el_base_factor
-    this.components.ven.el_base_factor_ps = this.el_base_factor_ps
-    this.components.ven.el_k_factor = this.el_k_factor
-    this.components.ven.el_k_factor_ps = this.el_k_factor_ps
-    this.components.ven.ans_activity = this.ans_activity
 
     // get the pressures and flows from the components
     this.pres = this.components.cap.pres;
