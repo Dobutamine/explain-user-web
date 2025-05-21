@@ -14,10 +14,17 @@
 }
 */
 
+
+
 // import all models present in the model_index module
 import * as models from "./ModelIndex";
 import DataCollector from "./helpers/DataCollector";
 import TaskScheduler from "./helpers/TaskScheduler";
+
+// import the wasm modules
+console.log("ModelEngine: loading oxygenation wasm module.")
+import createOxyModule from "./wasm/oxy.js" ;
+const oxy = await createOxyModule({locateFile: p => new URL('./wasm/oxy.wasm', import.meta.url).pathname});
 
 // store all imported models in a list to be able to instantiate them dynamically
 let available_models = [];
