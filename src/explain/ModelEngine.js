@@ -22,9 +22,10 @@ import DataCollector from "./helpers/DataCollector";
 import TaskScheduler from "./helpers/TaskScheduler";
 
 // import the wasm modules
-console.log("ModelEngine: loading oxygenation wasm module.")
-import createOxyModule from "./wasm/oxy.js" ;
-const oxy = await createOxyModule({locateFile: p => new URL('./wasm/oxy.wasm', import.meta.url).pathname});
+import createModule from "./wasm/bc_ems.js";
+const bc = await createModule({locateFile: p => new URL('./wasm/bc_ems.wasm', import.meta.url).pathname}).then(() => {
+  console.log("ModelEngine: blood composition wasm module loaded.")});
+
 
 // store all imported models in a list to be able to instantiate them dynamically
 let available_models = [];

@@ -35,7 +35,9 @@ export function calc_blood_composition(bc) {
 
   tco2 = bc.tco2;
   to2 = bc.to2;
+  
   sid = sol["na"] + sol["k"] + 2 * sol["ca"] + 2 * sol["mg"] - sol["cl"] - sol["lact"];
+
   albumin = sol["albumin"];
   phosphates = sol["phosphates"];
   uma = sol["uma"];
