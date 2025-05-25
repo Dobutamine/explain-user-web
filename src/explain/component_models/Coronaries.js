@@ -1,4 +1,4 @@
-import { BaseModelClass } from "../../base_models/BaseModelClass";
+import { BaseModelClass } from "../base_models/BaseModelClass";
 
 export class Coronaries extends BaseModelClass {
   // static properties

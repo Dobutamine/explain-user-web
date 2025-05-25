@@ -1,7 +1,6 @@
 import * as Models from "../ModelIndex.js"
 
-// This base model class is the blueprint for all the model objects (classes).
-// It incorporates the properties and methods which all model objects implement 
+// This base model class is the blueprint for all the model objects (classes). It incorporates the properties and methods which all model objects must implement 
 export class BaseModelClass {
 
   /*
@@ -52,7 +51,7 @@ export class BaseModelClass {
   */
 
   // model interface list as described above
-  model_interface = [
+  static model_interface = [
     {
       caption: "model type",
       target: "model_type",
@@ -92,10 +91,10 @@ export class BaseModelClass {
       this[arg["key"]] = arg["value"];
     });
 
-    // build all the sub models of this model which are defined in the components property
+
     Object.keys(this.components).forEach(component_name => {
       // do not overwrite existing models
-      if (!this._model_engine.models[component_name]) {
+      if (!this._model_engine.models.hasOwnProperty(component_name)) {
         this._model_engine.models[component_name] = new Models[this.components[component_name].model_type](this._model_engine, component_name);
       }
     })

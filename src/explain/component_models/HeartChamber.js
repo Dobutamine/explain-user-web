@@ -1,5 +1,5 @@
-import { BloodTimeVaryingElastance } from "../BloodTimeVaryingElastance";
-import { Valve } from "../Valve";
+import { BloodTimeVaryingElastance } from "./BloodTimeVaryingElastance";
+import { Valve } from "./Valve";
 
 export class HeartChamber extends BloodTimeVaryingElastance {
   // static properties

@@ -1,5 +1,5 @@
-import { BaseModelClass } from "../../base_models/BaseModelClass";
-import { calc_blood_composition } from "../../base_models/BloodComposition";
+import { BaseModelClass } from "../base_models/BaseModelClass";
+import { calc_blood_composition } from "../base_models/BloodComposition";
 
 export class Ans extends BaseModelClass {
   // static properties

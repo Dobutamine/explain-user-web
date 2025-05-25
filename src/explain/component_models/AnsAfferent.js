@@ -1,4 +1,4 @@
-import { BaseModelClass } from "../../base_models/BaseModelClass";
+import { BaseModelClass } from "../base_models/BaseModelClass";
 
 export class AnsAfferent extends BaseModelClass {
   // static properties

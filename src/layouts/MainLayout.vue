@@ -158,8 +158,6 @@
         <q-btn flat round dense size="sm" icon="fa-solid fa-rotate-right" color="white" class="q-mr-sm" @click="reload">
           <q-tooltip> restart model </q-tooltip></q-btn>
 
-        <q-btn flat round dense size="sm" icon="fa-solid fa-rotate-right" color="white" class="q-mr-sm" @click="get_bc_test">
-          <q-tooltip> get blood composition test </q-tooltip></q-btn>
       </q-toolbar>
     </q-footer>
   </q-layout>
@@ -226,9 +224,6 @@ export default defineComponent({
     }
   },
   methods: {
-    get_bc_test() {
-      explain.getBloodComposition("AA")
-    },
     async loadSelectedState() {
       let result = false
       if (this.selectedState.includes("shared")) {

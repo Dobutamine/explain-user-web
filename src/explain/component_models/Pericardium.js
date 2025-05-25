@@ -1,8 +1,8 @@
-import { Container } from "../../base_models/Container";
+import { Container } from "../base_models/Container";
 
-export class PleuralSpace extends Container {
+export class Pericardium extends Container {
   // static properties
-  static model_type = "PleuralSpace";
+  static model_type = "Pericardium";
   model_interface = [
     {
       caption: "model is enabled",
@@ -34,13 +34,17 @@ export class PleuralSpace extends Container {
       rounding: 0,
     },
     {
-      caption: "contained compartments",
+      caption: "contained blood compartments",
       target: "contained_components",
       type: "multiple-list",
       options: [
-        "GasCapacitance",
-        "Airway",
-        "AlveolarSpace"
+        "BloodCapacitance", 
+        "BloodTimeVaryingElastance", 
+        "BloodPump", 
+        "BloodVessel", 
+        "CapillaryBed", 
+        "CoronaryVessel", 
+        "HeartChamber"
       ]
     },
     {
@@ -79,7 +83,7 @@ export class PleuralSpace extends Container {
     this.contained_components.forEach((c) => {
       this._model_engine.models[c].pres_ext += this.pres;
     });
-    
+
     // reset the external pressure
     this.pres_ext = 0.0;
     this.pres_cc = 0.0;

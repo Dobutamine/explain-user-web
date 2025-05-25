@@ -1,4 +1,4 @@
-import { GasCapacitance } from "../GasCapacitance";
+import { GasCapacitance } from "./GasCapacitance";
 
 export class AlveolarSac extends GasCapacitance {
   // static properties
