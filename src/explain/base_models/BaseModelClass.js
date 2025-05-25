@@ -47,6 +47,27 @@ export class BaseModelClass {
         target: <number> target property,
         options: <list> model types
         readonly: <boolean> flag whether the property is readonly or not
+    }    
+    {
+        type: “prop-list”,
+        caption_model: <string> caption of the model
+        caption_prop: <string> caption of the prop
+        target_model: <number> target model,
+        target_prop: <number> target property,
+        options: <list> model types, empty list means all models
+        readonly: <boolean> flag whether the property is readonly or not
+    }
+    {
+        type: "object", --> NOT implemented yet
+        caption: <string> caption,
+        target: <number> target object,
+        object_shape: <list> a list of arguments shaped as the model interface list
+    }
+    {
+        type: "object-dict", --> NOT implemented yet
+        caption: <string> caption,
+        target: <number> target object,
+        field_shape: <list> a list of arguments shaped as the model interface list
     }
     {
         type: “function”,
