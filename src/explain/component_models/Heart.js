@@ -1,3 +1,4 @@
+import { readonly } from "vue";
 import { BaseModelClass } from "../base_models/BaseModelClass";
 
 export class Heart extends BaseModelClass {
@@ -14,12 +15,13 @@ export class Heart extends BaseModelClass {
       caption: "description",
       target: "description",
       type: "string",
-      readonly: true
+      readonly: false
     },
     {
       caption: "enabled",
       target: "is_enabled",
-      type: "boolean"
+      type: "boolean",
+      readonly: true
     },
     {
       caption: "reference heart rate (bpm)",
@@ -28,6 +30,7 @@ export class Heart extends BaseModelClass {
       delta: 1,
       factor: 1.0,
       rounding: 0,
+      readonly: false,
     },
     {
       caption: "pq time (s)",

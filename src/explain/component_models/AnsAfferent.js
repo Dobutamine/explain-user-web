@@ -22,6 +22,15 @@ export class AnsAfferent extends BaseModelClass {
       type: "boolean"
     },
     {
+      caption:"input model property",
+      caption_model: "input model",
+      caption_prop: "input property",
+      target_model: "input_model",
+      target_prop: "input_prop",
+      type: "prop-list",
+      options: []
+    },
+    {
       caption: "minimum of the input (firing rate is 0.0)",
       target: "min_value",
       type: "number",

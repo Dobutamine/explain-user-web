@@ -14,33 +14,39 @@ export class BaseModelClass {
         rounding: <number> number of decimals,
         ul: <number> upper limit
         ll: <number> lower limit
+        readonly: <boolean> flag whether the property is readonly or not
     }
     {
         type: "factor",
         caption: <string> caption,
         target: <number> target property
+        readonly: <boolean> flag whether the property is readonly or not
     }
     {
         type: “boolean”,
         caption: <string> caption,
         target: <number> target property
+        readonly: <boolean> flag whether the property is readonly or not
     }
     {
         type: “string”,
         caption: <string> caption,
         target: <number> target property
+        readonly: <boolean> flag whether the property is readonly or not
     }
     {
         type: “list”,
         caption: <string> caption,
         target: <number> target property,
         options: <list> model types
+        readonly: <boolean> flag whether the property is readonly or not
     }
     {
         type: “multiple-list”,
         caption: <string> caption,
         target: <number> target property,
         options: <list> model types
+        readonly: <boolean> flag whether the property is readonly or not
     }
     {
         type: “function”,

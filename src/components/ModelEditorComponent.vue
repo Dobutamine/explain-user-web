@@ -123,12 +123,23 @@
 
           <div v-if="redraw > 0.0" class="q-ma-sm q-mb-md">
             <div v-for="(field, index) in selectedModelProps" :key="index">
-
               <div v-if="field.type == 'number'">
                 <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
                   <div class="text-white" :style="{ 'font-size': '10px' }">
-                    <q-input v-model="field.value" :label="field.caption" :max="field.ul" :min="field.ll"
+                    <q-input v-model="field.value" :label="field.caption" :max="field.ul" :min="field.ll" :readonly="field.readonly"
                       :step="field.delta" color="blue" hide-hint filled dense
+                      @update:model-value="changePropState(field, arg)" stack-label type="number"
+                      style="font-size: 12px" class="q-mb-sm" squared>
+                    </q-input>
+                  </div>
+                </div>
+              </div>
+
+              <div v-if="field.type == 'factor'">
+                <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
+                  <div class="text-white" :style="{ 'font-size': '10px' }">
+                    <q-input v-model="field.value" :label="field.caption" :max="10000000000" :min="0" :readonly="field.readonly"
+                      :step="0.05" color="blue" hide-hint filled dense
                       @update:model-value="changePropState(field, arg)" stack-label type="number"
                       style="font-size: 12px" class="q-mb-sm" squared>
                     </q-input>
@@ -142,7 +153,7 @@
                     {{ field.caption }}
                   </div>
                   <div class="col-2 text-white" :style="{ 'font-size': '10px' }">
-                    <q-toggle v-model="field.value" color="primary" size="sm" hide-hint filled dense
+                    <q-toggle v-model="field.value" color="primary" size="sm" hide-hint filled dense :disable="field.readonly"
                       @update:model-value="changePropState(field, arg)" style="font-size: 12px" class="q-mb-sm">
                     </q-toggle>
                   </div>
@@ -152,7 +163,7 @@
               <div v-if="field.type == 'string'">
                 <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
                   <div class="text-white" :style="{ 'font-size': '10px' }">
-                    <q-input v-model="field.value" :label="field.caption" color="blue" hide-hint filled dense
+                    <q-input v-model="field.value" :label="field.caption" color="blue" hide-hint filled dense :readonly="field.readonly"
                       @update:model-value="changePropState(field, arg)" stack-label style="font-size: 12px"
                       class="q-mb-sm" squared>
                     </q-input>
@@ -163,7 +174,7 @@
               <div v-if="field.type == 'list'">
                 <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
                   <div class="text-white" :style="{ 'font-size': '10px' }">
-                    <q-select v-model="field.value" :label="field.caption" :options="field.choices" color="blue"
+                    <q-select v-model="field.value" :label="field.caption" :options="field.choices" :readonly="field.readonly" color="blue" 
                       hide-hint filled dense @update:model-value="changePropState(field, arg)" stack-label
                       style="font-size: 12px" class="q-mb-sm" squared>
                     </q-select>
@@ -174,8 +185,23 @@
               <div v-if="field.type == 'multiple-list'">
                 <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
                   <div class="text-white" :style="{ 'font-size': '10px' }">
-                    <q-select v-model="field.value" :label="field.caption" :options="field.choices" multiple
+                    <q-select v-model="field.value" :label="field.caption" :options="field.choices" :readonly="field.readonly" multiple
                       color="blue" hide-hint filled dense @update:model-value="changePropState(field, arg)" stack-label
+                      style="font-size: 12px" class="q-mb-sm" squared>
+                    </q-select>
+                  </div>
+                </div>
+              </div>
+
+              <div v-if="field.type == 'prop-list'">
+                <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
+                  <div class="text-white" :style="{ 'font-size': '10px' }">
+                    <q-select v-model="field.value_model" :label="field.caption_model" :options="field.choices_model" :readonly="field.readonly" color="blue" 
+                      hide-hint filled dense @update:model-value="changePropState(field, 'model_changed')" stack-label
+                      style="font-size: 12px" class="q-mb-sm" squared>
+                    </q-select>
+                    <q-select v-model="field.value_prop" :label="field.caption_prop" :options="field.choices_props" :readonly="field.readonly" color="blue" 
+                      hide-hint filled dense @update:model-value="changePropState(field, arg)" stack-label
                       style="font-size: 12px" class="q-mb-sm" squared>
                     </q-select>
                   </div>
@@ -188,32 +214,39 @@
                         {{ arg.caption }}
                     </div> -->
                   <div v-if="arg.type == 'number' && !arg.hidden">
-                    <q-input v-model.number="arg.value" :label="arg.caption" type="number" :max="arg.ul" :min="arg.ll"
+                    <q-input v-model.number="arg.value" :label="arg.caption" type="number" :max="arg.ul" :min="arg.ll" :readonly="field.readonly"
                       :step="arg.delta" color="blue" hide-hint filled dense
                       @update:model-value="changePropState(field, arg)" stack-label style="font-size: 12px"
                       class="q-ml-md q-mr-md q-mb-sm" squared>
                     </q-input>
                   </div>
+                  <div v-if="arg.type == 'factor' && !arg.hidden">
+                    <q-input v-model.number="arg.value" :label="arg.caption" type="number" :max="10000000000" :min="0" :readonly="field.readonly"
+                      :step="0.1" color="blue" hide-hint filled dense
+                      @update:model-value="changePropState(field, arg)" stack-label style="font-size: 12px"
+                      class="q-ml-md q-mr-md q-mb-sm" squared>
+                    </q-input>
+                  </div>
                   <div v-if="arg.type == 'boolean' && !arg.hidden" class="q-ml-sm col-1">
-                    <q-toggle v-model="arg.value" :label="arg.caption" color="primary" size="xs" hide-hint filled dense
+                    <q-toggle v-model="arg.value" :label="arg.caption" color="primary" size="xs" hide-hint filled dense :disable="field.readonly"
                       @update:model-value="changePropState(field, arg)" style="font-size: 10px"
                       class="q-ml-md q-mt-xs q-mb-sm">
                     </q-toggle>
                   </div>
                   <div v-if="arg.type == 'string' && !arg.hidden">
-                    <q-input v-model="arg.value" :label="arg.caption" color="blue" hide-hint filled dense
+                    <q-input v-model="arg.value" :label="arg.caption" color="blue" hide-hint filled dense :readonly="field.readonly"
                       @update:model-value="changePropState(field, arg)" stack-label style="font-size: 12px"
                       class="q-ml-md q-mr-md q-mb-sm" squared>
                     </q-input>
                   </div>
                   <div v-if="arg.type == 'list' && !arg.hidden">
-                    <q-select v-model="arg.value" :label="arg.target" :options="arg.choices" color="blue" hide-hint
+                    <q-select v-model="arg.value" :label="arg.target" :options="arg.choices" color="blue" hide-hint :readonly="field.readonly"
                       filled dense @update:model-value="changePropState(field, arg)" stack-label style="font-size: 12px"
                       class="q-ml-md q-mr-md q-mb-sm" squared>
                     </q-select>
                   </div>
                   <div v-if="arg.type == 'multiple-list' && !arg.hidden">
-                    <q-select v-model="arg.value" :options="arg.choices" :label="arg.target" multiple color="blue"
+                    <q-select v-model="arg.value" :options="arg.choices" :label="arg.target" multiple color="blue" :readonly="field.readonly"
                       hide-hint filled dense @update:model-value="changePropState(field, arg)" stack-label
                       style="font-size: 12px" class="q-ml-md q-mr-md q-mb-sm" squared>
                     </q-select>
@@ -498,6 +531,18 @@ export default {
       this.redraw += 1
     },
     changePropState(param, arg) {
+      if (param.type == "prop-list" && arg == 'model_changed') {
+        // reset the prop list choices
+        param['choices_props'] = []
+        param['value_prop'] = ""
+        Object.keys(explain.modelState.models[param.value_model]).forEach(prop => {
+          if (typeof (explain.modelState.models[param.value_model][prop]) === 'number') {
+            if (prop[0] !== "_") {
+              param["choices_props"].push(prop)
+            }
+          }
+        })
+      }
       this.state_changed = true
       param.state_changed = true
       this.redraw += 1
@@ -569,17 +614,28 @@ export default {
       // add a flag to the property which can be set when the property needs to be updated
       this.selectedModelProps.forEach(param => {
         param['state_changed'] = false
+        // if param has now readonly flag set it to false
+        if (param.readonly === undefined) {
+          param['readonly'] = false
+        }
 
-        // get the current value
-        let f = param.target.split('.')
-        if (f.length == 1) {
-          param['value'] = explain.modelState.models[this.selectedModelName][f[0]]
-        }
-        if (f.length == 2) {
-          param['value'] = explain.modelState.models[this.selectedModelName][f[0]][f[1]]
-        }
-        if (f.length == 3) {
-          param['value'] = explain.modelState.models[this.selectedModelName][f[0]][f[1]][f[2]]
+        // get the current value if it's not a prop list type
+        if (param.type !== 'prop-list') {
+          let f = param.target.split('.')
+          if (f.length == 1) {
+            param['value'] = explain.modelState.models[this.selectedModelName][f[0]]
+          }
+          if (f.length == 2) {
+            param['value'] = explain.modelState.models[this.selectedModelName][f[0]][f[1]]
+          }
+          if (f.length == 3) {
+            param['value'] = explain.modelState.models[this.selectedModelName][f[0]][f[1]][f[2]]
+          }
+        } else {
+          let f_model = param.target_model.split('.')
+          param['value_model'] = explain.modelState.models[this.selectedModelName][f_model[0]]
+          let f_prop = param.target_prop.split('.')
+          param['value_prop'] = explain.modelState.models[this.selectedModelName][f_prop[0]]
         }
 
         // round the number
@@ -587,38 +643,61 @@ export default {
           param['value'] = (param['value'] * param.factor).toFixed(param.rounding)
         }
 
-        if (param.options) {
-          if (param.type == 'list') {
-            // if there's a default number then use it
-            if (param['default']) {
-              param['value'] = param['default']
-            }
-            // file the options list
-            param['choices'] = []
-            if (param['option_default']) {
-              param['choices'] = param['options_default']
-            }
-            Object.values(explain.modelState.models).forEach(model => {
-              if (param.options.includes(model.model_type)) {
-                param["choices"].push(model.name)
-              }
-            })
+        // round the number
+        if (param.type == 'factor') {
+          param['value'] = (param['value']).toFixed(2)
+        }
+
+        if (param.type == 'list') {
+          // if there's a default number then use it
+          if (param['default']) {
+            param['value'] = param['default']
           }
-          if (param.type == 'multiple-list') {
-            if (param['default']) {
-              param['value'] = param['default']
-            }
-            // file the options list
-            param['choices'] = []
-            if (param['option_default']) {
-              param['choices'] = param['options_default']
-            }
-            Object.values(explain.modelState.models).forEach(model => {
-              if (param.options.includes(model.model_type)) {
-                param["choices"].push(model.name)
-              }
-            })
+          // file the options list
+          param['choices'] = []
+          if (param['option_default']) {
+            param['choices'] = param['options_default']
           }
+          Object.values(explain.modelState.models).forEach(model => {
+            if (param.options.includes(model.model_type) || param.options.length == 0) {
+              param["choices"].push(model.name)
+            }
+          })
+        }
+
+        if (param.type == 'multiple-list') {
+          if (param['default']) {
+            param['value'] = param['default']
+          }
+          // file the options list
+          param['choices'] = []
+          if (param['option_default']) {
+            param['choices'] = param['options_default']
+          }
+          Object.values(explain.modelState.models).forEach(model => {
+            if (param.options.includes(model.model_type) || param.options.length == 0) {
+              param["choices"].push(model.name)
+            }
+          })
+        }
+        
+        if (param.type == 'prop-list') {
+          // file the options list
+          param['choices_model'] = []
+          param["choices_props"] = []
+          Object.values(explain.modelState.models).forEach(model => {
+            if (param.options.includes(model.model_type) || param.options.length == 0) {
+              param["choices_model"].push(model.name)
+      
+            }
+          })
+          Object.keys(explain.modelState.models[param.value_model]).forEach(prop => {
+              if (typeof (explain.modelState.models[param.value_model][prop]) === 'number') {
+                if (prop[0] !== "_") {
+                  param["choices_props"].push(prop)
+                }
+              }
+          })
         }
 
         if (param.type == 'function') {
@@ -656,7 +735,7 @@ export default {
                     arg['value'] = arg['default']
                   }
                   Object.values(explain.modelState.models).forEach(model => {
-                    if (arg.options.includes(model.model_type)) {
+                    if (arg.options.includes(model.model_type) || arg.options.length == 0) {
                       arg["choices"].push(model.name)
                     }
                   })
@@ -671,7 +750,7 @@ export default {
                     arg['value'] = arg['default']
                   }
                   Object.values(explain.modelState.models).forEach(model => {
-                    if (arg.options.includes(model.model_type)) {
+                    if (arg.options.includes(model.model_type) || arg.options.length == 0) {
                       arg["choices"].push(model.name)
                     }
                   })

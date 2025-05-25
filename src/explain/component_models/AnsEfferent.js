@@ -23,16 +23,13 @@ export class AnsEfferent extends BaseModelClass {
       type: "boolean"
     },
     {
-      caption: "target model name",
-      target: "target_model",
-      type: "string",
-      readonly: true
-    },
-    {
       caption: "target model property",
-      target: "target_prop",
-      type: "string",
-      readonly: true
+      caption_model: "target model",
+      caption_prop: "target property",
+      target_model: "target_model",
+      target_prop: "target_prop",
+      type: "prop-list",
+      options: []
     },
     {
       caption: "effect size at max firing_rate of 1",
