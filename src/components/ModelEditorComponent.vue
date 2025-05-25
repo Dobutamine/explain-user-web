@@ -587,6 +587,15 @@ export default {
             let p = this.selectedModelName + "." + prop.target
             explain.setPropValue(p, new_value, 0, 0)
           }
+          if (prop.type == 'prop-list') {
+            let new_value_model = prop.value_model
+            let p_model = this.selectedModelName + "." + prop.target_model
+            explain.setPropValue(p_model, new_value_model, 0, 0)
+
+            let new_value_prop = prop.value_prop
+            let p_prop = this.selectedModelName + "." + prop.target_prop
+            explain.setPropValue(p_prop, new_value_prop, 0, 0)
+          }
         }
         prop.state_changed = false
       })
