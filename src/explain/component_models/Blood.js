@@ -1,5 +1,6 @@
 import { BaseModelClass } from "../base_models/BaseModelClass";
 import { calc_blood_composition } from "../base_models/BloodComposition"
+//import { calc_blood_composition_exp } from "../base_models/BloodComposition";
 
 export class Blood extends BaseModelClass {
   // static properties
@@ -138,18 +139,39 @@ export class Blood extends BaseModelClass {
   constructor(model_ref, name = "") {
     super(model_ref, name);
 
+    // -----------------------------------------------------------------------------
+    // Constants
+    // -----------------------------------------------------------------------------
+    this.gas_constant = 62.36367; // L·mmHg/(K·mol)
+    this.kw = 2.5119e-11; // water dissociation constant
+    this.kc = 7.94328235e-4; // carbonic acid dissociation constant
+    this.kd = 6.0255959e-8; // bicarbonate dissociation constant
+    this.alpha_co2p = 0.03067; // CO2 solubility coefficient
+    this.left_hp_wide = 5.848931925e-6; // lower bound for H⁺ concentration
+    this.right_hp_wide = 3.16227766017e-4; // upper bound for H⁺ concentration
+    this.delta_ph_limits = 0.1; // delta for pH limits
+    this.n = 2.7; // Hill coefficient
+    this.alpha_o2 = 1.38e-5; // O2 solubility coefficient
+    this.left_o2_wide = 0; // lower bound for pO2
+    this.right_o2_wide = 800.0; // upper bound for pO2
+    this.delta_o2_limits = 10.0; // delta for pO2 limits
+    this.brent_accuracy = 1e-8;
+    this.max_iterations = 100;
+
     // initialize independent properties
     this.viscosity = 6.0; // blood viscosity (centiPoise = Pa * s)
     this.temp = 37.0; // temperature (dgs C)
     this.to2 = 0.0; // total oxygen concentration (mmol/l)
     this.tco2 = 0.0; // total carbon dioxide concentration (mmol/l)
     this.solutes = {}; // dictionary holding the initial circulating solutes
+    this.P50_0 = 20.0; // PO2 at which 50% of Hgb is saturated by O2 (fetal = 18.8 (high Hb O2 affinity), neonatal = 20.0, adult = 26.7)
 
     // initialize dependent properties
     this.preductal_art_bloodgas = {}; // dictionary containing the preductal arterial bloodgas
     this.art_bloodgas = {}; // dictionary containing the (postductal) arterial bloodgas
     this.ven_bloodgas = {}; // dictionary containing the venous bloodgas
     this.art_solutes = {}; // dictionary containing the arterial solute concentrations
+    
 
     // initialize local properties (preceded with _)
     this._blood_containing_modeltypes = [
@@ -172,9 +194,41 @@ export class Blood extends BaseModelClass {
     this._ascending_aorta = null; // reference to ascending aorta model
     this._descending_aorta = null; // reference to descending aorta model
     this._right_atrium = null; // reference to right atrium
+    this._P50 = 0;
+    this._log10_p50 = 0;
+    this._P50_n = 0;
+    this._left_o2 = 0; // lower bound for pO2
+    this._right_o2 = 800.0; // upper bound for pO2
+    this._left_hp = 5.848931925e-6; // lower bound for H⁺ concentration
+    this._right_hp = 3.16227766017e-4; // upper bound for H⁺ concentration
+
+    // initialize local state variables
+    this._tco2 =0;
+    this._to2 = 0;
+    this._sid = 0;
+    this._albumin = 0;
+    this._phosphates = 0;
+    this._uma = 0;
+    this._hemoglobin = 0;
+    this._temp = 0;
+    this._dpg = 0;
+    this._ph = 0;
+    this._pco2 = 0;
+    this._hco3 = 0;
+    this._be = 0;
+    this._po2 = 0;
+    this._so2 = 0;
+    this._prev_po2 = 0;
+    this._prev_ph = 0;
+    this._error = false;
+    this._iterations = 0;
+    this._error_ab = false;
+    this._error_oxy = false;
+    this._iterations_ab = 0;
+    this._iterations_oxy = 0;
   }
 
-  init_model(args = {}) {
+  async init_model(args = {}) {
     // set the values of the independent properties
     args.forEach((arg) => {
       this[arg["key"]] = arg["value"];
@@ -302,4 +356,5 @@ export class Blood extends BaseModelClass {
       });
     }
   }
+
 }

@@ -312,6 +312,16 @@ export default class Model {
     });
   }
 
+  getBloodComposition(model_name) {
+    // get the interface of a specific model
+    this.send({
+      type: "GET",
+      message: "blood_composition",
+      payload: model_name,
+    });
+  }
+
+
   addNewModel(model_args) {
     // get the interface of a specific model
     this.send({

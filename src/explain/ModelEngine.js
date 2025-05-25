@@ -22,9 +22,8 @@ import DataCollector from "./helpers/DataCollector";
 import TaskScheduler from "./helpers/TaskScheduler";
 
 // import the wasm modules
-import createModule from "./wasm/bc_ems.js";
-const bc = await createModule({locateFile: p => new URL('./wasm/bc_ems.wasm', import.meta.url).pathname}).then(() => {
-  console.log("ModelEngine: blood composition wasm module loaded.")});
+//import createModule from "./wasm/bc_ems.js";
+//const bc = await createModule({locateFile: p => new URL('./wasm/bc_ems.wasm', import.meta.url).pathname})
 
 
 // store all imported models in a list to be able to instantiate them dynamically
@@ -79,6 +78,9 @@ self.onmessage = (e) => {
             break;
         case "model_interface":
           get_model_interface(e.data.payload);
+          break;
+        case "blood_composition":
+          get_blood_composition(e.data.payload);
           break;
       }
       break;
@@ -545,6 +547,33 @@ const get_model_data_slow = function () {
     payload: model_data_slow,
   });
 };
+
+const get_blood_composition = function (model_name) {
+  console.log("ModelEngine: calculating blood composition.")
+  let m = model.models[model_name];
+  let args = {
+    tco2: m.tco2,
+    to2 : m.to2,
+    temp : 37.0,
+    hemoglobin : 8.0,
+    na : 138.0,
+    k : 3.5,
+    ca : 1.0,
+    mg : 0.75,
+    cl : 108.0,
+    lact : 1.0,
+    albumin : 25.0,
+    phosphates : 1.64,
+    dpg : 5.0,
+    uma : 3.8,
+    prev_po2 : m.po2,
+    prev_ph : m.ph,
+    p50_0 : 18.8, // P50_0 : 18.8 for fetal hemoglobin, 26.7 for adult hemoglobin
+  }
+  let result = bc.calc_blood_composition(args);
+  console.log(result)
+  console.log(m.po2)
+}
 
 const _model_step = function () {
   // iterate over all models
