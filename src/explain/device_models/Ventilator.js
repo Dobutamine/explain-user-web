@@ -262,30 +262,8 @@ export class Ventilator extends BaseModelClass {
   }
 
   init_model(args = {}) {
-    // set the values of the independent properties
-    args.forEach((arg) => {
-      this[arg["key"]] = arg["value"];
-    });
-
-    // initialize the components
-    Object.keys(this.components).forEach(component_name => {
-      let component = {}
-      switch (this.components[component_name].model_type) {
-        case "Resistor":
-          component = new Resistor(this._model_engine, component_name)
-          break;
-        case "GasCapacitance":
-          component = new GasCapacitance(this._model_engine, component_name)
-          break;
-      }
-  
-      let args = [];
-      for (const [key, value] of Object.entries(this.components[component_name])) {
-        args.push({ key, value });
-      }
-      component.init_model(args)
-      this._model_engine.models[component_name] = component
-    })
+    // initialize the super class
+    super.init_model(args);
 
     this._breathing_model = this._model_engine.models["Breathing"];
     this._vent_gasin = this._model_engine.models["VENT_GASIN"];

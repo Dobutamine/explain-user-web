@@ -3,7 +3,7 @@ import { Container } from "../base_models/Container";
 export class Thorax extends Container {
   // static properties
   static model_type = "Thorax";
-  model_interface = [
+  static model_interface = [
     {
       caption: "model is enabled",
       target: "is_enabled",

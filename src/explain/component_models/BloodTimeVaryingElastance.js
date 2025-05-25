@@ -5,7 +5,7 @@ import { TimeVaryingElastance } from "../base_models/TimeVaryingElastance";
 export class BloodTimeVaryingElastance extends TimeVaryingElastance {
   // static properties
   static model_type = "BloodTimeVaryingElastance";
-    model_interface = [
+  static model_interface = [
     {
       caption: "model type",
       target: "model_type",

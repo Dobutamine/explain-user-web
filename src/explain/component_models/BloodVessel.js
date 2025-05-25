@@ -9,7 +9,7 @@ So a BloodVessel has a resistance and has flow properties and can react to the a
 export class BloodVessel extends BloodCapacitance {
   // static properties
   static model_type = "BloodVessel";
-  model_interface = [
+  static model_interface = [
     {
       caption: "model type",
       target: "model_type",
@@ -194,17 +194,14 @@ export class BloodVessel extends BloodCapacitance {
 
     // initialize a resistor with the inputs
     this.inputs.forEach((inputName) => { 
+      // check whether the resistor already exists (in case of a saved state)
+      if (this._model_engine.models.hasOwnProperty(inputName + "_" + this.name)) {
+        this._resistors[inputName + "_" + this.name] = this._model_engine.models[inputName + "_" + this.name];
+        return; // if so, do not create a new resistor
+      }
+
       // create a new resistor for each input
       let res = new Resistor(this._model_engine, inputName + "_" + this.name);
-
-      // check whether the resistor already exists (in case of a saved state)
-      if (this._model_engine.models[inputName + "_" + this.name]) {
-        // store a reference to the existing resistor
-        this._resistors[inputName + "_" + this.name] = this._model_engine.models[inputName + "_" + this.name];
-        // do not create a new resistor
-        console.log("Resistor already exists: " + inputName + "_" + this.name);
-        return
-      }
 
       // set the properties of the resistor
       let args = [

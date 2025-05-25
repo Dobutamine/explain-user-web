@@ -4,7 +4,7 @@ import { calc_blood_composition } from "./BloodComposition"
 export class GasExchanger extends BaseModelClass {
   // static properties
   static model_type = "GasExchanger";
-  model_interface = [
+  static model_interface = [
     {
       caption: "model type",
       target: "model_type",

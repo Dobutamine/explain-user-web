@@ -12,7 +12,7 @@ the circulatory system.
 export class MicroVascularUnit extends BaseModelClass {
   // static properties
   static model_type = "MicroVascularUnit";
-  model_interface = [
+  static model_interface = [
     {
       caption: "model type",
       target: "model_type",

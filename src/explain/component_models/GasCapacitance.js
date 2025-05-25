@@ -6,7 +6,7 @@ import { Capacitance } from "../base_models/Capacitance";
 export class GasCapacitance extends Capacitance {
   // static properties
   static model_type = "GasCapacitance";
-  model_interface = [
+  static model_interface = [
     {
       caption: "model type",
       target: "model_type",

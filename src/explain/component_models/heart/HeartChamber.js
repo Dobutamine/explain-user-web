@@ -133,6 +133,11 @@ export class HeartChamber extends BloodTimeVaryingElastance {
 
     // initialize the resistor with the inputs
     this.inputs.forEach((inputName) => { 
+      // check if the inputName is already in the model engine
+      if (this._model_engine.models.hasOwnProperty(inputName + "_" + this.name)) {
+        this._resistors[inputName + "_" + this.name] = this._model_engine.models[inputName + "_" + this.name];
+        return; // if so, do not create a new resistor
+      }
       let res = new Valve(this._model_engine, inputName + "_" + this.name);
       if (this.connector == "valve") {
         res = new Valve(this._model_engine, inputName + "_" + this.name);

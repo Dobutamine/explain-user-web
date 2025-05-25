@@ -192,30 +192,6 @@ export class Shunts extends BaseModelClass {
     this._vsd_area = 0.0; // area of the ventricular septal defect (m^2)
   }
 
-  init_model(args = {}) {
-    // set the values of the independent properties
-    args.forEach((arg) => {
-      this[arg["key"]] = arg["value"];
-    });
-
-    // build all components of this model
-    Object.keys(this.components).forEach(component_name => {
-      this._model_engine.models[component_name] = new Models[this.components[component_name].model_type](this._model_engine, component_name)
-    })
-  
-    // initialize all components of this model with all arguments
-    Object.keys(this.components).forEach(component_name => {
-      let args = [];
-      for (const [key, value] of Object.entries(this.components[component_name])) {
-        args.push({ key, value });
-      }
-      this._model_engine.models[component_name].init_model(args)
-    })
-
-    // flag that the model is initialized
-    this._is_initialized = true;
-  }
-
   calc_model() {
     if (this._update_counter > this._update_interval) {
       this._update_counter = 0.0;

@@ -211,9 +211,14 @@ const build = function (model_definition) {
       model.models[sub_model_def.name] = new_sub_model;
       
       // copy the model interface object
+      try {
       model.models[sub_model_def.name].model_interface = [
         ...available_models[index].model_interface,
       ];
+      } catch (e) {
+        console.log("ModelEngine: model interface copy error: ", sub_model_def.name, sub_model_def.model_type);
+      }
+
     } else {
       errors += 1;
       console.log("Model type not found: ", sub_model_def.model_type);

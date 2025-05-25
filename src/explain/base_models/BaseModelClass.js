@@ -94,7 +94,10 @@ export class BaseModelClass {
 
     // build all the sub models of this model which are defined in the components property
     Object.keys(this.components).forEach(component_name => {
-      this._model_engine.models[component_name] = new Models[this.components[component_name].model_type](this._model_engine, component_name)
+      // do not overwrite existing models
+      if (!this._model_engine.models[component_name]) {
+        this._model_engine.models[component_name] = new Models[this.components[component_name].model_type](this._model_engine, component_name);
+      }
     })
   
     // initialize all model sub models with the arguments

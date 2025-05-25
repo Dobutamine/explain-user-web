@@ -3,7 +3,7 @@ import { BloodCapacitance } from "./BloodCapacitance";
 export class BloodPump extends BloodCapacitance {
   // static properties
   static model_type = "BloodPump";
-  model_interface = [
+  static model_interface = [
     {
       caption: "model type",
       target: "model_type",

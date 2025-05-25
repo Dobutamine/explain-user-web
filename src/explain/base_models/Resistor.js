@@ -3,7 +3,7 @@ import { BaseModelClass } from "./BaseModelClass";
 export class Resistor extends BaseModelClass {
   // static properties
   static model_type = "Resistor";
-  model_interface = [
+  static model_interface = [
     {
       caption: "model type",
       target: "model_type",
