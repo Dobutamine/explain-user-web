@@ -622,42 +622,88 @@ export default {
       this.selectedModelProps = [...Object.values(explain.modelState.models[this.selectedModelName].model_interface)]
       // add a flag to the property which can be set when the property needs to be updated
       this.selectedModelProps.forEach(param => {
+        // we have to extend the param with some additional properties
         param['state_changed'] = false
-        // if param has now readonly flag set it to false
         if (param.readonly === undefined) {
           param['readonly'] = false
         }
 
-        // get the current value if it's not a prop list type
-        if (param.type !== 'prop-list') {
-          let f = param.target.split('.')
-          if (f.length == 1) {
-            param['value'] = explain.modelState.models[this.selectedModelName][f[0]]
-          }
-          if (f.length == 2) {
-            param['value'] = explain.modelState.models[this.selectedModelName][f[0]][f[1]]
-          }
-          if (f.length == 3) {
-            param['value'] = explain.modelState.models[this.selectedModelName][f[0]][f[1]][f[2]]
-          }
-        } else {
-          let f_model = param.target_model.split('.')
-          param['value_model'] = explain.modelState.models[this.selectedModelName][f_model[0]]
-          let f_prop = param.target_prop.split('.')
-          param['value_prop'] = explain.modelState.models[this.selectedModelName][f_prop[0]]
-        }
-
         // round the number
         if (param.type == 'number') {
+          let f_number = param.target.split('.')
+          switch (f_number.length) {
+            case 1:
+              param['value'] = explain.modelState.models[this.selectedModelName][f_number[0]]
+              break;
+            case 2:
+              param['value'] = explain.modelState.models[this.selectedModelName][f_number[0]][f_number[1]]
+              break;
+            case 3:
+              param['value'] = explain.modelState.models[this.selectedModelName][f_number[0]][f_number[1]][f_number[2]]
+              break;
+          }
           param['value'] = (param['value'] * param.factor).toFixed(param.rounding)
         }
 
-        // round the number
+        if (param.type == 'string') {
+          let f_string = param.target.split('.')
+          switch (f_string.length) {
+            case 1:
+              param['value'] = explain.modelState.models[this.selectedModelName][f_string[0]]
+              break;
+            case 2:
+              param['value'] = explain.modelState.models[this.selectedModelName][f_string[0]][f_string[1]]
+              break;
+            case 3:
+              param['value'] = explain.modelState.models[this.selectedModelName][f_string[0]][f_string[1]][f_string[2]]
+              break;
+          }
+        }
+
+        if (param.type == 'boolean') {
+          let f_bool = param.target.split('.')
+          switch (f_bool.length) {
+            case 1:
+              param['value'] = explain.modelState.models[this.selectedModelName][f_bool[0]]
+              break;
+            case 2:
+              param['value'] = explain.modelState.models[this.selectedModelName][f_bool[0]][f_bool[1]]
+              break;
+            case 3:
+              param['value'] = explain.modelState.models[this.selectedModelName][f_bool[0]][f_bool[1]][f_bool[2]]
+              break;
+          }
+        }
+
         if (param.type == 'factor') {
+          let f_factor = param.target.split('.')
+          switch (f_factor.length) {
+            case 1:
+              param['value'] = explain.modelState.models[this.selectedModelName][f_factor[0]]
+              break;
+            case 2:
+              param['value'] = explain.modelState.models[this.selectedModelName][f_factor[0]][f_factor[1]]
+              break;
+            case 3:
+              param['value'] = explain.modelState.models[this.selectedModelName][f_factor[0]][f_factor[1]][f_factor[2]]
+              break;
+          }
           param['value'] = (param['value']).toFixed(2)
         }
 
         if (param.type == 'list') {
+          let f_list = param.target.split('.')
+          switch (f_list.length) {
+            case 1:
+              param['value'] = explain.modelState.models[this.selectedModelName][f_list[0]]
+              break;
+            case 2:
+              param['value'] = explain.modelState.models[this.selectedModelName][f_list[0]][f_list[1]]
+              break;
+            case 3:
+              param['value'] = explain.modelState.models[this.selectedModelName][f_list[0]][f_list[1]][f_list[2]]
+              break;
+          }
           // if there's a default number then use it
           if (param['default']) {
             param['value'] = param['default']
@@ -675,6 +721,18 @@ export default {
         }
 
         if (param.type == 'multiple-list') {
+          let f_mlist = param.target.split('.')
+          switch (f_mlist.length) {
+            case 1:
+              param['value'] = explain.modelState.models[this.selectedModelName][f_mlist[0]]
+              break;
+            case 2:
+              param['value'] = explain.modelState.models[this.selectedModelName][f_mlist[0]][f_mlist[1]]
+              break;
+            case 3:
+              param['value'] = explain.modelState.models[this.selectedModelName][f_mlist[0]][f_mlist[1]][f_mlist[2]]
+              break;
+          }
           if (param['default']) {
             param['value'] = param['default']
           }
@@ -691,6 +749,10 @@ export default {
         }
         
         if (param.type == 'prop-list') {
+          let f_model = param.target_model.split('.')
+          param['value_model'] = explain.modelState.models[this.selectedModelName][f_model[0]]
+          let f_prop = param.target_prop.split('.')
+          param['value_prop'] = explain.modelState.models[this.selectedModelName][f_prop[0]]
           // file the options list
           param['choices_model'] = []
           param["choices_props"] = []
@@ -768,9 +830,16 @@ export default {
             }
           })
         }
+
+        if (param.type == 'object') {
+          param.object_shape.forEach(shape => {})
+        }
+
+        if (param.type == 'object-list') {
+          param.objects.forEach(object => {})
+        }
       })
       this.redraw += 1
-
     },
     processAvailableModels() {
       this.modelNames = []

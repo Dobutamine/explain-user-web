@@ -27,6 +27,22 @@ export class Ans extends BaseModelClass {
       target: "ans_active",
       type: "boolean",
     },
+    { type: "object",
+      caption: "test object",
+      target: "test_object",
+      object_shape: [
+        {
+          caption: "map",
+          target: "map",
+          type: "number"
+        },
+        {
+          caption: "property",
+          target: "property",
+          type: "string"
+        }
+      ]
+    },
   ];
 
   constructor(model_ref, name = "") {
@@ -36,6 +52,12 @@ export class Ans extends BaseModelClass {
     this.ans_active = true; // flag whether the ANS is active
     this.pathways = {}; // list of pathways the ANS model uses
     this.components = {}
+
+    this.test_object = {
+      map: 10.0,
+      property: "test"
+      
+    }
 
     // initialize local properties
     this._update_interval = 0.015; // update interval of the ANS (seconds)
