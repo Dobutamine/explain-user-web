@@ -627,219 +627,281 @@ export default {
         if (param.readonly === undefined) {
           param['readonly'] = false
         }
-
-        // round the number
-        if (param.type == 'number') {
-          let f_number = param.target.split('.')
-          switch (f_number.length) {
-            case 1:
-              param['value'] = explain.modelState.models[this.selectedModelName][f_number[0]]
-              break;
-            case 2:
-              param['value'] = explain.modelState.models[this.selectedModelName][f_number[0]][f_number[1]]
-              break;
-            case 3:
-              param['value'] = explain.modelState.models[this.selectedModelName][f_number[0]][f_number[1]][f_number[2]]
-              break;
-          }
-          param['value'] = (param['value'] * param.factor).toFixed(param.rounding)
-        }
-
-        if (param.type == 'string') {
-          let f_string = param.target.split('.')
-          switch (f_string.length) {
-            case 1:
-              param['value'] = explain.modelState.models[this.selectedModelName][f_string[0]]
-              break;
-            case 2:
-              param['value'] = explain.modelState.models[this.selectedModelName][f_string[0]][f_string[1]]
-              break;
-            case 3:
-              param['value'] = explain.modelState.models[this.selectedModelName][f_string[0]][f_string[1]][f_string[2]]
-              break;
-          }
-        }
-
-        if (param.type == 'boolean') {
-          let f_bool = param.target.split('.')
-          switch (f_bool.length) {
-            case 1:
-              param['value'] = explain.modelState.models[this.selectedModelName][f_bool[0]]
-              break;
-            case 2:
-              param['value'] = explain.modelState.models[this.selectedModelName][f_bool[0]][f_bool[1]]
-              break;
-            case 3:
-              param['value'] = explain.modelState.models[this.selectedModelName][f_bool[0]][f_bool[1]][f_bool[2]]
-              break;
-          }
-        }
-
-        if (param.type == 'factor') {
-          let f_factor = param.target.split('.')
-          switch (f_factor.length) {
-            case 1:
-              param['value'] = explain.modelState.models[this.selectedModelName][f_factor[0]]
-              break;
-            case 2:
-              param['value'] = explain.modelState.models[this.selectedModelName][f_factor[0]][f_factor[1]]
-              break;
-            case 3:
-              param['value'] = explain.modelState.models[this.selectedModelName][f_factor[0]][f_factor[1]][f_factor[2]]
-              break;
-          }
-          param['value'] = (param['value']).toFixed(2)
-        }
-
-        if (param.type == 'list') {
-          let f_list = param.target.split('.')
-          switch (f_list.length) {
-            case 1:
-              param['value'] = explain.modelState.models[this.selectedModelName][f_list[0]]
-              break;
-            case 2:
-              param['value'] = explain.modelState.models[this.selectedModelName][f_list[0]][f_list[1]]
-              break;
-            case 3:
-              param['value'] = explain.modelState.models[this.selectedModelName][f_list[0]][f_list[1]][f_list[2]]
-              break;
-          }
-          // if there's a default number then use it
-          if (param['default']) {
-            param['value'] = param['default']
-          }
-          // file the options list
-          param['choices'] = []
-          if (param['option_default']) {
-            param['choices'] = param['options_default']
-          }
-          Object.values(explain.modelState.models).forEach(model => {
-            if (param.options.includes(model.model_type) || param.options.length == 0) {
-              param["choices"].push(model.name)
-            }
-          })
-        }
-
-        if (param.type == 'multiple-list') {
-          let f_mlist = param.target.split('.')
-          switch (f_mlist.length) {
-            case 1:
-              param['value'] = explain.modelState.models[this.selectedModelName][f_mlist[0]]
-              break;
-            case 2:
-              param['value'] = explain.modelState.models[this.selectedModelName][f_mlist[0]][f_mlist[1]]
-              break;
-            case 3:
-              param['value'] = explain.modelState.models[this.selectedModelName][f_mlist[0]][f_mlist[1]][f_mlist[2]]
-              break;
-          }
-          if (param['default']) {
-            param['value'] = param['default']
-          }
-          // file the options list
-          param['choices'] = []
-          if (param['option_default']) {
-            param['choices'] = param['options_default']
-          }
-          Object.values(explain.modelState.models).forEach(model => {
-            if (param.options.includes(model.model_type) || param.options.length == 0) {
-              param["choices"].push(model.name)
-            }
-          })
-        }
-        
-        if (param.type == 'prop-list') {
-          let f_model = param.target_model.split('.')
-          param['value_model'] = explain.modelState.models[this.selectedModelName][f_model[0]]
-          let f_prop = param.target_prop.split('.')
-          param['value_prop'] = explain.modelState.models[this.selectedModelName][f_prop[0]]
-          // file the options list
-          param['choices_model'] = []
-          param["choices_props"] = []
-          Object.values(explain.modelState.models).forEach(model => {
-            if (param.options.includes(model.model_type) || param.options.length == 0) {
-              param["choices_model"].push(model.name)
-      
-            }
-          })
-          Object.keys(explain.modelState.models[param.value_model]).forEach(prop => {
-              if (typeof (explain.modelState.models[param.value_model][prop]) === 'number') {
-                if (prop[0] !== "_") {
-                  param["choices_props"].push(prop)
-                }
-              }
-          })
-        }
-
-        if (param.type == 'function') {
-          param.args.forEach(arg => {
-            if (!arg['hidden']) {
-              arg['hidden'] = false
-            }
-            // get the current value
-            let f = arg.target.split('.')
-            if (f.length == 1) {
-              arg['value'] = explain.modelState.models[this.selectedModelName][f[0]]
-            }
-            if (f.length == 2) {
-              arg['value'] = explain.modelState.models[this.selectedModelName][f[0]][f[1]]
-            }
-            if (f.length == 3) {
-              arg['value'] = explain.modelState.models[this.selectedModelName][f[0]][f[1]][f[2]]
-            }
-
-            if (arg.target) {
-              if (arg.type == 'number') {
-                arg['value'] = (arg['value'] * arg.factor).toFixed(arg.rounding)
-              }
-              if (isNaN(arg['value'])) {
-                arg['value'] = arg.default
-              }
-              if (arg.options) {
-                if (arg.type == 'list') {
-                  arg['choices'] = []
-                  if (arg['options_default']) {
-                    arg['choices'] = arg['options_default']
-                  }
-                  arg['value'] = explain.modelState.models[this.selectedModelName][arg.target]
-                  if (arg['default']) {
-                    arg['value'] = arg['default']
-                  }
-                  Object.values(explain.modelState.models).forEach(model => {
-                    if (arg.options.includes(model.model_type) || arg.options.length == 0) {
-                      arg["choices"].push(model.name)
-                    }
-                  })
-                }
-                if (arg.type == 'multiple-list') {
-                  arg['choices'] = []
-                  if (arg['options_default']) {
-                    arg['choices'] = arg['options_default']
-                  }
-                  arg['value'] = explain.modelState.models[this.selectedModelName][arg.target]
-                  if (arg['default']) {
-                    arg['value'] = arg['default']
-                  }
-                  Object.values(explain.modelState.models).forEach(model => {
-                    if (arg.options.includes(model.model_type) || arg.options.length == 0) {
-                      arg["choices"].push(model.name)
-                    }
-                  })
-                }
-              }
-            }
-          })
-        }
-
-        if (param.type == 'object') {
-          param.object_shape.forEach(shape => {})
-        }
-
-        if (param.type == 'object-list') {
-          param.objects.forEach(object => {})
+        // process the different types of parameters
+        switch (param.type) {
+          case 'number':
+            this.processNumberType(param)
+            break;
+          case 'factor':
+            this.processFactorType(param)
+            break;
+          case 'string':
+            this.processStringType(param)
+            break;
+          case 'boolean':
+            this.processBooleanType(param)
+            break;
+          case 'list':
+            this.processListType(param)
+            break;
+          case 'multiple-list':
+            this.processMultipleListType(param)
+            break;
+          case 'prop-list':
+            this.processPropListType(param)
+            break;
+          case 'function':
+            this.processFunctionType(param)
+            break;
+          case 'object':
+            // for objects we don't need to do anything here, they will be processed later
+            break;
+          case 'object-list':
+            this.processObjectListType(param)
+            break;
+          default:
+            console.error("Unknown type: ", param.type)
         }
       })
       this.redraw += 1
+    },
+    processNumberType(param) {
+      let f_number = param.target.split('.')
+      switch (f_number.length) {
+        case 1:
+          param['value'] = explain.modelState.models[this.selectedModelName][f_number[0]]
+          break;
+        case 2:
+          param['value'] = explain.modelState.models[this.selectedModelName][f_number[0]][f_number[1]]
+          break;
+        case 3:
+          param['value'] = explain.modelState.models[this.selectedModelName][f_number[0]][f_number[1]][f_number[2]]
+          break;
+      }
+      param['value'] = (param['value'] * param.factor).toFixed(param.rounding)
+    },
+    processStringType(param) {
+      let f_string = param.target.split('.')
+      switch (f_string.length) {
+        case 1:
+          param['value'] = explain.modelState.models[this.selectedModelName][f_string[0]]
+          break;
+        case 2:
+          param['value'] = explain.modelState.models[this.selectedModelName][f_string[0]][f_string[1]]
+          break;
+        case 3:
+          param['value'] = explain.modelState.models[this.selectedModelName][f_string[0]][f_string[1]][f_string[2]]
+          break;
+      }
+    },
+    processBooleanType(param) {
+      let f_bool = param.target.split('.')
+      switch (f_bool.length) {
+        case 1:
+          param['value'] = explain.modelState.models[this.selectedModelName][f_bool[0]]
+          break;
+        case 2:
+          param['value'] = explain.modelState.models[this.selectedModelName][f_bool[0]][f_bool[1]]
+          break;
+        case 3:
+          param['value'] = explain.modelState.models[this.selectedModelName][f_bool[0]][f_bool[1]][f_bool[2]]
+          break;
+      }
+    },
+    processListType(param) {
+      let f_list = param.target.split('.')
+      switch (f_list.length) {
+        case 1:
+          param['value'] = explain.modelState.models[this.selectedModelName][f_list[0]]
+          break;
+        case 2:
+          param['value'] = explain.modelState.models[this.selectedModelName][f_list[0]][f_list[1]]
+          break;
+        case 3:
+          param['value'] = explain.modelState.models[this.selectedModelName][f_list[0]][f_list[1]][f_list[2]]
+          break;
+      }
+      // if there's a default number then use it
+      if (param['default']) {
+        param['value'] = param['default']
+      }
+      // file the options list
+      param['choices'] = []
+      if (param['option_default']) {
+        param['choices'] = param['options_default']
+      }
+      Object.values(explain.modelState.models).forEach(model => {
+        if (param.options.includes(model.model_type) || param.options.length == 0) {
+          param["choices"].push(model.name)
+        }
+      })
+    },
+    processMultipleListType(param) {
+      let f_mlist = param.target.split('.')
+      switch (f_mlist.length) {
+        case 1:
+          param['value'] = explain.modelState.models[this.selectedModelName][f_mlist[0]]
+          break;
+        case 2:
+          param['value'] = explain.modelState.models[this.selectedModelName][f_mlist[0]][f_mlist[1]]
+          break;
+        case 3:
+          param['value'] = explain.modelState.models[this.selectedModelName][f_mlist[0]][f_mlist[1]][f_mlist[2]]
+          break;
+      }
+      if (param['default']) {
+        param['value'] = param['default']
+      }
+      // file the options list
+      param['choices'] = []
+      if (param['option_default']) {
+        param['choices'] = param['options_default']
+      }
+      Object.values(explain.modelState.models).forEach(model => {
+        if (param.options.includes(model.model_type) || param.options.length == 0) {
+          param["choices"].push(model.name)
+        }
+      })
+    },
+    processFactorType(param) {
+      let f_factor = param.target.split('.')
+      switch (f_factor.length) {
+        case 1:
+          param['value'] = explain.modelState.models[this.selectedModelName][f_factor[0]]
+          break;
+        case 2:
+          param['value'] = explain.modelState.models[this.selectedModelName][f_factor[0]][f_factor[1]]
+          break;
+        case 3:
+          param['value'] = explain.modelState.models[this.selectedModelName][f_factor[0]][f_factor[1]][f_factor[2]]
+          break;
+      }
+      param['value'] = (param['value']).toFixed(2)
+    },
+    processPropListType(param) {
+      let f_model = param.target_model.split('.')
+      param['value_model'] = explain.modelState.models[this.selectedModelName][f_model[0]]
+      let f_prop = param.target_prop.split('.')
+      param['value_prop'] = explain.modelState.models[this.selectedModelName][f_prop[0]]
+      // file the options list
+      param['choices_model'] = []
+      param["choices_props"] = []
+      Object.values(explain.modelState.models).forEach(model => {
+        if (param.options.includes(model.model_type) || param.options.length == 0) {
+          param["choices_model"].push(model.name)
+  
+        }
+      })
+      Object.keys(explain.modelState.models[param.value_model]).forEach(prop => {
+          if (typeof (explain.modelState.models[param.value_model][prop]) === 'number') {
+            if (prop[0] !== "_") {
+              param["choices_props"].push(prop)
+            }
+          }
+      })
+
+    },
+    processFunctionType(param) {
+      param.args.forEach(arg => {
+      if (!arg['hidden']) {
+        arg['hidden'] = false
+      }
+      // get the current value
+      let f = arg.target.split('.')
+      if (f.length == 1) {
+        arg['value'] = explain.modelState.models[this.selectedModelName][f[0]]
+      }
+      if (f.length == 2) {
+        arg['value'] = explain.modelState.models[this.selectedModelName][f[0]][f[1]]
+      }
+      if (f.length == 3) {
+        arg['value'] = explain.modelState.models[this.selectedModelName][f[0]][f[1]][f[2]]
+      }
+
+      if (arg.target) {
+        if (arg.type == 'number') {
+          arg['value'] = (arg['value'] * arg.factor).toFixed(arg.rounding)
+        }
+        if (isNaN(arg['value'])) {
+          arg['value'] = arg.default
+        }
+        if (arg.options) {
+          if (arg.type == 'list') {
+            arg['choices'] = []
+            if (arg['options_default']) {
+              arg['choices'] = arg['options_default']
+            }
+            arg['value'] = explain.modelState.models[this.selectedModelName][arg.target]
+            if (arg['default']) {
+              arg['value'] = arg['default']
+            }
+            Object.values(explain.modelState.models).forEach(model => {
+              if (arg.options.includes(model.model_type) || arg.options.length == 0) {
+                arg["choices"].push(model.name)
+              }
+            })
+          }
+          if (arg.type == 'multiple-list') {
+            arg['choices'] = []
+            if (arg['options_default']) {
+              arg['choices'] = arg['options_default']
+            }
+            arg['value'] = explain.modelState.models[this.selectedModelName][arg.target]
+            if (arg['default']) {
+              arg['value'] = arg['default']
+            }
+            Object.values(explain.modelState.models).forEach(model => {
+              if (arg.options.includes(model.model_type) || arg.options.length == 0) {
+                arg["choices"].push(model.name)
+              }
+            })
+          }
+        }
+      }
+    })
+    },
+    processObjectType(param) {},
+    processObjectListType(param) {
+      param.objects.forEach((object)=> {
+                // we have to extend the param with some additional properties
+        object['state_changed'] = false
+        if (object.readonly === undefined) {
+          object['readonly'] = false
+        }
+                // process the different types of parameters
+        switch (object.type) {
+          case 'number':
+            this.processNumberType(object)
+            break;
+          case 'factor':
+            this.processFactorType(object)
+            break;
+          case 'string':
+            this.processStringType(object)
+            break;
+          case 'boolean':
+            this.processBooleanType(object)
+            break;
+          case 'list':
+            this.processListType(object)
+            break;
+          case 'multiple-list':
+            this.processMultipleListType(object)
+            break;
+          case 'prop-list':
+            this.processPropListType(object)
+            break;
+          case 'function':
+            this.processFunctionType(object)
+            break;
+          case 'object':
+            // for objects we don't need to do anything here, they will be processed later
+            break;
+          default:
+            console.error("Unknown type: ", param.type)
+        }
+      })
+      console.log(param)
     },
     processAvailableModels() {
       this.modelNames = []

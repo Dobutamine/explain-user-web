@@ -62,6 +62,21 @@ export class AnsAfferent extends BaseModelClass {
       factor: 1.0,
       rounding: 1,
     },
+        {
+      caption: "efferents",
+      target: "efferents",
+      type: "multiple-list",
+      options: ["AnsEfferent"]
+    },
+    {
+      caption: "effect weight",
+      target: "effect_weight",
+      type: "number",
+      delta: 0.1,
+      factor: 1.0,
+      rounding: 3,
+    },
+
   ];
 
   constructor(model_ref, name = "") {
@@ -70,6 +85,8 @@ export class AnsAfferent extends BaseModelClass {
     // Initialize independent properties
     this.input_model = ""; // name of the input model
     this.input_prop = ""; // name of the input prop
+    this.efferents = []; // list of efferents that are connected to this afferent
+    this.effect_weight = 1.0; // weight of the effect of this afferent on the efferents
     this.min_value = 0.0; // minimum of the input (firing rate is 0.0)
     this.set_value = 0.0; // setpoint of the input (firing rate is 0.5)
     this.max_value = 0.0; // maximum of the input (firing rate is 1.0)
@@ -121,6 +138,14 @@ export class AnsAfferent extends BaseModelClass {
 
       // Incorporate the time constant to calculate the firing rate
       this.firing_rate = this._update_interval * ((1.0 / this.time_constant) * (-this.firing_rate + _new_firing_rate)) + this.firing_rate;
+
+      // apply the firing rate to the effector
+      this.efferents.forEach((effector) => {
+        // Update the effector with the firing rate and effect weight
+        this._model_engine.models[effector].update_effector(this.firing_rate, this.effect_weight);
+      });
+      
+      
     }
   }
 }
