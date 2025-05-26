@@ -77,40 +77,16 @@ export class MicroVascularUnit extends BaseModelClass {
       target: "r_for",
       type: "number",
       factor: 1.0,
-      delta: 0.001,
-      rounding: 3
+      delta: 1,
+      rounding: 0
     },
     {
       caption: "r_back (mmHg/L/s)",
       target: "r_back",
       type: "number",
       factor: 1.0,
-      delta: 0.001,
-      rounding: 3
-    },
-    {
-      caption: "temperature (C)",
-      target: "temp",
-      type: "number",
-      factor: 1,
-      delta: 0.1,
-      rounding: 0.1,
-    },
-    {
-      caption: "viscosity (cP)",
-      target: "viscosity",
-      type: "number",
-      factor: 1,
-      delta: 0.1,
-      rounding: 0.1,
-    },
-    {
-      caption: "resistance-elastance coupling factor",
-      target: "alpha",
-      type: "number",
-      factor: 1,
-      delta: 0.1,
-      rounding: 0.1,
+      delta: 1,
+      rounding: 0
     },
     {
       caption: "ans sensitivity (0-1)",
@@ -122,7 +98,7 @@ export class MicroVascularUnit extends BaseModelClass {
     },
     {
       caption: "unstressed volume factor",
-      target: "u_vol_factor",
+      target: "u_vol_factor_ps",
       type: "factor",
       range: [-1, 1],
       delta: 0.01,
@@ -130,7 +106,7 @@ export class MicroVascularUnit extends BaseModelClass {
     },
     {
       caption: "elastance baseline factor",
-      target: "el_base_factor",
+      target: "el_base_factor_ps",
       type: "factor",
       range: [-1, 1],
       delta: 0.01,
@@ -138,12 +114,36 @@ export class MicroVascularUnit extends BaseModelClass {
     },
     {
       caption: "elastance non linear factor",
-      target: "el_k_factor",
+      target: "el_k_factor_ps",
       type: "factor",
       range: [-1, 1],
       delta: 0.01,
       hidden: true
     },
+    {
+      caption: "resistance factor",
+      target: "r_factor_ps",
+      type: "factor",
+      range: [-1, 1],
+      delta: 0.01,
+      hidden: true
+    },
+    {
+      caption: "non-linear resistance factor",
+      target: "r_k_factor_ps",
+      type: "factor",
+      range: [-1, 1],
+      delta: 0.01,
+      hidden: true
+    },
+    {
+      caption: "inertance factor",
+      target: "l_factor_ps",
+      type: "factor",
+      range: [-1, 1],
+      delta: 0.01,
+      hidden: true
+    }
   ];
 
   constructor(model_ref, name = "") {

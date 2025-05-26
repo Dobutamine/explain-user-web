@@ -77,8 +77,27 @@ export class GasDiffusor extends BaseModelClass {
         "PleuralSpace",
         "AlveolarSac"
       ]
+    },
+    {
+      caption: "oxygen diffusion factor",
+      target: "dif_o2_factor_ps",
+      type: "factor"
+    },
+    {
+      caption: "carbon dioxide diffusion factor",
+      target: "dif_co2_factor_ps",
+      type: "factor"
+    },
+    {
+      caption: "nitric oxide diffusion factor",
+      target: "dif_n2_factor_ps",
+      type: "factor"
+    },
+    {
+      caption: "other gasses diffusion factor",
+      target: "dif_other_factor_ps",
+      type: "factor"
     }
-
   ];
 
   constructor(model_ref, name = "") {

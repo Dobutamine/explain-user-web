@@ -23,10 +23,17 @@ export class Ans extends BaseModelClass {
       type: "boolean"
     },
     {
-      caption: "ANS active",
+      caption: "ANS components active",
       target: "ans_active",
       type: "boolean",
     },
+    {
+      caption: "blood composition models",
+      target: "blood_composition_models",
+      type: "multiple-list",
+      options: ["BloodVessel","Artery","Arteriole","Venule","Vein","Capillaries", "CoronaryVessel","MicrovascularVessel","HeartChamber", "BloodCapacitance", "BloodTimeVaryingElastance"],
+      readonly: false
+    }
   ];
 
   constructor(model_ref, name = "") {
@@ -44,9 +51,6 @@ export class Ans extends BaseModelClass {
   }
 
   calc_model() {
-    // Return if the ANS is not active
-    if (!this.ans_active) return;
-
 
     // Increase the update counter
     this._update_counter += this._t;
@@ -55,6 +59,13 @@ export class Ans extends BaseModelClass {
     if (this._update_counter >= this._update_interval) {
       // Reset the update counter
       this._update_counter = 0.0;
+
+      // switch through all components
+      Object.keys(this.components).forEach(component => 
+        {
+          this._model_engine.models[component].is_enabled = this.ans_active;
+        }
+      );
 
       // calculate the necessary blood compositions
       this.blood_composition_models.forEach(model => {

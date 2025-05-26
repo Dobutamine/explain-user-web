@@ -4,7 +4,7 @@ import { BaseModelClass } from "../base_models/BaseModelClass";
 export class AnsEfferent extends BaseModelClass {
   // static properties
   static model_type = "AnsEfferent";
-  model_interface = [
+  static model_interface = [
     {
       caption: "model type",
       target: "model_type",

@@ -60,6 +60,16 @@ export class GasExchanger extends BaseModelClass {
         "Vein", 
         "Venule"
       ]
+    },
+    {
+      caption: "oxygen diffusion factor",
+      target: "dif_o2_factor_ps",
+      type: "factor"
+    },
+    {
+      caption: "carbon dioxide diffusion factor",
+      target: "dif_co2_factor_ps",
+      type: "factor"
     }
   ];
 

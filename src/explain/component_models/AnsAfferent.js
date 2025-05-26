@@ -3,7 +3,7 @@ import { BaseModelClass } from "../base_models/BaseModelClass";
 export class AnsAfferent extends BaseModelClass {
   // static properties
   static model_type = "AnsAfferent";
-  model_interface = [
+  static model_interface = [
     {
       caption: "model type",
       target: "model_type",

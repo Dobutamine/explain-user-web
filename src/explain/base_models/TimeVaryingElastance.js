@@ -55,7 +55,7 @@ export class TimeVaryingElastance extends BaseModelClass {
     },
     {
       caption: "unstressed volume factor",
-      target: "u_vol_factor",
+      target: "u_vol_factor_ps",
       type: "factor"
     },
     {
@@ -70,7 +70,7 @@ export class TimeVaryingElastance extends BaseModelClass {
     },
     {
       caption: "elastance non linear factor",
-      target: "el_k_factor",
+      target: "el_k_factor_ps",
       type: "factor"
     },
   ];

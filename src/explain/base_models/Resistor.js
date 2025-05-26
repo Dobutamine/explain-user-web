@@ -65,21 +65,6 @@ export class Resistor extends BaseModelClass {
       rounding: 3
     },
     {
-      caption: "resistance factor",
-      target: "r_factor",
-      type: "factor"
-    },
-    {
-      caption: "non linear resistance coefficient factor",
-      target: "r_k_factor",
-      type: "factor"
-    },
-    {
-      caption: "inertance factor",
-      target: "l_factor",
-      type: "factor"
-    },
-    {
       type: "list",
       caption: "comp from",
       target: "comp_from",
@@ -120,8 +105,22 @@ export class Resistor extends BaseModelClass {
         "AlveolarSpace",
         "GasCapacitance"
       ]
+    },
+    {
+      caption: "resistance factor",
+      target: "r_factor_ps",
+      type: "factor"
+    },
+    {
+      caption: "non linear resistance coefficient factor",
+      target: "r_k_factor_ps",
+      type: "factor"
+    },
+    {
+      caption: "inertance factor",
+      target: "l_factor_ps",
+      type: "factor"
     }
-    
   ]
 
   constructor(model_ref, name = "") {

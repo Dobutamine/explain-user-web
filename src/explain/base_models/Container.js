@@ -80,22 +80,7 @@ export class Container extends BaseModelClass {
         "AlveolarSpace",
         "GasCapacitance"
       ]
-    },
-    {
-      caption: "unstressed volume factor",
-      target: "u_vol_factor",
-      type: "factor"
-    },
-    {
-      caption: "elastance baseline factor",
-      target: "el_base_factor",
-      type: "factor"
-    },
-    {
-      caption: "elastance non linear  factor",
-      target: "el_k_factor",
-      type: "factor"
-    },
+    }
   ];
 
   constructor(model_ref, name = "") {

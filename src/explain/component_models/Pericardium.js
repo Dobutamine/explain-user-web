@@ -3,7 +3,7 @@ import { Container } from "../base_models/Container";
 export class Pericardium extends Container {
   // static properties
   static model_type = "Pericardium";
-  model_interface = [
+  static model_interface = [
     {
       caption: "model is enabled",
       target: "is_enabled",
@@ -49,17 +49,17 @@ export class Pericardium extends Container {
     },
     {
       caption: "unstressed volume factor",
-      target: "u_vol_factor",
+      target: "u_vol_factor_ps",
       type: "factor"
     },
     {
       caption: "elastance baseline factor",
-      target: "el_base_factor",
+      target: "el_base_factor_ps",
       type: "factor"
     },
     {
       caption: "elastance non linear  factor",
-      target: "el_k_factor",
+      target: "el_k_factor_ps",
       type: "factor"
     },
   ];

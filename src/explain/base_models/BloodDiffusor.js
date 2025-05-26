@@ -41,24 +41,24 @@ export class BloodDiffusor extends BaseModelClass {
     {
       caption: "solute diffusion constant",
       target: "dif_solutes",
-      type: "object",
+      type: "number",
       factor: 1.0,
       delta: 0.001,
       rounding: 3,
     },
     {
       caption: "oxygen diffusion factor",
-      target: "dif_o2_factor",
+      target: "dif_o2_factor_ps",
       type: "factor"
     },
     {
       caption: "carbon dioxide diffusion factor",
-      target: "dif_co2_factor",
+      target: "dif_co2_factor_ps",
       type: "factor"
     },
     {
       caption: "solute diffusion factor",
-      target: "dif_solutes_factor",
+      target: "dif_solutes_factor_ps",
       type: "factor"
     },
         {

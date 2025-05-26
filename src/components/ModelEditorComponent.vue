@@ -5,7 +5,7 @@
     </div>
     <div v-if="!collapsed">
       <!-- add model part -->
-      <q-card class="q-pb-xs q-pt-xs q-ma-sm" bordered>
+      <q-card v-if="addEnabled" class="q-pb-xs q-pt-xs q-ma-sm" bordered>
         <div class="q-mt-es row gutter text-overline justify-center" @click="isEnabled = !isEnabled">
         </div>
         <div>
@@ -106,6 +106,7 @@
       <q-card class="q-pb-xs q-pt-xs q-ma-sm" bordered>
         <div class="q-mt-es row gutter text-overline justify-center" @click="isEnabled = !isEnabled">
         </div>
+
         <div>
           <div class="q-pa-sm q-mt-xs q-mb-sm q-ml-md q-mr-md text-overline justify-center row">
             <q-select class="q-pa-xs col" v-model="selectedModelName" square label="edit existing model" hide-hint
@@ -122,7 +123,7 @@
 
 
           <div v-if="redraw > 0.0" class="q-ma-sm q-mb-md">
-            <div v-for="(field, index) in selectedModelProps" :key="index">
+            <div v-for="(field, index) in selectedModelInterface" :key="index">
               <div v-if="field.type == 'number'">
                 <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
                   <div class="text-white" :style="{ 'font-size': '10px' }">
@@ -135,7 +136,7 @@
                 </div>
               </div>
 
-              <div v-if="field.type == 'factor'">
+              <div v-if="field.type == 'factor' && factorsEnabled">
                 <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
                   <div class="text-white" :style="{ 'font-size': '10px' }">
                     <q-input v-model="field.value" :label="field.caption" :max="10000000000" :min="0" :readonly="field.readonly"
@@ -277,36 +278,14 @@
 
 import { explain } from "../boot/explain";
 
-/*
-Model interface object structure
-model_interface = [
-  {
-    caption: <string>,
-    target: <string>,
-    type: <string> number/boolean/factor/string/list/multiple-list/function,
-    args: [
-          caption: <string>
-          target: <string>
-          type: <string> number/boolean/factor/string/list/multiple-list
-          factor: <number>
-          delta: <number>
-          rounding: <number>
-    ],
-    factor: <number>,
-    delta: <number>,
-    rounding: <number>
-  }
-]
-*/
-
 
 export default {
   setup() {
-    let selectedModelProps = []
+    let selectedModelInterface = []
     let selectedNewModelProps = []
 
     return {
-      selectedModelProps, selectedNewModelProps
+      selectedModelInterface: selectedModelInterface, selectedNewModelProps
     }
   },
   data() {
@@ -314,6 +293,8 @@ export default {
       title: "MODEL EDITOR",
       collapsed: false,
       isEnabled: true,
+      addEnabled: false,
+      factorsEnabled: true,
       redraw: 1,
       availableModelTypes: [],
       selectedModelType: "",
@@ -549,7 +530,7 @@ export default {
 
     },
     updateValue() {
-      this.selectedModelProps.forEach(prop => {
+      this.selectedModelInterface.forEach(prop => {
         if (prop.state_changed) {
           if (prop.type == 'function') {
             let function_name = this.selectedModelName + "." + prop.target;
@@ -605,7 +586,7 @@ export default {
     },
     cancel() {
       this.selectedModelName = ""
-      this.selectedModelProps = {}
+      this.selectedModelInterface = {}
       this.state_changed = false
       explain.getModelState()
     },
@@ -618,10 +599,11 @@ export default {
       explain.getModelState()
     },
     selectModel() {
-      // copy, don't reference the interfacing items
-      this.selectedModelProps = [...Object.values(explain.modelState.models[this.selectedModelName].model_interface)]
+      // get the model interface of the model type of the seleced model
+      this.selectedModelInterface = explain.getModelInterface(this.selectedModelName)
+
       // add a flag to the property which can be set when the property needs to be updated
-      this.selectedModelProps.forEach(param => {
+      this.selectedModelInterface.forEach(param => {
         // we have to extend the param with some additional properties
         param['state_changed'] = false
         if (param.readonly === undefined) {

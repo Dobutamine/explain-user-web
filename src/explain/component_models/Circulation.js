@@ -110,98 +110,62 @@ export class Circulation extends BaseModelClass {
     {
       caption: "syst art resistance factor",
       target: "savr_factor",
-      type: "number",
-      factor: 1.0,
-      delta: 0.1,
-      rounding: 1
+      type: "factor",
     },
     {
       caption: "pulm art resistance factor",
       target: "pavr_factor",
-      type: "number",
-      factor: 1.0,
-      delta: 0.1,
-      rounding: 1
+      type: "factor",
     },
     {
       caption: "syst ven resistance factor",
       target: "svvr_factor",
-      type: "number",
-      factor: 1.0,
-      delta: 0.1,
-      rounding: 1
+      type: "factor"
     },
     {
       caption: "pulm ven resistance factor",
       target: "pvvr_factor",
-      type: "number",
-      factor: 1.0,
-      delta: 0.1,
-      rounding: 1
+      type: "factor"
     },
     {
       caption: "syst cap resistance  factor",
       target: "scr_factor",
-      type: "number",
-      factor: 1.0,
-      delta: 0.1,
-      rounding: 1
+      type: "factor"
     },
     {
       caption: "pulm cap resistance factor",
       target: "pcr_factor",
-      type: "number",
-      factor: 1.0,
-      delta: 0.1,
-      rounding: 1
+      type: "factor"
     },
     {
       caption: "syst art elastance factor",
       target: "save_factor",
-      type: "number",
-      factor: 1.0,
-      delta: 0.1,
-      rounding: 1
+      type: "factor"
     },
     {
       caption: "pulm art elastance factor",
       target: "pave_factor",
-      type: "number",
-      factor: 1.0,
-      delta: 0.1,
-      rounding: 1
+      type: "factor"
     },
     {
       caption: "syst ven elastance factor",
       target: "svve_factor",
-      type: "number",
-      factor: 1.0,
-      delta: 0.1,
-      rounding: 1
+      type: "factor"
     },
     {
       caption: "pulm ven elastance factor",
       target: "pvve_factor",
-      type: "number",
-      factor: 1.0,
-      delta: 0.1,
-      rounding: 1
+      type: "factor"
     },
     {
       caption: "syst cap elastance factor",
       target: "sce_factor",
-      type: "number",
-      factor: 1.0,
-      delta: 0.1,
-      rounding: 1
+      type: "factor"
     },
     {
       caption: "pulm cap elastance factor",
       target: "pce_factor",
-      type: "number",
-      factor: 1.0,
-      delta: 0.1,
-      rounding: 1
+      type: "factor"
     },
     
     {

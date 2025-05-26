@@ -1,3 +1,5 @@
+import * as models from "./ModelIndex";
+
 export default class Model {
   // declare an object holding the worker thread which does the heavy llifting
   modelEngine = {};
@@ -42,6 +44,7 @@ export default class Model {
     // spin up a new model engine worker thread
     this.modelEngine = new Worker(new URL("./ModelEngine.js", import.meta.url), { type: "module" });
 
+    console.log(models)
     // set up a listener for messages from the model engine
     this.receive();
   }
@@ -296,20 +299,14 @@ export default class Model {
 
   getModelTypeInterface(model_type) {
     // get the interface of a specific modeltype
-    this.send({
-      type: "GET",
-      message: "modeltype_interface",
-      payload: model_type,
-    });
+    return models[model_type].model_interface || [];
   }
 
   getModelInterface(model_name) {
-    // get the interface of a specific model
-    this.send({
-      type: "GET",
-      message: "model_interface",
-      payload: model_name,
-    });
+    // get the model type of a specific model
+    let model_type = this.modelState.models[model_name].model_type;
+    // get the interface of a specific model type
+    return models[model_type].model_interface || [];
   }
 
   getBloodComposition(model_name) {
