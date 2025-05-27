@@ -1,7 +1,6 @@
 import { BaseModelClass } from "../base_models/BaseModelClass";
 import { calc_blood_composition } from "../base_models/BloodComposition"
-//import { calc_blood_composition_exp } from "../base_models/BloodComposition";
-
+// ----------------------------------------------------------------------------
 export class Blood extends BaseModelClass {
   // static properties
   static model_type = "Blood";

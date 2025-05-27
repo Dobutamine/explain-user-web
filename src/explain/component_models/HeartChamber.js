@@ -64,9 +64,7 @@ export class HeartChamber extends BloodTimeVaryingElastance {
         return; // if so, do not create a new resistor
       }
       let res = new Valve(this._model_engine, inputName + "_" + this.name);
-      if (this.connector == "valve") {
-        res = new Valve(this._model_engine, inputName + "_" + this.name);
-      }
+      // set the properties of the resistor
       let args = [
         { key: "name", value: inputName + "_" + this.name},
         { key: "description", value: "input connector for " + this.name },

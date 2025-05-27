@@ -1,7 +1,5 @@
 import { BaseModelClass } from "../base_models/BaseModelClass";
-import { Arteriole } from "./Arteriole";
-import { Capillaries } from "./Capillaries";
-import { Venule } from "./Venule";
+import { BloodVessel  } from "./BloodVessel"; 
 
 /*
 A MicroVascularUnit class (sometimes called a functional capillary unit) denotes the terminal arteriole, 
@@ -246,9 +244,9 @@ export class MicroVascularUnit extends BaseModelClass {
 
     // we need to build the individual components of the network
     this.components = {
-      art: new Arteriole(this._model_engine, "art"),
-      cap: new Capillaries(this._model_engine, "cap"),
-      ven: new Venule(this._model_engine, "ven")
+      art: new BloodVessel(this._model_engine, "art"),
+      cap: new BloodVessel(this._model_engine, "cap"),
+      ven: new BloodVessel(this._model_engine, "ven")
     }
     
     // initialize the arteriole part of the network

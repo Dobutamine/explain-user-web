@@ -16,11 +16,6 @@ export { BloodVessel } from "./component_models/BloodVessel";
 export { BloodPump } from "./component_models/BloodPump";
 
 export { Valve } from "./component_models/Valve";
-export { Artery } from "./component_models/Artery";
-export { Arteriole } from "./component_models/Arteriole";
-export { Capillaries } from "./component_models/Capillaries";
-export { Vein } from "./component_models/Vein";
-export { Venule } from "./component_models/Venule";
 export { MicroVascularUnit } from "./component_models/MicroVascularUnit";
 export { Placenta } from "./component_models/Placenta";
 export { Shunts } from "./component_models/Shunts";
@@ -29,16 +24,9 @@ export { Heart } from "./component_models/Heart";
 export { HeartChamber } from "./component_models/HeartChamber";
 export { Coronaries } from "./component_models/Coronaries";
 export { CoronaryVessel } from "./component_models/CoronaryVessel";
-export { Pericardium } from "./component_models/Pericardium"
 export { Circulation } from "./component_models/Circulation";
 
 export { Gas } from "./component_models/Gas";
-export { Thorax } from "./component_models/Thorax";
-export { PleuralSpace} from "./component_models/PleuralSpace";
-export { UpperAirway } from "./component_models/UpperAirway";
-export { LowerAirway } from "./component_models/LowerAirway";
-export { AlveolarSac } from "./component_models/AlveolarSac";
-
 export { Breathing } from "./component_models/Breathing";
 export { Respiration } from "./component_models/Respiration";
 
