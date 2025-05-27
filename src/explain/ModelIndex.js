@@ -21,9 +21,7 @@ export { Placenta } from "./component_models/Placenta";
 export { Shunts } from "./component_models/Shunts";
 
 export { Heart } from "./component_models/Heart";
-export { HeartChamber } from "./component_models/HeartChamber";
-export { Coronaries } from "./component_models/Coronaries";
-export { CoronaryVessel } from "./component_models/CoronaryVessel";
+export { Mob } from "./component_models/Mob";
 export { Circulation } from "./component_models/Circulation";
 
 export { Gas } from "./component_models/Gas";

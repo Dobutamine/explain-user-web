@@ -1,8 +1,8 @@
 import { BaseModelClass } from "../base_models/BaseModelClass";
 
-export class Coronaries extends BaseModelClass {
+export class Mob extends BaseModelClass {
   // static properties
-  static model_type = "Coronaries";
+  static model_type = "Mob";
   static model_interface = [
     {
       caption: "model is enabled",
