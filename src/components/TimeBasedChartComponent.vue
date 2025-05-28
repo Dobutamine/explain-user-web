@@ -297,14 +297,25 @@ export default {
       presetNames: [],
       newPresetName: "",
       presets: {
-        "Pva": {
-          props: ["Mob.pva", "Mob.pva_running"],
-          autoscale: true,
+        "TO2": {
+          props: ["AA.to2", "RA.to2", "BR.to2"],
+          autoscale: false,
           y_min: 0.0,
-          y_max: 35,
+          y_max: 10,
           factors: false,
           fill: false,
-          chart1_factor: 100000,
+          chart1_factor: 1.0,
+          chart2_factor: 1.0,
+          chart3_factor: 1.0
+        },
+        "PO2_LUNG": {
+          props: ["ALL.po2","LL_CAP.po2", "RL_CAP.po2"],
+          autoscale: true,
+          y_min: 0.0,
+          y_max: 150,
+          factors: false,
+          fill: false,
+          chart1_factor: 1.0,
           chart2_factor: 1.0,
           chart3_factor: 1.0
         },

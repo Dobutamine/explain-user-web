@@ -1,5 +1,6 @@
 import { BaseModelClass } from "../base_models/BaseModelClass";
 import { BloodVessel  } from "./BloodVessel"; 
+import { BloodCapacitance } from "./BloodCapacitance";
 
 /*
 A MicroVascularUnit class (sometimes called a functional capillary unit) denotes the terminal arteriole, 
@@ -250,11 +251,12 @@ export class MicroVascularUnit extends BaseModelClass {
     }
     
     // initialize the arteriole part of the network
+    //Veins/venules: 0.75, arterioles: 0.63, large arteries: 0.5
     let args_art = [
         { key: "name", value: this.name + "_IN" },
         { key: "description", value: "arteriole of " + this.name },
         { key: "is_enabled", value: this.is_enabled },
-        { key: "model_type", value: "Arteriole" },
+        { key: "model_type", value: "BloodVessel" },
         { key: "vol", value: this.vol * this.vol_dist.art},
         { key: "u_vol", value: this.u_vol * this.vol_dist.art},
         { key: "el_base", value: this.el_base * this.el_distr.art },
@@ -263,7 +265,10 @@ export class MicroVascularUnit extends BaseModelClass {
         { key: "r_for", value: this.r_for * this.res_dist.art },
         { key: "r_back", value: this.r_back * this.res_dist.art},
         { key: "r_k", value: this.r_k * this.res_dist.art },
-        { key: "no_flow", value: this.no_flow }
+        { key: "no_flow", value: this.no_flow },
+        { key: "ans_activity", value: this.ans_activity },
+        { key: "ans_sens", value: this.ans_sens },
+        { key: "alpha", value: 0.63 }
     ]
 
     // check whether this arteriole already exists (in case of a saved state)
@@ -280,7 +285,7 @@ export class MicroVascularUnit extends BaseModelClass {
         { key: "name", value: this.name + "_CAP" },
         { key: "description", value: "capillaries of " + this.name },
         { key: "is_enabled", value: this.is_enabled },
-        { key: "model_type", value: "Capillaries" },
+        { key: "model_type", value: "BloodVessel" },
         { key: "vol", value: this.vol * this.vol_dist.cap},
         { key: "u_vol", value: this.u_vol * this.vol_dist.cap},
         { key: "el_base", value: this.el_base * this.el_distr.cap },
@@ -289,7 +294,10 @@ export class MicroVascularUnit extends BaseModelClass {
         { key: "r_for", value: this.r_for * this.res_dist.cap },
         { key: "r_back", value: this.r_back * this.res_dist.cap},
         { key: "r_k", value: this.r_k * this.res_dist.cap },
-        { key: "no_flow", value: this.no_flow }
+        { key: "no_flow", value: this.no_flow },
+        { key: "ans_activity", value: this.ans_activity },
+        { key: "ans_sens", value: 0.0},
+        { key: "alpha", value: 0.0 }
     ]
     // check whether this capillary already exists (in case of a saved state)
     if (this._model_engine.models[this.name + "_CAP"]) {
@@ -305,7 +313,7 @@ export class MicroVascularUnit extends BaseModelClass {
         { key: "name", value: this.name + "_OUT" },
         { key: "description", value: "venules of " + this.name },
         { key: "is_enabled", value: this.is_enabled },
-        { key: "model_type", value: "Venule" },
+        { key: "model_type", value: "BloodVessel" },
         { key: "vol", value: this.vol * this.vol_dist.ven},
         { key: "u_vol", value: this.u_vol * this.vol_dist.ven},
         { key: "el_base", value: this.el_base * this.el_distr.ven },
@@ -314,7 +322,10 @@ export class MicroVascularUnit extends BaseModelClass {
         { key: "r_for", value: this.r_for * this.res_dist.ven },
         { key: "r_back", value: this.r_back * this.res_dist.ven },
         { key: "r_k", value: this.r_k * this.res_dist.ven },
-        { key: "no_flow", value: this.no_flow }
+        { key: "no_flow", value: this.no_flow },
+        { key: "ans_activity", value: this.ans_activity },
+        { key: "ans_sens", value: this.ans_sens },
+        { key: "alpha", value: 0.75 }
     ]
     // check whether this venous already exists (in case of a saved state)
     if (this._model_engine.models[this.name + "_OUT"]) {

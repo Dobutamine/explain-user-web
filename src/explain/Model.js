@@ -44,7 +44,6 @@ export default class Model {
     // spin up a new model engine worker thread
     this.modelEngine = new Worker(new URL("./ModelEngine.js", import.meta.url), { type: "module" });
 
-    console.log(models)
     // set up a listener for messages from the model engine
     this.receive();
   }

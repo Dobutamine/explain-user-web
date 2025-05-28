@@ -63,24 +63,19 @@ export class Metabolism extends BaseModelClass {
     this.met_active = true; // flag indicating if metabolism is active
     this.vo2 = 8.1; // oxygen use in ml/kg/min
     this.vo2_factor = 1.0; // factor modulating oxygen use by outside models
-    this.vo2_scaling_factor = 1.0; // scaling factor for oxygen use
     this.resp_q = 0.8; // respiratory quotient for CO2 production
-    this.resp_q_scaling_factor = 1.0; // scaling factor for respiratory quotient for CO2 production
     this.metabolic_active_models = {}; // dictionary of models with fractional oxygen use
   }
   set_metabolic_active_model(new_fo2, site) {
     self.metabolic_active_models[site] = new_fo2
   }
   calc_model() {
+    if (!this.met_active) {
+      // If metabolism is not active, do nothing
+      return;
+    }
     // Translate the VO2 in ml/kg/min to VO2 in mmol for this step size (assuming 37 degrees temperature and atmospheric pressure)
-    const vo2_step =
-      ((0.039 *
-        this.vo2 *
-        this.vo2_factor *
-        this.vo2_scaling_factor *
-        this._model_engine.weight) /
-        60.0) *
-      this._t;
+    const vo2_step =((0.039 * this.vo2 * this.vo2_factor * this._model_engine.weight) / 60.0) * this._t;
 
     // Iterate over each metabolic active model
     for (const [model, fvo2] of Object.entries(this.metabolic_active_models)) {
@@ -106,7 +101,7 @@ export class Metabolism extends BaseModelClass {
       }
 
       // Calculate the change in CO2 concentration in this step
-      const dtco2 = vo2_step * fvo2 * this.resp_q * this.resp_q_scaling_factor;
+      const dtco2 = vo2_step * fvo2 * this.resp_q
 
       // Calculate the new CO2 concentration in blood
       let new_tco2 = (tco2 * vol + dtco2) / vol;

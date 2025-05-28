@@ -86,7 +86,7 @@ export class BloodVessel extends BloodCapacitance {
       rounding: 3
     },
     {
-      caption: "resistance-elastance coupling factor",
+      caption: "resistance-elastance coupling factor (0-1)",
       target: "alpha",
       type: "number",
       factor: 1,

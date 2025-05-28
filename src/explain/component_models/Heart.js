@@ -94,7 +94,6 @@ export class Heart extends BaseModelClass {
     this.cardiac_cycle_running = 0; // signal whether or not the cardiac cycle is running (0 = not, 1 = running)
     this.cardiac_cycle_time = 0.353; // cardiac cycle time (s)
 
-  
     this.lv_edv = 0.0
     this.lv_esv = 0.0
     this.lv_edp = 0.0

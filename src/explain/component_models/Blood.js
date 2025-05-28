@@ -174,19 +174,10 @@ export class Blood extends BaseModelClass {
 
     // initialize local properties (preceded with _)
     this._blood_containing_modeltypes = [
+      "BloodVessel",
       "BloodCapacitance",
       "BloodTimeVaryingElastance",
-      "BloodVessel",
-      "HeartChamber",
-      "CapillaryBed",
-      "CoronaryVessel",
-      "BloodPump",
-      "Capillaries",
-      "CapillaryNetwork",
-      "Arteriole",
-      "Venule",
-      "Artery",
-      "Vein",
+      "BloodPump"
     ];
     this._update_interval = 1.0; // interval at which the calculations are done
     this._update_counter = 0.0; // update counter intermediate
@@ -225,6 +216,7 @@ export class Blood extends BaseModelClass {
     this._error_oxy = false;
     this._iterations_ab = 0;
     this._iterations_oxy = 0;
+
   }
 
   async init_model(args = {}) {
@@ -237,7 +229,6 @@ export class Blood extends BaseModelClass {
     Object.values(this._model_engine.models).forEach((model) => {
       if (this._blood_containing_modeltypes.includes(model.model_type)) {
         if (model.to2 == 0.0 && model.tco2 == 0.0) {
-          //console.log('Setting blood parameters on: ', model.name)
           model.to2 = this.to2;
           model.tco2 = this.tco2;
           model.solutes = { ...this.solutes };
@@ -260,6 +251,7 @@ export class Blood extends BaseModelClass {
   }
 
   calc_model() {
+
     this._update_counter += this._t;
     if (this._update_counter >= this._update_interval) {
       this._update_counter = 0.0;
