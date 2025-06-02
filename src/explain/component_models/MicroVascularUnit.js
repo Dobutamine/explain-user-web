@@ -102,56 +102,39 @@ export class MicroVascularUnit extends BaseModelClass {
       target: "ans_sens",
       type: "number",
       factor: 1,
-      delta: 0.1,
-      rounding: 0.1,
+      delta: 0.01,
+      rounding: 2,
     },
     {
       caption: "unstressed volume factor",
       target: "u_vol_factor_ps",
       type: "factor",
-      range: [-1, 1],
-      delta: 0.01,
-      hidden: true
     },
     {
       caption: "elastance baseline factor",
       target: "el_base_factor_ps",
       type: "factor",
-      range: [-1, 1],
-      delta: 0.01,
-      hidden: true
     },
     {
       caption: "elastance non linear factor",
       target: "el_k_factor_ps",
       type: "factor",
-      range: [-1, 1],
-      delta: 0.01,
-      hidden: true
+
     },
     {
       caption: "resistance factor",
       target: "r_factor_ps",
       type: "factor",
-      range: [-1, 1],
-      delta: 0.01,
-      hidden: true
     },
     {
       caption: "non-linear resistance factor",
       target: "r_k_factor_ps",
       type: "factor",
-      range: [-1, 1],
-      delta: 0.01,
-      hidden: true
     },
     {
       caption: "inertance factor",
       target: "l_factor_ps",
       type: "factor",
-      range: [-1, 1],
-      delta: 0.01,
-      hidden: true
     }
   ];
 
@@ -182,6 +165,7 @@ export class MicroVascularUnit extends BaseModelClass {
     this.r_k = 0.0; // non linear flow resistance (unitless)
     this.l = 0.0; // intertance L (mmHg*s^2/L)
     this.no_flow = false; // no flow condition
+    this.no_back_flow = false; // no back flow condition
     this.ans_sens = 0.0; // sensitivity of this MVU for autonomic control. 0.0 is no effect, 1.0 is full effect
     this.ans_activity = 1.0; // ans activity factor (unitless)
     this.el_distr = { art: 0.75, cap: 0.15, ven: 0.10 };  // elastance distribution
@@ -273,6 +257,7 @@ export class MicroVascularUnit extends BaseModelClass {
         { key: "r_back", value: this.r_back * this.res_dist.art},
         { key: "r_k", value: this.r_k * this.res_dist.art },
         { key: "no_flow", value: this.no_flow },
+        { key: "no_back_flow", value: this.no_back_flow },
         { key: "ans_activity", value: this.ans_activity },
         { key: "ans_sens", value: this.ans_sens },
         { key: "alpha", value: 0.63 } // this is an arteriole
@@ -302,6 +287,7 @@ export class MicroVascularUnit extends BaseModelClass {
         { key: "r_back", value: this.r_back * this.res_dist.cap},
         { key: "r_k", value: this.r_k * this.res_dist.cap },
         { key: "no_flow", value: this.no_flow },
+        { key: "no_back_flow", value: this.no_back_flow },
         { key: "ans_activity", value: this.ans_activity },
         { key: "ans_sens", value: 0.0},
         { key: "alpha", value: 0.0 }
@@ -330,6 +316,7 @@ export class MicroVascularUnit extends BaseModelClass {
         { key: "r_back", value: this.r_back * this.res_dist.ven },
         { key: "r_k", value: this.r_k * this.res_dist.ven },
         { key: "no_flow", value: this.no_flow },
+        { key: "no_back_flow", value: this.no_back_flow },
         { key: "ans_activity", value: this.ans_activity },
         { key: "ans_sens", value: this.ans_sens },
         { key: "alpha", value: 0.75 }

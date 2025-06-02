@@ -31,7 +31,7 @@ export class Ans extends BaseModelClass {
       caption: "blood composition models",
       target: "blood_composition_models",
       type: "multiple-list",
-      options: ["BloodVessel","Artery","Arteriole","Venule","Vein","Capillaries", "CoronaryVessel","MicrovascularVessel","HeartChamber", "BloodCapacitance", "BloodTimeVaryingElastance"],
+      options: ["BloodVessel", "BloodPump", "MicroVascularUnit", "BloodCapacitance", "BloodTimeVaryingElastance"],
       readonly: false
     }
   ];

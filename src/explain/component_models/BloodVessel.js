@@ -96,20 +96,20 @@ export class BloodVessel extends BloodCapacitance {
       rounding: 3
     },
     {
-      caption: "resistance-elastance coupling factor (0-1)",
+      caption: "resistance-elastance coupling (0-1)",
       target: "alpha",
       type: "number",
-      factor: 1,
-      delta: 0.1,
-      rounding: 0.1,
+      factor: 1.0,
+      delta: 0.01,
+      rounding: 2,
     },
     {
       caption: "ans sensitivity (0-1)",
       target: "ans_sens",
       type: "number",
-      factor: 1,
-      delta: 0.1,
-      rounding: 0.1,
+      factor: 1.0,
+      delta: 0.01,
+      rounding: 2,
     },
     {
       caption: "unstressed volume factor",
@@ -162,6 +162,8 @@ export class BloodVessel extends BloodCapacitance {
     this.flow = 0.0; // flow f(t) (L/s)
     this.flow_forward = 0.0; // forward flow from the input blood vessels (L/s)
     this.flow_backward = 0.0; // backward flow to the input blood vessels (L/s)
+    this.r_current = 0.0;
+    this.el_current = 0.0;
 
     // local properties
     this._resistors = {}; // list of connectors for this blood vessel
@@ -217,6 +219,9 @@ export class BloodVessel extends BloodCapacitance {
     this.calc_resistances();
     this.calc_elastances();
     this.calc_inertances();
+
+    this.r_current = this._r_for
+    this.el_current = this._el
 
     // update the associated resistors
     Object.values(this._resistors).forEach((resistor) => {
