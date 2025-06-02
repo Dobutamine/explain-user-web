@@ -371,7 +371,6 @@ export class Blood {
   }
 
   set_pres_cor_factor(new_factor) {
-    console.log(new_factor);
     this.pres_cor_factor = parseFloat(new_factor);
     for (let [_, model] of Object.entries(this._model_engine.models)) {
       if (
