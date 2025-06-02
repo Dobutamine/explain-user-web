@@ -385,6 +385,8 @@ export class MicroVascularUnit extends BaseModelClass {
     this.flow_in = this.components.art.flow;
     this.flow_out = this.components.ven.flow;
 
+    this.vol = this.components.art.vol + this.components.cap.vol + this.components.ven.vol
+
     // get the solutes and drugs from the components
     this.solutes = this.components.cap.solutes;
     this.drugs = this.components.cap.drugs;

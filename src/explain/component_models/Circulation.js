@@ -21,6 +21,8 @@ export class Circulation extends BaseModelClass {
     // -----------------------------------------------
     // independent properties
     // -----------------------------------------------
+    this.heart_chambers = []
+    this.coronaries = []
     this.systemic_arteries = [];        // list of systemic arteries
     this.systemic_veins = [];           // list of systemic veins
     this.systemic_capillaries = [];     // list of systemic capillaries 
@@ -28,12 +30,18 @@ export class Circulation extends BaseModelClass {
     this.pulmonary_arteries = [];       // list of pulmonary arteries
     this.pulmonary_veins = [];          // list of pulmonary veins 
     this.pulmonary_capillaries = [];    // list of pulmonary capillaries
-    
+
     this.ans_activity = 1.0;     // ans influence on circulation (1.0 = no effect)
 
     // -----------------------------------------------
     // dependent properties
     // -----------------------------------------------
+    this.total_blood_volume = 0.0;
+    this.syst_blood_volume = 0.0;
+    this.pulm_blood_volume = 0.0;
+    this.heart_blood_volume = 0.0;
+
+
     // local properties
     this._combined_list = []
     this._syst_models = []
@@ -41,6 +49,9 @@ export class Circulation extends BaseModelClass {
     this._prev_ans_activity = 0.0;
     this._update_interval = 0.015;      // update interval (s)
     this._update_counter = 0.0;         // update interval counter (s)
+
+    this._update_interval_slow = 1.0;      // update interval (s)
+    this._update_counter_slow = 0.0;         // update interval counter (s)
   }
   init_model(args = {}) {
     super.init_model(args);
@@ -91,5 +102,45 @@ export class Circulation extends BaseModelClass {
         })
       }
     }
+
+    this._update_counter_slow += this._t;
+    if (this._update_counter_slow > this._update_interval_slow) {
+      this._update_counter_slow = 0.0;
+      this.calc_blood_volumes();
+    }
+  }
+
+  calc_blood_volumes() {
+    // return the total blood volume
+    this.total_blood_volume = 0.0;
+    this.syst_blood_volume = 0.0;
+    this.pulm_blood_volume = 0.0;
+    this.heart_blood_volume = 0.0;
+
+    this._syst_models.forEach(model => {
+      if (this._model_engine.models[model].is_enabled) {
+        this.syst_blood_volume += this._model_engine.models[model].vol
+      }
+    })
+
+    this.heart_chambers.forEach(model => {
+      if (this._model_engine.models[model].is_enabled) {
+        this.heart_blood_volume += this._model_engine.models[model].vol
+      }
+    })
+
+    this.coronaries.forEach(model => {
+      if (this._model_engine.models[model].is_enabled) {
+        this.syst_blood_volume += this._model_engine.models[model].vol
+      }
+    })
+
+    this._pulm_models.forEach(model => {
+      if (this._model_engine.models[model].is_enabled) {
+        this.pulm_blood_volume += this._model_engine.models[model].vol
+      }
+    })
+
+    this.total_blood_volume = this.syst_blood_volume + this.pulm_blood_volume + this.heart_blood_volume
   }
 }
