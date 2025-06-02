@@ -4,6 +4,16 @@ import { Resistor } from "../base_models/Resistor";
 /*
 The BloodVessel class extends the BloodCapacitance class and adds a Resistor to represent a blood vessel in the model.
 So a BloodVessel has a resistance and has flow properties and can react to the autonomic nervous system (ANS).
+
+A BloodVessel is under autonomic control where the ans activity and ans sensitivity determine how the resistance
+and the elastance of this blood vessel change. The coupling between the resistance and elastance is determined 
+by the alpha parameter
+
+So, if the ans activity changes then the effect on the elastance is determined by the ans sensitivity and the alpha factor. 
+The effect on the resistance is only determined by the the ans activity ands ans sensitivity parameter.
+
+So if a vessel constricts under autonomic control not only it's resistance changes but also it's elastance!
+This is a key fundamental concept in Explain and makes it unique from under models.
 */
 
 export class BloodVessel extends BloodCapacitance {
@@ -124,7 +134,6 @@ export class BloodVessel extends BloodCapacitance {
 
     // initialize independent properties unique to a BloodVessel
     this.inputs = []; // list of inputs for this blood vessel
-    this.connector_type = "resistor"; // connector type of the inputs
     this.r_for = 1.0; // forward flow resistance Rf (mmHg*s/l)
     this.r_back = 1.0; // backward flow resistance Rb (mmHg*s/l )
     this.r_k = 0.0; // non-linear resistance coefficient K1 (unitless)
@@ -209,7 +218,7 @@ export class BloodVessel extends BloodCapacitance {
     this.calc_elastances();
     this.calc_inertances();
 
-    // update the associated resistors 
+    // update the associated resistors
     Object.values(this._resistors).forEach((resistor) => {
       resistor.r_for = this._r_for
       resistor.r_back = this._r_back
@@ -232,7 +241,7 @@ export class BloodVessel extends BloodCapacitance {
     this.calc_volumes();  
     this.calc_pressure();
 
-    // get the flows from the resistor
+    // get the flows from the resistors
     this.get_flows();
   }
 

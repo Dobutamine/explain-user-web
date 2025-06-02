@@ -1,13 +1,23 @@
 import { BaseModelClass } from "../base_models/BaseModelClass";
 import { BloodVessel  } from "./BloodVessel"; 
-import { BloodCapacitance } from "./BloodCapacitance";
 
 /*
-A MicroVascularUnit class (sometimes called a functional capillary unit) denotes the terminal arteriole, 
+A MicroVascularUnit class (MVU) (sometimes called a functional capillary unit) denotes the terminal arteriole, 
 the capillary network branching from it, and the collecting venule into which those capillaries drain.
 Together, these units make up the capillary beds that permeate tissues and are the fundamental exchange sites in 
 the circulatory system.
+
+So this MVU consists of three Explain BloodVessel components (which have a BloodCapacitance and a BloodResistor component)
+A MVU has a unstressed volume, an elastance and a resistance which are distributed across the three components according to
+distribution objects called el_dist, vol_dist and res_dist. The MVU automatically builds the three components at initialization
+and distributes the properties across the three components.
+
+As the components are BloodVessels they are also under autonomic control (see BloodVessel model). 
+The input BloodVessel is configures as an arteriole and the output BloodVessel as a venule. They are configured by the MVU
+and exhibit autonomic sensitivity where the arteriole will be the main contributor to the resistance and the venule to 
+the volume. The capillary bed is a BloodVessel without any autonomic sensitivity.
 */
+
 export class MicroVascularUnit extends BaseModelClass {
   // static properties
   static model_type = "MicroVascularUnit";
@@ -235,10 +245,8 @@ export class MicroVascularUnit extends BaseModelClass {
     this._el_k_art = 0.0; // calculated elastance non-linear k in the arterioles (unitless)
     this._el_k_cap = 0.0; // calculated elastance non-linear k in the capillaries (unitless)
     this._el_k_ven = 0.0; // calculated elastance non-linear k in the venules (unitless)
-
-    this._update_counter = 0.0; // update counter for the model
-    this._update_interval = 0.015; // update interval for the model (s)
   }
+
   init_model(args={}) {
     // call the parent initializer method
     super.init_model(args);
@@ -251,7 +259,6 @@ export class MicroVascularUnit extends BaseModelClass {
     }
     
     // initialize the arteriole part of the network
-    //Veins/venules: 0.75, arterioles: 0.63, large arteries: 0.5
     let args_art = [
         { key: "name", value: this.name + "_IN" },
         { key: "description", value: "arteriole of " + this.name },
@@ -268,7 +275,7 @@ export class MicroVascularUnit extends BaseModelClass {
         { key: "no_flow", value: this.no_flow },
         { key: "ans_activity", value: this.ans_activity },
         { key: "ans_sens", value: this.ans_sens },
-        { key: "alpha", value: 0.63 }
+        { key: "alpha", value: 0.63 } // this is an arteriole
     ]
 
     // check whether this arteriole already exists (in case of a saved state)
@@ -327,6 +334,7 @@ export class MicroVascularUnit extends BaseModelClass {
         { key: "ans_sens", value: this.ans_sens },
         { key: "alpha", value: 0.75 }
     ]
+
     // check whether this venous already exists (in case of a saved state)
     if (this._model_engine.models[this.name + "_OUT"]) {
       this.components.ven = this._model_engine.models[this.name + "_OUT"];
@@ -339,12 +347,6 @@ export class MicroVascularUnit extends BaseModelClass {
   }
 
   calc_model() {
-    this._update_counter += this._t;
-    if (this._update_counter < this._update_interval) return;
-
-    // reset the update counter
-    this._update_counter = 0.0;
-
     // update the ans activity according the sensitivity of the whole MVU
     let _ans_activity = 1.0 + (this.ans_activity - 1.0) * this.ans_sens;
 
@@ -423,6 +425,7 @@ export class MicroVascularUnit extends BaseModelClass {
 
     this._r_k = this.r_k 
       + (this.r_k_factor - 1) * this.r_k
+      + (this.r_k_factor_ps - 1) * this.r_k;
 
     // distribute the resistance to the different parts of the MVU
     this._r_for_art = this._r_for * this.res_dist.art;
@@ -439,6 +442,7 @@ export class MicroVascularUnit extends BaseModelClass {
     this.r_k_factor = 1.0;
 
   }
+
   calc_elastance() {
     // calculate the elastance factors depending on the ans activity and the elastance factors
     this._el = this.el_base 
@@ -459,6 +463,7 @@ export class MicroVascularUnit extends BaseModelClass {
     this.el_base_factor = 1.0;
     this.el_k_factor = 1.0;
   }
+
   calc_inertance() {
     // calulate the inertance depending on the ans activity and the elastance-resistance coupling factor
     this._l = this.l
@@ -468,6 +473,7 @@ export class MicroVascularUnit extends BaseModelClass {
     // reset the non persistent factors
     this.l_factor = 1.0;
   }
+
   calc_volume() {
     // calculate the unstressed volume incorporating the factors
     this._u_vol = this.u_vol 

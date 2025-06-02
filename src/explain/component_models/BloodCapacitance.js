@@ -54,7 +54,5 @@ export class BloodCapacitance extends Capacitance {
 
     // process the viscosity (treat it as a solute)
     this.viscosity += ((comp_from.viscosity - this.viscosity) * dvol) / this.vol;
-
-
   }
 }
