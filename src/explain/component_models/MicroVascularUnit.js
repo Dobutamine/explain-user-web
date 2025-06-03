@@ -242,15 +242,22 @@ export class MicroVascularUnit extends BaseModelClass {
       ven: new BloodVessel(this._model_engine, "ven")
     }
     
+    let { el_art, el_cap, el_ven } = this.calculateElastances(this.el_base);
+
+    // store the elastances
+    this.el_art = el_art
+    this.el_cap = el_cap
+    this.el_ven = el_ven
+    
     // initialize the arteriole part of the network
     let args_art = [
-        { key: "name", value: this.name + "_IN" },
+        { key: "name", value: this.name + "_ART" },
         { key: "description", value: "arteriole of " + this.name },
         { key: "is_enabled", value: this.is_enabled },
         { key: "model_type", value: "BloodVessel" },
         { key: "vol", value: this.vol * this.vol_dist.art},
         { key: "u_vol", value: this.u_vol * this.vol_dist.art},
-        { key: "el_base", value: this.el_base * this.el_distr.art },
+        { key: "el_base", value: this.el_art },
         { key: "el_k", value: this.el_k * this.el_distr.art },
         { key: "inputs", value: this.inputs },
         { key: "r_for", value: this.r_for * this.res_dist.art },
@@ -262,14 +269,13 @@ export class MicroVascularUnit extends BaseModelClass {
         { key: "ans_sens", value: this.ans_sens },
         { key: "alpha", value: 0.63 } // this is an arteriole
     ]
-
     // check whether this arteriole already exists (in case of a saved state)
-    if (this._model_engine.models[this.name + "_IN"]) {
-      this.components.art = this._model_engine.models[this.name + "_IN"];
+    if (this._model_engine.models[this.name + "_ART"]) {
+      this.components.art = this._model_engine.models[this.name + "_ART"];
     } else {
       this.components.art.init_model(args_art);
       // add the arteriole to the model engine
-      this._model_engine.models[this.name + "_IN"] = this.components.art;
+      this._model_engine.models[this.name + "_ART"] = this.components.art;
     }
 
     // initialize the capillary part of the network
@@ -280,9 +286,9 @@ export class MicroVascularUnit extends BaseModelClass {
         { key: "model_type", value: "BloodVessel" },
         { key: "vol", value: this.vol * this.vol_dist.cap},
         { key: "u_vol", value: this.u_vol * this.vol_dist.cap},
-        { key: "el_base", value: this.el_base * this.el_distr.cap },
+        { key: "el_base", value: this.el_cap },
         { key: "el_k", value: this.el_k * this.el_distr.cap },
-        { key: "inputs", value: [this.name + "_IN"] },
+        { key: "inputs", value: [this.name + "_ART"] },
         { key: "r_for", value: this.r_for * this.res_dist.cap },
         { key: "r_back", value: this.r_back * this.res_dist.cap},
         { key: "r_k", value: this.r_k * this.res_dist.cap },
@@ -303,13 +309,13 @@ export class MicroVascularUnit extends BaseModelClass {
 
     // initialize the venule part of the network
     let args_ven = [
-        { key: "name", value: this.name + "_OUT" },
+        { key: "name", value: this.name + "_VEN" },
         { key: "description", value: "venules of " + this.name },
         { key: "is_enabled", value: this.is_enabled },
         { key: "model_type", value: "BloodVessel" },
         { key: "vol", value: this.vol * this.vol_dist.ven},
         { key: "u_vol", value: this.u_vol * this.vol_dist.ven},
-        { key: "el_base", value: this.el_base * this.el_distr.ven },
+        { key: "el_base", value: this.el_ven},
         { key: "el_k", value: this.el_k * this.el_distr.ven },
         { key: "inputs", value: [this.name + "_CAP"] },
         { key: "r_for", value: this.r_for * this.res_dist.ven },
@@ -321,16 +327,45 @@ export class MicroVascularUnit extends BaseModelClass {
         { key: "ans_sens", value: this.ans_sens },
         { key: "alpha", value: 0.75 }
     ]
-
     // check whether this venous already exists (in case of a saved state)
-    if (this._model_engine.models[this.name + "_OUT"]) {
-      this.components.ven = this._model_engine.models[this.name + "_OUT"];
+    if (this._model_engine.models[this.name + "_VEN"]) {
+      this.components.ven = this._model_engine.models[this.name + "_VEN"];
     } else {
       // initialize the venule part of the network
       this.components.ven.init_model(args_ven);
       // add the venule to the model engine
-      this._model_engine.models[this.name + "_OUT"] = this.components.ven;
+      this._model_engine.models[this.name + "_VEN"] = this.components.ven;
     }
+  }
+
+  calculateElastances(el_base, el_dist = { art: 10, cap: 15, ven: 75 }) {
+
+    // when 1/el_base = 1/el_art + 1/el_cap + 1/el_ven
+    // when equally distributed -> el_art = el_cap = el_ven = 3 * el_base
+    // so 1/(3 * el_base) = 33% of the sum
+    // so 1/(3 * el_base) = 1%
+    // so if we want to distribute according to 75%, 15% and 10%
+    // term 1: 75 * 1 / (3 * el_base) leads to el_art being 1 / (75 * 1 / (3 * el_base))
+
+
+    // “Unit” = 1 / (3 * el_base)  corresponds to 1% of 1/el_base
+    const unit = 1 / (3 * el_base) / 33.3333;
+
+    // For 75% of the inverse-sum:
+    //   1/el_art = 75 * unit  →  el_art = 1 / (75 * unit)
+    const el_art = 1 / (el_dist.art * unit);
+
+    // For 15% of the inverse-sum:
+    //   1/el_cap = 15 * unit →  el_cap = 1 / (15 * unit)
+    const el_cap = 1 / (el_dist.cap * unit);
+
+    // For 10% of the inverse-sum:
+    //   1/el_ven = 10 * unit →  el_ven = 1 / (10 * unit)
+    const el_ven = 1 / (el_dist.ven * unit);
+
+    let check  = 1 / (1/el_art + 1/el_cap + 1/el_ven)
+    console.log(check)
+    return { el_art, el_cap, el_ven };
   }
 
   calc_model() {
@@ -349,32 +384,32 @@ export class MicroVascularUnit extends BaseModelClass {
     this.calc_volume();
 
     // update the components with the calculated properties
-    this.components.art.r_for = this._r_for_art;
-    this.components.art.r_back = this._r_back_art;
-    this.components.art.r_k = this._r_k;
-    this.components.art.el_base = this._el_art;
-    this.components.art.el_k = this._el_k_art;
-    this.components.art.u_vol = this._u_vol_art;
-    this.components.art.l = this._l;
-    this.components.art.no_flow = this.no_flow;
+    // this.components.art.r_for = this._r_for_art;
+    // this.components.art.r_back = this._r_back_art;
+    // this.components.art.r_k = this._r_k;
+    // this.components.art.el_base = this._el_art;
+    // this.components.art.el_k = this._el_k_art;
+    // this.components.art.u_vol = this._u_vol_art;
+    // this.components.art.l = this._l;
+    // this.components.art.no_flow = this.no_flow;
 
-    this.components.cap.r_for = this._r_for_cap;
-    this.components.cap.r_back = this._r_back_cap;
-    this.components.cap.r_k = this._r_k;
-    this.components.cap.el_base = this._el_cap;
-    this.components.cap.el_k = this._el_k_cap;
-    this.components.cap.u_vol = this._u_vol_cap;
-    this.components.cap.l = this._l;
-    this.components.cap.no_flow = this.no_flow;
+    // this.components.cap.r_for = this._r_for_cap;
+    // this.components.cap.r_back = this._r_back_cap;
+    // this.components.cap.r_k = this._r_k;
+    // this.components.cap.el_base = this._el_cap;
+    // this.components.cap.el_k = this._el_k_cap;
+    // this.components.cap.u_vol = this._u_vol_cap;
+    // this.components.cap.l = this._l;
+    // this.components.cap.no_flow = this.no_flow;
 
-    this.components.ven.r_for = this._r_for_ven;
-    this.components.ven.r_back = this._r_back_ven;
-    this.components.ven.r_k = this._r_k;
-    this.components.ven.el_base = this._el_ven;
-    this.components.ven.el_k = this._el_k_ven;
-    this.components.ven.u_vol = this._u_vol_ven;
-    this.components.ven.l = this._l;
-    this.components.ven.no_flow = this.no_flow;
+    // this.components.ven.r_for = this._r_for_ven;
+    // this.components.ven.r_back = this._r_back_ven;
+    // this.components.ven.r_k = this._r_k;
+    // this.components.ven.el_base = this._el_ven;
+    // this.components.ven.el_k = this._el_k_ven;
+    // this.components.ven.u_vol = this._u_vol_ven;
+    // this.components.ven.l = this._l;
+    // this.components.ven.no_flow = this.no_flow;
 
     // get the pressures and flows from the components
     this.pres = this.components.cap.pres;
@@ -470,9 +505,9 @@ export class MicroVascularUnit extends BaseModelClass {
         + (this.u_vol_factor_ps - 1) * this.u_vol
 
     // distribute the unstressed volume to the different parts of the MVU
-    this._u_vol_art = this._u_vol * this.vol_dist.art;
-    this._u_vol_cap = this._u_vol * this.vol_dist.cap;
-    this._u_vol_ven = this._u_vol * this.vol_dist.ven;
+    // this._u_vol_art = this._u_vol * this.vol_dist.art;
+    // this._u_vol_cap = this._u_vol * this.vol_dist.cap;
+    // this._u_vol_ven = this._u_vol * this.vol_dist.ven;
 
     // reset the non persistent factors
     this.u_vol_factor = 1.0;

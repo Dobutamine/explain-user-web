@@ -60,8 +60,8 @@ export class BloodVessel extends BloodCapacitance {
       target: "u_vol",
       type: "number",
       factor: 1.0,
-      delta: 0.001,
-      rounding: 3,
+      delta: 0.0001,
+      rounding: 4,
     },
     {
       caption: "elastance baseline (mmHg/L)",
@@ -110,6 +110,14 @@ export class BloodVessel extends BloodCapacitance {
       factor: 1.0,
       delta: 0.01,
       rounding: 2,
+    },
+    {
+      caption: "resistance factor",
+      target: "r_factor_ps",
+      type: "number",
+      factor: 1.0,
+      delta: 0.01,
+      rounding: 2
     },
     {
       caption: "unstressed volume factor",
@@ -229,7 +237,7 @@ export class BloodVessel extends BloodCapacitance {
       resistor.r_back = this._r_back
       resistor.r_k = this._r_k
 
-      resistor.no_back_flow = this.no_back_flow
+      //resistor.no_back_flow = this.no_back_flow
       resistor.no_flow = this.no_flow
       resistor.p1_ext = this.p1_ext
       resistor.p2_ext = this.p2_ext

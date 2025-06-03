@@ -549,6 +549,10 @@ export default {
             let p = this.selectedModelName + "." + prop.target
             explain.setPropValue(p, parseFloat(prop.value / prop.factor), parseFloat(this.changeInTime), 0)
           }
+          if (prop.type == 'factor') {
+            let p = this.selectedModelName + "." + prop.target
+            explain.setPropValue(p, parseFloat(prop.value / prop.factor), parseFloat(this.changeInTime), 0)
+          }
           if (prop.type == 'boolean') {
             let p = this.selectedModelName + "." + prop.target
             explain.setPropValue(p, prop.value, 0, 0)

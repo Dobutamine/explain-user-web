@@ -9,7 +9,99 @@ import { BaseModelClass } from "../base_models/BaseModelClass";
 export class Circulation extends BaseModelClass {
   // static properties
   static model_type = "Circulation";
-  static model_interface = []
+  static model_interface = [
+    {
+      type: "function",
+      caption: "set_lb_compliances",
+      target: "set_lower_body_compliances",
+      args: [
+        {
+          caption: "new_comp_lb",
+          target: "new_comp_lb",
+          type: "number",
+          factor: 1.0,
+          delta: 1,
+          rounding: 0
+        }
+      ]
+    },
+    {
+      type: "function",
+      caption: "set_lb_resistance",
+      target: "set_lower_body_resistance",
+      args: [
+        {
+          caption: "new_res_lb",
+          target: "new_res_lb",
+          type: "number",
+          factor: 1.0,
+          delta: 1,
+          rounding: 0
+        }
+      ]
+    },
+        {
+      type: "function",
+      caption: "set_ub_compliances",
+      target: "set_upper_body_compliances",
+      args: [
+        {
+          caption: "new_comp_ub",
+          target: "new_comp_ub",
+          type: "number",
+          factor: 1.0,
+          delta: 1,
+          rounding: 0
+        }
+      ]
+    },
+    {
+      type: "function",
+      caption: "set_ub_resistance",
+      target: "set_upper_body_resistance",
+      args: [
+        {
+          caption: "new_res_ub",
+          target: "new_res_ub",
+          type: "number",
+          factor: 1.0,
+          delta: 1,
+          rounding: 0
+        }
+      ]
+    },
+    {
+      type: "function",
+      caption: "set_paa_resistance",
+      target: "set_paa_resistance",
+      args: [
+        {
+          caption: "new_paa_res",
+          target: "new_paa_res",
+          type: "number",
+          factor: 1.0,
+          delta: 1,
+          rounding: 0
+        }
+      ]
+    },
+    {
+      type: "function",
+      caption: "set_lung_resistance",
+      target: "set_lung_resistance",
+      args: [
+        {
+          caption: "new_lung_res",
+          target: "new_lung_res",
+          type: "number",
+          factor: 1.0,
+          delta: 1,
+          rounding: 0
+        }
+      ]
+    },
+
+  ]
 
   /*
     The Circulation class is not a model but houses methods that influence groups of models. In case
@@ -40,7 +132,19 @@ export class Circulation extends BaseModelClass {
     this.syst_blood_volume = 0.0;
     this.pulm_blood_volume = 0.0;
     this.heart_blood_volume = 0.0;
+    this.syst_blood_volume_perc = 0.0;
+    this.pulm_blood_volume_perc = 0.0;
+    this.heart_blood_volume_perc = 0.0;
 
+
+    this.new_comp_lb = 10000;
+    this.new_res_lb = 15000;
+    
+    this.new_comp_ub = 10000;
+    this.new_res_ub = 15000;
+
+    this.new_paa_res = 1500.0
+    this.new_lung_res = 2000.0
 
     // local properties
     this._combined_list = []
@@ -81,6 +185,49 @@ export class Circulation extends BaseModelClass {
     ]
 
   }
+
+  set_lower_body_compliances(new_comp) {
+    this.new_comp_lb = new_comp;
+    this._model_engine.models["INT"].el_base = new_comp
+    this._model_engine.models["KID"].el_base = new_comp
+    this._model_engine.models["LS"].el_base = new_comp
+    this._model_engine.models["RLB"].el_base = new_comp
+  }
+
+  set_lower_body_resistance(new_res) {
+    this.new_res_lb = new_res;
+    this._model_engine.models["INT"].r_for = new_res
+    this._model_engine.models["KID"].r_for = new_res
+    this._model_engine.models["LS"].r_for = new_res
+    this._model_engine.models["RLB"].r_for = new_res
+  }
+
+  set_upper_body_compliances(new_comp) {
+    this.new_comp_ub = new_comp;
+    this._model_engine.models["BR"].el_base = new_comp
+    this._model_engine.models["RUB"].el_base = new_comp
+  }
+
+  set_upper_body_resistance(new_res) {
+    this.new_res_ub = new_res;
+    this._model_engine.models["BR"].r_for = new_res
+    this._model_engine.models["RUB"].r_for = new_res
+  }
+
+  set_paa_resistance(new_res) {
+    this.new_paa_res = new_res;
+    this._model_engine.models["PAAL"].r_for = new_res
+    this._model_engine.models["PAAR"].r_for = new_res
+  }
+
+  set_lung_resistance(new_res) {
+    this.new_lung_res = new_res;
+    this._model_engine.models["LL"].r_for = new_res
+    this._model_engine.models["RL"].r_for = new_res
+  }
+
+
+
   calc_model() {
     this._update_counter += this._t;
     if (this._update_counter > this._update_interval) {
@@ -110,6 +257,14 @@ export class Circulation extends BaseModelClass {
     }
   }
 
+  set_svr_factor(factor) {
+    this._syst_models.forEach(model => {
+      if (this._model_engine.models[model].is_enabled) {
+        this._model_engine.models[model].r_factor_ps = factor
+      }
+    })
+
+  }
   calc_blood_volumes() {
     // return the total blood volume
     this.total_blood_volume = 0.0;
@@ -142,5 +297,9 @@ export class Circulation extends BaseModelClass {
     })
 
     this.total_blood_volume = this.syst_blood_volume + this.pulm_blood_volume + this.heart_blood_volume
+    this.syst_blood_volume_perc = this.syst_blood_volume / this.total_blood_volume * 100.0
+    this.pulm_blood_volume_perc = this.pulm_blood_volume / this.total_blood_volume * 100.0
+    this.heart_blood_volume_perc = this.heart_blood_volume / this.total_blood_volume * 100.0
+
   }
 }
