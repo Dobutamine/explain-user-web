@@ -168,7 +168,7 @@ export class MicroVascularUnit extends BaseModelClass {
     this.no_back_flow = false; // no back flow condition
     this.ans_sens = 0.0; // sensitivity of this MVU for autonomic control. 0.0 is no effect, 1.0 is full effect
     this.ans_activity = 1.0; // ans activity factor (unitless)
-    this.el_distr = { art: 0.75, cap: 0.15, ven: 0.10 };  // elastance distribution
+    this.el_dist = { art: 0.10, cap: 0.15, ven: 0.75 };  // elastance distribution
     this.vol_dist = { art: 0.10, cap: 0.15, ven: 0.75 };  // volume distribution
     this.res_dist = { art: 0.75, cap: 0.15, ven: 0.10 };  // resistance distribution
 
@@ -242,7 +242,8 @@ export class MicroVascularUnit extends BaseModelClass {
       ven: new BloodVessel(this._model_engine, "ven")
     }
     
-    let { el_art, el_cap, el_ven } = this.calculateElastances(this.el_base);
+    // calculate the elastance distribution across the art, ven and cap
+    let { el_art, el_cap, el_ven } = this.calculateElastances(this.el_base, this.el_dist);
 
     // store the elastances
     this.el_art = el_art
@@ -258,7 +259,7 @@ export class MicroVascularUnit extends BaseModelClass {
         { key: "vol", value: this.vol * this.vol_dist.art},
         { key: "u_vol", value: this.u_vol * this.vol_dist.art},
         { key: "el_base", value: this.el_art },
-        { key: "el_k", value: this.el_k * this.el_distr.art },
+        { key: "el_k", value: this.el_k * this.el_dist.art },
         { key: "inputs", value: this.inputs },
         { key: "r_for", value: this.r_for * this.res_dist.art },
         { key: "r_back", value: this.r_back * this.res_dist.art},
@@ -287,7 +288,7 @@ export class MicroVascularUnit extends BaseModelClass {
         { key: "vol", value: this.vol * this.vol_dist.cap},
         { key: "u_vol", value: this.u_vol * this.vol_dist.cap},
         { key: "el_base", value: this.el_cap },
-        { key: "el_k", value: this.el_k * this.el_distr.cap },
+        { key: "el_k", value: this.el_k * this.el_dist.cap },
         { key: "inputs", value: [this.name + "_ART"] },
         { key: "r_for", value: this.r_for * this.res_dist.cap },
         { key: "r_back", value: this.r_back * this.res_dist.cap},
@@ -316,7 +317,7 @@ export class MicroVascularUnit extends BaseModelClass {
         { key: "vol", value: this.vol * this.vol_dist.ven},
         { key: "u_vol", value: this.u_vol * this.vol_dist.ven},
         { key: "el_base", value: this.el_ven},
-        { key: "el_k", value: this.el_k * this.el_distr.ven },
+        { key: "el_k", value: this.el_k * this.el_dist.ven },
         { key: "inputs", value: [this.name + "_CAP"] },
         { key: "r_for", value: this.r_for * this.res_dist.ven },
         { key: "r_back", value: this.r_back * this.res_dist.ven },
@@ -338,7 +339,7 @@ export class MicroVascularUnit extends BaseModelClass {
     }
   }
 
-  calculateElastances(el_base, el_dist = { art: 10, cap: 15, ven: 75 }) {
+  calculateElastances(el_base, el_dist) {
 
     // when 1/el_base = 1/el_art + 1/el_cap + 1/el_ven
     // when equally distributed -> el_art = el_cap = el_ven = 3 * el_base
@@ -347,24 +348,21 @@ export class MicroVascularUnit extends BaseModelClass {
     // so if we want to distribute according to 75%, 15% and 10%
     // term 1: 75 * 1 / (3 * el_base) leads to el_art being 1 / (75 * 1 / (3 * el_base))
 
-
     // “Unit” = 1 / (3 * el_base)  corresponds to 1% of 1/el_base
     const unit = 1 / (3 * el_base) / 33.3333;
 
     // For 75% of the inverse-sum:
     //   1/el_art = 75 * unit  →  el_art = 1 / (75 * unit)
-    const el_art = 1 / (el_dist.art * unit);
+    const el_art = 1 / (el_dist.art * 100 * unit);
 
     // For 15% of the inverse-sum:
     //   1/el_cap = 15 * unit →  el_cap = 1 / (15 * unit)
-    const el_cap = 1 / (el_dist.cap * unit);
+    const el_cap = 1 / (el_dist.cap * 100 * unit);
 
     // For 10% of the inverse-sum:
     //   1/el_ven = 10 * unit →  el_ven = 1 / (10 * unit)
-    const el_ven = 1 / (el_dist.ven * unit);
+    const el_ven = 1 / (el_dist.ven * 100 * unit);
 
-    let check  = 1 / (1/el_art + 1/el_cap + 1/el_ven)
-    console.log(check)
     return { el_art, el_cap, el_ven };
   }
 
@@ -479,9 +477,9 @@ export class MicroVascularUnit extends BaseModelClass {
         + (this.el_k_factor_ps - 1) * this.el_k
 
     // distribute the elastance to the different parts of the MVU
-    this._el_art = this._el * this.el_distr.art;
-    this._el_cap = this._el * this.el_distr.cap;
-    this._el_ven = this._el * this.el_distr.ven;
+    this._el_art = this._el * this.el_dist.art;
+    this._el_cap = this._el * this.el_dist.cap;
+    this._el_ven = this._el * this.el_dist.ven;
 
     // reset the non persistent factors
     this.el_base_factor = 1.0;

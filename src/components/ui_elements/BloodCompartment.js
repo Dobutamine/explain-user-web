@@ -19,6 +19,7 @@ export default class BloodCompartment {
   rotation = 0;
   distanceToCenter = 0;
   global_scaling = 1.0;
+  max_to2 = 7.1
 
   sprite = {};
   text = {};
@@ -215,11 +216,11 @@ export default class BloodCompartment {
     if (isNaN(to2)) {
       return 0x666666;
     }
-    if (to2 > 6.95) {
-      to2 = 6.95;
+    if (to2 > this.max_to2) {
+      to2 = this.max_to2;
     }
-    //let remap = this.remap(to2, 0, 6.95, -10, 1);
-    let remap = this.remap(to2, 0, 6.95, -1.25, 1);
+    //let remap = this.remap(to2, 0, this.max_to2, -10, 1);
+    let remap = this.remap(to2, 0, this.max_to2, -1.25, 1);
     if (remap < 0) remap = 0;
     const red = (remap * 210).toFixed(0);
     const green = (remap * 80).toFixed(0);
