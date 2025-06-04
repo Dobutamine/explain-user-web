@@ -256,6 +256,7 @@ export class Blood {
   inferior_vena_cava = "IVCI";
   superior_vena_cava = "SVC";
   right_atrium = "RA";
+  right_atrium_2 = "RA2"
   viscosity = 6.0;
   blood_containing_components = [];
   pres_cor_factor = 1.0;
@@ -359,6 +360,7 @@ export class Blood {
     this._ivci = this._model_engine.models[this.inferior_vena_cava];
     this._svc = this._model_engine.models[this.superior_vena_cava];
     this._ra = this._model_engine.models[this.right_atrium];
+    this._ra2 = this._model_engine.models[this.right_atrium_2];
 
     // set the flag to model is initialized
     this._is_initialized = true;
@@ -509,6 +511,8 @@ export class Blood {
       set_blood_composition(this._aa);
       set_blood_composition(this._ad);
       set_blood_composition(this._ra);
+      set_blood_composition(this._ra2);
+      set_blood_composition(this._ivci);
 
       this.ph_pre = this._aa.aboxy.ph;
       this.po2_pre = this._aa.aboxy.po2;
@@ -552,6 +556,20 @@ export class Blood {
       this.hco3_ven = this._ra.aboxy.hco3;
       this.be_ven = this._ra.aboxy.be;
       this.so2_ven = this._ra.aboxy.so2;
+
+      this.ph_ivci = this._ivci.aboxy.ph;
+      this.po2_ivci = this._ivci.aboxy.po2;
+      this.pco2_ivci = this._ivci.aboxy.pco2;
+      this.hco3_ivci = this._ivci.aboxy.hco3;
+      this.be_ivci = this._ivci.aboxy.be;
+      this.so2_ivci = this._ivci.aboxy.so2;
+
+      this.ph_ra2 = this._ra2.aboxy.ph;
+      this.po2_ra2 = this._ra2.aboxy.po2;
+      this.pco2_ra2 = this._ra2.aboxy.pco2;
+      this.hco3_ra2 = this._ra2.aboxy.hco3;
+      this.be_ra2 = this._ra2.aboxy.be;
+      this.so2_ra2 = this._ra2.aboxy.so2;
     }
     this._update_counter += this._t;
   }

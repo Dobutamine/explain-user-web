@@ -513,6 +513,8 @@ export class Scaler {
   heart = ["Heart"];
   left_atrium = [];
   right_atrium = [];
+  right_atrium_1 = [];
+  right_atrium_2 = [];
   left_ventricle = [];
   right_ventricle = [];
   coronaries = [];
@@ -684,6 +686,12 @@ export class Scaler {
       this.blood_containing_components.push(comp);
     });
     this.right_atrium.forEach((comp) => {
+      this.blood_containing_components.push(comp);
+    });
+    this.right_atrium_1.forEach((comp) => {
+      this.blood_containing_components.push(comp);
+    });
+    this.right_atrium_2.forEach((comp) => {
       this.blood_containing_components.push(comp);
     });
     this.left_ventricle.forEach((comp) => {
@@ -953,6 +961,16 @@ export class Scaler {
     let scale_factor = target_blood_volume / current_volume;
 
     this.right_atrium.forEach((c) => {
+      // change the current volume
+      this._model_engine.models[c].vol =
+        this._model_engine.models[c].vol * scale_factor;
+    });
+    this.right_atrium_1.forEach((c) => {
+      // change the current volume
+      this._model_engine.models[c].vol =
+        this._model_engine.models[c].vol * scale_factor;
+    });
+    this.right_atrium_2.forEach((c) => {
       // change the current volume
       this._model_engine.models[c].vol =
         this._model_engine.models[c].vol * scale_factor;
