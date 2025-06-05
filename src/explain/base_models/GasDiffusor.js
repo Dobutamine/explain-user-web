@@ -1,5 +1,5 @@
 import { BaseModelClass } from "./BaseModelClass";
-import { calc_gas_composition } from "./GasComposition"
+import { calc_gas_composition } from "../component_models/GasComposition"
 
 export class GasDiffusor extends BaseModelClass {
   // static properties

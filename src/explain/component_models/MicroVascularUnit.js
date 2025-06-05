@@ -142,7 +142,7 @@ export class MicroVascularUnit extends BaseModelClass {
     // call the constructor of the parent class
     super(model_ref, name);
     
-    // initialize independent properties
+    // initialize independent properties unique to a MicroVascularUnit
     this.inputs = []; // list of inputs
     this.vol = 0.0055; // total volume (L)
     this.u_vol = 0.005; // total unstressed volume (L)
@@ -150,8 +150,8 @@ export class MicroVascularUnit extends BaseModelClass {
     this.el_k = 0.0; // non linear elastance (mmHg/L)
     this.temp = 37.0; // blood temperature (dgs C)
     this.viscosity = 6.0; // blood viscosity (centiPoise = Pa * s)
-    this.solutes = {}; // solutes in the capillary
-    this.drugs = {}; // drugs in the capillary
+    this.solutes = {}; // dictionary holding all solutes
+    this.drugs = {}; // dictionary holding all drug concentrations
     this.to2 = 0.0; // total oxygen concentration (mmol/l)
     this.tco2 = 0.0; // total carbon dioxide concentration (mmol/l)
     this.ph = -1.0; // ph (unitless)
@@ -166,17 +166,13 @@ export class MicroVascularUnit extends BaseModelClass {
     this.l = 0.0; // intertance L (mmHg*s^2/L)
     this.no_flow = false; // no flow condition
     this.no_back_flow = false; // no back flow condition
-    
+    this.ans_activity = 1.0; // ans activity factor (unitless)
     this.ans_sens = 0.0; // sensitivity of this MVU for autonomic control for this full MVU. 0.0 is no effect, 1.0 is full effect
     this.ans_sens_settings = { art: 1.0, cap: 0.0, ven: 0.75 }; // ans sensivity settings of the components
     this.alpha_settings = { art: 0.63, cap: 0.0, ven: 0.75 }; // resistance-elastance relation of the components
-    this.ans_activity = 1.0; // ans activity factor (unitless)
-
     this.el_dist = { art: 0.10, cap: 0.15, ven: 0.75 };  // elastance distribution (inverse making the artery less compiant then the vein)
     this.vol_dist = { art: 0.10, cap: 0.55, ven: 0.35 };  // volume distribution
     this.res_dist = { art: 0.75, cap: 0.15, ven: 0.10 };  // resistance distribution
-    
-
 
     // non-persistent property factors. These factors reset to 1.0 after each model step
     this.r_factor = 1.0; // non-persistent resistance factor

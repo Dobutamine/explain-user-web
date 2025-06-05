@@ -1,5 +1,5 @@
 import { BaseModelClass } from "./BaseModelClass";
-import { calc_blood_composition } from "./BloodComposition"
+import { calc_blood_composition } from "../component_models/BloodComposition"
 
 export class BloodDiffusor extends BaseModelClass {
   // static properties

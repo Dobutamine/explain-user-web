@@ -1,7 +1,7 @@
 import { BaseModelClass } from "../base_models/BaseModelClass.js";
 import * as Models from "../ModelIndex.js"
-import { calc_blood_composition } from "../base_models/BloodComposition.js"
-import { calc_gas_composition } from "../base_models/GasComposition.js"
+import { calc_blood_composition } from "../component_models/BloodComposition.js"
+import { calc_gas_composition } from "../component_models/GasComposition.js"
 import RealTimeMovingAverage from "../helpers/RealTimeMovingAverage.js"
 
 export class Ecls extends BaseModelClass {

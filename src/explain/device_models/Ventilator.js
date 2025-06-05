@@ -1,5 +1,5 @@
 import { BaseModelClass } from "../base_models/BaseModelClass";
-import { calc_gas_composition } from "../base_models/GasComposition";
+import { calc_gas_composition } from "../component_models/GasComposition";
 import { GasCapacitance } from "../component_models/GasCapacitance";
 import { Resistor } from "../base_models/Resistor";
 
