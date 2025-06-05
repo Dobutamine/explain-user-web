@@ -313,13 +313,19 @@ export class BloodVessel extends BloodCapacitance {
   }
 
   calc_elastances() {
-    // calculate the change in elastance depending on the ans activity and the elastance-resistance coupling factor
+    // calculate the change in elastance depending on the ans activity and the elastance-resistance coupling factor alpha
     let _ans_elas_factor = Math.pow(this.ans_activity, this.alpha)
+
+    // calculate the change in elastance depending on the ans activity and the elastance-resistance coupling factor alpha
+    let _r_elas_factor = Math.pow(this.r_factor, this.alpha)
+    let _r_ps_elas_factor = Math.pow(this.r_factor_ps, this.alpha)
 
     // calculate the elastance factors depending on the ans activity and the elastance factors
     this._el = this.el_base 
         + (this.el_base_factor - 1) * this.el_base
         + (this.el_base_factor_ps - 1) * this.el_base
+        + (_r_elas_factor - 1) * this.el_base
+        + (_r_ps_elas_factor - 1) * this.el_base
         + (_ans_elas_factor - 1) * this.el_base * this.ans_sens
 
     // calculate the elastance factors depending on the ans activity and the elastance factors

@@ -142,7 +142,10 @@ export class MicroVascularUnit extends BaseModelClass {
     // call the constructor of the parent class
     super(model_ref, name);
     
-    // initialize independent properties unique to a MicroVascularUnit
+    // ------------------------------------------------------
+    // independent properties unique to a MicroVascularUnit
+    // ------------------------------------------------------
+
     this.inputs = []; // list of inputs
     this.vol = 0.0055; // total volume (L)
     this.u_vol = 0.005; // total unstressed volume (L)
@@ -192,7 +195,9 @@ export class MicroVascularUnit extends BaseModelClass {
     this.el_base_factor_ps = 1.0; // persistent elastance factor (unitless)
     this.el_k_factor_ps = 1.0; // persistent elastance factor (unitless)
 
-    // initialize dependent properties
+    // -----------------------------------------------
+    // dependent properties
+    // -----------------------------------------------
     this.flow = 0.0; // total flow (L/s)
     this.flow_in = 0.0; // in flow (L/s)
     this.flow_out = 0.0; // out flow (L/s)
@@ -201,7 +206,9 @@ export class MicroVascularUnit extends BaseModelClass {
     this.pres_in = 0.0; // pressure in the arterioles (mmHg)
     this.pres_out = 0.0; // pressure in the venules (mmHg)
 
+    // -----------------------------------------------
     // local properties
+    // -----------------------------------------------
     this._el = 0.0; // calculated elastance (mmHg/L)
     this._el_art = 0.0; // calculated elastance in the arterioles (mmHg/L)
     this._el_cap = 0.0; // calculated elastance in the capillaries (mmHg/L)
@@ -264,8 +271,8 @@ export class MicroVascularUnit extends BaseModelClass {
         { key: "no_flow", value: this.no_flow },
         { key: "no_back_flow", value: this.no_back_flow },
         { key: "ans_activity", value: this.ans_activity },
-        { key: "ans_sens", value: this.ans_sens },
-        { key: "alpha", value: 0.63 } // this is an arteriole
+        { key: "ans_sens", value: this.ans_sens_settings.art },
+        { key: "alpha", value: this.alpha_settings.art }
     ]
     // check whether this arteriole already exists (in case of a saved state)
     if (this._model_engine.models[this.name + "_ART"]) {
@@ -293,8 +300,8 @@ export class MicroVascularUnit extends BaseModelClass {
         { key: "no_flow", value: this.no_flow },
         { key: "no_back_flow", value: this.no_back_flow },
         { key: "ans_activity", value: this.ans_activity },
-        { key: "ans_sens", value: 0.0},
-        { key: "alpha", value: 0.0 }
+        { key: "ans_sens", value: this.ans_sens_settings.cap},
+        { key: "alpha", value: this.alpha_settings.cap }
     ]
     // check whether this capillary already exists (in case of a saved state)
     if (this._model_engine.models[this.name + "_CAP"]) {
@@ -322,8 +329,8 @@ export class MicroVascularUnit extends BaseModelClass {
         { key: "no_flow", value: this.no_flow },
         { key: "no_back_flow", value: this.no_back_flow },
         { key: "ans_activity", value: this.ans_activity },
-        { key: "ans_sens", value: this.ans_sens },
-        { key: "alpha", value: 0.75 }
+        { key: "ans_sens", value: this.ans_sens_settings.ven },
+        { key: "alpha", value: this.alpha_settings.ven }
     ]
     // check whether this venous already exists (in case of a saved state)
     if (this._model_engine.models[this.name + "_VEN"]) {
@@ -340,7 +347,7 @@ export class MicroVascularUnit extends BaseModelClass {
     // update the ans activity according the sensitivity of the whole MVU
     let _ans_activity = 1.0 + (this.ans_activity - 1.0) * this.ans_sens;
 
-    // send the ans activity to the components
+    // send the modulated ans activity to the components
     this.components.art.ans_activity = _ans_activity;
     this.components.cap.ans_activity = _ans_activity;
     this.components.ven.ans_activity = _ans_activity;

@@ -35,7 +35,6 @@
                 opacity: 1.0
               }">
               <ModelEditor></ModelEditor>
-              <ModelEditor></ModelEditor>
               <DiagramEditorComponent></DiagramEditorComponent>
               </q-scroll-area>
             </q-tab-panel>

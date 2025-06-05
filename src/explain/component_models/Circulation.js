@@ -11,96 +11,25 @@ export class Circulation extends BaseModelClass {
   static model_type = "Circulation";
   static model_interface = [
     {
-      type: "function",
-      caption: "set_lb_compliances",
-      target: "set_lower_body_compliances",
-      args: [
-        {
-          caption: "new_comp_lb",
-          target: "new_comp_lb",
-          type: "number",
-          factor: 1.0,
-          delta: 1,
-          rounding: 0
-        }
-      ]
+      caption: "svr factor",
+      target: "svr_factor",
+      type: "number",
+      factor: 1.0,
+      delta: 0.01,
+      rounding: 2,
+      ll: 0.0,
+      ul: 1000000
     },
     {
-      type: "function",
-      caption: "set_lb_resistance",
-      target: "set_lower_body_resistance",
-      args: [
-        {
-          caption: "new_res_lb",
-          target: "new_res_lb",
-          type: "number",
-          factor: 1.0,
-          delta: 1,
-          rounding: 0
-        }
-      ]
-    },
-        {
-      type: "function",
-      caption: "set_ub_compliances",
-      target: "set_upper_body_compliances",
-      args: [
-        {
-          caption: "new_comp_ub",
-          target: "new_comp_ub",
-          type: "number",
-          factor: 1.0,
-          delta: 1,
-          rounding: 0
-        }
-      ]
-    },
-    {
-      type: "function",
-      caption: "set_ub_resistance",
-      target: "set_upper_body_resistance",
-      args: [
-        {
-          caption: "new_res_ub",
-          target: "new_res_ub",
-          type: "number",
-          factor: 1.0,
-          delta: 1,
-          rounding: 0
-        }
-      ]
-    },
-    {
-      type: "function",
-      caption: "set_paa_resistance",
-      target: "set_paa_resistance",
-      args: [
-        {
-          caption: "new_paa_res",
-          target: "new_paa_res",
-          type: "number",
-          factor: 1.0,
-          delta: 1,
-          rounding: 0
-        }
-      ]
-    },
-    {
-      type: "function",
-      caption: "set_lung_resistance",
-      target: "set_lung_resistance",
-      args: [
-        {
-          caption: "new_lung_res",
-          target: "new_lung_res",
-          type: "number",
-          factor: 1.0,
-          delta: 1,
-          rounding: 0
-        }
-      ]
-    },
-
+      caption: "pvr factor",
+      target: "pvr_factor",
+      type: "number",
+      factor: 1.0,
+      delta: 0.01,
+      rounding: 2,
+      ll: 0.0,
+      ul: 1000000
+    }
   ]
 
   /*
@@ -108,49 +37,42 @@ export class Circulation extends BaseModelClass {
     of the circulation class, these groups contain models related to blood circulation.
     */
   constructor(model_ref, name = "") {
+    // initialize the parent class
     super(model_ref, name);
 
     // -----------------------------------------------
     // independent properties
     // -----------------------------------------------
-    this.heart_chambers = []
-    this.coronaries = []
+    this.heart_chambers = [];           // list of all heart chambers
+    this.coronaries = [];               // list of all coronary models
     this.systemic_arteries = [];        // list of systemic arteries
     this.systemic_veins = [];           // list of systemic veins
     this.systemic_capillaries = [];     // list of systemic capillaries 
-
     this.pulmonary_arteries = [];       // list of pulmonary arteries
     this.pulmonary_veins = [];          // list of pulmonary veins 
     this.pulmonary_capillaries = [];    // list of pulmonary capillaries
-
-    this.ans_activity = 1.0;     // ans influence on circulation (1.0 = no effect)
+    this.ans_activity = 1.0;            // ans influence on circulation (1.0 = no effect)
+    this.svr_factor = 1.0;              // factor influencing the systemic vascular resistance
+    this.pvr_factor = 1.0;              // factor influencing the pulmonary vascular resistance
 
     // -----------------------------------------------
     // dependent properties
     // -----------------------------------------------
-    this.total_blood_volume = 0.0;
-    this.syst_blood_volume = 0.0;
-    this.pulm_blood_volume = 0.0;
-    this.heart_blood_volume = 0.0;
-    this.syst_blood_volume_perc = 0.0;
-    this.pulm_blood_volume_perc = 0.0;
-    this.heart_blood_volume_perc = 0.0;
-
-
-    this.new_comp_lb = 10000;
-    this.new_res_lb = 15000;
-    
-    this.new_comp_ub = 10000;
-    this.new_res_ub = 15000;
-
-    this.new_paa_res = 1500.0
-    this.new_lung_res = 2000.0
+    this.total_blood_volume = 0.0;      // total blood volume (L)
+    this.syst_blood_volume = 0.0;       // total blood volume in systemic circulation (L)
+    this.pulm_blood_volume = 0.0;       // total blood volume in pulmonary circulatino (L)
+    this.heart_blood_volume = 0.0;      // blood volume of the heart (L)
+    this.syst_blood_volume_perc = 0.0;  // percentage of total blood volume in systemic circulation (%)
+    this.pulm_blood_volume_perc = 0.0;  // percentage of total blood volume in pulmonary circulation (%)
+    this.heart_blood_volume_perc = 0.0; // percentage of total blood volume in heart (%)
 
     // local properties
-    this._combined_list = []
+    this._combined_list = [];
     this._syst_models = []
     this._pulm_models = []
     this._prev_ans_activity = 0.0;
+    this._prev_svr_factor = 1.0;
+    this._prev_pvr_factor = 1.0;
     this._update_interval = 0.015;      // update interval (s)
     this._update_counter = 0.0;         // update interval counter (s)
 
@@ -186,85 +108,91 @@ export class Circulation extends BaseModelClass {
 
   }
 
-  set_lower_body_compliances(new_comp) {
-    this.new_comp_lb = new_comp;
-    this._model_engine.models["INT"].el_base = new_comp
-    this._model_engine.models["KID"].el_base = new_comp
-    this._model_engine.models["LS"].el_base = new_comp
-    this._model_engine.models["RLB"].el_base = new_comp
-  }
-
-  set_lower_body_resistance(new_res) {
-    this.new_res_lb = new_res;
-    this._model_engine.models["INT"].r_for = new_res
-    this._model_engine.models["KID"].r_for = new_res
-    this._model_engine.models["LS"].r_for = new_res
-    this._model_engine.models["RLB"].r_for = new_res
-  }
-
-  set_upper_body_compliances(new_comp) {
-    this.new_comp_ub = new_comp;
-    this._model_engine.models["BR"].el_base = new_comp
-    this._model_engine.models["RUB"].el_base = new_comp
-  }
-
-  set_upper_body_resistance(new_res) {
-    this.new_res_ub = new_res;
-    this._model_engine.models["BR"].r_for = new_res
-    this._model_engine.models["RUB"].r_for = new_res
-  }
-
-  set_paa_resistance(new_res) {
-    this.new_paa_res = new_res;
-    this._model_engine.models["PAAL"].r_for = new_res
-    this._model_engine.models["PAAR"].r_for = new_res
-  }
-
-  set_lung_resistance(new_res) {
-    this.new_lung_res = new_res;
-    this._model_engine.models["LL"].r_for = new_res
-    this._model_engine.models["RL"].r_for = new_res
-  }
-
-
-
   calc_model() {
     this._update_counter += this._t;
     if (this._update_counter > this._update_interval) {
       this._update_counter = 0.0;
 
-      // BloodVessels expose a ans_activity and an ans_sensitivity parameter which control
-      // the amount of vasoreactivity. The alpha parameter of the BloodVessel determines
-      // the relation between resistance change and elastance change.
-      // The ciruclation model has an ans_activity parameter which can be set by an ANS effector
-      // and this ans_activity parameter is set on all BloodVessels and MicroVascular units.
+      // BloodVessels (and MicroVascular Units) expose an ans_activity and an ans_sensitivity parameter which control the amount of vasoreactivity. 
+      // The ciruclation model has an ans_activity parameter which can be set by an ANS effector and this ans_activity parameter is 
+      // set on all BloodVessels and MicroVascular units of the circulation.
 
-      // update the ans influence on the circulation
+      // update the ans influence on the circulation if the influence has changed
       if (this._prev_ans_activity != this.ans_activity) {
         this._combined_list.forEach(model => {
           // update the models
           this._model_engine.models[model].ans_activity = this.ans_activity;
-          // store curtrent value
+          // store current value
           this._prev_ans_activity = this.ans_activity
         })
       }
+
+      if (this._prev_svr_factor !== this.svr_factor) {
+        this.set_svr_factor(this.svr_factor)
+        this._prev_svr_factor = this.svr_factor
+      }
+
+      if (this._prev_pvr_factor !== this.pvr_factor) {
+        this.set_pvr_factor(this.pvr_factor)
+        this._prev_pvr_factor = this.pvr_factor
+      }
+
     }
 
     this._update_counter_slow += this._t;
     if (this._update_counter_slow > this._update_interval_slow) {
       this._update_counter_slow = 0.0;
+      // calculate all the blood volumes (every 1 second for performance reasons)
       this.calc_blood_volumes();
     }
   }
 
-  set_svr_factor(factor) {
-    this._syst_models.forEach(model => {
-      if (this._model_engine.models[model].is_enabled) {
-        this._model_engine.models[model].r_factor_ps = factor
+  set_svr_factor(new_svr_factor) {
+    this._syst_models.forEach(syst_model_name => {
+      // get a reference to the model
+      let m = this._model_engine.models[syst_model_name]
+      // get the current r_factor from the model
+      let f_ps = m.r_factor_ps;
+      // as this is a presistent resistance factor which cumulates all effects from different models we can't just add the new factor
+      // we have to add the difference 
+      let delta_svr = new_svr_factor - this._prev_svr_factor
+      // add the increase/decrease in factor
+      f_ps += delta_svr;
+      // guard against negative values
+      if (f_ps < 0) {
+        new_svr_factor = -f_ps
+        f_ps = 0;
       }
+      // transfer the factor
+      m.r_factor_ps = f_ps
+      // store the new svr factor
+      this.svr_factor = new_svr_factor
     })
-
   }
+
+  set_pvr_factor(new_pvr_factor) {
+    this._pulm_models.forEach(pulm_model_name => {
+      // get a reference to the model
+      let m = this._model_engine.models[pulm_model_name]
+      // get the current r_factor from the model
+      let f_ps = m.r_factor_ps;
+      // as this is a presistent resistance factor which cumulates all effects from different models we can't just add the new factor
+      // we have to add the difference 
+      let delta_pvr = new_pvr_factor - this._prev_pvr_factor
+      // add the increase/decrease in factor
+      f_ps += delta_pvr;
+      // guard against negative values
+      if (f_ps < 0) {
+        new_pvr_factor = -f_ps
+        f_ps = 0;
+      }
+      // transfer the factor
+      m.r_factor_ps = f_ps
+      // store the new svr factor
+      this.pvr_factor = new_pvr_factor
+    })
+  }
+
   calc_blood_volumes() {
     // return the total blood volume
     this.total_blood_volume = 0.0;
