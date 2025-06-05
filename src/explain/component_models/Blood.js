@@ -138,25 +138,6 @@ export class Blood extends BaseModelClass {
   constructor(model_ref, name = "") {
     super(model_ref, name);
 
-    // -----------------------------------------------------------------------------
-    // Constants
-    // -----------------------------------------------------------------------------
-    this.gas_constant = 62.36367; // L·mmHg/(K·mol)
-    this.kw = 2.5119e-11; // water dissociation constant
-    this.kc = 7.94328235e-4; // carbonic acid dissociation constant
-    this.kd = 6.0255959e-8; // bicarbonate dissociation constant
-    this.alpha_co2p = 0.03067; // CO2 solubility coefficient
-    this.left_hp_wide = 5.848931925e-6; // lower bound for H⁺ concentration
-    this.right_hp_wide = 3.16227766017e-4; // upper bound for H⁺ concentration
-    this.delta_ph_limits = 0.1; // delta for pH limits
-    this.n = 2.7; // Hill coefficient
-    this.alpha_o2 = 1.38e-5; // O2 solubility coefficient
-    this.left_o2_wide = 0; // lower bound for pO2
-    this.right_o2_wide = 800.0; // upper bound for pO2
-    this.delta_o2_limits = 10.0; // delta for pO2 limits
-    this.brent_accuracy = 1e-8;
-    this.max_iterations = 100;
-
     // initialize independent properties
     this.viscosity = 6.0; // blood viscosity (centiPoise = Pa * s)
     this.temp = 37.0; // temperature (dgs C)
@@ -164,6 +145,13 @@ export class Blood extends BaseModelClass {
     this.tco2 = 0.0; // total carbon dioxide concentration (mmol/l)
     this.solutes = {}; // dictionary holding the initial circulating solutes
     this.P50_0 = 20.0; // PO2 at which 50% of Hgb is saturated by O2 (fetal = 18.8 (high Hb O2 affinity), neonatal = 20.0, adult = 26.7)
+    this.blood_containing_modeltypes = [
+      "BloodVessel",
+      "BloodCapacitance",
+      "BloodTimeVaryingElastance",
+      "BloodPump",
+      "MicroVascularUnit"
+    ];
 
     // initialize dependent properties
     this.preductal_art_bloodgas = {}; // dictionary containing the preductal arterial bloodgas
@@ -171,52 +159,12 @@ export class Blood extends BaseModelClass {
     this.ven_bloodgas = {}; // dictionary containing the venous bloodgas
     this.art_solutes = {}; // dictionary containing the arterial solute concentrations
     
-
     // initialize local properties (preceded with _)
-    this._blood_containing_modeltypes = [
-      "BloodVessel",
-      "BloodCapacitance",
-      "BloodTimeVaryingElastance",
-      "BloodPump"
-    ];
     this._update_interval = 1.0; // interval at which the calculations are done
     this._update_counter = 0.0; // update counter intermediate
     this._ascending_aorta = null; // reference to ascending aorta model
     this._descending_aorta = null; // reference to descending aorta model
     this._right_atrium = null; // reference to right atrium
-    this._P50 = 0;
-    this._log10_p50 = 0;
-    this._P50_n = 0;
-    this._left_o2 = 0; // lower bound for pO2
-    this._right_o2 = 800.0; // upper bound for pO2
-    this._left_hp = 5.848931925e-6; // lower bound for H⁺ concentration
-    this._right_hp = 3.16227766017e-4; // upper bound for H⁺ concentration
-
-    // initialize local state variables
-    this._tco2 =0;
-    this._to2 = 0;
-    this._sid = 0;
-    this._albumin = 0;
-    this._phosphates = 0;
-    this._uma = 0;
-    this._hemoglobin = 0;
-    this._temp = 0;
-    this._dpg = 0;
-    this._ph = 0;
-    this._pco2 = 0;
-    this._hco3 = 0;
-    this._be = 0;
-    this._po2 = 0;
-    this._so2 = 0;
-    this._prev_po2 = 0;
-    this._prev_ph = 0;
-    this._error = false;
-    this._iterations = 0;
-    this._error_ab = false;
-    this._error_oxy = false;
-    this._iterations_ab = 0;
-    this._iterations_oxy = 0;
-
   }
 
   async init_model(args = {}) {
@@ -227,7 +175,7 @@ export class Blood extends BaseModelClass {
 
     // set the solutes and temperature of the blood containing components
     Object.values(this._model_engine.models).forEach((model) => {
-      if (this._blood_containing_modeltypes.includes(model.model_type)) {
+      if (this.blood_containing_modeltypes.includes(model.model_type)) {
         if (model.to2 == 0.0 && model.tco2 == 0.0) {
           model.to2 = this.to2;
           model.tco2 = this.tco2;
@@ -297,7 +245,7 @@ export class Blood extends BaseModelClass {
   set_temperature(new_temp) {
     this.temp = new_temp;
     Object.values(this._model_engine.models).forEach((model) => {
-      if (this._blood_containing_modeltypes.includes(model.model_type)) {
+      if (this.blood_containing_modeltypes.includes(model.model_type)) {
         model.temp = new_temp;
       }
     });
@@ -306,7 +254,7 @@ export class Blood extends BaseModelClass {
   set_viscosity(new_viscosity) {
     this.viscosity = new_viscosity;
     Object.values(this._model_engine.models).forEach((model) => {
-      if (this._blood_containing_modeltypes.includes(model.model_type)) {
+      if (this.blood_containing_modeltypes.includes(model.model_type)) {
         model.viscosity = new_viscosity;
       }
     });
@@ -317,7 +265,7 @@ export class Blood extends BaseModelClass {
       this._model_engine.models[bc_site].to2 = new_to2;
     } else {
       Object.values(this._model_engine.models).forEach((model) => {
-        if (this._blood_containing_modeltypes.includes(model.model_type)) {
+        if (this.blood_containing_modeltypes.includes(model.model_type)) {
           model.to2 = new_to2;
         }
       });
@@ -329,7 +277,7 @@ export class Blood extends BaseModelClass {
       this._model_engine.models[bc_site].tco2 = new_tco2;
     } else {
       Object.values(this._model_engine.models).forEach((model) => {
-        if (this._blood_containing_modeltypes.includes(model.model_type)) {
+        if (this.blood_containing_modeltypes.includes(model.model_type)) {
           model.tco2 = new_tco2;
         }
       });
@@ -341,7 +289,7 @@ export class Blood extends BaseModelClass {
       this._model_engine.models[bc_site].solutes[solute] = solute_value;
     } else {
       Object.values(this._model_engine.models).forEach((model) => {
-        if (this._blood_containing_modeltypes.includes(model.model_type)) {
+        if (this.blood_containing_modeltypes.includes(model.model_type)) {
           model.solutes = { ...this.solutes };
         }
       });

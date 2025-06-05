@@ -166,11 +166,17 @@ export class MicroVascularUnit extends BaseModelClass {
     this.l = 0.0; // intertance L (mmHg*s^2/L)
     this.no_flow = false; // no flow condition
     this.no_back_flow = false; // no back flow condition
-    this.ans_sens = 0.0; // sensitivity of this MVU for autonomic control. 0.0 is no effect, 1.0 is full effect
+    
+    this.ans_sens = 0.0; // sensitivity of this MVU for autonomic control for this full MVU. 0.0 is no effect, 1.0 is full effect
+    this.ans_sens_settings = { art: 1.0, cap: 0.0, ven: 0.75 }; // ans sensivity settings of the components
+    this.alpha_settings = { art: 0.63, cap: 0.0, ven: 0.75 }; // resistance-elastance relation of the components
     this.ans_activity = 1.0; // ans activity factor (unitless)
-    this.el_dist = { art: 0.10, cap: 0.15, ven: 0.75 };  // elastance distribution
-    this.vol_dist = { art: 0.10, cap: 0.15, ven: 0.75 };  // volume distribution
+
+    this.el_dist = { art: 0.10, cap: 0.15, ven: 0.75 };  // elastance distribution (inverse making the artery less compiant then the vein)
+    this.vol_dist = { art: 0.10, cap: 0.55, ven: 0.35 };  // volume distribution
     this.res_dist = { art: 0.75, cap: 0.15, ven: 0.10 };  // resistance distribution
+    
+
 
     // non-persistent property factors. These factors reset to 1.0 after each model step
     this.r_factor = 1.0; // non-persistent resistance factor
@@ -243,12 +249,7 @@ export class MicroVascularUnit extends BaseModelClass {
     }
     
     // calculate the elastance distribution across the art, ven and cap
-    let { el_art, el_cap, el_ven } = this.calculateElastances(this.el_base, this.el_dist);
-
-    // store the elastances
-    this.el_art = el_art
-    this.el_cap = el_cap
-    this.el_ven = el_ven
+    this.calc_elastance_dist(this.el_base, this.el_dist);
     
     // initialize the arteriole part of the network
     let args_art = [
@@ -258,7 +259,7 @@ export class MicroVascularUnit extends BaseModelClass {
         { key: "model_type", value: "BloodVessel" },
         { key: "vol", value: this.vol * this.vol_dist.art},
         { key: "u_vol", value: this.u_vol * this.vol_dist.art},
-        { key: "el_base", value: this.el_art },
+        { key: "el_base", value: this._el_art },
         { key: "el_k", value: this.el_k * this.el_dist.art },
         { key: "inputs", value: this.inputs },
         { key: "r_for", value: this.r_for * this.res_dist.art },
@@ -287,7 +288,7 @@ export class MicroVascularUnit extends BaseModelClass {
         { key: "model_type", value: "BloodVessel" },
         { key: "vol", value: this.vol * this.vol_dist.cap},
         { key: "u_vol", value: this.u_vol * this.vol_dist.cap},
-        { key: "el_base", value: this.el_cap },
+        { key: "el_base", value: this._el_cap },
         { key: "el_k", value: this.el_k * this.el_dist.cap },
         { key: "inputs", value: [this.name + "_ART"] },
         { key: "r_for", value: this.r_for * this.res_dist.cap },
@@ -316,7 +317,7 @@ export class MicroVascularUnit extends BaseModelClass {
         { key: "model_type", value: "BloodVessel" },
         { key: "vol", value: this.vol * this.vol_dist.ven},
         { key: "u_vol", value: this.u_vol * this.vol_dist.ven},
-        { key: "el_base", value: this.el_ven},
+        { key: "el_base", value: this._el_ven},
         { key: "el_k", value: this.el_k * this.el_dist.ven },
         { key: "inputs", value: [this.name + "_CAP"] },
         { key: "r_for", value: this.r_for * this.res_dist.ven },
@@ -339,33 +340,6 @@ export class MicroVascularUnit extends BaseModelClass {
     }
   }
 
-  calculateElastances(el_base, el_dist) {
-
-    // when 1/el_base = 1/el_art + 1/el_cap + 1/el_ven
-    // when equally distributed -> el_art = el_cap = el_ven = 3 * el_base
-    // so 1/(3 * el_base) = 33% of the sum
-    // so 1/(3 * el_base) = 1%
-    // so if we want to distribute according to 75%, 15% and 10%
-    // term 1: 75 * 1 / (3 * el_base) leads to el_art being 1 / (75 * 1 / (3 * el_base))
-
-    // “Unit” = 1 / (3 * el_base)  corresponds to 1% of 1/el_base
-    const unit = 1 / (3 * el_base) / 33.3333;
-
-    // For 75% of the inverse-sum:
-    //   1/el_art = 75 * unit  →  el_art = 1 / (75 * unit)
-    const el_art = 1 / (el_dist.art * 100 * unit);
-
-    // For 15% of the inverse-sum:
-    //   1/el_cap = 15 * unit →  el_cap = 1 / (15 * unit)
-    const el_cap = 1 / (el_dist.cap * 100 * unit);
-
-    // For 10% of the inverse-sum:
-    //   1/el_ven = 10 * unit →  el_ven = 1 / (10 * unit)
-    const el_ven = 1 / (el_dist.ven * 100 * unit);
-
-    return { el_art, el_cap, el_ven };
-  }
-
   calc_model() {
     // update the ans activity according the sensitivity of the whole MVU
     let _ans_activity = 1.0 + (this.ans_activity - 1.0) * this.ans_sens;
@@ -382,32 +356,37 @@ export class MicroVascularUnit extends BaseModelClass {
     this.calc_volume();
 
     // update the components with the calculated properties
-    // this.components.art.r_for = this._r_for_art;
-    // this.components.art.r_back = this._r_back_art;
-    // this.components.art.r_k = this._r_k;
-    // this.components.art.el_base = this._el_art;
-    // this.components.art.el_k = this._el_k_art;
-    // this.components.art.u_vol = this._u_vol_art;
-    // this.components.art.l = this._l;
-    // this.components.art.no_flow = this.no_flow;
+    this.components.art.el_base = this._el_art;
+    this.components.cap.el_base = this._el_cap;
+    this.components.ven.el_base = this._el_ven;
 
-    // this.components.cap.r_for = this._r_for_cap;
-    // this.components.cap.r_back = this._r_back_cap;
-    // this.components.cap.r_k = this._r_k;
-    // this.components.cap.el_base = this._el_cap;
-    // this.components.cap.el_k = this._el_k_cap;
-    // this.components.cap.u_vol = this._u_vol_cap;
-    // this.components.cap.l = this._l;
-    // this.components.cap.no_flow = this.no_flow;
+    this.components.art.el_k = this._el_k_art;
+    this.components.cap.el_k = this._el_k_cap;
+    this.components.ven.el_k = this._el_k_ven;
 
-    // this.components.ven.r_for = this._r_for_ven;
-    // this.components.ven.r_back = this._r_back_ven;
-    // this.components.ven.r_k = this._r_k;
-    // this.components.ven.el_base = this._el_ven;
-    // this.components.ven.el_k = this._el_k_ven;
-    // this.components.ven.u_vol = this._u_vol_ven;
-    // this.components.ven.l = this._l;
-    // this.components.ven.no_flow = this.no_flow;
+    this.components.art.r_for = this._r_for_art;
+    this.components.art.r_back = this._r_back_art;
+    this.components.art.r_k = this._r_k;
+ 
+    this.components.cap.r_for = this._r_for_cap;
+    this.components.cap.r_back = this._r_back_cap;
+    this.components.cap.r_k = this._r_k;
+
+    this.components.ven.r_for = this._r_for_ven;
+    this.components.ven.r_back = this._r_back_ven;
+    this.components.ven.r_k = this._r_k;
+
+    this.components.art.u_vol = this._u_vol_art;
+    this.components.art.l = this._l;
+    this.components.art.no_flow = this.no_flow;
+
+    this.components.cap.u_vol = this._u_vol_cap;
+    this.components.cap.l = this._l;
+    this.components.cap.no_flow = this.no_flow;
+
+    this.components.ven.u_vol = this._u_vol_ven;
+    this.components.ven.l = this._l;
+    this.components.ven.no_flow = this.no_flow;
 
     // get the pressures and flows from the components
     this.pres = this.components.cap.pres;
@@ -420,7 +399,7 @@ export class MicroVascularUnit extends BaseModelClass {
 
     this.vol = this.components.art.vol + this.components.cap.vol + this.components.ven.vol
 
-    // get the solutes and drugs from the components
+    // get the solutes and drugs from the capillary components
     this.solutes = this.components.cap.solutes;
     this.drugs = this.components.cap.drugs;
     this.to2 = this.components.cap.to2;
@@ -471,19 +450,43 @@ export class MicroVascularUnit extends BaseModelClass {
         + (this.el_base_factor - 1) * this.el_base
         + (this.el_base_factor_ps - 1) * this.el_base
 
+    // calculate the elastance distribution across the art, ven and cap
+    this.calc_elastance_dist(this._el, this.el_dist);
+
     // calculate the elastance factors depending on the ans activity and the elastance factors
     this._el_k = this.el_k 
         + (this.el_k_factor - 1) * this.el_k
         + (this.el_k_factor_ps - 1) * this.el_k
 
-    // distribute the elastance to the different parts of the MVU
-    this._el_art = this._el * this.el_dist.art;
-    this._el_cap = this._el * this.el_dist.cap;
-    this._el_ven = this._el * this.el_dist.ven;
-
     // reset the non persistent factors
     this.el_base_factor = 1.0;
     this.el_k_factor = 1.0;
+  }
+
+  calc_elastance_dist(el_base, el_dist) {
+
+    // when 1/el_base = 1/el_art + 1/el_cap + 1/el_ven
+    // when equally distributed -> el_art = el_cap = el_ven = 3 * el_base
+    // so 1/(3 * el_base) = 33% of the sum
+    // so 1/(3 * el_base) = 1%
+    // so if we want to distribute according to 75%, 15% and 10%
+    // term 1: 75 * 1 / (3 * el_base) leads to el_art being 1 / (75 * 1 / (3 * el_base))
+
+    // “Unit” = 1 / (3 * el_base)  corresponds to 1% of 1/el_base
+    const unit = 1 / (3 * el_base) / 33.3333;
+
+    // For 75% of the inverse-sum:
+    //   1/el_art = 75 * unit  →  el_art = 1 / (75 * unit)
+    this._el_art = 1 / (el_dist.art * 100 * unit);
+
+    // For 15% of the inverse-sum:
+    //   1/el_cap = 15 * unit →  el_cap = 1 / (15 * unit)
+    this._el_cap = 1 / (el_dist.cap * 100 * unit);
+
+    // For 10% of the inverse-sum:
+    //   1/el_ven = 10 * unit →  el_ven = 1 / (10 * unit)
+    this._el_ven = 1 / (el_dist.ven * 100 * unit);
+
   }
 
   calc_inertance() {
@@ -503,9 +506,9 @@ export class MicroVascularUnit extends BaseModelClass {
         + (this.u_vol_factor_ps - 1) * this.u_vol
 
     // distribute the unstressed volume to the different parts of the MVU
-    // this._u_vol_art = this._u_vol * this.vol_dist.art;
-    // this._u_vol_cap = this._u_vol * this.vol_dist.cap;
-    // this._u_vol_ven = this._u_vol * this.vol_dist.ven;
+    this._u_vol_art = this._u_vol * this.vol_dist.art;
+    this._u_vol_cap = this._u_vol * this.vol_dist.cap;
+    this._u_vol_ven = this._u_vol * this.vol_dist.ven;
 
     // reset the non persistent factors
     this.u_vol_factor = 1.0;

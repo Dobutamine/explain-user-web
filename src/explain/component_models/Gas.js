@@ -108,7 +108,7 @@ export class Gas extends BaseModelClass {
     this.temp_settings = {}; // dictionary holding the initial temperature settings of gas containing models
 
     // local properties
-    this._gas_containing_modeltypes = ["GasCapacitance", "Airway", "Bronchus", "AlveolarSpace", "Bronchiole"];
+    this.gas_containing_modeltypes = ["GasCapacitance"];
   }
 
   init_model(args = {}) {
@@ -119,7 +119,7 @@ export class Gas extends BaseModelClass {
 
     // set the atmospheric pressure and global gas temperature in all gas containing models
     Object.values(this._model_engine.models).forEach((model) => {
-      if (this._gas_containing_modeltypes.includes(model.model_type)) {
+      if (this.gas_containing_modeltypes.includes(model.model_type)) {
         //console.log('Setting gas properties on: ', model.name)
         model.pres_atm = this.pres_atm;
         model.temp = this.temp;
@@ -142,7 +142,7 @@ export class Gas extends BaseModelClass {
 
     // calculate the gas composition of the gas containing model types
     Object.values(this._model_engine.models).forEach((model) => {
-      if (this._gas_containing_modeltypes.includes(model.model_type)) {
+      if (this.gas_containing_modeltypes.includes(model.model_type)) {
         calc_gas_composition(model, this.fio2, model.temp, model.humidity);
       }
     });
@@ -160,7 +160,7 @@ export class Gas extends BaseModelClass {
 
     // set the atmospheric pressure in all gas containing models
     Object.values(this._model_engine.models).forEach((model) => {
-      if (this._gas_containing_modeltypes.includes(model.model_type)) {
+      if (this.gas_containing_modeltypes.includes(model.model_type)) {
         model.pres_atm = this.pres_atm;
       }
     });

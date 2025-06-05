@@ -15,6 +15,7 @@
 <script>
 import { explain } from "../boot/explain";
 import { PIXI } from "../boot/pixi";
+import MicroVascularUnit from "./ui_elements/MicroVascularUnit";
 import BloodCompartment from "./ui_elements/BloodCompartment";
 import LymphCompartment from "./ui_elements/LymphCompartment";
 import GasCompartment from "./ui_elements/GasCompartment";
@@ -394,6 +395,28 @@ export default {
               })
               explain.watchModelProps(watched_models_bc)
               break;
+            case "MicroVascularUnit":
+              diagram_components[key] = new MicroVascularUnit(
+                pixiApp,
+                key,
+                component.label,
+                component.models,
+                component.layout,
+                xCenter,
+                yCenter,
+                xOffset,
+                yOffset,
+                radius,
+                component.compPicto,
+                global_scaling
+              );
+              let watched_models_mvu = []
+              component.models.forEach(m => {
+                watched_models_mvu.push(m + ".vol")
+                watched_models_mvu.push(m + ".to2")
+              })
+              explain.watchModelProps(watched_models_mvu)
+              break;
             case "GasCompartment":
               diagram_components[key] = new GasCompartment(
                 pixiApp,
@@ -582,6 +605,14 @@ export default {
               component.models.forEach(m => {
                 watched_models_bc.push(m + ".vol")
                 watched_models_bc.push(m + ".to2")
+              })
+              explain.watchModelProps(watched_models_bc)
+              break;
+            case "MicroVascularUnit":
+              let watched_models_mvu = []
+              component.models.forEach(m => {
+                watched_models_mvu.push(m + ".vol")
+                watched_models_mvu.push(m + ".to2")
               })
               explain.watchModelProps(watched_models_bc)
               break;
