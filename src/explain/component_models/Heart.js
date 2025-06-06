@@ -18,12 +18,6 @@ export class Heart extends BaseModelClass {
       readonly: false
     },
     {
-      caption: "enabled",
-      target: "is_enabled",
-      type: "boolean",
-      readonly: true
-    },
-    {
       caption: "reference heart rate (bpm)",
       target: "heart_rate_ref",
       type: "number",
@@ -75,7 +69,17 @@ export class Heart extends BaseModelClass {
       ul: 1000000
     },
     {
-      caption: "el_max factor",
+      caption: "ans sensitivity factor",
+      target: "ans_sens",
+      type: "number",
+      factor: 1.0,
+      delta: 0.01,
+      rounding: 2,
+      ll: 0.0,
+      ul: 1000000
+    },
+    {
+      caption: "contractility factor",
       target: "cont_factor",
       type: "number",
       factor: 1.0,
@@ -85,7 +89,7 @@ export class Heart extends BaseModelClass {
       ul: 1000000
     },
     {
-      caption: "el_min factor",
+      caption: "relaxation factor (inverse)",
       target: "relax_factor",
       type: "number",
       factor: 1.0,
@@ -136,8 +140,7 @@ export class Heart extends BaseModelClass {
     this.cardiac_cycle_running = 0; // signal whether or not the cardiac cycle is running (0 = not, 1 = running)
     this.cardiac_cycle_time = 0.353; // cardiac cycle time (s)
 
-    this.lv_edv = 0.0
-    this.lv_esv = 0.0
+    this.lv_edv = this.lv_esv = 0.0
     this.lv_edp = 0.0
     this.lv_esp = 0.0
     this.lv_sp = 0.0
