@@ -63,28 +63,70 @@ export class Heart extends BaseModelClass {
       delta: 0.0001,
       factor: 1.0,
       rounding: 4,
-    }
+    },
+    {
+      caption: "heartrate factor",
+      target: "hr_factor",
+      type: "number",
+      factor: 1.0,
+      delta: 0.01,
+      rounding: 2,
+      ll: 0.0,
+      ul: 1000000
+    },
+    {
+      caption: "el_max factor",
+      target: "cont_factor",
+      type: "number",
+      factor: 1.0,
+      delta: 0.01,
+      rounding: 2,
+      ll: 0.0,
+      ul: 1000000
+    },
+    {
+      caption: "el_min factor",
+      target: "relax_factor",
+      type: "number",
+      factor: 1.0,
+      delta: 0.01,
+      rounding: 2,
+      ll: 0.0,
+      ul: 1000000
+    },
   ];
 
   constructor(model_ref, name = "") {
     super(model_ref, name);
 
-    // initialize independent properties
+    // -----------------------------------------------
+    // independent properties
+    // -----------------------------------------------
     this.heart_rate_ref = 110.0; // reference heart rate (beats/minute)
     this.pq_time = 0.1; // pq time (s)
     this.qrs_time = 0.075; // qrs time (s)
     this.qt_time = 0.25; // qt time (s)
     this.av_delay = 0.0005; // delay in the AV-node (s)
+    this.ans_sens = 1.0; // sensitivity of the heart for autonomic nervous system control
+    this.ans_activity = 1.0; // ans activity simulating B-adrenergic effect on contractility and relaxation
+    this.ans_activity_hr = 1.0; // heart rate factor of the autonomic nervous system
 
+    this.hr_factor = 1.0; // heart rate factor
     this.hr_mob_factor = 1.0; // heart rate factor of the myocardial oxygen balance model
-    this.hr_temp_factor = 1.0; // heart rate factor of temperature (not implemented yet)
+    this.hr_temp_factor = 1.0; // heart rate factor of the temperature (not implemented yet)
     this.hr_drug_factor = 1.0; // heart rate factor of the drug model (not implemented yet)
 
-    this.ans_hr_factor = 1.0;       // heart rate factor of the autonomic nervous system
-    this.ans_cont_factor = 1.0;     // contractility factor of the autonomic nervous system
-    this.ans_activity_factor = 1.0; // global activity factor of the autonomic nervous system
+    this.cont_factor = 1.0; // contractility factor
+    this.cont_mob_factor = 1.0; // contractility factor of myocardial oxygen balance model
+    this.cont_drug_factor = 1.0; // contractility factor of drug model (not implemented yet)
 
-    // initialize dependent properties
+    this.relax_factor = 1.0; // relaxation factor (higher is less relaxation!)
+    this.relax_mob_factor = 1.0; // relaxation factor of myocardial oxygen balance model
+    this.relax_drug_factor = 1.0; // relaxation factor of drug model (not implemented yet)
+  
+    // -----------------------------------------------
+    // dependent properties
+    // -----------------------------------------------
     this.heart_rate = 120.0; // calculated heart rate (beats/minute)
     this.cardiac_cycle_state = 0;
 
@@ -123,7 +165,9 @@ export class Heart extends BaseModelClass {
     this.la_sp = 0.0
 
 
+    // -----------------------------------------------
     // local properties
+    // -----------------------------------------------
     this._kn = 0.579; // constant of the activation curve
     this._prev_cardiac_cycle_running = 0;
     this._prev_cardiac_cycle_state = 0;
@@ -151,9 +195,13 @@ export class Heart extends BaseModelClass {
     this._systole_running = false
     this._diastole_running = false
 
-    this._prev_la_lv_flow = 0.0
-    this._prev_lv_aa_flow = 0.0
-
+    this._prev_la_lv_flow = 0.0;
+    this._prev_lv_aa_flow = 0.0;
+    this._prev_cont_factor = 1.0;
+    this._prev_relax_factor = 1.0;
+    
+    this._update_counter_factors = 0.0;
+    this._update_interval_factors = 0.015;
   }
 
   analyze() {
@@ -215,7 +263,22 @@ export class Heart extends BaseModelClass {
     this._lv_aa = this._model_engine.models["LV_AA"]
     this._coronaries = this._model_engine.models["COR"];
 
-        
+    // set the factors
+    this._update_counter_factors += this._t
+    if (this._update_counter_factors > this._update_interval_factors) {
+      this._update_counter_factors = 0.0;
+
+      if (this._prev_cont_factor !== this.cont_factor) {
+        this.set_contractillity(this.cont_factor)
+        this._prev_cont_factor = this.cont_factor;
+      }
+
+      if (this._prev_relax_factor !== this.relax_factor) {
+        this.set_relaxation(this.relax_factor)
+        this._prev_relax_factor = this.relax_factor;
+      }
+    }
+
     // store the previous cardiac cycle state
     this._prev_cardiac_cycle_running = this.cardiac_cycle_running;
 
@@ -251,7 +314,8 @@ export class Heart extends BaseModelClass {
 
     // calculate heart rate from the reference value and influencing factors
     this.heart_rate = this.heart_rate_ref +
-      (this.ans_hr_factor - 1.0) * this.heart_rate_ref * this.ans_activity_factor +
+      (this.ans_activity_hr - 1.0) * this.heart_rate_ref * this.ans_sens +
+      (this.hr_factor - 1.0) * this.heart_rate_ref +
       (this.hr_mob_factor - 1.0) * this.heart_rate_ref +
       (this.hr_temp_factor - 1.0) * this.heart_rate_ref +
       (this.hr_drug_factor - 1.0) * this.heart_rate_ref;
@@ -338,18 +402,6 @@ export class Heart extends BaseModelClass {
   }
 
   calc_varying_elastance() {
-    // incorporate the ans factor on contractility
-    this._lv.ans_activity_factor = this.ans_activity_factor;
-    this._rv.ans_activity_factor = this.ans_activity_factor;
-    this._la.ans_activity_factor = this.ans_activity_factor;
-    this._ra.ans_activity_factor = this.ans_activity_factor;
-
-    // update the contractility factor as determined by the autonomic nervous system
-    this._lv.el_max_ans_factor = this.ans_cont_factor;
-    this._rv.el_max_ans_factor = this.ans_cont_factor;
-    this._la.el_max_ans_factor = this.ans_cont_factor;
-    this._ra.el_max_ans_factor = this.ans_cont_factor;
-
     // calculate atrial activation factor
     let _atrial_duration = this.pq_time / this._t;
     if (this.ncc_atrial >= 0 && this.ncc_atrial < _atrial_duration) {
@@ -371,6 +423,17 @@ export class Heart extends BaseModelClass {
       this.vaf = 0.0;
     }
 
+    // incorporate the ans factors ans sensitivity on the heart function
+    this._la.ans_sens = this.ans_sens
+    this._ra.ans_sens = this.ans_sens
+    this._lv.ans_sens = this.ans_sens
+    this._rv.ans_sens = this.ans_sens
+
+    this._la.ans_activity = this.ans_activity
+    this._ra.ans_activity = this.ans_activity
+    this._lv.ans_activity = this.ans_activity
+    this._rv.ans_activity = this.ans_activity
+
     // transfer the activation factor to the heart components
     this._la.act_factor = this.aaf;
     this._ra.act_factor = this.aaf;
@@ -389,5 +452,55 @@ export class Heart extends BaseModelClass {
     } else {
       return this.qt_time * 2.449;
     }
+  }
+
+  set_contractillity(new_cont_factor) {
+    // get the current factors from the model
+    let f_ps_la = this._la.el_max_factor_ps;
+    let f_ps_lv = this._lv.el_max_factor_ps;
+    let f_ps_ra = this._ra.el_max_factor_ps;
+    let f_ps_rv = this._rv.el_max_factor_ps;
+
+    let delta = new_cont_factor - this._prev_cont_factor;
+
+    // add the increase/decrease in factor
+    f_ps_la = Math.max(f_ps_la + delta, 0);
+    f_ps_lv = Math.max(f_ps_lv + delta, 0);
+    f_ps_ra = Math.max(f_ps_ra + delta, 0);
+    f_ps_rv = Math.max(f_ps_rv + delta, 0);
+
+    // transfer the factors
+    this._la.el_max_factor_ps = f_ps_la
+    this._lv.el_max_factor_ps = f_ps_lv
+    this._ra.el_max_factor_ps = f_ps_ra
+    this._rv.el_max_factor_ps = f_ps_rv
+
+    // store the new factor
+    this.cont_factor = new_cont_factor
+  }
+
+  set_relaxation(new_relax_factor) {
+    // get the current factors from the model
+    let f_ps_la = this._la.el_min_factor_ps;
+    let f_ps_lv = this._lv.el_min_factor_ps;
+    let f_ps_ra = this._ra.el_min_factor_ps;
+    let f_ps_rv = this._rv.el_min_factor_ps;
+
+    let delta = new_relax_factor - this._prev_relax_factor;
+
+    // add the increase/decrease in factor
+    f_ps_la = Math.max(f_ps_la + delta, 0);
+    f_ps_lv = Math.max(f_ps_lv + delta, 0);
+    f_ps_ra = Math.max(f_ps_ra + delta, 0);
+    f_ps_rv = Math.max(f_ps_rv + delta, 0);
+
+    // transfer the factors
+    this._la.el_min_factor_ps = f_ps_la
+    this._lv.el_min_factor_ps = f_ps_lv
+    this._ra.el_min_factor_ps = f_ps_ra
+    this._rv.el_min_factor_ps = f_ps_rv
+
+    // store the new factor
+    this.relax_factor = new_relax_factor
   }
 }

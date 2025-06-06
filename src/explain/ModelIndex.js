@@ -23,6 +23,7 @@ export { Shunts } from "./component_models/Shunts";
 export { Heart } from "./component_models/Heart";
 export { Mob } from "./component_models/Mob";
 export { Circulation } from "./component_models/Circulation";
+export { HeartChamber } from "./component_models/HeartChamber";
 
 export { Gas } from "./component_models/Gas";
 export { Breathing } from "./component_models/Breathing";

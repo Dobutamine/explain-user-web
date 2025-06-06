@@ -147,6 +147,7 @@ export class Blood extends BaseModelClass {
     this.P50_0 = 20.0; // PO2 at which 50% of Hgb is saturated by O2 (fetal = 18.8 (high Hb O2 affinity), neonatal = 20.0, adult = 26.7)
     this.blood_containing_modeltypes = [
       "BloodVessel",
+      "HeartChamber",
       "BloodCapacitance",
       "BloodTimeVaryingElastance",
       "BloodPump",
