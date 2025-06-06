@@ -11,6 +11,48 @@ export class Circulation extends BaseModelClass {
   static model_type = "Circulation";
   static model_interface = [
     {
+      caption: "heart chambers",
+      target: "heart_chambers",
+      type: "multiple-list",
+      options: ["HeartChamber", "BloodTimeVaryingElastance"]
+    },
+    {
+      caption: "systemic arteries",
+      target: "systemic_arteries",
+      type: "multiple-list",
+      options: ["BloodVessel", "MicroVascularUnit"]
+    },
+    {
+      caption: "systemic capillaries",
+      target: "systemic_capillaries",
+      type: "multiple-list",
+      options: ["BloodVessel", "MicroVascularUnit"]
+    },
+    {
+      caption: "systemic veins",
+      target: "systemic_veins",
+      type: "multiple-list",
+      options: ["BloodVessel", "MicroVascularUnit"]
+    },
+    {
+      caption: "pulmonary arteries",
+      target: "pulmonary_arteries",
+      type: "multiple-list",
+      options: ["BloodVessel", "MicroVascularUnit"]
+    },
+    {
+      caption: "pulmonary capillaries",
+      target: "pulmonary_capillaries",
+      type: "multiple-list",
+      options: ["BloodVessel", "MicroVascularUnit"]
+    },
+    {
+      caption: "pulmonary veins",
+      target: "pulmonary_veins",
+      type: "multiple-list",
+      options: ["BloodVessel", "MicroVascularUnit"]
+    },
+    {
       caption: "svr factor",
       target: "svr_factor",
       type: "number",
