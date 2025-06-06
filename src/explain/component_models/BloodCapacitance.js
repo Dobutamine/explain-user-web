@@ -39,14 +39,20 @@ export class BloodCapacitance extends Capacitance {
 
     // process the solutes
     Object.keys(this.solutes).forEach((solute) => {
-      this.solutes[solute] +=
-        ((comp_from.solutes[solute] - this.solutes[solute]) * dvol) / this.vol;
+      let solute_from = 0
+      if (comp_from.solutes[solute]) {
+        solute_from = comp_from.solutes[solute]
+      }
+      this.solutes[solute] += ((solute_from - this.solutes[solute]) * dvol) / this.vol;
     });
 
     // process the drug concentrations
     Object.keys(this.drugs).forEach((drug) => {
-      this.drugs[drug] +=
-        ((comp_from.drugs[drug] - this.drugs[drug]) * dvol) / this.vol;
+      let drug_from = 0.0
+      if (comp_from.drugs[drug]) {
+        drug_from = comp_from.drugs[drug]
+      }
+      this.drugs[drug] += ((drug_from - this.drugs[drug]) * dvol) / this.vol;
     });
 
     // process the temperature (treat it as a solute)

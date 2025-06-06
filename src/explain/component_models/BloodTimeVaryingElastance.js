@@ -26,6 +26,7 @@ export class BloodTimeVaryingElastance extends TimeVaryingElastance {
     this.be = -1.0; // base excess (mmol/l)
   }
 
+
   // the method overrides the 'volume_in' method of the TimeVaryingElastance class and 
   // adds functionality to update the viscosity, temperature and to2, tco2, solutes and drug concentrations
   volume_in(dvol, comp_from) {
@@ -38,8 +39,20 @@ export class BloodTimeVaryingElastance extends TimeVaryingElastance {
 
     // process the solutes
     Object.keys(this.solutes).forEach((solute) => {
-      this.solutes[solute] +=
-        ((comp_from.solutes[solute] - this.solutes[solute]) * dvol) / this.vol;
+      let solute_from = 0
+      if (comp_from.solutes[solute]) {
+        solute_from = comp_from.solutes[solute]
+      }
+      this.solutes[solute] += ((solute_from - this.solutes[solute]) * dvol) / this.vol;
+    });
+
+    // process the drug concentrations
+    Object.keys(this.drugs).forEach((drug) => {
+      let drug_from = 0.0
+      if (comp_from.drugs[drug]) {
+        drug_from = comp_from.drugs[drug]
+      }
+      this.drugs[drug] += ((drug_from - this.drugs[drug]) * dvol) / this.vol;
     });
 
     // process the temperature (treat it as a solute)
@@ -47,11 +60,5 @@ export class BloodTimeVaryingElastance extends TimeVaryingElastance {
 
     // process the viscosity (treat it as a solute)
     this.viscosity += ((comp_from.viscosity - this.viscosity) * dvol) / this.vol;
-
-    // process the drug concentrations
-    Object.keys(this.drugs).forEach((drug) => {
-      this.drugs[drug] +=
-        ((comp_from.drugs[drug] - this.drugs[drug]) * dvol) / this.vol;
-    });
   }
 }

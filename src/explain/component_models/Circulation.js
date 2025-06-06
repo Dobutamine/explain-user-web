@@ -71,6 +71,21 @@ export class Circulation extends BaseModelClass {
       rounding: 2,
       ll: 0.0,
       ul: 1000000
+    },
+    {
+      caption: "add fluid",
+      type: "function",
+      target: "add_volume",
+      args: [
+        {
+          caption: "volume (ml)",
+          target: "default_volume",
+          type: "number",
+          factor: 1.0,
+          delta: 0.1,
+          rounding: 1
+        }
+      ]
     }
   ]
 
@@ -97,6 +112,7 @@ export class Circulation extends BaseModelClass {
     this.svr_factor = 1.0;              // factor influencing the systemic vascular resistance
     this.pvr_factor = 1.0;              // factor influencing the pulmonary vascular resistance
 
+
     // -----------------------------------------------
     // dependent properties
     // -----------------------------------------------
@@ -117,7 +133,6 @@ export class Circulation extends BaseModelClass {
     this._prev_pvr_factor = 1.0;
     this._update_interval = 0.015;      // update interval (s)
     this._update_counter = 0.0;         // update interval counter (s)
-
     this._update_interval_slow = 1.0;      // update interval (s)
     this._update_counter_slow = 0.0;         // update interval counter (s)
   }
@@ -178,7 +193,6 @@ export class Circulation extends BaseModelClass {
         this.set_pvr_factor(this.pvr_factor)
         this._prev_pvr_factor = this.pvr_factor
       }
-
     }
 
     this._update_counter_slow += this._t;
