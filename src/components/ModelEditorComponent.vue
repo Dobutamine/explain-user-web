@@ -210,10 +210,10 @@
               </div>
 
               <div v-if="field.type == 'function'">
+                <div class="q-ml-md q-mr-md q-mb-sm text-left text-secondary" :style="{ 'font-size': '12px' }">
+                        {{ field.caption }}
+                </div>
                 <div v-for="(arg, index_arg) in field.args" :key="index_arg">
-                  <!-- <div class="q-ml-md q-mr-md text-left text-white" :style="{ 'font-size': '10px' }">
-                        {{ arg.caption }}
-                    </div> -->
                   <div v-if="arg.type == 'number' && !arg.hidden">
                     <q-input v-model.number="arg.value" :label="arg.caption" type="number" :max="arg.ul" :min="arg.ll" :readonly="field.readonly"
                       :step="arg.delta" color="blue" hide-hint filled dense

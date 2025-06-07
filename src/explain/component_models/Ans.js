@@ -26,13 +26,6 @@ export class Ans extends BaseModelClass {
       caption: "ANS components active",
       target: "ans_active",
       type: "boolean",
-    },
-    {
-      caption: "blood composition models",
-      target: "blood_composition_models",
-      type: "multiple-list",
-      options: ["BloodVessel", "BloodPump", "MicroVascularUnit", "BloodCapacitance", "BloodTimeVaryingElastance"],
-      readonly: false
     }
   ];
 

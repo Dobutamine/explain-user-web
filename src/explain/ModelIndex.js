@@ -20,6 +20,7 @@ export { Valve } from "./component_models/Valve";
 export { MicroVascularUnit } from "./component_models/MicroVascularUnit";
 export { Placenta } from "./component_models/Placenta";
 export { Shunts } from "./component_models/Shunts";
+export { Pda } from "./component_models/Pda";
 
 export { Heart } from "./component_models/Heart";
 export { Mob } from "./component_models/Mob";

@@ -1,23 +1,38 @@
 import { BaseModelClass } from "../base_models/BaseModelClass";
-import { calc_blood_composition } from "./BloodComposition"
 // ----------------------------------------------------------------------------
 export class Fluids extends BaseModelClass {
   // static properties
   static model_type = "Fluids";
   static model_interface = [
     {
-      caption: "add fluid",
+      caption: "Adminster fluid",
       type: "function",
       target: "add_volume",
       args: [
         {
           caption: "volume (ml)",
-          target: "default_volume",
+          target: "",
           type: "number",
           factor: 1.0,
           delta: 0.1,
           rounding: 1
-        }
+        },
+        {
+          caption: "in time (s)",
+          target: "_default_time",
+          type: "number",
+          factor: 1.0,
+          delta: 0.1,
+          rounding: 1
+        },
+        {
+          caption: "fluid type",
+          target: "fluid type",
+          type: "list",
+          default: "normal_saline",
+          choices: ['normal_saline', 'ringers_lactate','packed_cells', 'albumin_20%']
+        },
+
       ]
     }
   ]
@@ -26,22 +41,15 @@ export class Fluids extends BaseModelClass {
     super(model_ref, name);
 
     // initialize independent properties
-    this.fluids = {
-      "normal_saline": {
-        to2: 0.0,
-        tco2: 0.0,
-        temp: 37.0,
-        solutes: {
-          na: 154,
-          cl: 154
-        }
-      }
-    }
+    this.fluids_temp = 37.0
+    this.fluids = {}
 
     // initialize dependent properties
     
     // initialize local properties (preceded with _)
     this._default_volume = 10;
+    this._default_time = 10;
+    this._default_type = "normal_saline"
     this._running_fluid_list = []
     this._update_interval = 0.015;      // update interval (s)
     this._update_counter = 0.0;         // update interval counter (s)
@@ -58,16 +66,19 @@ export class Fluids extends BaseModelClass {
         this.process_fluid_list();
     }
   }
-   add_volume(volume, in_time = 10, site = "VLB", fluid_in = "normal_saline") {
-    // build fluid object
+   add_volume(volume, in_time = 10, fluid_in = "normal_saline", site = "VLB") {
+    // build a fluid object which can be fed to a BloodVessel, BloodCapacitance or BloodTimeVaryingElastance
     let fluid = {
       vol: volume / 1000.0,
       time_left: in_time,
       delta: (volume / 1000.0) / (in_time / this._update_interval),
       site: site,
-      to2 : this.fluids[fluid_in].to2,
-      tco2 : this.fluids[fluid_in].tco2,
-      solutes: {...this.fluids[fluid_in].solutes}
+      to2 : 0.0,
+      tco2 : 0.0,
+      temp: this.fluids_temp,
+      viscosity: 1,
+      solutes: {...this.fluids[fluid_in]},
+      drugs: {}
     }
     this._running_fluid_list.push(fluid)
   }
@@ -79,13 +90,13 @@ export class Fluids extends BaseModelClass {
       this._running_fluid_list = [...filtered_list]
 
       this._running_fluid_list.forEach(f => {
+        f.vol -= f.delta
+        f.time_left -= this._update_interval
         if (f.time_left <= 0) {
           f.delta = 0.0;
           f.time_left = 0.0
-          console.log('ready')
         }
-        f.vol -= f.delta
-        f.time_left -= this._update_interval
+
         this._model_engine.models[f.site].volume_in(f.delta, f)
       })
     }
