@@ -134,16 +134,24 @@ export class Pda extends BaseModelClass {
       rounding: 1,
     },
     {
-      caption: "ductus arteriosus elastance",
-      target: "el_base",
+      caption: "ductus arteriosus length (mm)",
+      target: "length",
       type: "number",
       delta: 0.1,
       factor: 1.0,
       rounding: 1,
     },
     {
-      caption: "ductus arteriosus length (mm)",
-      target: "length",
+      caption: "ductus arteriosus elastance min",
+      target: "el_min",
+      type: "number",
+      delta: 0.1,
+      factor: 1.0,
+      rounding: 1,
+    },
+    {
+      caption: "ductus arteriosus elastance max",
+      target: "el_max",
       type: "number",
       delta: 0.1,
       factor: 1.0,
@@ -167,8 +175,8 @@ export class Pda extends BaseModelClass {
     this.diameter_pa = 2.0; // diameter at pulmonary artery (mm)
     this.length = 20; // length (mm)
     this.type = "conical"; // type of the ductal shape (conical, window, tubular, complex, elongated)
-    this.el_open = 40000; // elasticity when open (mmHg/L)
-    this.el_closed = 150000; // elasticity when closed (mmHg/L)
+    this.el_min = 40000; // elasticity when open (mmHg/L)
+    this.el_max = 150000; // elasticity when closed (mmHg/L)
     this.viscosity = 6; // viscosity of the blood (cP)
 
     // -----------------------------------------------
