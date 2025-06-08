@@ -297,94 +297,17 @@ export default {
       presetNames: [],
       newPresetName: "",
       presets: {
-        "TO2": {
-          props: ["AA.to2", "RA.to2", "BR.to2"],
-          autoscale: false,
-          y_min: 0.0,
-          y_max: 10,
-          factors: false,
-          fill: false,
-          chart1_factor: 1.0,
-          chart2_factor: 1.0,
-          chart3_factor: 1.0
-        },
-        "PO2_LUNG": {
-          props: ["ALL.po2","LL_CAP.po2", "RL_CAP.po2"],
-          autoscale: true,
-          y_min: 0.0,
-          y_max: 150,
-          factors: false,
-          fill: false,
-          chart1_factor: 1.0,
-          chart2_factor: 1.0,
-          chart3_factor: 1.0
-        },
-        "Mob": {
-          props: ["Mob.bm_vo2", "Mob.cor_po2"],
-          autoscale: false,
-          y_min: 0.0,
-          y_max: 35,
-          factors: true,
-          fill: false,
-          chart1_factor: 100000,
-          chart2_factor: 1.0,
-          chart3_factor: 1.0
-        },
-        "Brain and coronary avg flow": {
-          props: ["AA_BR.flow_lmin_avg", "AA_COR.flow_lmin_avg"],
-          autoscale: false,
-          y_min: 0.0,
-          y_max: 0.3,
-          factors: false,
-          fill: false,
-          chart1_factor: 1.0,
-          chart2_factor: 1.0,
-          chart3_factor: 1.0
-        },
-        "Brain and coronary instant flow": {
-          props: ["AA_BR.flow", "AA_COR.flow"],
-          autoscale: false,
-          y_min: 0.005,
-          y_max: 0.0001,
-          factors: false,
-          fill: false,
-          chart1_factor: 1.0,
-          chart2_factor: 1.0,
-          chart3_factor: 1.0
-        },
-        "Compressions": {
-          props: ["Resuscitation.chest_comp_force", "ALL.pres_rel"],
-          autoscale: true,
-          y_min: -5,
-          y_max: 5,
-          factors: false,
-          fill: false,
-          chart1_factor: 1.0,
-          chart2_factor: 1.0,
-          chart3_factor: 1.0
-        },
         "PDA Doppler": {
-          props: ["Shunts.da_velocity"],
+          props: ["Pda.velocity_pa"],
           autoscale: false,
           y_min: -2,
-          y_max: 3,
+          y_max: 5,
           factors: false,
           fill: true,
           chart1_factor: 1.0,
           chart2_factor: 1.0,
           chart3_factor: 1.0
-        },
-        "Heart": {
-          props: ["LV.pres", "RV.pres"],
-          autoscale: true,
-          y_min: 0,
-          y_max: 7,
-          factors: false,
-          fill: false,
-          chart1_factor: 1.0,
-          chart2_factor: 1.0,
-          chart3_factor: 1.0
-        },
+        }
       }
     };
   },

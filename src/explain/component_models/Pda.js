@@ -171,89 +171,84 @@ export class Pda extends BaseModelClass {
     // -----------------------------------------------
 
     this.diameter_ao = 4.0; // diameter at aortic origen (mm)
-    this.diameter_da = 3.0; // diameter at aortic origen (mm)
     this.diameter_pa = 2.0; // diameter at pulmonary artery (mm)
+    this.diameter_max = 5.0; // maximum diameter of the ductus arteriosus (mm)
     this.length = 20; // length (mm)
     this.type = "conical"; // type of the ductal shape (conical, window, tubular, complex, elongated)
-    this.el_min = 40000; // elasticity when open (mmHg/L)
-    this.el_max = 150000; // elasticity when closed (mmHg/L)
+    this.el_min = 30000; // elasticity when open (mmHg/L) so both 5.0 mm
+    this.el_max = 150000; // elasticity when closed (mmHg/L) so both 0.0 mm
     this.viscosity = 6; // viscosity of the blood (cP)
 
     // -----------------------------------------------
     // initialize dependent properties
     // -----------------------------------------------
     this.flow = 0; // blood flow (L/s)
+    this.vol = 0; // volume of the duct  (a cone shaped duct of 2-4-20 has 0.000146 L)
     this.velocity = 0; // blood flow velocity (m/s)
     this.flow_ao = 0; // blood flow at the aortic origin (L/s)
-    this.flow_da = 0; // blood flow in the middle of the ductus arteriosus (L/s)
     this.flow_pa = 0; // blood flow at the pulmonary artery (L/s)
     this.velocity_ao = 0; // blood flow velocity at the aortic origin (m/s)
     this.velocity_pa = 0; // blood flow velocity at the pulmonary artery (m/s)
     this.res_ao = 1500; // resistance at the aortic origen (mmHg*s/L)
-    this.res_da = 1500; // resistance at the aortic origen (mmHg*s/L)
     this.res_pa = 1500; // resistance at the pulmonary artery (mmHg*s/L)
     this.el = 40000; // current elastance (mmHg/L)
-    this.el_daao = 40000;// elastance of the aortic part of the ductus (mmHg/L)
-    this.el_dapa = 40000; // elastance of the pulmonaery part of the ductus (mmHg/L)
-
-
+ 
     // -----------------------------------------------
     // initialize local properties (preceded with _)
     // -----------------------------------------------
-    this._dapa = {}
-    this._aar_daao = {}
-    this._dapa_pa = {}
+    this._da = {}
+    this._aar_da = {}
+    this._da_pa = {}
   }
 
   calc_model() {
     // get a reference to the ductus arteriosus blood vessel model
-    this._aar_daao = this._model_engine.models["AAR_DAAO"]; // BloodResistor
-    this._daao = this._model_engine.models["DAAO"]; // BloodCapacitance
-    this._daao_dapa = this._model_engine.models["DAAO_DAPA"]; // BloodResistor
-    this._dapa = this._model_engine.models["DAPA"]; // BloodCapacitance
-    this._dapa_pa = this._model_engine.models["DAPA_PA"]; // BloodResistor
+    this._aar_da = this._model_engine.models["AAR_DA"]; // BloodResistor
+    this._da = this._model_engine.models["DA"]; // BloodCapacitance
+    this._da_pa = this._model_engine.models["DA_PA"]; // BloodResistor
 
     // get the current flows
-    this.flow_ao = this._aar_daao.flow;
-    this.flow_da = this._daao_dapa.flow;
-    this.flow_pa = this._dapa_pa.flow;
+    this.flow_ao = this._aar_da.flow;
+    this.flow_pa = this._da_pa.flow;
 
     // get the viscosity of the ductus arteriosus
-    this.viscosity = this._dapa.viscosity
+    this.viscosity = this._da.viscosity
 
     // set the elastance of the ductus arteriosus
-    this._daao.el_base = this.el_daao;
-    this._dapa.el_base = this.el_dapa;
+    this._da.el_base = this.el_min
+
+    // guard for a too large ductal diameter
+    this.diameter_ao = Math.min(this.diameter_ao, this.diameter_max);
+    this.diameter_pa = Math.min(this.diameter_pa, this.diameter_max);
 
     // if the diameter is zero, set the resistance to a very high value to represent no flow
-    this._aar_daao.no_flow = this.diameter_ao === 0;
-    this._daao_dapa.no_flow = this.diameter_da === 0;
-    this._dapa_pa.no_flow = this.diameter_pa === 0;
+    this._aar_da.no_flow = this.diameter_ao === 0;
+    this._da_pa.no_flow = this.diameter_pa === 0;
 
     // calculate the resistance across the ductus arteriosus
-    this.res_ao = this.calc_resistance(this.diameter_ao, this.length / 3.0, this.viscosity)
-    this.res_da = this.calc_resistance(this.diameter_da, this.length / 3.0, this.viscosity)
-    this.res_pa = this.calc_resistance(this.diameter_pa, this.length / 3.0, this.viscosity)
+    this.res_ao = this.calc_resistance(this.diameter_ao, this.length / 2.0, this.viscosity)
+    this.res_pa = this.calc_resistance(this.diameter_pa, this.length / 2.0, this.viscosity)
     
     // transfer the resistance to the ductus arteriosus
-    this._aar_daao.r_for = this.res_ao;
-    this._aar_daao.r_back = this.res_ao;
+    this._aar_da.r_for = this.res_ao;
+    this._aar_da.r_back = this.res_ao;
 
-    this._daao_dapa.r_for = this.res_da;
-    this._daao_dapa.r_back = this.res_da;
+    this._da_pa.r_for = this.res_pa;
+    this._da_pa.r_back = this.res_pa;
 
-    this._dapa_pa.r_for = this.res_pa;
-    this._dapa_pa.r_back = this.res_pa;
+    // calculate the elastance of the duct depending on the diameter
+    this.el = this.el_min + (this.el_max - this.el_min) * (this.diameter_pa / this.diameter_max);
 
     // calculate the ductus arteriosus area
     let area_ao = Math.pow((this.diameter_ao * 0.001) / 2.0, 2.0) * Math.PI; // in m^2
-    let area_da = Math.pow((this.diameter_da * 0.001) / 2.0, 2.0) * Math.PI; // in m^2
     let area_pa = Math.pow((this.diameter_pa * 0.001) / 2.0, 2.0) * Math.PI; // in m^2
     
     // calculate the velocity across the ductus arteriosus
     this.velocity_ao = area_ao > 0 ? (this.flow_ao * 0.001) / area_ao : 0.0;
-    this.velocity_da = area_da > 0 ? (this.flow_da * 0.001) / area_da : 0.0;
     this.velocity_pa = area_pa > 0 ? (this.flow_pa * 0.001) / area_pa : 0.0;
+
+    // calculate the volume of the ductus arteriosus
+    this.vol = this._da.vol
 
   }
 
