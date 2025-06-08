@@ -193,7 +193,8 @@ export class Breathing extends BaseModelClass {
       this.resp_muscle_pressure = 0.0;
     }
 
-    this._model_engine.models["THORAX"].pres_ext += -this.resp_muscle_pressure
+    //this._model_engine.models["THORAX"].pres_ext += -this.resp_muscle_pressure
+    this._model_engine.models["THORAX"].el_base_factor += this.resp_muscle_pressure
   }
 
   vt_rr_controller(_weight) {
