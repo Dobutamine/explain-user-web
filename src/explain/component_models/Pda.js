@@ -252,9 +252,7 @@ export class Pda extends BaseModelClass {
 
   }
 
-  calc_closure() {
-    // first thing what closes is the 
-  }
+  calc_closure() {}
 
   calc_resistance(diameter, length = 20.0, viscosity = 6.0) {
     if (diameter > 0.0 && length > 0.0) {
