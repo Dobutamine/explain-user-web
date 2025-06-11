@@ -223,8 +223,6 @@ export default {
           }
         },
         y: {
-          min: -5,
-          max: 25,
           grid: {
             color: '#333333'
           },
@@ -323,15 +321,9 @@ export default {
     toggleCurveParam() {
       if (this.curve_param == "pres") {
         this.p1 = "Ventilator.pres"
-        this.y_min = -5
-        this.y_max = this.pip_cmh2o_max
-        this.chartOptions.scales.y.min = -5
-        this.chartOptions.scales.y_max = 25
       }
       if (this.curve_param == "flow") {
         this.p1 = "Ventilator.flow"
-        this.chartOptions.scales.y.min = -10
-        this.chartOptions.scales.y_max = 10
       }
       if (this.curve_param == "vol") {
         this.p1 = "Ventilator.vol"
