@@ -152,7 +152,6 @@ export class GasCapacitance extends Capacitance {
   }
 
   // the method overrides the 'volume_in' method of the Capacitance class and 
-  // adds functionality to update the temperature and gas concentrations
   volume_in(dvol, comp_from) {
     // call the parent method from the Capacitance class to update the volume
     super.volume_in(dvol, comp_from);

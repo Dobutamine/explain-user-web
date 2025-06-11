@@ -47,22 +47,8 @@
       </div>
 
     </div>
-    <div v-if="isEnabled && ventilator_running" class="q-mt-sm text-overline justify-center q-gutter-xs row">
-      <div>
-        <q-toggle v-model="spont_breathing" size="sm" label="breathing" @update:model-value="toggle_spont_breathing" />
-      </div>
-      <div>
-        <q-toggle class="q-ml-sm q-pb-lg" v-model="state.configuration.chart_hires" label="hi-res" dense size="sm"
-          @update:model-value="toggleHires" />
-      </div>
-      <div>
-        <q-input v-if="!show_loops && !state.configuration.chart_hires" class="q-ml-sm q-pb-lg"
-          v-model.number="rtWindow" type="number" label="time" filled dense min="1" max="30" hide-bottom-space
-          @update:model-value="updateRtWindow" />
-      </div>
-    </div>
-    <!-- ventilator controls -->
 
+    <!-- ventilator controls -->
     <div v-if="isEnabled && ventilator_running" class="text-overline justify-center q-gutter-sm row">
       <div  class="q-mr-sm text-center">
         <div>{{ pip_caption }}</div>
@@ -131,22 +117,7 @@
         </q-knob>
         <div :style="{ fontSize: '10px' }">%</div>
       </div>
-
-
-
     </div>
-    <div v-if="ventilator_running" class="row justify-center">
-        <div class="q-ma-sm q-gutter-xs row items-center">
-          <div v-for="(field, index) in mutableParameters1" :key="index">
-            <div class="col q-mr-xs text-left text-secondary" :style="{ 'font-size': '12px' }">
-              {{ field.label }} {{ field.unit }}
-            </div>
-            <q-input v-model="field.value" color="blue" hide-hint filled readonly dense stack-label
-              style="max-width: 80px; font-size: 16px" squared />
-          </div>
-        </div>
-    </div>
-
 
     <div v-if="isEnabled && ventilator_running" class="q-mt-md q-mb-md text-overline justify-center q-gutter-xs row">
       <q-input v-model="et_tube_diameter" @update:model-value="set_ettube_diameter" color="blue" hide-hint filled
@@ -168,6 +139,32 @@
       </q-input>
 
 
+    </div>
+
+    <div v-if="isEnabled && ventilator_running" class="q-mt-sm text-overline justify-center q-gutter-xs row">
+      <div>
+        <q-toggle v-model="spont_breathing" size="sm" dense label="breathing" @update:model-value="toggle_spont_breathing" />
+      </div>
+      <div>
+        <q-toggle class="q-ml-sm q-pb-lg" v-model="state.configuration.chart_hires" dense label="hi-res" size="sm"
+          @update:model-value="toggleHires" />
+      </div>
+      <div>
+        <q-toggle v-if="autoscaleEnabled" v-model="autoscale" dense size="xs" label="autoscale" @update:model-value="toggleAutoscaling" />
+      </div>
+      <div>
+        <q-input v-if="!show_loops && !autoscale" class="q-ml-sm q-pb-lg" @update:model-value="autoscaling"
+          v-model.number="y_min" type="number" label="y min" filled dense min="-100" max="100" hide-bottom-space/>
+      </div>
+      <div>
+        <q-input v-if="!show_loops && !autoscale" class="q-ml-sm q-pb-lg" @update:model-value="autoscaling"
+          v-model.number="y_max" type="number" label="y max" filled dense min="-100" max="100" hide-bottom-space/>
+      </div>
+      <div>
+        <q-input v-if="!show_loops && !state.configuration.chart_hires" class="q-ml-sm q-pb-lg"
+          v-model.number="rtWindow" type="number" label="time" filled dense min="1" max="30" hide-bottom-space
+          @update:model-value="updateRtWindow" />
+      </div>
     </div>
 
 
@@ -226,6 +223,8 @@ export default {
           }
         },
         y: {
+          min: -5,
+          max: 25,
           grid: {
             color: '#333333'
           },
@@ -235,7 +234,6 @@ export default {
         }
       }
     })
-
 
     return {
       state,
@@ -265,7 +263,7 @@ export default {
       rtWindowValidated: 3,
       analysisEnabled: true,
       autoscaleEnabled: true,
-      autoscale: false,
+      autoscale: true,
       loopMode: false,
       isEnabled: true,
       et_tube_diameter: 3.5,
@@ -281,7 +279,7 @@ export default {
       temp: 37.0,
       humidity: 100,
       trigger_perc: 6.0,
-      mode: "OFF",
+      mode: "PC",
       x_min: 2,
       x_max: 15.0,
       y_min: 0,
@@ -315,69 +313,7 @@ export default {
         "PV SPONT": ["THORAX.pres", "THORAX.vol"]
       },
       update_model: true,
-      curve_param: "pres",
-      mutableParameters1: [
-          {
-            "label": "Flow",
-            "unit": "l/min",
-            "factor": 1,
-            "rounding": 3,
-            "props": [
-              "Ecls.flow"
-            ],
-            "weight_based": false
-          },
-          {
-            "label": "Pven",
-            "unit": "mmHg",
-            "factor": 1,
-            "rounding": 1,
-            "props": [
-              "Ecls.ven_pres"
-            ],
-            "weight_based": false
-          },
-          {
-            "label": "Pint",
-            "unit": "mmHg",
-            "factor": 1,
-            "rounding": 1,
-            "props": [
-              "Ecls.pre_oxy_pres"
-            ],
-            "weight_based": false
-          },
-          {
-            "label": "Part",
-            "unit": "mmHg",
-            "factor": 1,
-            "rounding": 1,
-            "props": [
-              "Ecls.post_oxy_pres"
-            ],
-            "weight_based": false
-          },
-          {
-            "label": "Tmp",
-            "unit": "mmHg",
-            "factor": 1,
-            "rounding": 1,
-            "props": [
-              "Ecls.tmp_pres"
-            ],
-            "weight_based": false
-          },
-          {
-            "label": "SvO2",
-            "unit": "%",
-            "factor": 1,
-            "rounding": 1,
-            "props": [
-              "Ecls.pre_oxy_so2"
-            ],
-            "weight_based": false
-          },
-        ]
+      curve_param: "pres"
     };
   },
   methods: {
@@ -387,9 +323,15 @@ export default {
     toggleCurveParam() {
       if (this.curve_param == "pres") {
         this.p1 = "Ventilator.pres"
+        this.y_min = -5
+        this.y_max = this.pip_cmh2o_max
+        this.chartOptions.scales.y.min = -5
+        this.chartOptions.scales.y_max = 25
       }
       if (this.curve_param == "flow") {
         this.p1 = "Ventilator.flow"
+        this.chartOptions.scales.y.min = -10
+        this.chartOptions.scales.y_max = 10
       }
       if (this.curve_param == "vol") {
         this.p1 = "Ventilator.vol"
@@ -459,8 +401,8 @@ export default {
             if (this.ventilator_running) {
               explain.callModelFunction("Ventilator.set_pc", [this.pip_cmh2o, this.peep_cmh2o, this.freq, this.insp_time, this.insp_flow])
             }
-            this.spont_breathing = false
-            this.toggle_spont_breathing()
+            // this.spont_breathing = false
+            // this.toggle_spont_breathing()
             break;
           case "PRVC":
             if (!this.ventilator_running) {
@@ -546,12 +488,8 @@ export default {
 
     },
     analyzeData() {
-
       this.resetAnalysis()
-
       let param1 = []
-
-
       if (this.p1 !== '') {
         param1 = explain.modelData.map((item) => { return item[this.p1] * this.chart1_factor; });
         this.p1_max = Stat.max(param1).toFixed(4)
@@ -562,6 +500,12 @@ export default {
         this.p1_perbeat = 0.0
       }
 
+    },
+    toggleAutoscaling() {
+      const myChart = this.$refs.myTest.chart
+      this.y_max = parseInt(myChart.data.datasets[0].data.reduce((max, current) => (current > max ? current : max), -Infinity))
+      this.y_min = parseInt(myChart.data.datasets[0].data.reduce((min, current) => (current < min ? current : min), Infinity))
+      this.autoscaling()
     },
     autoscaling() {
       if (!this.autoscale) {
@@ -695,69 +639,12 @@ export default {
       this.y1_axis = []
 
     },
-    exportData() {
-      let header = ""
-      let data = {
-        time: explain.modelData.map((item) => { return item['time'] }),
-      }
-
-
-      if (this.p1 !== "") {
-        let h1 = this.selectedModel1.toUpperCase() + this.selectedProp1.toUpperCase() + "_";
-        header += h1
-        data[h1] = explain.modelData.map((item) => { return (parseFloat(item[this.p1])).toFixed(5) });
-      }
-      this.exportFileName = `time_vs_${header}.csv`;
-      this.writeDataToDisk(data)
-
-    },
-    writeDataToDisk(data) {
-      // download to local disk
-      const data_csv = this.convertToCSV(data)
-      const blob = new Blob([data_csv], { type: "text/json" });
-      // create an element called a
-      const a = document.createElement("a");
-      a.download = this.exportFileName;
-      a.href = window.URL.createObjectURL(blob);
-      a.dataset.downloadurl = ["text/json", a.download, a.href].join(":");
-      // create a synthetic click MouseEvent
-      let evt = new MouseEvent("click", {
-        bubbles: true,
-        cancelable: true,
-        view: window,
-      });
-      // dispatch the mouse click event
-      a.dispatchEvent(evt);
-      // remove the element from the document
-      a.remove();
-    },
-    convertToCSV(obj) {
-      const headers = Object.keys(obj);
-      const rows = [];
-
-      // Push the headers as the first row
-      rows.push(headers.join(','));
-
-      // Determine the number of rows needed by checking the length of one of the arrays
-      const numRows = obj[headers[0]].length;
-
-      // Loop through the rows of data
-      for (let i = 0; i < numRows; i++) {
-        const rowData = headers.map((header) => obj[header][i]);
-        rows.push(rowData.join(','));
-      }
-
-      return rows.join('\n');
-    },
     processModelState() {
       if (explain.modelState.models) {
         this.ventilator_running = explain.modelState.models["Ventilator"].is_enabled
-        console.log(this.ventilator_running)
         if (this.ventilator_running) {
           this.mode = explain.modelState.models["Ventilator"].vent_mode
           explain.watchModelProps(["Ventilator.pres", "Ventilator.flow", "Ventilator.vol", "Ventilator.co2", "Ventilator.etco2", "Breathing.breathing_enabled"])
-        } else {
-          this.mode = "OFF"
         }
         this.et_tube_diameter = explain.modelState.models["Ventilator"].ettube_diameter
         this.et_tube_length = explain.modelState.models["Ventilator"].ettube_length

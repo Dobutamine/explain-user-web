@@ -138,6 +138,7 @@ export class Resistor extends BaseModelClass {
     this.no_back_flow = false; // flags whether backflow is allowed across this resistor
     this.p1_ext = 0.0; // external pressure on the inlet (mmHg)
     this.p2_ext = 0.0; // external pressure on the outlet (mmHg)
+    this.fixed_composition = false;
 
     // non-persistent property factors. These factors reset to 1.0 after each model step
     this.r_factor = 1.0; // non-persistent resistance factor

@@ -1,7 +1,5 @@
 import { BaseModelClass } from "../base_models/BaseModelClass";
 import { calc_gas_composition } from "../component_models/GasComposition";
-import { GasCapacitance } from "../component_models/GasCapacitance";
-import { Resistor } from "../base_models/Resistor";
 
 export class Ventilator extends BaseModelClass {
   // static properties
@@ -265,6 +263,7 @@ export class Ventilator extends BaseModelClass {
     // initialize the super class
     super.init_model(args);
 
+    // get a reference to alle relevant models
     this._breathing_model = this._model_engine.models["Breathing"];
     this._vent_gasin = this._model_engine.models["VENT_GASIN"];
     this._vent_gascircuit = this._model_engine.models["VENT_GASCIRCUIT"];
@@ -273,6 +272,7 @@ export class Ventilator extends BaseModelClass {
     this._vent_ettube = this._model_engine.models["VENT_ETTUBE"];
     this._vent_exp_valve = this._model_engine.models["VENT_EXP_VALVE"];
 
+    // store the models inside a list for easy switching.
     this._ventilator_parts = [
       this._vent_gasin,
       this._vent_gascircuit,
@@ -282,21 +282,18 @@ export class Ventilator extends BaseModelClass {
       this._vent_exp_valve,
     ];
 
+    // calculate the gas composition of the ventilator circuits
     calc_gas_composition(this._vent_gasin, this.fio2, this.temp, this.humidity);
-    calc_gas_composition(
-      this._vent_gascircuit,
-      this.fio2,
-      this.temp,
-      this.humidity
-    );
+    calc_gas_composition(this._vent_gascircuit, this.fio2, this.temp, this.humidity);
     calc_gas_composition(this._vent_gasout, 0.205, 20.0, 0.5);
 
+    // calculate the et-tube diameter and resistance
     this.set_ettube_diameter(this.ettube_diameter);
     this._et_tube_resistance = this.calc_ettube_resistance(this.flow);
-    this._is_initialized = true;
   }
 
   calc_model() {
+    // translate the pressures to mmHg
     this._pip = this.pip_cmh2o / 1.35951;
     this._pip_max = this.pip_cmh2o_max / 1.35951;
     this._peep = this.peep_cmh2o / 1.35951;
@@ -305,6 +302,7 @@ export class Ventilator extends BaseModelClass {
       this.triggering();
     }
 
+    // do the cycling and pressure regulation
     if (this.vent_mode === "PC" || this.vent_mode === "PRVC") {
       this.time_cycling();
       this.pressure_control();
@@ -390,7 +388,6 @@ export class Ventilator extends BaseModelClass {
 
   time_cycling() {
     this.exp_time = 60.0 / this.vent_rate - this.insp_time;
-
     if (this._insp_time_counter > this.insp_time) {
       this._insp_time_counter = 0.0;
       this.insp_tidal_volume = this._insp_tidal_volume_counter;
@@ -597,6 +594,8 @@ export class Ventilator extends BaseModelClass {
     this.insp_time = t_in;
     this.insp_flow = insp_flow;
     this.vent_mode = "PC";
+
+    console.log('setting PC', this.vent_rate)
   }
 
   set_prvc(

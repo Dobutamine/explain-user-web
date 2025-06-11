@@ -6,37 +6,46 @@ export class Shunts extends BaseModelClass {
   static model_type = "Shunts";
   static model_interface = [
     {
-      caption: "ductus arteriosus diameter (mm)",
-      target: "da_diameter_in",
+      caption: "foramen ovale diameter (mm)",
+      target: "diameter_fo",
       type: "number",
       delta: 0.1,
       factor: 1.0,
       rounding: 1,
     },
     {
-      caption: "ductus arteriosus diameter (mm)",
-      target: "da_diameter_out",
+      caption: "ventricular septal defect diameter (mm)",
+      target: "diameter_vsd",
       type: "number",
       delta: 0.1,
       factor: 1.0,
       rounding: 1,
     },
     {
-      caption: "ductus arteriosus elastance",
-      target: "da_el",
+      caption: "atrial septum width (mm)",
+      target: "atrial_septal_width",
       type: "number",
       delta: 0.1,
       factor: 1.0,
       rounding: 1,
     },
     {
-      caption: "ductus arteriosus length (mm)",
-      target: "da_length",
+      caption: "ventricular septum width (mm)",
+      target: "ventricular_septal_width",
       type: "number",
       delta: 0.1,
       factor: 1.0,
       rounding: 1,
-    }
+    },
+    {
+      caption: "foramen ovale L-R resistance factor",
+      target: "fo_lr_factor",
+      type: "number",
+      delta: 0.1,
+      factor: 1.0,
+      rounding: 1,
+    },
+
   ];
 
   /*
@@ -49,87 +58,74 @@ export class Shunts extends BaseModelClass {
     // -----------------------------------------------
     // initialize independent properties
     // -----------------------------------------------
-    this.da_diameter_in = 2.0; // ductus arteriosus diameter (mm)
-    this.da_diameter_out = 4.0; // ductus arteriosus diameter (mm)
-    this.da_length = 5; // ductus arteriosus length (mm)
-    this.da_res_in = 1500; // resistance across the ductus arteriosus (mmHg*s/L)
-    this.da_res_out = 1500; // resistance across the ductus arteriosus (mmHg*s/L)
-    this.da_el = 40000; // elasticity of the ductus arteriosus
-    
+    this.diameter_fo = 2.0; // diameter of the foramen ovale in mm
+    this.diameter_fo_max = 10.0; 
+    this.diameter_vsd = 2.0;
+    this.diameter_vsd_max = 10.0;
+
+    this.atrial_septal_width = 3.0; // width of the atrial septum in mm
+    this.ventricular_septal_width = 5.0; // width of the ventricular septum in mm
+    this.fo_lr_factor = 10.0;
+    this.viscosity = 6.0; 
+
     // -----------------------------------------------
     // initialize dependent properties
     // -----------------------------------------------
-    this.da_viscosity = 6; // viscosity in ductus arteriosus (cP)
-    this.da_flow_in = 0; // in flow across the ductus arteriosus (L/s)
-    this.da_flow_out = 0; // out flow of the ductus arteriosus
-    this.da_velocity = 0;
-    this.da_velocity_in = 0; // blood flow velocity across the ductus arteriosus (cm/s)
-    this.da_velocity_out = 0; // blood flow velocity across the ductus arteriosus (cm/s)
+    this.flow_fo = 0.0; // flow through the foramen ovale in mL/s
+    this.flow_vsd = 0.0; // flow through the muscular ventricular septal defect in mL/s
+
+    this.velocity_fo = 0.0; // velocity of flow through the foramen ovale in m/s
+    this.velocity_vsd = 0.0; // velocity of flow through the perimembranous ventricular septal defect in m/s
+    
+    this.res_fo = 500;
+    this.res_vsd = 500;
 
     // -----------------------------------------------
     // initialize local properties (preceded with _)
     // -----------------------------------------------
-    this._da = {}
-    this._da_in = {}
-    this._da_out = {}
-    this._prev_da_res = 1500;
+    this._fo = {};  
+    this._vsd = {}; // muscular ventricular septal defect
 
   }
 
   calc_model() {
-    // get a reference to the ductus arteriosus blood vessel model
-    this._da_in = this._model_engine.models["AAR_DA"];
-    this._da = this._model_engine.models["DA"];
-    this._da_out = this._model_engine.models["DA_PA"];
+    // get a reference to the models
+    this._fo = this._model_engine.models["FO"];
+    this._vsd = this._model_engine.models["VSD"];
 
-    // get the current flows
-    this.da_flow_in = this._da_in.flow
-    this.da_flow_out = this._da_out.flow
+    // get the viscosity from the model engine
+    this.viscosity = this._model_engine.models["LV"].viscosity
 
-    // calculate the ductus arteriosus resistance
-    this.da_viscosity = this._da.viscosity
+    // guard for a too large diameters
+    this.diameter_fo = Math.min(this.diameter_fo, this.diameter_fo_max);
+    this.diameter_vsd = Math.min(this.diameter_vsd, this.diameter_vsd_max);
 
-    // set the elastance of the ductus arteriosus
-    this._da.el_base = this.da_el
+    // if the diameter is zero, set the resistance to a very high value to represent no flow
+    this._fo.no_flow = this.diameter_fo === 0;
+    this._vsd.no_flow = this.diameter_vsd === 0;
 
-    // calculate the resistance across the ductus arteriosus
-    if (this.da_diameter_in == 0) {
-      this._da_in.no_flow = true
-    } else {
-      this._da_in.no_flow = false
-    }
-    if (this.da_diameter_out == 0) {
-      this._da_out.no_flow = true
-    } else {
-      this._da_out.no_flow = false
-    }
+    // calculate the resistance across the FO and VSD
+    this.res_fo = this.calc_resistance(this.diameter_fo, this.atrial_septal_width, this.viscosity);
+    this.res_vsd = this.calc_resistance(this.diameter_vsd, this.ventricular_septal_width, this.viscosity);
 
-    this.da_res_in = this.calc_resistance(this.da_diameter_in, this.da_length, this.da_viscosity)
-    this.da_res_out = this.calc_resistance(this.da_diameter_out, this.da_length, this.da_viscosity)
-    
-    // transfer the resistance to the ductus arteriosus
-    this._da_in.r_for = this.da_res_in;
-    this._da_in.r_back = this.da_res_in;
+    // transfer the resistances to the models
+    this._fo.r_for = this.res_fo * this.fo_lr_factor;
+    this._fo.r_back = this.res_fo;
 
-    this._da_out.r_for = this.da_res_out;
-    this._da_out.r_back = this.da_res_out;
+    this._vsd.r_for = this.res_vsd;
+    this._vsd.r_back = this.res_vsd;
 
-    // calculate the ductus arteriosus area
-    let da_area_in = Math.pow((this.da_diameter_in * 0.001) / 2.0, 2.0) * Math.PI; // in m^2
-    let da_area_out = Math.pow((this.da_diameter_out * 0.001) / 2.0, 2.0) * Math.PI; // in m^2
-    
-    // calculate the velocity across the ductus arteriosus
-    // convert flow in L/s to m^3/s => factor 1000 and divide by the area in cm^2
-    if (da_area_in > 0) {
-      this.da_velocity_in = (this.da_flow_in * 0.001) / da_area_in
-    } else {
-      this.da_velocity_in = 0.0;
-    }
-    if (da_area_out > 0) {
-      this.da_velocity_out = (this.da_flow_out * 0.001) / da_area_out
-    } else {
-      this.da_velocity_out = 0.0;
-    }
+    // get the flows
+    this.flow_fo = this._fo.flow;
+    this.flow_vsd = this._vsd.flow;
+
+    // calculate the area of the fo and vsd
+    let area_fo = Math.pow((this.diameter_fo * 0.001) / 2.0, 2.0) * Math.PI;
+    let area_vsd = Math.pow((this.diameter_vsd * 0.001) / 2.0, 2.0) * Math.PI;
+
+    // calculate the velocities over the fo and vsd
+    this.velocity_fo = area_fo > 0 ? (this.flow_fo * 0.001) / area_fo: 0.0;
+    this.velocity_vsd = area_vsd > 0 ? (this.flow_vsd * 0.001) / area_vsd: 0.0;
 
   }
 

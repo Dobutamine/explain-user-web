@@ -71,6 +71,7 @@ export class Capacitance extends BaseModelClass {
     this.el_base = 0.0; // baseline elastance E (mmHg/L)
     this.el_k = 0.0; // non-linear elastance factor K2 (unitless)
     this.pres_ext = 0.0; // non persistent external pressure p2(t) (mmHg)
+    this.fixed_composition = false;
 
     // non-persistent property factors. These factors reset to 1.0 after each model step
     this.u_vol_factor = 1.0; // non-persistent unstressed volume factor step (unitless)
@@ -143,16 +144,20 @@ export class Capacitance extends BaseModelClass {
   }
 
   volume_in(dvol) {
-    // add volume to the capacitance
-    this.vol += dvol;
+    if (!this.fixed_composition) {
+      // add volume to the capacitance
+      this.vol += dvol;
+    }
 
     // return if the volume is zero or lower
     if (this.vol <= 0.0) return;
   }
 
   volume_out(dvol) {
-    // remove volume from capacitance
-    this.vol -= dvol;
+    if (!this.fixed_composition) {
+      // remove volume from capacitance
+      this.vol -= dvol;
+    }
 
     // if the volume is zero or lower, handle it
     if (this.vol < 0.0 && this.vol < this.u_vol) {
