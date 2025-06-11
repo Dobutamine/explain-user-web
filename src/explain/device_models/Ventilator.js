@@ -93,19 +93,11 @@ export class Ventilator extends BaseModelClass {
       ],
     },
     {
-      caption: "current volume (mL)",
-      target: "vol",
-      type: "number",
-      delta: 0.1,
-      factor: 1000.0,
-      rounding: 3,
-    },
-    {
       caption: "ventilator mode",
       target: "vent_mode",
       type: "list",
       custom_options: true,
-      options: ["PC", "PRVC"],
+      options: ["PC", "PRVC", "PS"],
     },
     {
       caption: "ventilator rate (/min)",

@@ -1,5 +1,4 @@
 import { BaseModelClass } from "../base_models/BaseModelClass.js";
-import * as Models from "../ModelIndex.js"
 import { calc_blood_composition } from "../component_models/BloodComposition.js"
 import { calc_gas_composition } from "../component_models/GasComposition.js"
 import RealTimeMovingAverage from "../helpers/RealTimeMovingAverage.js"
@@ -57,6 +56,32 @@ export class Ecls extends BaseModelClass {
       rounding: 0,
       ll: 0.0,
       ul: 1000.0,
+    },
+    {
+      caption: "drainage site",
+      target: "set_drainage_origin",
+      type: "function",
+      args: [
+        {
+          caption: "drainage site",
+          target: "drainage_origin",
+          type: "list",
+          options: ["BloodCapacitance", "BloodVessel", "MicroVascularUnit", "BloodTimeVaryingElastance"]
+        }
+      ]
+    },
+    {
+      caption: "return site",
+      target: "set_return_target",
+      type: "function",
+      args: [
+        {
+          caption: "return site",
+          target: "return_target",
+          type: "list",
+          options: ["BloodCapacitance", "BloodVessel", "MicroVascularUnit", "BloodTimeVaryingElastance"]
+        }
+      ]
     },
   ];
 
@@ -415,10 +440,12 @@ export class Ecls extends BaseModelClass {
   }
 
   set_drainage_origin(new_target) {
+    this.drainage_origin = new_target
     this._drainage.comp_from = new_target
   }
 
   set_return_target(new_target) {
+    this.return_target = new_target
     this._return.comp_to = new_target
   }
 
