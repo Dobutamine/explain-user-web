@@ -238,6 +238,9 @@ export class Blood extends BaseModelClass {
         so2: this._right_atrium.so2,
       };
 
+      calc_blood_composition(this._model_engine.models["IVCI"])
+      calc_blood_composition(this._model_engine.models["SVC"])
+
       // arterial solute concentrations
       this.art_solutes = { ...this._descending_aorta.solutes };
     }
