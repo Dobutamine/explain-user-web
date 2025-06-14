@@ -6,44 +6,44 @@
     <div v-if="isEnabled">
       <div class="q-ma-sm q-gutter-xs row items-center">
         <div class="q-mr-md">
-          <div class="q-mr-sm text-left text-green" :style="{ 'font-size': '12px' }">
+          <div class="q-mr-sm text-left text-green" :style="{ 'font-size': '10px' }">
             Heart rate (/min)
           </div>
-          <div class="text-green" :style="{ 'font-size': '46px' }">
+          <div class="text-green" :style="{ 'font-size': '36px' }">
             {{ hr }}
           </div>
         </div>
         <div class="q-mr-sm">
-          <div class="q-mr-sm text-left text-purple-12" :style="{ 'font-size': '12px' }">
+          <div class="q-mr-sm text-left text-purple-12" :style="{ 'font-size': '10px' }">
             SpO2 pre (%)
           </div>
-          <div class="text-purple-12" :style="{ 'font-size': '46px' }">
+          <div class="text-purple-12" :style="{ 'font-size': '36px' }">
             {{ spo2_pre }}
           </div>
         </div>
         <div class="q-mr-sm">
-          <div class="q-mr-sm text-left text-purple-11" :style="{ 'font-size': '12px' }">
+          <div class="q-mr-sm text-left text-purple-11" :style="{ 'font-size': '10px' }">
             SpO2 post (%)
           </div>
-          <div class="text-purple-11" :style="{ 'font-size': '46px' }">
+          <div class="text-purple-11" :style="{ 'font-size': '36px' }">
             {{ spo2_post }}
           </div>
         </div>
         <div class="q-mr-sm">
-          <div class="q-mr-sm text-left text-white" :style="{ 'font-size': '12px' }">
+          <div class="q-mr-sm text-left text-white" :style="{ 'font-size': '10px' }">
             Resp rate (/min)
           </div>
-          <div class="text-white" :style="{ 'font-size': '46px' }">
+          <div class="text-white" :style="{ 'font-size': '36px' }">
             {{ rr }}
           </div>
         </div>
         <div class="q-mr-sm">
-          <div class="q-mr-sm text-left text-red-12" :style="{ 'font-size': '12px' }">
+          <div class="q-mr-sm text-left text-red-12" :style="{ 'font-size': '10px' }">
             ABP (mmHg)
           </div>
-          <div class="text-red-12 row" :style="{ 'font-size': '46px' }">
+          <div class="text-red-12 row" :style="{ 'font-size': '36px' }">
             {{ abp }}
-            <div class="q-ma-sm q-mt-md text-red-12" :style="{ 'font-size': '28px' }">
+            <div class="q-ma-sm q-mt-md text-red-12" :style="{ 'font-size': '18px' }">
               {{ abp_mean }}
             </div>
           </div>

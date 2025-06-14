@@ -8,10 +8,9 @@
             <q-tab name="model_editor"><q-icon name="fa-solid fa-pen-to-square" size="xs"></q-icon><q-tooltip>edit model
                 components</q-tooltip>
             </q-tab>
-            <q-tab name="circulatory_system"><q-icon name="fa-solid fa-heart" size="xs"></q-icon><q-tooltip>edit heart
-                and circulatory system</q-tooltip>
+           <q-tab name="diagram_editor"><q-icon name="fa-solid fa-diagram-project" size="xs"></q-icon><q-tooltip>edit diagram</q-tooltip>
             </q-tab>
-            <q-tab name="respiratory_system"><q-icon name="fa-solid fa-lungs" size="xs"></q-icon><q-tooltip>edit
+             <!-- <q-tab name="respiratory_system"><q-icon name="fa-solid fa-lungs" size="xs"></q-icon><q-tooltip>edit
                 respiratory system</q-tooltip>
             </q-tab>
             <q-tab name="brain"><q-icon name="fa-solid fa-brain" size="xs"></q-icon><q-tooltip>edit
@@ -22,7 +21,7 @@
             </q-tab>
             <q-tab name="scaling"><q-icon name="fa-solid fa-weight-scale" size="xs"></q-icon><q-tooltip>global moddel
                 scaling</q-tooltip>
-            </q-tab>
+            </q-tab> -->
           </q-tabs>
 
           <q-tab-panels v-model="tab_left" keep-alive style="background-color: black">
@@ -34,12 +33,11 @@
                 width: '5px',
                 opacity: 1.0
               }">
-              <ModelEditor></ModelEditor>
-               <ModelEditor></ModelEditor>
-              <DiagramEditorComponent></DiagramEditorComponent>
+              <ModelEditor title="MODEL EDITOR A"></ModelEditor>
+              <ModelEditor title="MODEL EDITOR B"></ModelEditor>
               </q-scroll-area>
             </q-tab-panel>
-            <q-tab-panel name="circulatory_system">
+            <q-tab-panel name="diagram_editor">
               <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
                 right: '5px',
                 borderRadius: '5px',
@@ -47,14 +45,14 @@
                 width: '5px',
                 opacity: 0.5
               }">
-
-                <div v-for="item in state.configuration.enabled_controllers.circulation">
+                <DiagramEditorComponent></DiagramEditorComponent>
+                <!-- <div v-for="item in state.configuration.enabled_controllers.circulation">
                   <NiceController :config="state.configuration.controllers[item]"></NiceController>
-                </div>
+                </div> -->
 
               </q-scroll-area>
             </q-tab-panel>
-            <q-tab-panel name="respiratory_system">
+            <!-- <q-tab-panel name="respiratory_system">
               <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
                 right: '5px',
                 borderRadius: '5px',
@@ -107,7 +105,7 @@
               }">
                 <NiceController :config="state.configuration.controllers.scaler_controller"></NiceController>
               </q-scroll-area>
-            </q-tab-panel>
+            </q-tab-panel> -->
 
           </q-tab-panels>
         </div>
@@ -117,7 +115,7 @@
            narrow-indicator outside-arrows @update:model-value="tabCenterChanged">
 
             <q-tab name="diagram">
-              <q-icon name="fa-solid fa-home" size="xs"></q-icon>
+              <q-icon name="fa-solid fa-diagram-project" size="xs"></q-icon>
               <q-tooltip>diagram</q-tooltip>
             </q-tab>
 
@@ -135,12 +133,6 @@
               <!-- <q-icon name="fa-solid fa-lungs" size="xs"></q-icon> -->
               ECLS
               <q-tooltip>extracorporeal life support</q-tooltip>
-            </q-tab>
-
-            <q-tab name="placenta">
-              <!-- <q-icon name="fa-solid fa-lungs" size="xs"></q-icon> -->
-              FETAL
-              <q-tooltip>fetal life</q-tooltip>
             </q-tab>
 
 
@@ -212,18 +204,6 @@
               </q-scroll-area>
             </q-tab-panel>
 
-            <q-tab-panel name="placenta">
-              <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
-                right: '5px',
-                borderRadius: '5px',
-                background: 'black',
-                width: '5px',
-                opacity: 0.5
-              }">
-                <PlacentaComponent :alive="placenta_alive"></PlacentaComponent>
-              </q-scroll-area>
-            </q-tab-panel>
-
             <q-tab-panel name="heart">
               <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
                 right: '5px',
@@ -269,7 +249,7 @@
               <q-icon name="fa-solid fa-desktop" size="xs"></q-icon>
               <q-tooltip>monitoring</q-tooltip>
             </q-tab>
-            <q-tab name="circulation">
+            <!-- <q-tab name="circulation">
               <q-icon name="fa-solid fa-heart" size="xs"></q-icon>
               <q-tooltip>monitoring</q-tooltip>
             </q-tab>
@@ -280,7 +260,7 @@
             <q-tab name="other">
               <q-icon name="fa-solid fa-list" size="xs"></q-icon>
               <q-tooltip>monitoring</q-tooltip>
-            </q-tab>
+            </q-tab> -->
 
           </q-tabs>
           <q-tab-panels v-model="tab_right" keep-alive style="background-color: black">
@@ -301,7 +281,7 @@
 
               </q-scroll-area>
             </q-tab-panel>
-            <q-tab-panel name="circulation">
+            <!-- <q-tab-panel name="circulation">
               <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
                 right: '5px',
                 borderRadius: '5px',
@@ -348,7 +328,7 @@
                 </div>
 
               </q-scroll-area>
-            </q-tab-panel>
+            </q-tab-panel> -->
           </q-tab-panels>
         </div>
       </div>
@@ -373,7 +353,6 @@ import BigNumbersComponent from 'src/components/BigNumbersComponent.vue';
 import DiagramEditorComponent from 'src/components/DiagramEditor.vue';
 import TaskScheduler from 'src/components/TaskScheduler.vue';
 import EclsComponent from 'src/components/EclsComponent.vue';
-import PlacentaComponent from 'src/components/PlacentaComponent.vue';
 
 import { explain } from 'src/boot/explain';
 
@@ -401,20 +380,17 @@ export default defineComponent({
     NiceController,
     DiagramEditorComponent,
     TaskScheduler,
-    EclsComponent,
-    PlacentaComponent
+    EclsComponent
   },
   data() {
     return {
       tab_left: "model_editor",
       tab_center: "diagram",
       tab_right: "numerics",
-      no_of_modeleditor: 1,
       chart_alive: true,
       ventilator_alive: true,
       heart_alive: false,
       ecls_alive:true,
-      placenta_alive: true,
       xy_alive: true,
       diagram_alive: true,
       screen_offset: 135.0,
@@ -438,7 +414,6 @@ export default defineComponent({
           this.xy_alive = false
           this.diagram_alive = false
           this.ecls_alive = false
-          this.placenta_alive = false
           break;
         case "ecls":
           this.ecls_alive = true
@@ -447,7 +422,6 @@ export default defineComponent({
           this.chart_alive = false
           this.xy_alive = false
           this.diagram_alive = false
-          this.placenta_alive = false
           break;
         case "heart":
           this.ventilator_alive = false
@@ -456,7 +430,6 @@ export default defineComponent({
           this.xy_alive = false
           this.diagram_alive = false
           this.ecls_alive = false
-          this.placenta_alive = false
           break;
         case "time_chart":
           this.ventilator_alive = false
@@ -465,7 +438,6 @@ export default defineComponent({
           this.xy_alive = false
           this.diagram_alive = false
           this.ecls_alive = false
-          this.placenta_alive = false
           break;
         case "xy_chart":
           this.ventilator_alive = false
@@ -474,7 +446,6 @@ export default defineComponent({
           this.xy_alive = true
           this.diagram_alive = false
           this.ecls_alive = false
-          this.placenta_alive = false
           break;
         case "diagram":
           this.ventilator_alive = false
@@ -483,7 +454,6 @@ export default defineComponent({
           this.xy_alive = false
           this.diagram_alive = true
           this.ecls_alive = false
-          this.placenta_alive = false
           break;
         case "placenta":
           this.ventilator_alive = false
@@ -492,7 +462,6 @@ export default defineComponent({
           this.xy_alive = false
           this.diagram_alive = false
           this.ecls_alive = false
-          this.placenta_alive = true
           break;
 
 

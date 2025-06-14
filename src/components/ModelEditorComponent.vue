@@ -108,18 +108,27 @@
         </div>
 
         <div>
-          <div class="q-pa-sm q-mt-xs q-mb-sm q-ml-md q-mr-md text-overline justify-center row">
-            <q-select class="q-pa-xs col" v-model="selectedModelName" square label="edit existing model" hide-hint
+          <div class="q-pa-sm q-mt-xs q-mb-xs q-ml-md q-mr-md text-overline justify-center row">
+            <q-btn-toggle v-model="edit_mode" color="grey-9" size="xs" text-color="white" toggle-color="black" :options="[
+              { label: 'BASIC', value: 'basic' },
+              { label: 'ADVANCED', value: 'advanced' },
+              { label: 'FACTORS', value: 'factors' },
+              { label: 'ALL', value: 'all' },
+            ]" @update:model-value="selectMode" />
+          </div>
+          <div class="q-pa-sm q-mt-xs q-mb-xs q-ml-md q-mr-md text-overline justify-center row">
+            <q-select class="q-pa-xs col" v-model="selectedModelName" square label="select model" hide-hint
               :options="modelNames" dense dark stack-label @update:model-value="modelChanged" />
-            <q-btn v-if="selectedModelName" class="col-1 q-ma-xs q-mt-sm" color="grey-9" size="xs" dense
+            <q-btn v-if="selectedModelName" class="col-1 q-ma-xs q-mt-md" color="grey-9" size="xs" dense
               icon="fa-solid fa-xmark" @click="cancel" style="font-size: 8px"><q-tooltip>clear model
                 editor</q-tooltip></q-btn>
-            <q-btn v-if="selectedModelName" class="col-1 q-ma-xs q-mt-sm" color="primary" size="xs" dense
+            <q-btn v-if="selectedModelName" class="col-1 q-ma-xs q-mt-md" color="primary" size="xs" dense
               icon="fa-solid fa-play" @click="cancel" style="font-size: 8px"><q-tooltip>apply changes</q-tooltip></q-btn>
-            <q-btn v-if="selectedModelName" class="col-1 q-ma-xs q-mt-sm" color="red-10" size="xs" dense
+            <!-- <q-btn v-if="selectedModelName" class="col-1 q-ma-xs q-mt-md" color="red-10" size="xs" dense
               icon="fa-solid fa-trash" @click="deleteModel" style="font-size: 8px"><q-tooltip>delete model
-                (dangerous!!)</q-tooltip></q-btn>
+                (dangerous!!)</q-tooltip></q-btn> -->
           </div>
+
 
 
           <div v-if="redraw > 0.0" class="q-ma-sm q-mb-md">
@@ -288,9 +297,11 @@ export default {
       selectedModelInterface: selectedModelInterface, selectedNewModelProps
     }
   },
+  props: {
+    title: String
+  },
   data() {
     return {
-      title: "MODEL EDITOR",
       collapsed: false,
       isEnabled: true,
       addEnabled: false,
@@ -319,10 +330,12 @@ export default {
       timeOptions: [1, 5, 10, 30, 60, 120, 240, 360],
       changeInTime: 5,
       state_changed: false,
-      collaps_icon: "fa-solid fa-chevron-up"
+      collaps_icon: "fa-solid fa-chevron-up",
+      edit_mode: "basic"
     };
   },
   methods: {
+    selectMode() {},
     cancelAddModel() {
       this.selectedModelType = ""
       this.resetNewModel()
