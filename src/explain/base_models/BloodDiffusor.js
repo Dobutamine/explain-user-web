@@ -1,5 +1,6 @@
 import { BaseModelClass } from "./BaseModelClass";
 import { calc_blood_composition } from "../component_models/BloodComposition"
+import { readonly } from "vue";
 
 export class BloodDiffusor extends BaseModelClass {
   // static properties
@@ -30,80 +31,95 @@ export class BloodDiffusor extends BaseModelClass {
       caption: "enabled",
     },
     {
-      caption: "oxygen diffusion constant",
       target: "dif_o2",
       type: "number",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
+      caption: "oxygen diffusion constant",
       factor: 1.0,
-      delta: 0.001,
-      rounding: 3,
+      delta: 0.0001,
+      rounding: 4,
     },
     {
-      caption: "carbon dioxide diffusion constant",
       target: "dif_co2",
       type: "number",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
+      caption: "carbon dioxide diffusion constant",
       factor: 1.0,
-      delta: 0.001,
-      rounding: 3,
+      delta: 0.0001,
+      rounding: 4,
     },
     {
-      caption: "solute diffusion constant",
       target: "dif_solutes",
       type: "number",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
+      caption: "solute diffusion constant",
       factor: 1.0,
-      delta: 0.001,
-      rounding: 3,
+      delta: 0.0001,
+      rounding: 4,
     },
     {
-      caption: "oxygen diffusion factor",
+      target: "comp_blood1",
+      type: "list",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
+      caption: "blood component 1",
+      options: [
+        "BloodCapacitance", 
+        "BloodTimeVaryingElastance", 
+        "BloodPump", 
+        "BloodVessel", 
+        "MicroVascularUnit",
+        "HeartChamber"
+      ]
+    },
+    {
+      target: "comp_blood2",
+      type: "list",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
+      caption: "blood component 2",
+      options: [
+        "BloodCapacitance", 
+        "BloodTimeVaryingElastance", 
+        "BloodPump", 
+        "BloodVessel", 
+        "MicroVascularUnit",
+        "HeartChamber"
+      ]
+    },
+    {
       target: "dif_o2_factor_ps",
-      type: "factor"
+      type: "factor",
+      build_prop: false,
+      edit_mode: "basic",
+      readonly: false,
+      caption: "oxygen diffusion factor",
     },
     {
       caption: "carbon dioxide diffusion factor",
       target: "dif_co2_factor_ps",
-      type: "factor"
+      type: "factor",
+      build_prop: false,
+      edit_mode: "basic",
+      readonly: false,
     },
     {
       caption: "solute diffusion factor",
       target: "dif_solutes_factor_ps",
-      type: "factor"
+      type: "factor",
+      build_prop: false,
+      edit_mode: "basic",
+      readonly: false,
     },
-        {
-      caption: "blood component 1",
-      target: "comp_blood1",
-      type: "list",
-      options: [
-        "BloodCapacitance", 
-        "BloodTimeVaryingElastance", 
-        "BloodPump", 
-        "BloodVessel", 
-        "Artery", 
-        "Arteriole", 
-        "CapillaryBed", 
-        "CoronaryVessel", 
-        "HeartChamber", 
-        "Vein", 
-        "Venule"
-      ]
-    },
-    {
-      caption: "blood component 2",
-      target: "comp_blood2",
-      type: "list",
-      options: [
-        "BloodCapacitance", 
-        "BloodTimeVaryingElastance", 
-        "BloodPump", 
-        "BloodVessel", 
-        "Artery", 
-        "Arteriole", 
-        "CapillaryBed", 
-        "CoronaryVessel", 
-        "HeartChamber", 
-        "Vein", 
-        "Venule"
-      ]
-    }
+
   ];
 
   constructor(model_ref, name = "") {

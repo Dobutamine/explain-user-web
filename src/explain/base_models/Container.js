@@ -32,6 +32,8 @@ export class Container extends BaseModelClass {
       caption: "unstressed volume (L)",
       target: "u_vol",
       type: "number",
+      build_prop: true,
+      edit_mode: "basic",
       factor: 1.0,
       delta: 0.001,
       rounding: 3,
@@ -40,6 +42,8 @@ export class Container extends BaseModelClass {
       caption: "elastance baseline (mmHg/L)",
       target: "el_base",
       type: "number",
+      build_prop: true,
+      edit_mode: "basic",
       factor: 1,
       delta: 1,
       rounding: 0,
@@ -48,6 +52,8 @@ export class Container extends BaseModelClass {
       caption: "elastance non linear k",
       target: "el_k",
       type: "number",
+      build_prop: true,
+      edit_mode: "basic",
       factor: 1,
       delta: 1,
       rounding: 0,
@@ -55,7 +61,7 @@ export class Container extends BaseModelClass {
     {
       caption: "unstressed volume factor",
       target: "u_vol_factor_ps",
-      type: "factor"
+      type: "factor",
     },
     {
       caption: "elastance baseline factor",
@@ -70,21 +76,16 @@ export class Container extends BaseModelClass {
     {
       caption: "contained compartments",
       target: "contained_components",
+      build_prop: true,
+      edit_mode: "basic",
       type: "multiple-list",
       options: [
         "BloodCapacitance", 
         "BloodTimeVaryingElastance", 
         "BloodPump", 
         "BloodVessel", 
-        "Artery",
-        "Arteriole",
-        "Vein",
-        "Venule",
-        "Capillaries",
-        "CoronaryVessel", 
+        "MicroVascularUnit",
         "HeartChamber",
-        "Airway",
-        "AlveolarSpace",
         "GasCapacitance"
       ]
     }

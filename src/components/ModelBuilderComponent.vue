@@ -155,7 +155,23 @@ export default {
     processModelInterface(model_type, model_props) {
       // we have to convert the model properties to a format which the editor can understand, this is an array of objects and store in selectedNewModelProps
       // clear the current selectedNewModelProps holding the new model properties
+      
+      // add a name prop the model_props list
+      let name_prop = {
+        build_prop: true,
+        caption: "name",
+        edit_mode: "basic",
+        readonly: false,
+        target: "name",
+        type: "string",
+        value: undefined
+      }
+      // insert the property at the first position in the property list
+      model_props.unshift(name_prop)
+
+      // reset the property list
       this.selectedNewModelProps = []
+
       // process the model interface
       model_props.forEach(prop => {
         if (prop.type == 'number') {

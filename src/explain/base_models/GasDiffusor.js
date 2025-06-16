@@ -33,6 +33,8 @@ export class GasDiffusor extends BaseModelClass {
       caption: "oxygen diffusion constant",
       target: "dif_o2",
       type: "number",
+      build_prop: true,
+      edit_mode: "basic",
       factor: 1.0,
       delta: 0.001,
       rounding: 3,
@@ -41,6 +43,8 @@ export class GasDiffusor extends BaseModelClass {
       caption: "carbon dioxide diffusion constant",
       target: "dif_co2",
       type: "number",
+      build_prop: true,
+      edit_mode: "basic",
       factor: 1.0,
       delta: 0.001,
       rounding: 3,
@@ -49,6 +53,8 @@ export class GasDiffusor extends BaseModelClass {
       caption: "nitric oxide diffusion constant",
       target: "dif_n2",
       type: "number",
+      build_prop: true,
+      edit_mode: "basic",
       factor: 1.0,
       delta: 0.001,
       rounding: 3,
@@ -57,6 +63,8 @@ export class GasDiffusor extends BaseModelClass {
       caption: "other gasses diffusion constant",
       target: "dif_other",
       type: "number",
+      build_prop: true,
+      edit_mode: "basic",
       factor: 1.0,
       delta: 0.001,
       rounding: 3,
@@ -64,25 +72,21 @@ export class GasDiffusor extends BaseModelClass {
     {
       caption: "gas component 1",
       target: "comp_gas1",
+      build_prop: true,
+      edit_mode: "basic",
       type: "list",
       options: [
-        "GasCapacitance", 
-        "LowerAirway",
-        "UpperAirway",
-        "PleuralSpace",
-        "AlveolarSac"
+        "GasCapacitance",
       ]
     },
     {
       caption: "gas component 2",
       target: "comp_gas2",
       type: "list",
+      build_prop: true,
+      edit_mode: "basic",
       options: [
-        "GasCapacitance", 
-        "LowerAirway",
-        "UpperAirway",
-        "PleuralSpace",
-        "AlveolarSac"
+        "GasCapacitance"
       ]
     },
     {

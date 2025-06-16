@@ -31,17 +31,23 @@ export class Resistor extends BaseModelClass {
     {
       caption: "no flow allowed",
       target: "no_flow",
-      type: "boolean"
+      type: "boolean",
+      build_prop: true,
+      edit_mode: "basic",
     },
     {
       caption: "no back flow allowed",
       target: "no_back_flow",
-      type: "boolean"
+      type: "boolean",
+      build_prop: true,
+      edit_mode: "basic",
     },
     {
       caption: "forward resistance",
       target: "r_for",
       type: "number",
+      build_prop: true,
+      edit_mode: "basic",
       delta: 1,
       factor: 1.0,
       rounding: 0
@@ -50,6 +56,8 @@ export class Resistor extends BaseModelClass {
       caption: "backward resistance",
       target: "r_back",
       type: "number",
+      build_prop: true,
+      edit_mode: "basic",
       delta: 1,
       factor: 1.0,
       rounding: 0
@@ -58,6 +66,8 @@ export class Resistor extends BaseModelClass {
       caption: "non linear resistance coefficient",
       target: "r_k",
       type: "number",
+      build_prop: true,
+      edit_mode: "basic",
       delta: 1,
       factor: 1.0,
       rounding: 0
@@ -67,6 +77,8 @@ export class Resistor extends BaseModelClass {
       unit: "mmHg*s^2/L",
       target: "l",
       type: "number",
+      build_prop: true,
+      edit_mode: "basic",
       delta: 0.001,
       factor: 1.0,
       rounding: 3
@@ -75,20 +87,16 @@ export class Resistor extends BaseModelClass {
       type: "list",
       caption: "comp from",
       target: "comp_from",
+      build_prop: true,
+      edit_mode: "basic",
       options: [
         "BloodCapacitance", 
         "BloodTimeVaryingElastance", 
         "BloodPump", 
         "BloodVessel", 
-        "Artery",
-        "Arteriole",
-        "Vein",
-        "Venule",
-        "Capillaries",
-        "CoronaryVessel", 
+        "MicroVascularUnit",
+        "HeartChamber", 
         "HeartChamber",
-        "Airway",
-        "AlveolarSpace",
         "GasCapacitance"
       ]
     },
@@ -96,20 +104,16 @@ export class Resistor extends BaseModelClass {
       type: "list",
       caption: "comp to",
       target: "comp_to",
+      build_prop: true,
+      edit_mode: "basic",
       options: [
         "BloodCapacitance", 
         "BloodTimeVaryingElastance", 
         "BloodPump", 
         "BloodVessel", 
-        "Artery",
-        "Arteriole",
-        "Vein",
-        "Venule",
-        "Capillaries",
-        "CoronaryVessel", 
+        "MicroVascularUnit",
+        "HeartChamber", 
         "HeartChamber",
-        "Airway",
-        "AlveolarSpace",
         "GasCapacitance"
       ]
     },

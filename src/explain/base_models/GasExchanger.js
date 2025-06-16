@@ -33,6 +33,8 @@ export class GasExchanger extends BaseModelClass {
       caption: "oxygen diffusion constant",
       target: "dif_o2",
       type: "number",
+      build_prop: true,
+      edit_mode: "basic",
       factor: 1.0,
       delta: 0.0001,
       rounding: 4,
@@ -41,6 +43,8 @@ export class GasExchanger extends BaseModelClass {
       caption: "carbon dioxide diffusion constant",
       target: "dif_co2",
       type: "number",
+      build_prop: true,
+      edit_mode: "basic",
       factor: 1.0,
       delta: 0.0001,
       rounding: 4,
@@ -49,23 +53,23 @@ export class GasExchanger extends BaseModelClass {
       caption: "gas component",
       target: "comp_gas",
       type: "list",
-      options: ["GasCapacitance", "AlveolarSpace"]
+      build_prop: true,
+      edit_mode: "basic",
+      options: ["GasCapacitance"]
     },
     {
       caption: "blood component",
       target: "comp_blood",
       type: "list",
+      build_prop: true,
+      edit_mode: "basic",
       options: [
         "BloodCapacitance", 
         "BloodTimeVaryingElastance", 
-        "BloodPump", "BloodVessel", 
-        "Artery", 
-        "Arteriole", 
-        "CapillaryBed", 
-        "CoronaryVessel", 
-        "HeartChamber", 
-        "Vein", 
-        "Venule"
+        "BloodPump", 
+        "BloodVessel",
+        "MicroVascularUnit",
+        "HeartChamber"
       ]
     },
     {
