@@ -4,10 +4,29 @@ export class Mob extends BaseModelClass {
   // static properties
   static model_type = "Mob";
   static model_interface = [
+    {    
+      target: "model_type",  
+      type: "string",
+      build_prop: false,
+      edit_mode: "basic",
+      readonly: true,
+      caption: "model type",
+    },
     {
-      caption: "model is enabled",
+      target: "description",
+      type: "string",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: true,
+      caption: "description",
+    },
+    {
       target: "is_enabled",
-      type: "boolean"
+      type: "boolean",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
+      caption: "enabled",
     },
     {
       caption: "myocardial oxygen balance",

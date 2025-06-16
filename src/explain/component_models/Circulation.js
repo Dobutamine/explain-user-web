@@ -10,6 +10,30 @@ export class Circulation extends BaseModelClass {
   // static properties
   static model_type = "Circulation";
   static model_interface = [
+        {    
+      target: "model_type",  
+      type: "string",
+      build_prop: false,
+      edit_mode: "basic",
+      readonly: true,
+      caption: "model type",
+    },
+    {
+      target: "description",
+      type: "string",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: true,
+      caption: "description",
+    },
+    {
+      target: "is_enabled",
+      type: "boolean",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
+      caption: "enabled",
+    },
     {
       caption: "heart chambers",
       target: "heart_chambers",

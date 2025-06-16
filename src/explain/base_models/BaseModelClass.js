@@ -4,29 +4,30 @@ import * as Models from "../ModelIndex.js"
 export class BaseModelClass {
   // model interface list as described above
   static model_interface = [
-    {
+    {    
+      target: "model_type",  
       type: "string",
-      target: "model_type",
-      edit_mode: "basic",
       build_prop: false,
+      edit_mode: "basic",
       readonly: true,
       caption: "model type",
     },
     {
-      caption: "description",
-      edit_mode: "basic",
-      build_prop: true,
       target: "description",
       type: "string",
-      readonly: true
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: true,
+      caption: "description",
     },
     {
-      caption: "enabled",
-      edit_mode: "basic",
-      build_prop: true,
       target: "is_enabled",
-      type: "boolean"
-    }
+      type: "boolean",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
+      caption: "enabled",
+    },
   ]
 
   constructor(model_ref, name = "") {

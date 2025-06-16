@@ -7,6 +7,30 @@ export class Ecls extends BaseModelClass {
   // static properties
   static model_type = "Ecls";
   static model_interface = [
+    {    
+      target: "model_type",  
+      type: "string",
+      build_prop: false,
+      edit_mode: "basic",
+      readonly: true,
+      caption: "model type",
+    },
+    {
+      target: "description",
+      type: "string",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: true,
+      caption: "description",
+    },
+    {
+      target: "is_enabled",
+      type: "boolean",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
+      caption: "enabled",
+    },
     {
       caption: "ecls enabled",
       target: "ecls_running",

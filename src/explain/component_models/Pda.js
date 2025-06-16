@@ -117,6 +117,30 @@ export class Pda extends BaseModelClass {
   // static properties
   static model_type = "Pda";
   static model_interface = [
+    {    
+      target: "model_type",  
+      type: "string",
+      build_prop: false,
+      edit_mode: "basic",
+      readonly: true,
+      caption: "model type",
+    },
+    {
+      target: "description",
+      type: "string",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: true,
+      caption: "description",
+    },
+    {
+      target: "is_enabled",
+      type: "boolean",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
+      caption: "enabled",
+    },
     {
       caption: "ductus diameter aortic ampulla (mm)",
       target: "diameter_ao",

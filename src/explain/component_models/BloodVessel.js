@@ -21,35 +21,29 @@ export class BloodVessel extends BloodCapacitance {
   // static properties
   static model_type = "BloodVessel";
   static model_interface = [
-    {
+    {    
+      target: "model_type",  
       type: "string",
+      build_prop: false,
       edit_mode: "basic",
       readonly: true,
       caption: "model type",
-      target: "model_type",
     },
     {
-      type: "string",
-      edit_mode: "basic",
-      readonly: true,
-      build_prop: true,
-      caption: "name",
-      target: "name",
-    },
-    {
-      edit_mode: "basic",
-      caption: "description",
       target: "description",
       type: "string",
-      readonly: true,
       build_prop: true,
+      edit_mode: "basic",
+      readonly: true,
+      caption: "description",
     },
     {
-      edit_mode: "basic",
-      caption: "enabled",
       target: "is_enabled",
       type: "boolean",
       build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
+      caption: "enabled",
     },
     {
       edit_mode: "basic",

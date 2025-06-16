@@ -4,6 +4,30 @@ export class Metabolism extends BaseModelClass {
   // static properties
   static model_type = "Metabolism";
   static model_interface = [
+    {    
+      target: "model_type",  
+      type: "string",
+      build_prop: false,
+      edit_mode: "basic",
+      readonly: true,
+      caption: "model type",
+    },
+    {
+      target: "description",
+      type: "string",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: true,
+      caption: "description",
+    },
+    {
+      target: "is_enabled",
+      type: "boolean",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
+      caption: "enabled",
+    },
     {
       caption: "metabolism enabled",
       target: "met_active",

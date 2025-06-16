@@ -5,17 +5,29 @@ export class Heart extends BaseModelClass {
   // static properties
   static model_type = "Heart";
   static model_interface = [
-    {
-      caption: "model type",
-      target: "model_type",
+    {    
+      target: "model_type",  
       type: "string",
-      readonly: true
+      build_prop: false,
+      edit_mode: "basic",
+      readonly: true,
+      caption: "model type",
     },
     {
-      caption: "description",
       target: "description",
       type: "string",
-      readonly: false
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: true,
+      caption: "description",
+    },
+    {
+      target: "is_enabled",
+      type: "boolean",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
+      caption: "enabled",
     },
     {
       caption: "reference heart rate (bpm)",
