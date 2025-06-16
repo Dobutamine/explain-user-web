@@ -26,9 +26,9 @@
                 editor</q-tooltip></q-btn>
             <q-btn v-if="selectedModelName" class="col-1 q-ma-xs q-mt-md" color="primary" size="xs" dense
               icon="fa-solid fa-play" @click="cancel" style="font-size: 8px"><q-tooltip>apply changes</q-tooltip></q-btn>
-            <!-- <q-btn v-if="selectedModelName" class="col-1 q-ma-xs q-mt-md" color="red-10" size="xs" dense
+            <q-btn v-if="selectedModelName" class="col-1 q-ma-xs q-mt-md" color="red-10" size="xs" dense
               icon="fa-solid fa-trash" @click="deleteModel" style="font-size: 8px"><q-tooltip>delete model
-                (dangerous!!)</q-tooltip></q-btn> -->
+                (dangerous!!)</q-tooltip></q-btn>
           </div>
 
           <div v-if="redraw > 0.0" class="q-ma-sm q-mb-md">
@@ -292,7 +292,6 @@ export default {
       explain.getModelTypeInterface(this.selectedModelType)
     },
     deleteModel() {
-      console.log(this.selectedModelName)
       explain.deleteModel(this.selectedModelName)
     },
     processModelTypeInterface(modeltype_interface) {

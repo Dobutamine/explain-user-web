@@ -201,7 +201,7 @@ export default {
       advancedMode: true,
       editorMode: 0,
       title: "DIAGRAM EDITOR",
-      generalSettingsCollapsed: false,
+      generalSettingsCollapsed: true,
       componentSettingsCollapsed: false,
       collapsed: false,
       modelsTree: {},

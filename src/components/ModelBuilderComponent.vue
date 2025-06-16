@@ -16,7 +16,7 @@
             <q-btn v-if="selectedModelType" class="col-1 q-ma-xs q-mt-md" color="grey-9" size="xs" dense
               icon="fa-solid fa-xmark" @click="cancelAddModel" style="font-size: 8px"><q-tooltip>clear new model</q-tooltip></q-btn>
             <q-btn v-if="selectedModelType" class="col-1 q-ma-xs q-mt-md" color="primary" size="xs" dense
-              icon="fa-solid fa-play" @click="addModelToEngine" style="font-size: 8px"><q-tooltip>add model to engine</q-tooltip></q-btn>
+              icon="fa-solid fa-plus" @click="addModelToEngine" style="font-size: 8px"><q-tooltip>add model to engine</q-tooltip></q-btn>
           </div>
 
           <div v-if="redraw > 0.0" class="q-ma-sm q-mb-md">

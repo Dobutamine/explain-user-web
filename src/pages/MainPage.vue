@@ -5,7 +5,10 @@
         <div class="col-3">
           <q-tabs v-model="tab_left" dense class="text-white" active-color="primary" indicator-color="primary"
             narrow-indicator outside-arrows @update:model-value="tabLeftChanged">
-            <q-tab name="model_editor"><q-icon name="fa-solid fa-pen-to-square" size="xs"></q-icon><q-tooltip>edit model
+            <q-tab name="model_editor"><q-icon name="fa-solid fa-wrench" size="xs"></q-icon><q-tooltip>edit model
+                components</q-tooltip>
+            </q-tab>
+            <q-tab name="model_builder"><q-icon name="fa-solid fa-pen-to-square" size="xs"></q-icon><q-tooltip>build model
                 components</q-tooltip>
             </q-tab>
            <q-tab name="diagram_editor"><q-icon name="fa-solid fa-diagram-project" size="xs"></q-icon><q-tooltip>edit diagram</q-tooltip>
@@ -33,8 +36,19 @@
                 width: '5px',
                 opacity: 1.0
               }">
+              <ModelEditor title="MODEL EDITOR A"></ModelEditor>
+              <ModelEditor title="MODEL EDITOR B"></ModelEditor>
+              </q-scroll-area>
+            </q-tab-panel>
+            <q-tab-panel name="model_builder">
+              <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
+                right: '5px',
+                borderRadius: '5px',
+                background: 'black',
+                width: '5px',
+                opacity: 1.0
+              }">
               <ModelBuilderComponent title="MODEL BUILDER"></ModelBuilderComponent>
-              <ModelEditor title="MODEL EDITOR"></ModelEditor>
               </q-scroll-area>
             </q-tab-panel>
             <q-tab-panel name="diagram_editor">
