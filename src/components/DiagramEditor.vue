@@ -5,7 +5,7 @@
     </div>
     <div v-if="!collapsed">
       <div class="q-ml-md q-mr-sm q-mb-sm  text-overline justify-center">
-        <div class="text-center" @click="generalSettingsCollapsed = !generalSettingsCollapsed">general settings</div>
+        <div class="text-center text-secondary" @click="generalSettingsCollapsed = !generalSettingsCollapsed">general settings</div>
         <div v-if="!generalSettingsCollapsed" class="q-ma-sm row justify-center">
           <q-toggle class="col-3" v-model="state.diagram_definition.settings.grid" label="grid" dense dark size="sm"
             @update:model-value="updateDiagram" />
@@ -44,7 +44,7 @@
 
       </div>
 
-      <div class="text-center text-overline" @click="componentSettingsCollapsed = !componentSettingsCollapsed">component
+      <div class="text-center text-overline text-secondary" @click="componentSettingsCollapsed = !componentSettingsCollapsed">component
         settings</div>
       <div v-if="!componentSettingsCollapsed" class="q-ml-md q-mr-sm q-mb-sm row text-overline justify-center">
         <q-select class="col-9" v-model:model-value="selectedDiagramComponentName"
@@ -201,9 +201,9 @@ export default {
       advancedMode: true,
       editorMode: 0,
       title: "DIAGRAM EDITOR",
-      generalSettingsCollapsed: true,
+      generalSettingsCollapsed: false,
       componentSettingsCollapsed: false,
-      collapsed: true,
+      collapsed: false,
       modelsTree: {},
       selectedModelType: [],
       selectedModelItems: [],

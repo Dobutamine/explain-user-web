@@ -22,6 +22,7 @@ export class Capacitance extends BaseModelClass {
       type: "boolean"
     },
     {
+      edit_mode: "basic",
       caption: "unstressed volume (L)",
       target: "u_vol",
       type: "number",
@@ -30,6 +31,7 @@ export class Capacitance extends BaseModelClass {
       rounding: 3,
     },
     {
+      edit_mode: "basic",
       caption: "elastance baseline (mmHg/L)",
       target: "el_base",
       type: "number",
@@ -38,6 +40,7 @@ export class Capacitance extends BaseModelClass {
       rounding: 0,
     },
     {
+      edit_mode: "basic",
       caption: "elastance non linear k",
       target: "el_k",
       type: "number",
@@ -46,16 +49,19 @@ export class Capacitance extends BaseModelClass {
       rounding: 0,
     },
     {
+      edit_mode: "factors",
       caption: "unstressed volume factor",
       target: "u_vol_factor_ps",
       type: "factor"
     },
     {
+      edit_mode: "factors",
       caption: "elastance baseline factor",
       target: "el_base_factor_ps",
       type: "factor"
     },
     {
+      edit_mode: "factors",
       caption: "elastance non linear  factor",
       target: "el_k_factor_ps",
       type: "factor"

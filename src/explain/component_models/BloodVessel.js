@@ -1,5 +1,6 @@
 import { BloodCapacitance } from "./BloodCapacitance";
 import { Resistor } from "../base_models/Resistor";
+import { readonly } from "vue";
 
 /*
 The BloodVessel class extends the BloodCapacitance class and adds a Resistor to represent a blood vessel in the model.
@@ -21,118 +22,167 @@ export class BloodVessel extends BloodCapacitance {
   static model_type = "BloodVessel";
   static model_interface = [
     {
+      type: "string",
+      edit_mode: "basic",
+      readonly: true,
       caption: "model type",
       target: "model_type",
-      type: "string",
-      readonly: true
     },
     {
+      type: "string",
+      edit_mode: "basic",
+      readonly: true,
+      build_prop: true,
+      caption: "name",
+      target: "name",
+    },
+    {
+      edit_mode: "basic",
       caption: "description",
       target: "description",
       type: "string",
-      readonly: true
+      readonly: true,
+      build_prop: true,
     },
     {
+      edit_mode: "basic",
       caption: "enabled",
       target: "is_enabled",
-      type: "boolean"
+      type: "boolean",
+      build_prop: true,
     },
     {
+      edit_mode: "basic",
       caption: "no flow allowed",
       target: "no_flow",
-      type: "boolean"
+      type: "boolean",
+      build_prop: true,
     },
     {
+      edit_mode: "basic",
       caption: "no back flow allowed",
       target: "no_back_flow",
-      type: "boolean"
+      type: "boolean",
+      build_prop: true,
     },
     {
+      edit_mode: "basic",
       caption: "volume (L)",
       target: "vol",
       type: "number",
       factor: 1.0,
       delta: 0.001,
-      rounding: 3
+      rounding: 3,
+      build_prop: true,
     },
     {
+      edit_mode: "basic",
       caption: "unstressed volume (L)",
       target: "u_vol",
       type: "number",
       factor: 1.0,
       delta: 0.0001,
       rounding: 4,
+      build_prop: true
     },
     {
+      edit_mode: "basic",
       caption: "elastance baseline (mmHg/L)",
       target: "el_base",
       type: "number",
       factor: 1,
       delta: 1,
       rounding: 0,
+      build_prop: true
     },
     {
+      edit_mode: "basic",
       caption: "elastance non linear k",
       target: "el_k",
       type: "number",
       factor: 1,
       delta: 1,
       rounding: 0,
+      build_prop: true
     },
     {
+      edit_mode: "advanced",
+      build_prop: true,
+      caption: "inputs",
+      target: "inputs",
+      type: "multiple-list",
+      options: ["BloodVessel", "BloodTimeVaryingElastance", "BloodCapacitance", "BloodPump"]
+    },
+    {
+      edit_mode: "basic",
       caption: "r_for (mmHg/L/s)",
       target: "r_for",
       type: "number",
       factor: 1.0,
       delta: 0.001,
-      rounding: 3
+      rounding: 3,
+      build_prop: true
     },
     {
+      edit_mode: "basic",
       caption: "r_back (mmHg/L/s)",
       target: "r_back",
       type: "number",
       factor: 1.0,
       delta: 0.001,
-      rounding: 3
+      rounding: 3,
+      build_prop: true
     },
     {
+      edit_mode: "advanced",
       caption: "resistance-elastance coupling (0-1)",
       target: "alpha",
       type: "number",
       factor: 1.0,
       delta: 0.01,
       rounding: 2,
+      build_prop: true
     },
     {
+      edit_mode: "advanced",
       caption: "ans sensitivity (0-1)",
       target: "ans_sens",
       type: "number",
       factor: 1.0,
       delta: 0.01,
       rounding: 2,
+      build_prop: true
     },
     {
+      edit_mode: "factors",
       caption: "resistance factor",
       target: "r_factor_ps",
       type: "number",
       factor: 1.0,
       delta: 0.01,
-      rounding: 2
+      rounding: 2,
+      build_prop: false,
     },
     {
+      edit_mode: "factors",
       caption: "unstressed volume factor",
       target: "u_vol_factor_ps",
       type: "factor",
+      build_prop: false,
     },
     {
+      edit_mode: "factors",
       caption: "elastance baseline factor",
       target: "el_base_factor_ps",
       type: "factor",
+      build_prop: false,
     },
     {
+      edit_mode: "factors",
       caption: "elastance non linear factor",
       target: "el_k_factor_ps",
       type: "factor",
+      build_prop: false,
     },
   ];
 

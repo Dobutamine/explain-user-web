@@ -5,19 +5,25 @@ export class BaseModelClass {
   // model interface list as described above
   static model_interface = [
     {
-      caption: "model type",
-      target: "model_type",
       type: "string",
-      readonly: true
+      target: "model_type",
+      edit_mode: "basic",
+      build_prop: false,
+      readonly: true,
+      caption: "model type",
     },
     {
       caption: "description",
+      edit_mode: "basic",
+      build_prop: true,
       target: "description",
       type: "string",
       readonly: true
     },
     {
       caption: "enabled",
+      edit_mode: "basic",
+      build_prop: true,
       target: "is_enabled",
       type: "boolean"
     }

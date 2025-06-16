@@ -33,8 +33,8 @@
                 width: '5px',
                 opacity: 1.0
               }">
-              <ModelEditor title="MODEL EDITOR A"></ModelEditor>
-              <ModelEditor title="MODEL EDITOR B"></ModelEditor>
+              <ModelBuilderComponent title="MODEL BUILDER"></ModelBuilderComponent>
+              <ModelEditor title="MODEL EDITOR"></ModelEditor>
               </q-scroll-area>
             </q-tab-panel>
             <q-tab-panel name="diagram_editor">
@@ -355,7 +355,7 @@ import TaskScheduler from 'src/components/TaskScheduler.vue';
 import EclsComponent from 'src/components/EclsComponent.vue';
 
 import { explain } from 'src/boot/explain';
-
+import ModelBuilderComponent from 'src/components/ModelBuilderComponent.vue';
 
 export default defineComponent({
   name: 'MainPage',
@@ -372,6 +372,7 @@ export default defineComponent({
     NumericsComponent,
     BigNumbersComponent,
     ModelEditor,
+    ModelBuilderComponent,
     TimeBasedChartComponent,
     VentilatorComponent,
     XYChartComponent,
