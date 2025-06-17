@@ -30,6 +30,14 @@ export class Capacitance extends BaseModelClass {
       caption: "enabled",
     },
     {
+      target: "fixed_composition",
+      type: "boolean",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
+      caption: "fixed composition",
+    },
+    {
       target: "u_vol",
       type: "number",
       build_prop: true,
@@ -80,14 +88,7 @@ export class Capacitance extends BaseModelClass {
       edit_mode: "factors",
       caption: "elastance non linear  factor"  
     },
-    {
-      target: "fixed_composition",
-      type: "boolean",
-      build_prop: true,
-      edit_mode: "basic",
-      readonly: false,
-      caption: "fixed composition",
-    },
+
   ];
 
   constructor(model_ref, name = "") {

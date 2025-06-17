@@ -1,3 +1,4 @@
+import { readonly } from "vue";
 import { BaseModelClass } from "../base_models/BaseModelClass";
 
 export class AnsAfferent extends BaseModelClass {
@@ -29,12 +30,15 @@ export class AnsAfferent extends BaseModelClass {
       caption: "enabled",
     },
     {
+      target_prop: "input_prop",
+      type: "prop-list",
+      build_prop: true,
+      readonly: false,
       caption:"input model property",
       caption_model: "input model",
       caption_prop: "input property",
       target_model: "input_model",
       target_prop: "input_prop",
-      type: "prop-list",
       options: []
     },
     {

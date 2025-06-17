@@ -441,7 +441,6 @@ export default {
       this.state_changed = true
       param.state_changed = true
       this.redraw += 1
-
     },
     updateValue() {
       this.selectedModelInterface.forEach(prop => {
@@ -669,6 +668,7 @@ export default {
     },
     processFactorType(param) {
       let f_factor = param.target.split('.')
+      param['edit_mode'] = 'factors'
       switch (f_factor.length) {
         case 1:
           param['value'] = explain.modelState.models[this.selectedModelName][f_factor[0]]

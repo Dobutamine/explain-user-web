@@ -92,6 +92,21 @@
                     </div>
                   </div>
                 </div>
+
+                <div v-if="field.type == 'prop-list'">
+                  <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
+                    <div class="text-white" :style="{ 'font-size': '10px' }">
+                      <q-select v-model="field.value_model" :label="field.caption_model" :options="field.choices_model" :readonly="field.readonly" color="blue" 
+                        hide-hint filled dense @update:model-value="changePropState(field, 'model_changed')" stack-label
+                        style="font-size: 12px" class="q-mb-sm" squared>
+                      </q-select>
+                      <q-select v-model="field.value_prop" :label="field.caption_prop" :options="field.choices_props" :readonly="field.readonly" color="blue" 
+                        hide-hint filled dense @update:model-value="changePropState(field, arg)" stack-label
+                        style="font-size: 12px" class="q-mb-sm" squared>
+                      </q-select>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -166,6 +181,7 @@ export default {
         type: "string",
         value: undefined
       }
+      
       // insert the property at the first position in the property list
       model_props.unshift(name_prop)
 
@@ -179,6 +195,7 @@ export default {
         } else {
           prop['value'] = prop['default']
         }
+
         // if the property is a list then add the options to the choices
         if (prop.type == 'list') {
           prop['choices'] = []
@@ -191,9 +208,9 @@ export default {
                 prop["choices"].push(model.name)
               }
             })
-
           }
         }
+
         if (prop.type == 'multiple-list') {
           prop['choices'] = []
           if (prop['option_default']) {
@@ -207,6 +224,18 @@ export default {
             })
           }
         }
+
+        if (prop.type == 'prop-list') {
+
+          // add all models to the choices list
+          prop["choices_model"] = []
+          prop["value_model"] = ""
+          prop["value_target"] = ""
+          Object.values(explain.modelState.models).forEach(model => {
+              prop["choices_model"].push(model.name)
+          })
+        }
+
         this.selectedNewModelProps.push(prop)
       })
       this.redraw += 1
@@ -221,11 +250,12 @@ export default {
         // check whether the new model name is already in use or empty -> error
         this.selectedNewModelProps.forEach(prop => {
             if (prop.build_prop) {
-                if (prop.value == undefined && prop.target !== 'inputs') {
+                if (prop.value == undefined && prop.target !== 'inputs' && prop.type !== 'prop-list') {
                     this.newModelErrorFlag = true
                     this.newModelErrorClass = this.newModelError
                     this.newModelErrorMessage = prop.target + " has no or invalid value"
                 }
+
                 if (prop.type === 'number') {
                     // parse the value to a number
                     prop.value = parseFloat(prop.value)
@@ -235,6 +265,14 @@ export default {
                         this.newModelErrorClass = this.newModelError
                         this.newModelErrorMessage = prop.target + " has an invalid value"
                     }
+                }
+                if (prop.type === 'prop-list') {
+                  if (prop.value_model == undefined || prop.value_prop == undefined) {
+                      this.newModelErrorFlag = true
+                      this.newModelErrorClass = this.newModelError
+                      this.newModelErrorMessage = "target model or target property has no or invalid value"
+                  }
+
                 }
             }   
         })
@@ -252,7 +290,12 @@ export default {
       // add the properties
       this.selectedNewModelProps.forEach(prop => {
         if (prop.build_prop) {
+          if (prop.type == 'prop-list') {
+            new_model[prop.target_model] = prop.value_model
+            new_model[prop.target_prop] = prop.value_prop
+          } else {
             new_model[prop.target] = prop.value
+          }
         }
       })
       // send to the model for processing
@@ -281,122 +324,22 @@ export default {
       }
     },
     changePropState(param, arg) {
+      if (param.type == "prop-list" && arg == 'model_changed') {
+        // reset the prop list choices
+        param['choices_props'] = []
+        param['value_prop'] = ""
+        Object.keys(explain.modelState.models[param.value_model]).forEach(prop => {
+          if (typeof (explain.modelState.models[param.value_model][prop]) === 'number') {
+            if (prop[0] !== "_") {
+              param["choices_props"].push(prop)
+            }
+          }
+        })
+      }
       this.state_changed = true
       param.state_changed = true
       this.redraw += 1
 
-    },
-    processNumberType(param) {
-      let f_number = param.target.split('.')
-      switch (f_number.length) {
-        case 1:
-          param['value'] = explain.modelState.models[this.selectedModelName][f_number[0]]
-          break;
-        case 2:
-          param['value'] = explain.modelState.models[this.selectedModelName][f_number[0]][f_number[1]]
-          break;
-        case 3:
-          param['value'] = explain.modelState.models[this.selectedModelName][f_number[0]][f_number[1]][f_number[2]]
-          break;
-      }
-    },
-    processStringType(param) {
-      let f_string = param.target.split('.')
-      switch (f_string.length) {
-        case 1:
-          param['value'] = explain.modelState.models[this.selectedModelName][f_string[0]]
-          break;
-        case 2:
-          param['value'] = explain.modelState.models[this.selectedModelName][f_string[0]][f_string[1]]
-          break;
-        case 3:
-          param['value'] = explain.modelState.models[this.selectedModelName][f_string[0]][f_string[1]][f_string[2]]
-          break;
-      }
-    },
-    processBooleanType(param) {
-      let f_bool = param.target.split('.')
-      switch (f_bool.length) {
-        case 1:
-          param['value'] = explain.modelState.models[this.selectedModelName][f_bool[0]]
-          break;
-        case 2:
-          param['value'] = explain.modelState.models[this.selectedModelName][f_bool[0]][f_bool[1]]
-          break;
-        case 3:
-          param['value'] = explain.modelState.models[this.selectedModelName][f_bool[0]][f_bool[1]][f_bool[2]]
-          break;
-      }
-    },
-    processListType(param) {
-      let f_list = param.target.split('.')
-      switch (f_list.length) {
-        case 1:
-          param['value'] = explain.modelState.models[this.selectedModelName][f_list[0]]
-          break;
-        case 2:
-          param['value'] = explain.modelState.models[this.selectedModelName][f_list[0]][f_list[1]]
-          break;
-        case 3:
-          param['value'] = explain.modelState.models[this.selectedModelName][f_list[0]][f_list[1]][f_list[2]]
-          break;
-      }
-      // if there's a default number then use it
-      if (param['default']) {
-        param['value'] = param['default']
-      }
-      // file the options list
-      param['choices'] = []
-      if (param['option_default']) {
-        param['choices'] = param['options_default']
-      }
-      Object.values(explain.modelState.models).forEach(model => {
-        if (param.options.includes(model.model_type) || param.options.length == 0) {
-          param["choices"].push(model.name)
-        }
-      })
-    },
-    processMultipleListType(param) {
-      let f_mlist = param.target.split('.')
-      switch (f_mlist.length) {
-        case 1:
-          param['value'] = explain.modelState.models[this.selectedModelName][f_mlist[0]]
-          break;
-        case 2:
-          param['value'] = explain.modelState.models[this.selectedModelName][f_mlist[0]][f_mlist[1]]
-          break;
-        case 3:
-          param['value'] = explain.modelState.models[this.selectedModelName][f_mlist[0]][f_mlist[1]][f_mlist[2]]
-          break;
-      }
-      if (param['default']) {
-        param['value'] = param['default']
-      }
-      // file the options list
-      param['choices'] = []
-      if (param['option_default']) {
-        param['choices'] = param['options_default']
-      }
-      Object.values(explain.modelState.models).forEach(model => {
-        if (param.options.includes(model.model_type) || param.options.length == 0) {
-          param["choices"].push(model.name)
-        }
-      })
-    },
-    processFactorType(param) {
-      let f_factor = param.target.split('.')
-      switch (f_factor.length) {
-        case 1:
-          param['value'] = explain.modelState.models[this.selectedModelName][f_factor[0]]
-          break;
-        case 2:
-          param['value'] = explain.modelState.models[this.selectedModelName][f_factor[0]][f_factor[1]]
-          break;
-        case 3:
-          param['value'] = explain.modelState.models[this.selectedModelName][f_factor[0]][f_factor[1]][f_factor[2]]
-          break;
-      }
-      param['value'] = (param['value']).toFixed(2)
     },
     processAvailableModels() {
       this.modelNames = []
