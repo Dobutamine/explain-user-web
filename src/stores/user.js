@@ -15,7 +15,7 @@ export const useUserStore = defineStore("user", {
     },
     additionalData: {},
     loggedIn: false,
-    defaultState: "baseline neonate",
+    defaultState: "baseline neonate_exp",
     errorText: "",
     token: "",
   }),
@@ -153,6 +153,7 @@ export const useUserStore = defineStore("user", {
         body: JSON.stringify({
           name: this.name.toLowerCase(),
           email: this.email,
+          defaultState: this.defaultState
         }),
       });
 

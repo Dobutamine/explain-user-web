@@ -20,13 +20,13 @@
           </div>
 
           <div v-if="redraw > 0.0" class="q-ma-sm q-mb-md">
-            <div v-for="(field, index) in selectedNewModelProps" :key="index">
+            <div v-for="(field, index) in selectedModelProps" :key="index">
               <div v-if="field.build_prop">
 
                 <div v-if="field.type == 'number'">
                   <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
                     <div class="text-white" :style="{ 'font-size': '10px' }">
-                      <q-input v-model="field.value" :label="field.caption" :max="field.ul" :min="field.ll"
+                      <q-input v-model="field.value" :label="field.caption" :max="field.ul" :min="field.ll" :readonly="field.readonly"
                         :step="field.delta" color="blue" hide-hint filled dense
                         @update:model-value="changePropState(field, arg)" stack-label type="number"
                         style="font-size: 12px" class="q-mb-sm" squared>
@@ -38,7 +38,7 @@
                 <div v-if="field.type == 'factor'">
                   <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
                     <div class="text-white" :style="{ 'font-size': '10px' }">
-                      <q-input v-model="field.value" :label="field.caption" :max="10000000000" :min="0"
+                      <q-input v-model="field.value" :label="field.caption" :max="10000000000" :min="0" :readonly="field.readonly"
                         :step="0.05" color="blue" hide-hint filled dense
                         @update:model-value="changePropState(field, arg)" stack-label type="number"
                         style="font-size: 12px" class="q-mb-sm" squared>
@@ -53,7 +53,7 @@
                       {{ field.caption }}
                     </div>
                     <div class="col-2 text-white" :style="{ 'font-size': '10px' }">
-                      <q-toggle v-model="field.value" color="primary" size="sm" hide-hint filled dense
+                      <q-toggle v-model="field.value" color="primary" size="sm" hide-hint filled dense :readonly="field.readonly"
                         @update:model-value="changePropState(field, arg)" style="font-size: 12px" class="q-mb-sm">
                       </q-toggle>
                     </div>
@@ -63,7 +63,7 @@
                 <div v-if="field.type == 'string'">
                   <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
                     <div class="text-white" :style="{ 'font-size': '10px' }">
-                      <q-input v-model="field.value" :label="field.caption" color="blue" hide-hint filled dense
+                      <q-input v-model="field.value" :label="field.caption" color="blue" hide-hint filled dense :readonly="field.readonly"
                         @update:model-value="changePropState(field, arg)" stack-label style="font-size: 12px"
                         class="q-mb-sm" squared>
                       </q-input>
@@ -74,7 +74,7 @@
                 <div v-if="field.type == 'list'">
                   <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
                     <div class="text-white" :style="{ 'font-size': '10px' }">
-                      <q-select v-model="field.value" :label="field.caption" :options="field.choices" color="blue" 
+                      <q-select v-model="field.value" :label="field.caption" :options="field.choices" color="blue" :readonly="field.readonly"
                         hide-hint filled dense @update:model-value="changePropState(field, arg)" stack-label
                         style="font-size: 12px" class="q-mb-sm" squared>
                       </q-select>
@@ -85,7 +85,7 @@
                 <div v-if="field.type == 'multiple-list'">
                   <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
                     <div class="text-white" :style="{ 'font-size': '10px' }">
-                      <q-select v-model="field.value" :label="field.caption" :options="field.choices" multiple
+                      <q-select v-model="field.value" :label="field.caption" :options="field.choices" multiple :readonly="field.readonly"
                         color="blue" hide-hint filled dense @update:model-value="changePropState(field, arg)" stack-label
                         style="font-size: 12px" class="q-mb-sm" squared>
                       </q-select>
@@ -107,6 +107,100 @@
                     </div>
                   </div>
                 </div>
+
+                <div v-if="field.type == 'component-list'">
+                  <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
+                     <div class="text-secondary" :style="{ 'font-size': '12px' }">
+                      model components (submodels)
+                     </div>
+                      <q-card class="q-pb-xs q-pt-xs q-ma-sm" bordered>
+                        <div class="text-white" :style="{ 'font-size': '10px' }">
+                            <div v-for="(comp, index) in selectedModelComponentList" :key="index">
+                              <div v-for="(comp_field, index) in comp" :key="index">
+                                <div v-if="comp_field.build_prop">
+
+                                  <div v-if="comp_field.type == 'number'">
+                                      <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
+                                        <div class="text-white" :style="{ 'font-size': '10px' }">
+                                          <q-input v-model="comp_field.value" :label="comp_field.caption" :max="comp_field.ul" :min="comp_field.ll" :readonly="comp_field.readonly"
+                                            :step="comp_field.delta" color="blue" hide-hint filled dense
+                                            @update:model-value="changePropState(comp_field, arg)" stack-label type="number"
+                                            style="font-size: 12px" class="q-mb-sm" squared>
+                                          </q-input>
+                                        </div>
+                                      </div>
+                                  </div>
+
+                                  <div v-if="comp_field.type == 'string'">
+                                    <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
+                                      <div class="text-white" :style="{ 'font-size': '10px' }">
+                                        <q-input v-model="comp_field.value" :label="comp_field.caption" color="blue" hide-hint filled dense :readonly="comp_field.readonly"
+                                          @update:model-value="changePropState(comp_field, arg)" stack-label style="font-size: 12px"
+                                          class="q-mb-sm" squared>
+                                        </q-input>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  <div v-if="comp_field.type == 'boolean'">
+                                    <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary row" :style="{ 'font-size': '12px' }">
+                                      <div class="col">
+                                        {{ comp_field.caption }}
+                                      </div>
+                                      <div class="col-2 text-white" :style="{ 'font-size': '10px' }">
+                                        <q-toggle v-model="comp_field.value" color="primary" size="sm" hide-hint filled dense :readonly="comp_field.readonly"
+                                          @update:model-value="changePropState(comp_field, arg)" style="font-size: 12px" class="q-mb-sm">
+                                        </q-toggle>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  <div v-if="comp_field.type == 'list'">
+                                    <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
+                                      <div class="text-white" :style="{ 'font-size': '10px' }">
+                                        <q-select v-model="comp_field.value" :label="comp_field.caption" :options="comp_field.choices" color="blue" :readonly="comp_field.readonly"
+                                          hide-hint filled dense @update:model-value="changePropState(comp_field, arg)" stack-label
+                                          style="font-size: 12px" class="q-mb-sm" squared>
+                                        </q-select>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  <div v-if="comp_field.type == 'multiple-list'">
+                                    <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
+                                      <div class="text-white" :style="{ 'font-size': '10px' }">
+                                        <q-select v-model="comp_field.value" :label="comp_field.caption" :options="comp_field.choices" multiple :readonly="comp_field.readonly"
+                                          color="blue" hide-hint filled dense @update:model-value="changePropState(comp_field, arg)" stack-label
+                                          style="font-size: 12px" class="q-mb-sm" squared>
+                                        </q-select>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  <div v-if="comp_field.type == 'prop-list'">
+                                    <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
+                                      <div class="text-white" :style="{ 'font-size': '10px' }">
+                                        <q-select v-model="comp_field.value_model" :label="comp_field.caption_model" :options="comp_field.choices_model" :readonly="comp_field.readonly" color="blue" 
+                                          hide-hint filled dense @update:model-value="changePropState(comp_field, 'model_changed')" stack-label
+                                          style="font-size: 12px" class="q-mb-sm" squared>
+                                        </q-select>
+                                        <q-select v-model="comp_field.value_prop" :label="comp_field.caption_prop" :options="comp_field.choices_props" :readonly="comp_field.readonly" color="blue" 
+                                          hide-hint filled dense @update:model-value="changePropState(comp_field, arg)" stack-label
+                                          style="font-size: 12px" class="q-mb-sm" squared>
+                                        </q-select>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                </div>
+                              </div>
+                              <q-separator class="q-mt-md"></q-separator>
+                            </div>
+                        </div>
+                      </q-card>
+                  </div>
+                </div>
+
               </div>
             </div>
           </div>
@@ -115,6 +209,7 @@
             <q-btn class="col q-ma-sm q-ml-xl q-mr-xl row" color="primary" size="sm" dense @click="addModelToEngine"
               style="font-size: 10px">ADD NEW MODEL<q-tooltip>add model to model engine</q-tooltip></q-btn>
           </div>
+          
           <div v-if="state_changed" class="q-ma-sm text-center">
             <div v-if="newModelErrorFlag" :class="newModelErrorClass"> error: {{  newModelErrorMessage }}</div>
           </div>
@@ -158,38 +253,29 @@ export default {
       selectedModelName: "",
       modelNames: [],
       state_changed: false,
+      selectedModelProps: [],
+      selectedModelComponentList: []
 
     };
   },
   methods: {
     modelTypeSelected() {
-        let model_interface = explain.getModelTypeInterface(this.selectedModelType)
+        let model_interface = [...explain.getModelTypeInterface(this.selectedModelType)]
+        // clear input field
         this.resetModel()
-        this.processModelInterface(this.selectedModelType, model_interface)
+        // process the model properties and store in this.selectedModelPropas
+        this.selectedModelProps = this.processModelInterface(model_interface)
+        // redraw the interface
+        this.redraw += 1
     },
-    processModelInterface(model_type, model_props) {
+    processModelInterface(model_props, model_name="", model_name_readonly = false) {
       // we have to convert the model properties to a format which the editor can understand, this is an array of objects and store in selectedNewModelProps
-      // clear the current selectedNewModelProps holding the new model properties
-      
-      // add a name prop the model_props list
-      let name_prop = {
-        build_prop: true,
-        caption: "name",
-        edit_mode: "basic",
-        readonly: false,
-        target: "name",
-        type: "string",
-        value: undefined
-      }
-      
-      // insert the property at the first position in the property list
-      model_props.unshift(name_prop)
-
-      // reset the property list
-      this.selectedNewModelProps = []
 
       // process the model interface
       model_props.forEach(prop => {
+        // override the readonly property
+        prop.readonly = false
+
         if (prop.type == 'number') {
           prop['value'] = prop['default']
         } else {
@@ -236,9 +322,25 @@ export default {
           })
         }
 
-        this.selectedNewModelProps.push(prop)
+        if (prop.type == 'component-list') {
+          // process the component list
+          this.processComponentList(prop.components)
+        }
       })
-      this.redraw += 1
+
+      // add a name field to the model props
+      let name = {
+        target: "name",  
+        type: "string",
+        build_prop: true,
+        edit_mode: "basic",
+        readonly: model_name_readonly,
+        caption: "name",
+        value: model_name
+      }
+      model_props.unshift(name)
+
+      return model_props;
     },
     cancelAddModel() {
       this.selectedModelType = ""
@@ -248,7 +350,7 @@ export default {
         // set the error flag to false
         this.newModelErrorFlag = false
         // check whether the new model name is already in use or empty -> error
-        this.selectedNewModelProps.forEach(prop => {
+        this.selectedModelProps.forEach(prop => {
             if (prop.build_prop) {
                 if (prop.value == undefined && prop.target !== 'inputs' && prop.type !== 'prop-list') {
                     this.newModelErrorFlag = true
@@ -288,7 +390,7 @@ export default {
         model_type: this.selectedModelType
       }
       // add the properties
-      this.selectedNewModelProps.forEach(prop => {
+      this.selectedModelProps.forEach(prop => {
         if (prop.build_prop) {
           if (prop.type == 'prop-list') {
             new_model[prop.target_model] = prop.value_model
@@ -305,7 +407,7 @@ export default {
       this.selectedModelType = ""
     },
     resetModel() {
-      this.selectedNewModelProps = []
+      this.selectedModelProps = []
       this.newModelErrorClass = this.noNewModelError
       this.newModelErrorFlag = false
       this.redraw += 1
@@ -352,6 +454,46 @@ export default {
     processAvailableModelTypes(data) {
       this.availableModelTypes = data
     },
+    processComponentList(component_list) {
+      // reset the current component list
+      this.selectedModelComponentList = []
+
+      component_list.forEach(component_list_item => {
+        // iterate over the mandatory component list for this model and get the necessary modelinterfaces
+        let component_props = [...explain.getModelTypeInterface(component_list_item.model_type)]
+ 
+        // now we have to process these component_props for displaying in the user interface
+        let component_props_converted = [...this.processModelInterface(component_props, component_list_item.name, true)]
+        // we now have a converted props list with added name property
+
+        this.selectedModelComponentList.push(component_props_converted)
+
+      })
+
+   
+
+      //   // we now have a list of properties which we need to process
+      // let converted_list_0 = this.processModelInterface(model_props_0, component_list[0].name, true)
+      // console.log(converted_list_0)
+
+      // let model_props_1 = explain.getModelTypeInterface(component_list[1].model_type)
+      //   // we now have a list of properties which we need to process
+      // let converted_list_1 = this.processModelInterface(model_props_1, component_list[1].name, true)
+      // console.log(converted_list_1)
+
+      // component_list.forEach(component => {
+      //   // get the model interface of each component type
+      //   let model_props = explain.getModelTypeInterface(component.model_type)
+      //   // we now have a list of properties which we need to process
+      //   let converted_list = this.processModelInterface(model_props, component.name, true)
+      //   console.log(converted_list)
+      //   // process the model interface
+      //   // let comp_prop_list = this.processModelInterface(comp_model_interface, component.name, true)
+      //   // console.log(component)
+      // })
+      //this.selectedModelComponentList.push(converted_list_0)
+      //this.selectedModelComponentList.push(converted_list_1)
+    }
   },
   beforeUnmount() {
     this.state_changed = false

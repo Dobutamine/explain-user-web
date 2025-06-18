@@ -110,6 +110,25 @@ export class Heart extends BaseModelClass {
       ll: 0.0,
       ul: 1000000
     },
+    {    
+      target: "components",  
+      type: "component-list",
+      build_prop: true,
+      edit_mode: "advanced",
+      readonly: false,
+      caption: "components",
+      components: [
+        { name: "LA", model_type: "HeartChamber" },
+        { name: "RA", model_type: "HeartChamber" },
+        { name: "LV", model_type: "HeartChamber" },
+        { name: "RV", model_type: "HeartChamber" },
+        { name: "PERICARDIUM", model_type: "Container" },
+        { name: "LA_LV", model_type: "Resistor" },
+        { name: "RA_RV", model_type: "Resistor" },
+        { name: "LV_AA", model_type: "Resistor" },
+        { name: "RV_PA", model_type: "Resistor" }
+      ]
+    },
   ];
 
   constructor(model_ref, name = "") {
@@ -126,7 +145,6 @@ export class Heart extends BaseModelClass {
     this.ans_sens = 1.0; // sensitivity of the heart for autonomic nervous system control
     this.ans_activity = 1.0; // ans activity simulating B-adrenergic effect on contractility and relaxation
     this.ans_activity_hr = 1.0; // heart rate factor of the autonomic nervous system
-
     this.hr_factor = 1.0; // heart rate factor
     this.hr_mob_factor = 1.0; // heart rate factor of the myocardial oxygen balance model
     this.hr_temp_factor = 1.0; // heart rate factor of the temperature (not implemented yet)

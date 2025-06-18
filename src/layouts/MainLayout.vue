@@ -237,6 +237,12 @@ export default defineComponent({
       }
       if (result) {
         explain.build(this.state.model_definition);
+        // check whether this is the default state
+        if (this.state.name !== this.user.defaultState) {
+          this.state.default = false;
+        } else {
+          this.state.default = true;
+        }
         this.showLoadStatePopUp = false
         this.$bus.emit('reset')
       }
@@ -271,6 +277,7 @@ export default defineComponent({
     setStateAsDefault() {
       this.state.default = true
       this.user.defaultState = this.state.name
+      this.user.updateUser(this.general.apiUrl, this.user.token)
     },
     logOut() {
       explain.stop();
@@ -356,6 +363,7 @@ export default defineComponent({
     submitInput() {
       if (this.userInput.length > 0) {
         this.state.renameState(this.userInput, this.user.name)
+        this.state.default = false
       }
       this.showInputPopup = false
     },
@@ -378,6 +386,9 @@ export default defineComponent({
         if (this.selectedState !== this.state.name) {
           this.state.protected = false
         }
+      }
+      if (this.state.name !== this.selectedState) {
+        this.state.default = false
       }
       this.state.name = this.selectedState
       this.showSaveStatePopUp = false
