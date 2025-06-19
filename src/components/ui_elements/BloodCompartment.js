@@ -76,8 +76,16 @@ export default class BloodCompartment {
       this.volume * this.layout.scale.x * this.global_scaling,
       this.volume * this.layout.scale.y * this.global_scaling
     );
-    this.sprite.anchor = { x: 0.5, y: 0.5 };
-    this.sprite.tint = "0x151a7b";
+    if (this.layout.anchor) {
+      this.sprite.anchor = {  x: this.layout.anchor.x, y: this.layout.anchor.y };
+    } else {
+      this.sprite.anchor = {  x: 0.5, y: 0.5 };
+    }
+
+    if (this.layout.tinting) {
+      this.sprite.tint = "0x151a7b";
+    }
+ 
     this.sprite.rotation = this.layout.rotation;
     this.sprite.zIndex = this.zIndexSprite;
 
@@ -121,7 +129,11 @@ export default class BloodCompartment {
 
     this.text = new PIXI.Text(this.label, this.textStyle);
     this.text["name_text"] = key;
-    this.text.anchor = { x: 0.5, y: 0.5 };
+    if (this.layout.anchor) {
+      this.text.anchor = {  x: this.layout.anchor.x, y: this.layout.anchor.y };
+    } else {
+      this.text.anchor = {  x: 0.5, y: 0.5 };
+    }
     this.text.x = this.sprite.x + this.layout.text.x;
     this.text.y = this.sprite.y + this.layout.text.y;
     this.text.rotation = this.layout.rotation;
@@ -173,7 +185,12 @@ export default class BloodCompartment {
     if (isNaN(this.to2)) {
       this.text.alpha = 0.1;
     }
-    this.sprite.tint = this.calculateColor(this.to2);
+    if (this.layout.tinting) {
+      this.sprite.tint = this.calculateColor(this.to2);
+    } else {
+      this.sprite.tint = "0xffffff"
+    }
+    
   }
   setEditingMode(newMode) {
     this.editingMode = newMode;

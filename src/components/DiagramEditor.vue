@@ -83,6 +83,8 @@
             <div v-if="
               advancedMode &&
               (compType == 'BloodCompartment' ||
+                compType == 'BloodVessel' ||
+                compType == 'MicroVascularUnit' ||
                 compType == 'BloodPump' ||
                 compType == 'Oxygenator' ||
                 compType == 'GasCompartment' ||
@@ -96,8 +98,9 @@
                   { label: 'Relative', value: false },
                 ]" />
               <div class="row">
-                <q-select class="col q-ma-sm" label="pictogram" square hide-hint stack-label v-model="compPicto"
+                <q-select class="col-8 q-ma-sm" label="pictogram" square hide-hint stack-label v-model="compPicto"
                   :options="pictos" hide-bottom-space dense dark style="font-size: 12px" />
+                <q-toggle class="col q-ma-sm" label="tinting" v-model="compTinting" dense size="sm" style="width: 100%" />
               </div>
               <div v-if="!compLayoutType" class="row">
                 <q-input class="col q-ma-sm" label="postion x" v-model="compLayoutX" square type="number" hide-hint
@@ -105,6 +108,14 @@
                 <q-input class="col q-ma-sm" label="position Y" v-model="compLayoutY" square type="number" hide-hint
                   dense dark stack-label />
               </div>
+
+              <div class="row">
+                <q-input class="col q-ma-sm" label="anchor X" v-model="compAnchorX" square type="number" hide-hint dense
+                  dark stack-label />
+                <q-input class="col q-ma-sm" label="anchor Y" v-model="compAnchorY" square type="number" hide-hint dense
+                  dark stack-label />
+              </div>
+
               <div v-if="compLayoutType" class="row">
                 <q-input class="col q-ma-sm" label="position Degrees" v-model="compLayoutDgs" square type="number"
                   hide-hint dense dark stack-label />
@@ -118,6 +129,9 @@
                 <q-input class="col q-ma-sm" label="rotation" v-model="compRotation" square type="number" hide-hint
                   dense dark stack-label />
               </div>
+
+
+
               <div class="row">
                 <q-input class="col q-ma-sm" label="label pos X" v-model="compTextX" square type="number" hide-hint
                   dense dark stack-label />
@@ -126,6 +140,7 @@
                 <q-input class="col q-ma-sm" label="label size" v-model="compTextSize" square type="number" hide-hint
                   dense dark stack-label />
               </div>
+              
             </div>
 
             <div v-if="
@@ -210,7 +225,9 @@ export default {
       modelTypes: [],
       selectedDiagramComponent: "",
       diagramComponentTypes: [
-        "BloodCompartment", 
+        "BloodCompartment",
+        "BloodVessel",
+        "MicroVascularUnit",
         "BloodPump", 
         "BloodConnector", 
         "Shunt", 
@@ -234,10 +251,13 @@ export default {
       compMorphY: 1,
       compScaleX: 1,
       compScaleY: 1,
+      compAnchorX: 0.5,
+      compAnchorY: 0.5,
       compTextX: 0,
       compTextY: 0,
       compTextSize: 10,
       compLayoutDgs: 0,
+      compTinting: true,
       compDbcFrom: "",
       compDbcFroms: [],
       compDbcTo: "",
@@ -251,12 +271,11 @@ export default {
         "container.png",
         "exchange.png",
         "gas_container.png",
-        "square.png",
-        "heart.png",
         "pump.png",
-        "rounded_rectangle.png",
-        "star.png",
         "vessel.png",
+        "lung.png",
+        "trachea.png",
+        "thoracic_cage.png"
       ],
       rebuild_event: null,
       statusMessage: "",
@@ -315,12 +334,17 @@ export default {
                 x: parseFloat(this.compScaleX),
                 y: parseFloat(this.compScaleY),
               },
+              anchor: {
+                x: parseFloat(this.compAnchorX),
+                y: parseFloat(this.compAnchorY),
+              },
               rotation: parseFloat(this.compRotation),
               text: {
                 x: parseFloat(this.compTextX),
                 y: parseFloat(this.compTextY),
                 size: parseFloat(this.compTextSize),
               },
+              tinting: this.compTinting
             },
           };
           this.$bus.emit("rebuild_diagram");
@@ -351,12 +375,17 @@ export default {
                 x: parseFloat(this.compScaleX),
                 y: parseFloat(this.compScaleY),
               },
+              anchor: {
+                x: parseFloat(this.compAnchorX),
+                y: parseFloat(this.compAnchorY),
+              },
               rotation: parseFloat(this.compRotation),
               text: {
                 x: parseFloat(this.compTextX),
                 y: parseFloat(this.compTextY),
                 size: parseFloat(this.compTextSize),
               },
+              tinting: this.compTinting
             },
           };
           this.$bus.emit("rebuild_diagram");
@@ -387,12 +416,17 @@ export default {
                 x: parseFloat(this.compScaleX),
                 y: parseFloat(this.compScaleY),
               },
+              anchor: {
+                x: parseFloat(this.compAnchorX),
+                y: parseFloat(this.compAnchorY),
+              },
               rotation: parseFloat(this.compRotation),
               text: {
                 x: parseFloat(this.compTextX),
                 y: parseFloat(this.compTextY),
                 size: parseFloat(this.compTextSize),
               },
+              tinting: this.compTinting
             },
           };
           this.$bus.emit("rebuild_diagram");
@@ -423,12 +457,99 @@ export default {
                 x: parseFloat(this.compScaleX),
                 y: parseFloat(this.compScaleY),
               },
+              anchor: {
+                x: parseFloat(this.compAnchorX),
+                y: parseFloat(this.compAnchorY),
+              },
               rotation: parseFloat(this.compRotation),
               text: {
                 x: parseFloat(this.compTextX),
                 y: parseFloat(this.compTextY),
                 size: parseFloat(this.compTextSize),
               },
+              tinting: this.compTinting
+            },
+          };
+          this.$bus.emit("rebuild_diagram");
+          break;
+        case "BloodVessel":
+          layoutType = "rel";
+          if (this.compLayoutType) {
+            layoutType = "arc";
+          }
+          this.state.diagram_definition.components[this.compName] = {
+            enabled: this.compEnabled,
+            label: this.compLabel,
+            models: this.compModelSelection,
+            compType: this.compType,
+            compPicto: this.compPicto,
+            layout: {
+              pos: {
+                type: layoutType,
+                x: parseFloat(this.compLayoutX),
+                y: parseFloat(this.compLayoutY),
+                dgs: parseFloat(this.compLayoutDgs),
+              },
+              morph: {
+                x: parseFloat(this.compMorphX),
+                y: parseFloat(this.compMorphY),
+              },
+              scale: {
+                x: parseFloat(this.compScaleX),
+                y: parseFloat(this.compScaleY),
+              },
+              anchor: {
+                x: parseFloat(this.compAnchorX),
+                y: parseFloat(this.compAnchorY),
+              },
+              rotation: parseFloat(this.compRotation),
+              text: {
+                x: parseFloat(this.compTextX),
+                y: parseFloat(this.compTextY),
+                size: parseFloat(this.compTextSize),
+              },
+              tinting: this.compTinting
+            },
+          };
+          this.$bus.emit("rebuild_diagram");
+          break;
+        case "MicroVascularUnit":
+          layoutType = "rel";
+          if (this.compLayoutType) {
+            layoutType = "arc";
+          }
+          this.state.diagram_definition.components[this.compName] = {
+            enabled: this.compEnabled,
+            label: this.compLabel,
+            models: this.compModelSelection,
+            compType: this.compType,
+            compPicto: this.compPicto,
+            layout: {
+              pos: {
+                type: layoutType,
+                x: parseFloat(this.compLayoutX),
+                y: parseFloat(this.compLayoutY),
+                dgs: parseFloat(this.compLayoutDgs),
+              },
+              morph: {
+                x: parseFloat(this.compMorphX),
+                y: parseFloat(this.compMorphY),
+              },
+              scale: {
+                x: parseFloat(this.compScaleX),
+                y: parseFloat(this.compScaleY),
+              },
+              anchor: {
+                x: parseFloat(this.compAnchorX),
+                y: parseFloat(this.compAnchorY),
+              },
+              rotation: parseFloat(this.compRotation),
+              text: {
+                x: parseFloat(this.compTextX),
+                y: parseFloat(this.compTextY),
+                size: parseFloat(this.compTextSize),
+              },
+              tinting: this.compTinting
             },
           };
           this.$bus.emit("rebuild_diagram");
@@ -459,12 +580,17 @@ export default {
                 x: parseFloat(this.compScaleX),
                 y: parseFloat(this.compScaleY),
               },
+              anchor: {
+                x: parseFloat(this.compAnchorX),
+                y: parseFloat(this.compAnchorY),
+              },
               rotation: parseFloat(this.compRotation),
               text: {
                 x: parseFloat(this.compTextX),
                 y: parseFloat(this.compTextY),
                 size: parseFloat(this.compTextSize),
               },
+              tinting: this.compTinting
             },
           };
           this.$bus.emit("rebuild_diagram");
@@ -489,7 +615,7 @@ export default {
             compType: this.compType,
             compPicto: this.compPicto,
             dbcFrom: this.compDbcFrom,
-            dbcTo: this.compDbcTo
+            dbcTo: this.compDbcTo,
           };
           this.$bus.emit("rebuild_diagram");
           break;
@@ -501,7 +627,7 @@ export default {
             compType: this.compType,
             compPicto: this.compPicto,
             dbcFrom: this.compDbcFrom,
-            dbcTo: this.compDbcTo
+            dbcTo: this.compDbcTo,
           };
           this.$bus.emit("rebuild_diagram");
           break;
@@ -532,12 +658,17 @@ export default {
                 x: parseFloat(this.compScaleX),
                 y: parseFloat(this.compScaleY),
               },
+              anchor: {
+                x: parseFloat(this.compAnchorX),
+                y: parseFloat(this.compAnchorY),
+              },
               rotation: parseFloat(this.compRotation),
               text: {
                 x: parseFloat(this.compTextX),
                 y: parseFloat(this.compTextY),
                 size: parseFloat(this.compTextSize),
               },
+              tinting: this.compTinting
             },
           };
           this.$bus.emit("rebuild_diagram");
@@ -565,6 +696,8 @@ export default {
       if (
         compType === "GasCompartment" ||
         compType === "BloodCompartment" ||
+        compType === "BloodVessel" ||
+        compType === "MicroVascularUnit" ||
         compType === "BloodPump" ||
         compType === "Oxygenator"
       ) {
@@ -613,6 +746,8 @@ export default {
           this.compDbcFrom = this.selectedDiagramComponent.dbcFrom;
           this.compDbcTo = this.selectedDiagramComponent.dbcTo;
           this.findDiagramComponents("BloodCompartment");
+          this.findDiagramComponents("MicroVascularUnit");
+          this.findDiagramComponents("BloodVessel");
           this.findDiagramComponents("BloodPump");
           this.findDiagramComponents("Oxygenator");
 
@@ -640,11 +775,18 @@ export default {
           this.compDbcFrom = this.selectedDiagramComponent.dbcFrom;
           this.compDbcTo = this.selectedDiagramComponent.dbcTo;
           this.findDiagramComponents("BloodCompartment");
+          this.findDiagramComponents("MicroVascularUnit");
+          this.findDiagramComponents("BloodVessel");
           this.findDiagramComponents("BloodPump");
           this.findDiagramComponents("Oxygenator");
           break;
 
         case "BloodCompartment":
+          if (this.selectedDiagramComponent.compPicto) {
+            this.compPicto = this.selectedDiagramComponent.compPicto;
+          } else {
+            this.compPicto = "container.png";
+          }
           this.compEnabled = this.selectedDiagramComponent.enabled;
           this.compType = this.selectedDiagramComponent.compType;
           this.compName = this.selectedDiagramComponentName;
@@ -656,43 +798,120 @@ export default {
           } else {
             this.compLayoutType = false;
           }
-          this.compLayoutDgs = parseFloat(
-            this.selectedDiagramComponent.layout.pos.dgs.toFixed(2)
-          );
-          this.compLayoutX = parseFloat(
-            this.selectedDiagramComponent.layout.pos.x.toFixed(2)
-          );
-          this.compLayoutY = parseFloat(
-            this.selectedDiagramComponent.layout.pos.y.toFixed(2)
-          );
-          this.compMorphX = parseFloat(
-            this.selectedDiagramComponent.layout.morph.x.toFixed(2)
-          );
-          this.compMorphY = parseFloat(
-            this.selectedDiagramComponent.layout.morph.y.toFixed(2)
-          );
-          this.compScaleX = parseFloat(
-            this.selectedDiagramComponent.layout.scale.x.toFixed(2)
-          );
-          this.compScaleY = parseFloat(
-            this.selectedDiagramComponent.layout.scale.y.toFixed(2)
-          );
-          this.compTextX = parseFloat(
-            this.selectedDiagramComponent.layout.text.x.toFixed(2)
-          );
-          this.compTextY = parseFloat(
-            this.selectedDiagramComponent.layout.text.y.toFixed(2)
-          );
-          this.compRotation = parseFloat(
-            this.selectedDiagramComponent.layout.rotation.toFixed(2)
-          );
-          this.compTextSize = parseFloat(
-            this.selectedDiagramComponent.layout.text.size.toFixed(2)
-          );
+          this.compLayoutDgs = parseFloat(this.selectedDiagramComponent.layout.pos.dgs.toFixed(2));
+          this.compLayoutX = parseFloat(this.selectedDiagramComponent.layout.pos.x.toFixed(2));
+          this.compLayoutY = parseFloat(this.selectedDiagramComponent.layout.pos.y.toFixed(2));
+          this.compMorphX = parseFloat(this.selectedDiagramComponent.layout.morph.x.toFixed(2));
+          this.compMorphY = parseFloat(this.selectedDiagramComponent.layout.morph.y.toFixed(2));
+          this.compScaleX = parseFloat(this.selectedDiagramComponent.layout.scale.x.toFixed(2));
+          this.compScaleY = parseFloat(this.selectedDiagramComponent.layout.scale.y.toFixed(2));
+          if (this.selectedDiagramComponent.layout.anchor) {
+            this.compAnchorX = parseFloat(this.selectedDiagramComponent.layout.anchor.x.toFixed(2));
+            this.compAnchorY = parseFloat(this.selectedDiagramComponent.layout.anchor.y.toFixed(2));
+          } else {
+            this.compAnchorX = 0.5;
+            this.compAnchorY = 0.5
+          }
+          this.compTextX = parseFloat(this.selectedDiagramComponent.layout.text.x.toFixed(2));
+          this.compTextY = parseFloat(this.selectedDiagramComponent.layout.text.y.toFixed(2));
+          this.compRotation = parseFloat(this.selectedDiagramComponent.layout.rotation.toFixed(2));
+          this.compTextSize = parseFloat(this.selectedDiagramComponent.layout.text.size.toFixed(2));
+          if (this.selectedDiagramComponent.layout.anchor) {
+            this.compTinting = this.selectedDiagramComponent.layout.tinting;
+          } else {
+            this.compTinting = true;
+          }
+          break;
+        
+        case "BloodVessel":
+          if (this.selectedDiagramComponent.compPicto) {
+            this.compPicto = this.selectedDiagramComponent.compPicto;
+          } else {
+            this.compPicto = "vessel.png";
+          }
+          this.compEnabled = this.selectedDiagramComponent.enabled;
+          this.compType = this.selectedDiagramComponent.compType;
+          this.compName = this.selectedDiagramComponentName;
+          this.compLabel = this.selectedDiagramComponent.label;
+          this.selectModelTypeToAdd(this.selectedDiagramComponent.compType);
+          this.compModelSelection = this.selectedDiagramComponent.models;
+          if (this.selectedDiagramComponent.layout.pos.type == "arc") {
+            this.compLayoutType = true;
+          } else {
+            this.compLayoutType = false;
+          }
+          this.compLayoutDgs = parseFloat(this.selectedDiagramComponent.layout.pos.dgs.toFixed(2));
+          this.compLayoutX = parseFloat(this.selectedDiagramComponent.layout.pos.x.toFixed(2));
+          this.compLayoutY = parseFloat(this.selectedDiagramComponent.layout.pos.y.toFixed(2));
+          this.compMorphX = parseFloat(this.selectedDiagramComponent.layout.morph.x.toFixed(2));
+          this.compMorphY = parseFloat(this.selectedDiagramComponent.layout.morph.y.toFixed(2));
+          this.compScaleX = parseFloat(this.selectedDiagramComponent.layout.scale.x.toFixed(2));
+          this.compScaleY = parseFloat(this.selectedDiagramComponent.layout.scale.y.toFixed(2));
+          if (this.selectedDiagramComponent.layout.anchor) {
+            this.compAnchorX = parseFloat(this.selectedDiagramComponent.layout.anchor.x.toFixed(2));
+            this.compAnchorY = parseFloat(this.selectedDiagramComponent.layout.anchor.y.toFixed(2));
+          } else {
+            this.compAnchorX = 0.5;
+            this.compAnchorY = 0.5
+          }
+          this.compTextX = parseFloat(this.selectedDiagramComponent.layout.text.x.toFixed(2));
+          this.compTextY = parseFloat(this.selectedDiagramComponent.layout.text.y.toFixed(2));
+          this.compRotation = parseFloat(this.selectedDiagramComponent.layout.rotation.toFixed(2));
+          this.compTextSize = parseFloat(this.selectedDiagramComponent.layout.text.size.toFixed(2));
+          if (this.selectedDiagramComponent.layout.anchor) {
+            this.compTinting = this.selectedDiagramComponent.layout.tinting;
+          } else {
+            this.compTinting = true;
+          }
+          break;
 
-          // add the other possible models
+        case "MicroVascularUnit":
+          if (this.selectedDiagramComponent.compPicto) {
+            this.compPicto = this.selectedDiagramComponent.compPicto;
+          } else {
+            this.compPicto = "container.png";
+          }
+          this.compEnabled = this.selectedDiagramComponent.enabled;
+          this.compType = this.selectedDiagramComponent.compType;
+          this.compName = this.selectedDiagramComponentName;
+          this.compLabel = this.selectedDiagramComponent.label;
+          this.selectModelTypeToAdd(this.selectedDiagramComponent.compType);
+          this.compModelSelection = this.selectedDiagramComponent.models;
+          if (this.selectedDiagramComponent.layout.pos.type == "arc") {
+            this.compLayoutType = true;
+          } else {
+            this.compLayoutType = false;
+          }
+          this.compLayoutDgs = parseFloat(this.selectedDiagramComponent.layout.pos.dgs.toFixed(2));
+          this.compLayoutX = parseFloat(this.selectedDiagramComponent.layout.pos.x.toFixed(2));
+          this.compLayoutY = parseFloat(this.selectedDiagramComponent.layout.pos.y.toFixed(2));
+          this.compMorphX = parseFloat(this.selectedDiagramComponent.layout.morph.x.toFixed(2));
+          this.compMorphY = parseFloat(this.selectedDiagramComponent.layout.morph.y.toFixed(2));
+          this.compScaleX = parseFloat(this.selectedDiagramComponent.layout.scale.x.toFixed(2));
+          this.compScaleY = parseFloat(this.selectedDiagramComponent.layout.scale.y.toFixed(2));
+          if (this.selectedDiagramComponent.layout.anchor) {
+            this.compAnchorX = parseFloat(this.selectedDiagramComponent.layout.anchor.x.toFixed(2));
+            this.compAnchorY = parseFloat(this.selectedDiagramComponent.layout.anchor.y.toFixed(2));
+          } else {
+            this.compAnchorX = 0.5;
+            this.compAnchorY = 0.5
+          }
+          this.compTextX = parseFloat(this.selectedDiagramComponent.layout.text.x.toFixed(2));
+          this.compTextY = parseFloat(this.selectedDiagramComponent.layout.text.y.toFixed(2));
+          this.compRotation = parseFloat(this.selectedDiagramComponent.layout.rotation.toFixed(2));
+          this.compTextSize = parseFloat(this.selectedDiagramComponent.layout.text.size.toFixed(2));
+          if (this.selectedDiagramComponent.layout.anchor) {
+            this.compTinting = this.selectedDiagramComponent.layout.tinting;
+          } else {
+            this.compTinting = true;
+          }
           break;
         case "Oxygenator":
+          if (this.selectedDiagramComponent.compPicto) {
+            this.compPicto = this.selectedDiagramComponent.compPicto;
+          } else {
+            this.compPicto = "container.png";
+          }
           this.compEnabled = this.selectedDiagramComponent.enabled;
           this.compType = this.selectedDiagramComponent.compType;
           this.compName = this.selectedDiagramComponentName;
@@ -704,43 +923,37 @@ export default {
           } else {
             this.compLayoutType = false;
           }
-          this.compLayoutDgs = parseFloat(
-            this.selectedDiagramComponent.layout.pos.dgs.toFixed(2)
-          );
-          this.compLayoutX = parseFloat(
-            this.selectedDiagramComponent.layout.pos.x.toFixed(2)
-          );
-          this.compLayoutY = parseFloat(
-            this.selectedDiagramComponent.layout.pos.y.toFixed(2)
-          );
-          this.compMorphX = parseFloat(
-            this.selectedDiagramComponent.layout.morph.x.toFixed(2)
-          );
-          this.compMorphY = parseFloat(
-            this.selectedDiagramComponent.layout.morph.y.toFixed(2)
-          );
-          this.compScaleX = parseFloat(
-            this.selectedDiagramComponent.layout.scale.x.toFixed(2)
-          );
-          this.compScaleY = parseFloat(
-            this.selectedDiagramComponent.layout.scale.y.toFixed(2)
-          );
-          this.compTextX = parseFloat(
-            this.selectedDiagramComponent.layout.text.x.toFixed(2)
-          );
-          this.compTextY = parseFloat(
-            this.selectedDiagramComponent.layout.text.y.toFixed(2)
-          );
-          this.compRotation = parseFloat(
-            this.selectedDiagramComponent.layout.rotation.toFixed(2)
-          );
-          this.compTextSize = parseFloat(
-            this.selectedDiagramComponent.layout.text.size.toFixed(2)
-          );
-
-          // add the other possible models
+          this.compLayoutDgs = parseFloat(this.selectedDiagramComponent.layout.pos.dgs.toFixed(2));
+          this.compLayoutX = parseFloat(this.selectedDiagramComponent.layout.pos.x.toFixed(2));
+          this.compLayoutY = parseFloat(this.selectedDiagramComponent.layout.pos.y.toFixed(2));
+          this.compMorphX = parseFloat(this.selectedDiagramComponent.layout.morph.x.toFixed(2));
+          this.compMorphY = parseFloat(this.selectedDiagramComponent.layout.morph.y.toFixed(2));
+          this.compScaleX = parseFloat(this.selectedDiagramComponent.layout.scale.x.toFixed(2));
+          this.compScaleY = parseFloat(this.selectedDiagramComponent.layout.scale.y.toFixed(2));
+          if (this.selectedDiagramComponent.layout.anchor) {
+            this.compAnchorX = parseFloat(this.selectedDiagramComponent.layout.anchor.x.toFixed(2));
+            this.compAnchorY = parseFloat(this.selectedDiagramComponent.layout.anchor.y.toFixed(2));
+          } else {
+            this.compAnchorX = 0.5;
+            this.compAnchorY = 0.5
+          }
+          this.compTextX = parseFloat(this.selectedDiagramComponent.layout.text.x.toFixed(2));
+          this.compTextY = parseFloat(this.selectedDiagramComponent.layout.text.y.toFixed(2));
+          this.compRotation = parseFloat(this.selectedDiagramComponent.layout.rotation.toFixed(2));
+          this.compTextSize = parseFloat(this.selectedDiagramComponent.layout.text.size.toFixed(2));
+          if (this.selectedDiagramComponent.layout.anchor) {
+            this.compTinting = this.selectedDiagramComponent.layout.tinting;
+          } else {
+            this.compTinting = true;
+          }
           break;
+        
         case "BloodPump":
+          if (this.selectedDiagramComponent.compPicto) {
+            this.compPicto = this.selectedDiagramComponent.compPicto;
+          } else {
+            this.compPicto = "pump.png";
+          }
           this.compEnabled = this.selectedDiagramComponent.enabled;
           this.compType = this.selectedDiagramComponent.compType;
           this.compName = this.selectedDiagramComponentName;
@@ -752,43 +965,37 @@ export default {
           } else {
             this.compLayoutType = false;
           }
-          this.compLayoutDgs = parseFloat(
-            this.selectedDiagramComponent.layout.pos.dgs.toFixed(2)
-          );
-          this.compLayoutX = parseFloat(
-            this.selectedDiagramComponent.layout.pos.x.toFixed(2)
-          );
-          this.compLayoutY = parseFloat(
-            this.selectedDiagramComponent.layout.pos.y.toFixed(2)
-          );
-          this.compMorphX = parseFloat(
-            this.selectedDiagramComponent.layout.morph.x.toFixed(2)
-          );
-          this.compMorphY = parseFloat(
-            this.selectedDiagramComponent.layout.morph.y.toFixed(2)
-          );
-          this.compScaleX = parseFloat(
-            this.selectedDiagramComponent.layout.scale.x.toFixed(2)
-          );
-          this.compScaleY = parseFloat(
-            this.selectedDiagramComponent.layout.scale.y.toFixed(2)
-          );
-          this.compTextX = parseFloat(
-            this.selectedDiagramComponent.layout.text.x.toFixed(2)
-          );
-          this.compTextY = parseFloat(
-            this.selectedDiagramComponent.layout.text.y.toFixed(2)
-          );
-          this.compRotation = parseFloat(
-            this.selectedDiagramComponent.layout.rotation.toFixed(2)
-          );
-          this.compTextSize = parseFloat(
-            this.selectedDiagramComponent.layout.text.size.toFixed(2)
-          );
-
-          // add the other possible models
+          this.compLayoutDgs = parseFloat(this.selectedDiagramComponent.layout.pos.dgs.toFixed(2));
+          this.compLayoutX = parseFloat(this.selectedDiagramComponent.layout.pos.x.toFixed(2));
+          this.compLayoutY = parseFloat(this.selectedDiagramComponent.layout.pos.y.toFixed(2));
+          this.compMorphX = parseFloat(this.selectedDiagramComponent.layout.morph.x.toFixed(2));
+          this.compMorphY = parseFloat(this.selectedDiagramComponent.layout.morph.y.toFixed(2));
+          this.compScaleX = parseFloat(this.selectedDiagramComponent.layout.scale.x.toFixed(2));
+          this.compScaleY = parseFloat(this.selectedDiagramComponent.layout.scale.y.toFixed(2));
+          if (this.selectedDiagramComponent.layout.anchor) {
+            this.compAnchorX = parseFloat(this.selectedDiagramComponent.layout.anchor.x.toFixed(2));
+            this.compAnchorY = parseFloat(this.selectedDiagramComponent.layout.anchor.y.toFixed(2));
+          } else {
+            this.compAnchorX = 0.5;
+            this.compAnchorY = 0.5
+          }
+          this.compTextX = parseFloat(this.selectedDiagramComponent.layout.text.x.toFixed(2));
+          this.compTextY = parseFloat(this.selectedDiagramComponent.layout.text.y.toFixed(2));
+          this.compRotation = parseFloat(this.selectedDiagramComponent.layout.rotation.toFixed(2));
+          this.compTextSize = parseFloat(this.selectedDiagramComponent.layout.text.size.toFixed(2));
+          if (this.selectedDiagramComponent.layout.anchor) {
+            this.compTinting = this.selectedDiagramComponent.layout.tinting;
+          } else {
+            this.compTinting = true;
+          }
           break;
+        
         case "GasCompartment":
+          if (this.selectedDiagramComponent.compPicto) {
+            this.compPicto = this.selectedDiagramComponent.compPicto;
+          } else {
+            this.compPicto = "gas_container.png";
+          }
           this.compEnabled = this.selectedDiagramComponent.enabled;
           this.compType = this.selectedDiagramComponent.compType;
           this.compName = this.selectedDiagramComponentName;
@@ -800,43 +1007,37 @@ export default {
           } else {
             this.compLayoutType = false;
           }
-          this.compLayoutDgs = parseFloat(
-            this.selectedDiagramComponent.layout.pos.dgs.toFixed(2)
-          );
-          this.compLayoutX = parseFloat(
-            this.selectedDiagramComponent.layout.pos.x.toFixed(2)
-          );
-          this.compLayoutY = parseFloat(
-            this.selectedDiagramComponent.layout.pos.y.toFixed(2)
-          );
-          this.compMorphX = parseFloat(
-            this.selectedDiagramComponent.layout.morph.x.toFixed(2)
-          );
-          this.compMorphY = parseFloat(
-            this.selectedDiagramComponent.layout.morph.y.toFixed(2)
-          );
-          this.compScaleX = parseFloat(
-            this.selectedDiagramComponent.layout.scale.x.toFixed(2)
-          );
-          this.compScaleY = parseFloat(
-            this.selectedDiagramComponent.layout.scale.y.toFixed(2)
-          );
-          this.compTextX = parseFloat(
-            this.selectedDiagramComponent.layout.text.x.toFixed(2)
-          );
-          this.compTextY = parseFloat(
-            this.selectedDiagramComponent.layout.text.y.toFixed(2)
-          );
-          this.compRotation = parseFloat(
-            this.selectedDiagramComponent.layout.rotation.toFixed(2)
-          );
-          this.compTextSize = parseFloat(
-            this.selectedDiagramComponent.layout.text.size.toFixed(2)
-          );
-
-          // add the other possible models
+          this.compLayoutDgs = parseFloat(this.selectedDiagramComponent.layout.pos.dgs.toFixed(2));
+          this.compLayoutX = parseFloat(this.selectedDiagramComponent.layout.pos.x.toFixed(2));
+          this.compLayoutY = parseFloat(this.selectedDiagramComponent.layout.pos.y.toFixed(2));
+          this.compMorphX = parseFloat(this.selectedDiagramComponent.layout.morph.x.toFixed(2));
+          this.compMorphY = parseFloat(this.selectedDiagramComponent.layout.morph.y.toFixed(2));
+          this.compScaleX = parseFloat(this.selectedDiagramComponent.layout.scale.x.toFixed(2));
+          this.compScaleY = parseFloat(this.selectedDiagramComponent.layout.scale.y.toFixed(2));
+          if (this.selectedDiagramComponent.layout.anchor) {
+            this.compAnchorX = parseFloat(this.selectedDiagramComponent.layout.anchor.x.toFixed(2));
+            this.compAnchorY = parseFloat(this.selectedDiagramComponent.layout.anchor.y.toFixed(2));
+          } else {
+            this.compAnchorX = 0.5;
+            this.compAnchorY = 0.5
+          }
+          this.compTextX = parseFloat(this.selectedDiagramComponent.layout.text.x.toFixed(2));
+          this.compTextY = parseFloat(this.selectedDiagramComponent.layout.text.y.toFixed(2));
+          this.compRotation = parseFloat(this.selectedDiagramComponent.layout.rotation.toFixed(2));
+          this.compTextSize = parseFloat(this.selectedDiagramComponent.layout.text.size.toFixed(2));
+          if (this.selectedDiagramComponent.layout.anchor) {
+            this.compTinting = this.selectedDiagramComponent.layout.tinting;
+          } else {
+            this.compTinting = true;
+          }
           break;
+        
         case "Container":
+          if (this.selectedDiagramComponent.compPicto) {
+            this.compPicto = this.selectedDiagramComponent.compPicto;
+          } else {
+            this.compPicto = "container.png";
+          }
           this.compEnabled = this.selectedDiagramComponent.enabled;
           this.compType = this.selectedDiagramComponent.compType;
           this.compName = this.selectedDiagramComponentName;
@@ -848,48 +1049,41 @@ export default {
           } else {
             this.compLayoutType = false;
           }
-          this.compLayoutDgs = parseFloat(
-            this.selectedDiagramComponent.layout.pos.dgs.toFixed(2)
-          );
-          this.compLayoutX = parseFloat(
-            this.selectedDiagramComponent.layout.pos.x.toFixed(2)
-          );
-          this.compLayoutY = parseFloat(
-            this.selectedDiagramComponent.layout.pos.y.toFixed(2)
-          );
-          this.compMorphX = parseFloat(
-            this.selectedDiagramComponent.layout.morph.x.toFixed(2)
-          );
-          this.compMorphY = parseFloat(
-            this.selectedDiagramComponent.layout.morph.y.toFixed(2)
-          );
-          this.compScaleX = parseFloat(
-            this.selectedDiagramComponent.layout.scale.x.toFixed(2)
-          );
-          this.compScaleY = parseFloat(
-            this.selectedDiagramComponent.layout.scale.y.toFixed(2)
-          );
-          this.compTextX = parseFloat(
-            this.selectedDiagramComponent.layout.text.x.toFixed(2)
-          );
-          this.compTextY = parseFloat(
-            this.selectedDiagramComponent.layout.text.y.toFixed(2)
-          );
-          this.compRotation = parseFloat(
-            this.selectedDiagramComponent.layout.rotation.toFixed(2)
-          );
-          this.compTextSize = parseFloat(
-            this.selectedDiagramComponent.layout.text.size.toFixed(2)
-          );
-
-          // add the other possible models
+          this.compLayoutDgs = parseFloat(this.selectedDiagramComponent.layout.pos.dgs.toFixed(2));
+          this.compLayoutX = parseFloat(this.selectedDiagramComponent.layout.pos.x.toFixed(2));
+          this.compLayoutY = parseFloat(this.selectedDiagramComponent.layout.pos.y.toFixed(2));
+          this.compMorphX = parseFloat(this.selectedDiagramComponent.layout.morph.x.toFixed(2));
+          this.compMorphY = parseFloat(this.selectedDiagramComponent.layout.morph.y.toFixed(2));
+          this.compScaleX = parseFloat(this.selectedDiagramComponent.layout.scale.x.toFixed(2));
+          this.compScaleY = parseFloat(this.selectedDiagramComponent.layout.scale.y.toFixed(2));
+          if (this.selectedDiagramComponent.layout.anchor) {
+            this.compAnchorX = parseFloat(this.selectedDiagramComponent.layout.anchor.x.toFixed(2));
+            this.compAnchorY = parseFloat(this.selectedDiagramComponent.layout.anchor.y.toFixed(2));
+          } else {
+            this.compAnchorX = 0.5;
+            this.compAnchorY = 0.5
+          }
+          this.compTextX = parseFloat(this.selectedDiagramComponent.layout.text.x.toFixed(2));
+          this.compTextY = parseFloat(this.selectedDiagramComponent.layout.text.y.toFixed(2));
+          this.compRotation = parseFloat(this.selectedDiagramComponent.layout.rotation.toFixed(2));
+          this.compTextSize = parseFloat(this.selectedDiagramComponent.layout.text.size.toFixed(2));
+          if (this.selectedDiagramComponent.layout.anchor) {
+            this.compTinting = this.selectedDiagramComponent.layout.tinting;
+          } else {
+            this.compTinting = true;
+          }
           break;
+        
         case "GasExchanger":
+          if (this.selectedDiagramComponent.compPicto) {
+            this.compPicto = this.selectedDiagramComponent.compPicto;
+          } else {
+            this.compPicto = "exchange.png";
+          }
           this.compEnabled = this.selectedDiagramComponent.enabled;
           this.compType = this.selectedDiagramComponent.compType;
           this.compName = this.selectedDiagramComponentName;
           this.compLabel = this.selectedDiagramComponent.label;
-          this.compGas = this.selectedDiagramComponent.gas;
           this.selectModelTypeToAdd(this.selectedDiagramComponent.compType);
           this.compModelSelection = this.selectedDiagramComponent.models;
           if (this.selectedDiagramComponent.layout.pos.type == "arc") {
@@ -897,43 +1091,32 @@ export default {
           } else {
             this.compLayoutType = false;
           }
-          this.compLayoutDgs = parseFloat(
-            this.selectedDiagramComponent.layout.pos.dgs.toFixed(2)
-          );
-          this.compLayoutX = parseFloat(
-            this.selectedDiagramComponent.layout.pos.x.toFixed(2)
-          );
-          this.compLayoutY = parseFloat(
-            this.selectedDiagramComponent.layout.pos.y.toFixed(2)
-          );
-          this.compMorphX = parseFloat(
-            this.selectedDiagramComponent.layout.morph.x.toFixed(2)
-          );
-          this.compMorphY = parseFloat(
-            this.selectedDiagramComponent.layout.morph.y.toFixed(2)
-          );
-          this.compScaleX = parseFloat(
-            this.selectedDiagramComponent.layout.scale.x.toFixed(2)
-          );
-          this.compScaleY = parseFloat(
-            this.selectedDiagramComponent.layout.scale.y.toFixed(2)
-          );
-          this.compTextX = parseFloat(
-            this.selectedDiagramComponent.layout.text.x.toFixed(2)
-          );
-          this.compTextY = parseFloat(
-            this.selectedDiagramComponent.layout.text.y.toFixed(2)
-          );
-          this.compRotation = parseFloat(
-            this.selectedDiagramComponent.layout.rotation.toFixed(2)
-          );
-          this.compTextSize = parseFloat(
-            this.selectedDiagramComponent.layout.text.size.toFixed(2)
-          );
-
-          // add the other possible models
+          this.compLayoutDgs = parseFloat(this.selectedDiagramComponent.layout.pos.dgs.toFixed(2));
+          this.compLayoutX = parseFloat(this.selectedDiagramComponent.layout.pos.x.toFixed(2));
+          this.compLayoutY = parseFloat(this.selectedDiagramComponent.layout.pos.y.toFixed(2));
+          this.compMorphX = parseFloat(this.selectedDiagramComponent.layout.morph.x.toFixed(2));
+          this.compMorphY = parseFloat(this.selectedDiagramComponent.layout.morph.y.toFixed(2));
+          this.compScaleX = parseFloat(this.selectedDiagramComponent.layout.scale.x.toFixed(2));
+          this.compScaleY = parseFloat(this.selectedDiagramComponent.layout.scale.y.toFixed(2));
+          if (this.selectedDiagramComponent.layout.anchor) {
+            this.compAnchorX = parseFloat(this.selectedDiagramComponent.layout.anchor.x.toFixed(2));
+            this.compAnchorY = parseFloat(this.selectedDiagramComponent.layout.anchor.y.toFixed(2));
+          } else {
+            this.compAnchorX = 0.5;
+            this.compAnchorY = 0.5
+          }
+          this.compTextX = parseFloat(this.selectedDiagramComponent.layout.text.x.toFixed(2));
+          this.compTextY = parseFloat(this.selectedDiagramComponent.layout.text.y.toFixed(2));
+          this.compRotation = parseFloat(this.selectedDiagramComponent.layout.rotation.toFixed(2));
+          this.compTextSize = parseFloat(this.selectedDiagramComponent.layout.text.size.toFixed(2));
+          if (this.selectedDiagramComponent.layout.anchor) {
+            this.compTinting = this.selectedDiagramComponent.layout.tinting;
+          } else {
+            this.compTinting = true;
+          }
           break;
       }
+
       if (this.selectedDiagramComponent.compPicto) {
         this.compPicto = this.selectedDiagramComponent.compPicto;
       }
@@ -976,6 +1159,8 @@ export default {
       switch (compType) {
         case "BloodConnector":
           this.findDiagramComponents("BloodCompartment");
+          this.findDiagramComponents("BloodVessel");
+          this.findDiagramComponents("MicroVascularUnit");
           this.findDiagramComponents("BloodPump");
           this.findDiagramComponents("Oxygenator");
           break;
@@ -984,17 +1169,23 @@ export default {
           break;
         case "Container":
           this.findDiagramComponents("BloodCompartment");
+          this.findDiagramComponents("BloodVessel");
+          this.findDiagramComponents("MicroVascularUnit");
           this.findDiagramComponents("GasCompartment");
           this.findDiagramComponents("BloodPump");
           this.findDiagramComponents("Oxygenator");
           break;
         case "Shunt":
           this.findDiagramComponents("BloodCompartment");
+          this.findDiagramComponents("BloodVessel");
+          this.findDiagramComponents("MicroVascularUnit");
           this.findDiagramComponents("BloodPump");
           this.findDiagramComponents("Oxygenator");
           break;
         case "Pump":
           this.findDiagramComponents("BloodCompartment");
+          this.findDiagramComponents("BloodVessel");
+          this.findDiagramComponents("MicroVascularUnit");
           this.findDiagramComponents("BloodPump");
           this.findDiagramComponents("Oxygenator");
           break;
@@ -1017,9 +1208,19 @@ export default {
           this.compPicto = "container.png";
           models = [
             "BloodCapacitance", "BloodTimeVaryingElastance", "BloodVessel", 
-            "HeartChamber", "CapillaryBed", "CoronaryVessel", 
-            "Artery", "Vein", "Venule", 
-            "Arteriole", "Capillaries"];
+            "HeartChamber", "MicroVascularUnit"];
+          break;
+        case "BloodVessel":
+          this.compPicto = "vessel.png";
+          models = [
+            "BloodCapacitance", "BloodTimeVaryingElastance", "BloodVessel", 
+            "HeartChamber", "MicroVascularUnit"];
+          break;
+        case "MicroVascularUnit":
+          this.compPicto = "container.png";
+          models = [
+            "BloodCapacitance", "BloodTimeVaryingElastance", "BloodVessel", 
+            "HeartChamber", "MicroVascularUnit"];
           break;
         case "BloodConnector":
           this.compPicto = "blood.png";

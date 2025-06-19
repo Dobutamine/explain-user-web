@@ -2,6 +2,7 @@ import { PIXI } from "src/boot/pixi.js";
 
 export default class GasConnector {
   compType = "GasConnector";
+  compPicto = "blood.png";
   key = "";
   label = "";
   pixiApp = {};
@@ -16,9 +17,12 @@ export default class GasConnector {
   spriteColor = 0xffffff;
   angleCorrection = 0;
 
+  text = {};
+  textStyle = {};
+
   path = null;
   pathColor = 0x333333;
-  pathWidth = 4;
+  pathWidth = 7;
   prevPosition = 0;
 
   arc = {
@@ -67,7 +71,6 @@ export default class GasConnector {
     this.models = models;
     this.dbcFrom = dbcFrom;
     this.dbcTo = dbcTo;
-    this.layout = layout;
     this.compPicto = picto;
     this.global_scaling = scaling;
     this.global_speed = global_speed;
@@ -77,10 +80,7 @@ export default class GasConnector {
       this.compPicto = "blood.png";
     }
 
-    this.edit_comp_event = new CustomEvent("edit_comp", { detail: this.key });
-
     this.drawPath();
-
     this.sprite = PIXI.Sprite.from(this.compPicto);
     this.sprite["name_sprite"] = key;
     this.sprite["compType"] = this.compType;
@@ -93,9 +93,10 @@ export default class GasConnector {
     );
     this.sprite.eventMode = "none";
     this.sprite.tint = this.spriteColor;
-    this.sprite.zIndex = 5;
+    this.sprite.zIndex = 8;
 
     this.pixiApp.stage.addChild(this.sprite);
+    this.sprite.eventMode = "none";
 
     this.registerConnectorWithDbc();
   }
@@ -111,8 +112,8 @@ export default class GasConnector {
       this.pixiApp.stage.removeChild(this.path);
     }
     this.path = new PIXI.Graphics();
-    this.path["name_path"] = key;
-    this.path.zIndex = 4;
+    this.path["name_path"] = this.key;
+    this.path.zIndex = 7;
     this.path.cacheAsBitmap = true;
 
     if (
@@ -132,7 +133,7 @@ export default class GasConnector {
       this.arc.xCenter = this.dbcFrom.xCenter + this.dbcFrom.xOffset;
       this.arc.yCenter = this.dbcFrom.yCenter + this.dbcFrom.yOffset;
       // draw the path
-      this.path.lineStyle(this.pathWidth, this.pathColor, 1);
+      this.path.lineStyle(this.pathWidth, this.pathColor, 0);
       this.path.arc(
         this.arc.xCenter,
         this.arc.yCenter,
@@ -193,7 +194,8 @@ export default class GasConnector {
         angle2 = -angle2;
       }
       this.line.to = angle2 * 0.0174533;
-      this.path.lineStyle(this.pathWidth, this.pathColor, 1);
+
+      this.path.lineStyle(this.pathWidth, this.pathColor, 0);
       this.path.arc(
         this.line.xCenter,
         this.line.yCenter,
@@ -208,9 +210,7 @@ export default class GasConnector {
         this.angleCorrection = Math.PI * 2.0;
       }
     }
-    this.path.interactive = true;
-    this.path.on("mouseup", (e) => this.onDragEnd(e));
-    this.path.on("touchend", (e) => this.onDragEnd(e));
+    this.path.eventMode = "none";
     this.pixiApp.stage.addChild(this.path);
   }
   update(data) {
@@ -223,7 +223,7 @@ export default class GasConnector {
     let direction = 0;
 
     this.models.forEach((model) => {
-      flow += data[model + ".Flow"];
+      flow += data[model + ".flow"];
     });
 
     if (isNaN(flow)) {
@@ -235,10 +235,10 @@ export default class GasConnector {
 
     if (flow >= 0) {
       direction = 0;
-      this.sprite.tint = this.dbcFrom.sprite.tint;
+      //this.sprite.tint = this.dbcFrom.sprite.tint;
     } else {
       direction = Math.PI;
-      this.sprite.tint = this.dbcTo.sprite.tint;
+      //this.sprite.tint = this.dbcTo.sprite.tint;
     }
 
     if (noData) {

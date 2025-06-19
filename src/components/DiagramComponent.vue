@@ -17,6 +17,7 @@ import { explain } from "../boot/explain";
 import { PIXI } from "../boot/pixi";
 import MicroVascularUnit from "./ui_elements/MicroVascularUnit";
 import BloodCompartment from "./ui_elements/BloodCompartment";
+import BloodVessel from "./ui_elements/BloodVessel";
 import LymphCompartment from "./ui_elements/LymphCompartment";
 import GasCompartment from "./ui_elements/GasCompartment";
 import BloodConnector from "./ui_elements/BloodConnector";
@@ -111,18 +112,10 @@ export default {
     };
   },
   methods: {
-
-    changeGlobalSize() {
-
-    },
-    changeGlobalSpeed() {
-
-    },
     toggleShunts() {
       this.shunt_options.forEach((shunt_option) => {
         this.showOrHideShunt(this.selected_shunts.includes(shunt_option.value), shunt_option.models)
       })
-
     },
     showOrHideShunt(state, shunts) {
       if (state) {
@@ -352,27 +345,6 @@ export default {
               })
               explain.watchModelProps(watched_models_pump)
               break;
-            case "LymphCompartment":
-              diagram_components[key] = new LymphCompartment(
-                pixiApp,
-                key,
-                component.label,
-                component.models,
-                component.layout,
-                xCenter,
-                yCenter,
-                xOffset,
-                yOffset,
-                radius,
-                component.compPicto,
-                global_scaling
-              );
-              let watched_models_lc = []
-              component.models.forEach(m => {
-                watched_models_lc.push(m + ".vol")
-              })
-              explain.watchModelProps(watched_models_lc)
-              break;
             case "BloodCompartment":
               diagram_components[key] = new BloodCompartment(
                 pixiApp,
@@ -394,6 +366,28 @@ export default {
                 watched_models_bc.push(m + ".to2")
               })
               explain.watchModelProps(watched_models_bc)
+              break;
+          case "BloodVessel":
+              diagram_components[key] = new BloodVessel(
+                pixiApp,
+                key,
+                component.label,
+                component.models,
+                component.layout,
+                xCenter,
+                yCenter,
+                xOffset,
+                yOffset,
+                radius,
+                component.compPicto,
+                global_scaling
+              );
+              let watched_models_bv = []
+              component.models.forEach(m => {
+                watched_models_bv.push(m + ".vol")
+                watched_models_bv.push(m + ".to2")
+              })
+              explain.watchModelProps(watched_models_bv)
               break;
             case "MicroVascularUnit":
               diagram_components[key] = new MicroVascularUnit(
@@ -607,6 +601,14 @@ export default {
                 watched_models_bc.push(m + ".to2")
               })
               explain.watchModelProps(watched_models_bc)
+              break;
+            case "BloodVessel":
+              let watched_models_bv = []
+              component.models.forEach(m => {
+                watched_models_bv.push(m + ".vol")
+                watched_models_bv.push(m + ".to2")
+              })
+              explain.watchModelProps(watched_models_bv)
               break;
             case "MicroVascularUnit":
               let watched_models_mvu = []
