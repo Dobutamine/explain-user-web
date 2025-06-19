@@ -1,8 +1,7 @@
 import { PIXI } from "src/boot/pixi.js";
 
-export default class BloodCompartment {
-  compType = "BloodCompartment";
-  compPicto = "container.png";
+export default class Exchanger {
+  compType = "Exchanger";
   pixiApp = {};
   key = "";
   label = "";
@@ -12,14 +11,9 @@ export default class BloodCompartment {
   yCenter = 0;
   xOffset = 0;
   yOffset = 0;
-  zIndexSprite = 10;
-  zIndexText = 11;
   radius = 0;
-  angle = 0;
   rotation = 0;
-  distanceToCenter = 0;
   global_scaling = 1.0;
-  max_to2 = 7.1
 
   sprite = {};
   text = {};
@@ -28,8 +22,8 @@ export default class BloodCompartment {
   interactionData = null;
   connectors = {};
 
-  volume = 0.1;
-  to2 = 7.4;
+  gas = "O2";
+  rotation = 0;
 
   edit_comp_event = null;
   editingMode = 1;
@@ -41,6 +35,7 @@ export default class BloodCompartment {
     key,
     label,
     models,
+    gas,
     layout,
     xCenter,
     yCenter,
@@ -55,6 +50,7 @@ export default class BloodCompartment {
     this.key = key;
     this.label = label;
     this.models = models;
+    this.gas = ".flux_" + gas;
     this.layout = layout;
     this.xCenter = xCenter;
     this.yCenter = yCenter;
@@ -65,29 +61,23 @@ export default class BloodCompartment {
     this.global_scaling = scaling;
 
     if (!this.compPicto) {
-      this.compPicto = "container.png";
+      this.compPicto = "exchange.png";
     }
+
+    this.edit_comp_event = new CustomEvent("edit_comp", { detail: this.key });
 
     // this is a blood compartment sprite which uses
     this.sprite = PIXI.Sprite.from(this.compPicto);
     this.sprite["name_sprite"] = key;
     this.sprite["compType"] = this.compType;
+    this.sprite.eventMode = "none";
     this.sprite.scale.set(
-      this.volume * this.layout.scale.x * this.global_scaling,
-      this.volume * this.layout.scale.y * this.global_scaling
+      this.layout.scale.x * this.global_scaling,
+      this.layout.scale.y * this.global_scaling
     );
-    if (this.layout.anchor) {
-      this.sprite.anchor = {  x: this.layout.anchor.x, y: this.layout.anchor.y };
-    } else {
-      this.sprite.anchor = {  x: 0.5, y: 0.5 };
-    }
-
-    if (this.layout.tinting) {
-      this.sprite.tint = "0x151a7b";
-    }
- 
-    this.sprite.rotation = this.layout.rotation;
-    this.sprite.zIndex = this.zIndexSprite;
+    this.sprite.anchor = { x: 0.5, y: 0.5 };
+    this.sprite.tint = "0xbbbbbb";
+    this.sprite.zIndex = 12;
 
     // place the sprite on the stage
     switch (this.layout.pos.type) {
@@ -122,78 +112,46 @@ export default class BloodCompartment {
     //define the caption style and text object and add it to the stage
     this.textStyle = new PIXI.TextStyle({
       fill: "white",
-      fontSize: this.layout.text.size,
+      fontSize: this.layout.text.size * this.global_scaling,
       fontFamily: "Arial",
       strokeThickness: 0,
     });
-
     this.text = new PIXI.Text(this.label, this.textStyle);
     this.text["name_text"] = key;
-    if (this.layout.anchor) {
-      this.text.anchor = {  x: this.layout.anchor.x, y: this.layout.anchor.y };
-    } else {
-      this.text.anchor = {  x: 0.5, y: 0.5 };
-    }
+    this.text.anchor = { x: 0.5, y: 0.5 };
     this.text.x = this.sprite.x + this.layout.text.x;
     this.text.y = this.sprite.y + this.layout.text.y;
     this.text.rotation = this.layout.rotation;
-    this.text.zIndexText = 7;
+    this.text.zIndex = 13;
 
     this.pixiApp.stage.addChild(this.text);
   }
-  update(data) {
-    let volume = 0;
-    let volumes = [];
-    let to2s = [];
-    this.models.forEach((model) => {
-      volume += data[model + ".vol"];
-      volumes.push(data[model + ".vol"]);
-      to2s.push(data[model + ".to2"]);
-    });
-    // calculate factors
-    this.to2 = 0;
-    for (let i = 0; i < volumes.length; i++) {
-      let factor = volumes[i] / volume;
-      this.to2 += factor * to2s[i];
-    }
-
-    if (isNaN(volume)) {
-      this.volume = (0.15 / this.layout.scale.x) * this.global_scaling;
-    } else {
-      this.volume = this.calculateRadius(volume);
-    }
-
-    this.sprite.scale.set(
-      this.volume * this.layout.scale.x * this.global_scaling,
-      this.volume * this.layout.scale.y * this.global_scaling
-    );
-    let scaleFont = this.volume * this.layout.text.size * this.global_scaling;
-    if (scaleFont > 1.1) {
-      scaleFont = 1.1;
-    }
-
-    this.sprite.rotation = this.layout.rotation;
-    this.text.rotation = this.layout.rotation;
-    this.sprite.zIndex = this.zIndexSprite;
-
-    this.text.x = this.sprite.x + this.layout.text.x;
-    this.text.y = this.sprite.y + this.layout.text.y;
-    this.text.zIndex = this.zIndexText;
-
-    this.text.scale.set(scaleFont, scaleFont);
-    this.text.alpha = 1.0;
-    if (isNaN(this.to2)) {
-      this.text.alpha = 0.1;
-    }
-    if (this.layout.tinting) {
-      this.sprite.tint = this.calculateColor(this.to2);
-    } else {
-      this.sprite.tint = "0xffffff"
-    }
-    
-  }
   setEditingMode(newMode) {
     this.editingMode = newMode;
+  }
+  update(data) {
+    let difO2 = 0;
+
+    this.models.forEach((model) => {
+      difO2 += data[model + this.gas];
+    });
+    if (isNaN(difO2)) {
+      difO2 = 0.0;
+      this.text.alpha = 0.1;
+      this.sprite.tint = 0x666666;
+    } else {
+      this.sprite.tint = 0xbbbbbb;
+      this.text.alpha = 1.0;
+    }
+
+    // calculate factors
+    this.rotation += (difO2 / this.models.length) * 10000;
+    if (this.rotation > 2 * Math.PI) {
+      this.rotation = 0;
+    }
+    //console.log(this.rotation);
+    this.sprite.rotation = -this.rotation;
+    this.text.rotation = this.layout.rotation;
   }
   redrawConnectors() {
     Object.values(this.connectors).forEach((connector) => connector.drawPath());
@@ -202,6 +160,7 @@ export default class BloodCompartment {
     const f1 = Math.pow(x - this.xCenter, 2);
     const f2 = Math.pow(y - this.yCenter, 2);
     let distance = Math.abs(Math.sqrt(f1 + f2) - this.radius * this.xCenter);
+    //console.log(distance - this.radius * this.xCenter);
     let angle = 0;
     if (distance < 5) {
       // on circle
@@ -223,42 +182,5 @@ export default class BloodCompartment {
     } else {
       this.layout.pos.type = "rel";
     }
-  }
-  calculateRadius(volume) {
-    const _cubicRadius = volume / ((4.0 / 3.0) * Math.PI);
-    const _radius = Math.pow(_cubicRadius, 1.0 / 3.0);
-    return _radius;
-  }
-  calculateColor(to2) {
-    if (isNaN(to2)) {
-      return 0x666666;
-    }
-    if (to2 > this.max_to2) {
-      to2 = this.max_to2;
-    }
-    //let remap = this.remap(to2, 0, this.max_to2, -10, 1);
-    let remap = this.remap(to2, 0, this.max_to2, -1.25, 1);
-    if (remap < 0) remap = 0;
-    const red = (remap * 210).toFixed(0);
-    const green = (remap * 80).toFixed(0);
-    const blue = (80 + remap * 75).toFixed(0);
-    const color = "0x" + this.fullColorHex(red, green, blue);
-    return color;
-  }
-  remap(value, from1, to1, from2, to2) {
-    return ((value - from1) / (to1 - from1)) * (to2 - from2) + from2;
-  }
-  rgbToHex(rgb) {
-    let hex = Number(rgb).toString(16);
-    if (hex.length < 2) {
-      hex = "0" + hex;
-    }
-    return hex;
-  }
-  fullColorHex(r, g, b) {
-    const red = this.rgbToHex(r);
-    const green = this.rgbToHex(g);
-    const blue = this.rgbToHex(b);
-    return red + green + blue;
   }
 }

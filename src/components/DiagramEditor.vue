@@ -81,15 +81,11 @@
             <q-select class="col-9" label="models" v-model="compModelSelection" :options="compModels" hide-bottom-space
               dense multiple style="font-size: 12px" />
             <div v-if="
-              advancedMode &&
-              (compType == 'BloodCompartment' ||
-                compType == 'BloodVessel' ||
-                compType == 'MicroVascularUnit' ||
-                compType == 'BloodPump' ||
-                compType == 'Oxygenator' ||
-                compType == 'GasCompartment' ||
+              ( compType == 'Compartment' ||
+                compType == 'Pump' ||
                 compType == 'Container' ||
-                compType == 'GasExchanger')
+                compType == 'Device' ||
+                compType == 'Exchanger')
             ">
               layout
               <q-btn-toggle class="q-ma-sm col-9" v-model="compLayoutType" size="sm" dark spread dense no-caps
@@ -144,9 +140,8 @@
             </div>
 
             <div v-if="
-              compType == 'BloodConnector' ||
-              compType == 'GasConnector' ||
-              compType == 'Shunt'
+              compType == 'Connector' ||
+              compType == 'Valve'
             ">
               <div class="row">
                 <q-select class="col" label="Diagram comp from" v-model="compDbcFrom" :options="compDbcFroms"
@@ -191,7 +186,6 @@
 
 <script>
 import { explain } from "../boot/explain";
-
 import { useUserStore } from "src/stores/user";
 import { useStateStore } from "src/stores/state";
 import { useGeneralStore } from "src/stores/general";
@@ -211,31 +205,21 @@ export default {
   data() {
     return {
       selectedDiagramComponentName: "",
-      selectedDiagramComponentExp: {},
-
-      advancedMode: true,
       editorMode: 0,
       title: "DIAGRAM EDITOR",
       generalSettingsCollapsed: true,
       componentSettingsCollapsed: false,
       collapsed: false,
-      modelsTree: {},
-      selectedModelType: [],
-      selectedModelItems: [],
       modelTypes: [],
       selectedDiagramComponent: "",
       diagramComponentTypes: [
-        "BloodCompartment",
-        "BloodVessel",
-        "MicroVascularUnit",
-        "BloodPump", 
-        "BloodConnector", 
-        "Shunt", 
-        "GasCompartment", 
-        "GasConnector", 
-        "Container", 
-        "GasExchanger", 
-        "Oxygenator"
+        "Compartment",
+        "Connector",
+        "Container",
+        "Device", 
+        "Exchanger", 
+        "Pump", 
+        "Valve"
       ],
       diagramComponentNames: [],
       compEnabled: false,
@@ -308,7 +292,7 @@ export default {
     saveDiagramComponent() {
       let layoutType = "rel";
       switch (this.compType) {
-        case "GasCompartment":
+        case "Compartment":
           layoutType = "rel";
           if (this.compLayoutType) {
             layoutType = "arc";
@@ -349,171 +333,19 @@ export default {
           };
           this.$bus.emit("rebuild_diagram");
           break;
-        case "Oxygenator":
-          layoutType = "rel";
-          if (this.compLayoutType) {
-            layoutType = "arc";
-          }
+        case "Connector":
           this.state.diagram_definition.components[this.compName] = {
             enabled: this.compEnabled,
             label: this.compLabel,
             models: this.compModelSelection,
             compType: this.compType,
             compPicto: this.compPicto,
-            layout: {
-              pos: {
-                type: layoutType,
-                x: parseFloat(this.compLayoutX),
-                y: parseFloat(this.compLayoutY),
-                dgs: parseFloat(this.compLayoutDgs),
-              },
-              morph: {
-                x: parseFloat(this.compMorphX),
-                y: parseFloat(this.compMorphY),
-              },
-              scale: {
-                x: parseFloat(this.compScaleX),
-                y: parseFloat(this.compScaleY),
-              },
-              anchor: {
-                x: parseFloat(this.compAnchorX),
-                y: parseFloat(this.compAnchorY),
-              },
-              rotation: parseFloat(this.compRotation),
-              text: {
-                x: parseFloat(this.compTextX),
-                y: parseFloat(this.compTextY),
-                size: parseFloat(this.compTextSize),
-              },
-              tinting: this.compTinting
-            },
+            dbcFrom: this.compDbcFrom,
+            dbcTo: this.compDbcTo
           };
           this.$bus.emit("rebuild_diagram");
           break;
-        case "BloodPump":
-          layoutType = "rel";
-          if (this.compLayoutType) {
-            layoutType = "arc";
-          }
-          this.state.diagram_definition.components[this.compName] = {
-            enabled: this.compEnabled,
-            label: this.compLabel,
-            models: this.compModelSelection,
-            compType: this.compType,
-            compPicto: this.compPicto,
-            layout: {
-              pos: {
-                type: layoutType,
-                x: parseFloat(this.compLayoutX),
-                y: parseFloat(this.compLayoutY),
-                dgs: parseFloat(this.compLayoutDgs),
-              },
-              morph: {
-                x: parseFloat(this.compMorphX),
-                y: parseFloat(this.compMorphY),
-              },
-              scale: {
-                x: parseFloat(this.compScaleX),
-                y: parseFloat(this.compScaleY),
-              },
-              anchor: {
-                x: parseFloat(this.compAnchorX),
-                y: parseFloat(this.compAnchorY),
-              },
-              rotation: parseFloat(this.compRotation),
-              text: {
-                x: parseFloat(this.compTextX),
-                y: parseFloat(this.compTextY),
-                size: parseFloat(this.compTextSize),
-              },
-              tinting: this.compTinting
-            },
-          };
-          this.$bus.emit("rebuild_diagram");
-          break;
-        case "BloodCompartment":
-          layoutType = "rel";
-          if (this.compLayoutType) {
-            layoutType = "arc";
-          }
-          this.state.diagram_definition.components[this.compName] = {
-            enabled: this.compEnabled,
-            label: this.compLabel,
-            models: this.compModelSelection,
-            compType: this.compType,
-            compPicto: this.compPicto,
-            layout: {
-              pos: {
-                type: layoutType,
-                x: parseFloat(this.compLayoutX),
-                y: parseFloat(this.compLayoutY),
-                dgs: parseFloat(this.compLayoutDgs),
-              },
-              morph: {
-                x: parseFloat(this.compMorphX),
-                y: parseFloat(this.compMorphY),
-              },
-              scale: {
-                x: parseFloat(this.compScaleX),
-                y: parseFloat(this.compScaleY),
-              },
-              anchor: {
-                x: parseFloat(this.compAnchorX),
-                y: parseFloat(this.compAnchorY),
-              },
-              rotation: parseFloat(this.compRotation),
-              text: {
-                x: parseFloat(this.compTextX),
-                y: parseFloat(this.compTextY),
-                size: parseFloat(this.compTextSize),
-              },
-              tinting: this.compTinting
-            },
-          };
-          this.$bus.emit("rebuild_diagram");
-          break;
-        case "BloodVessel":
-          layoutType = "rel";
-          if (this.compLayoutType) {
-            layoutType = "arc";
-          }
-          this.state.diagram_definition.components[this.compName] = {
-            enabled: this.compEnabled,
-            label: this.compLabel,
-            models: this.compModelSelection,
-            compType: this.compType,
-            compPicto: this.compPicto,
-            layout: {
-              pos: {
-                type: layoutType,
-                x: parseFloat(this.compLayoutX),
-                y: parseFloat(this.compLayoutY),
-                dgs: parseFloat(this.compLayoutDgs),
-              },
-              morph: {
-                x: parseFloat(this.compMorphX),
-                y: parseFloat(this.compMorphY),
-              },
-              scale: {
-                x: parseFloat(this.compScaleX),
-                y: parseFloat(this.compScaleY),
-              },
-              anchor: {
-                x: parseFloat(this.compAnchorX),
-                y: parseFloat(this.compAnchorY),
-              },
-              rotation: parseFloat(this.compRotation),
-              text: {
-                x: parseFloat(this.compTextX),
-                y: parseFloat(this.compTextY),
-                size: parseFloat(this.compTextSize),
-              },
-              tinting: this.compTinting
-            },
-          };
-          this.$bus.emit("rebuild_diagram");
-          break;
-        case "MicroVascularUnit":
+        case "Pump":
           layoutType = "rel";
           if (this.compLayoutType) {
             layoutType = "arc";
@@ -595,43 +427,7 @@ export default {
           };
           this.$bus.emit("rebuild_diagram");
           break;
-        case "BloodConnector":
-          this.state.diagram_definition.components[this.compName] = {
-            enabled: this.compEnabled,
-            label: this.compLabel,
-            models: this.compModelSelection,
-            compType: this.compType,
-            compPicto: this.compPicto,
-            dbcFrom: this.compDbcFrom,
-            dbcTo: this.compDbcTo
-          };
-          this.$bus.emit("rebuild_diagram");
-          break;
-        case "Shunt":
-          this.state.diagram_definition.components[this.compName] = {
-            enabled: this.compEnabled,
-            label: this.compLabel,
-            models: this.compModelSelection,
-            compType: this.compType,
-            compPicto: this.compPicto,
-            dbcFrom: this.compDbcFrom,
-            dbcTo: this.compDbcTo,
-          };
-          this.$bus.emit("rebuild_diagram");
-          break;
-        case "GasConnector":
-          this.state.diagram_definition.components[this.compName] = {
-            enabled: this.compEnabled,
-            label: this.compLabel,
-            models: this.compModelSelection,
-            compType: this.compType,
-            compPicto: this.compPicto,
-            dbcFrom: this.compDbcFrom,
-            dbcTo: this.compDbcTo,
-          };
-          this.$bus.emit("rebuild_diagram");
-          break;
-        case "GasExchanger":
+        case "Exchanger":
           layoutType = "rel";
           if (this.compLayoutType) {
             layoutType = "arc";
@@ -673,6 +469,59 @@ export default {
           };
           this.$bus.emit("rebuild_diagram");
           break;
+        case "Valve":
+          this.state.diagram_definition.components[this.compName] = {
+            enabled: this.compEnabled,
+            label: this.compLabel,
+            models: this.compModelSelection,
+            compType: this.compType,
+            compPicto: this.compPicto,
+            dbcFrom: this.compDbcFrom,
+            dbcTo: this.compDbcTo
+          };
+          this.$bus.emit("rebuild_diagram");
+          break;
+        case "Device":
+          layoutType = "rel";
+          if (this.compLayoutType) {
+            layoutType = "arc";
+          }
+          this.state.diagram_definition.components[this.compName] = {
+            enabled: this.compEnabled,
+            label: this.compLabel,
+            models: this.compModelSelection,
+            compType: this.compType,
+            compPicto: this.compPicto,
+            layout: {
+              pos: {
+                type: layoutType,
+                x: parseFloat(this.compLayoutX),
+                y: parseFloat(this.compLayoutY),
+                dgs: parseFloat(this.compLayoutDgs),
+              },
+              morph: {
+                x: parseFloat(this.compMorphX),
+                y: parseFloat(this.compMorphY),
+              },
+              scale: {
+                x: parseFloat(this.compScaleX),
+                y: parseFloat(this.compScaleY),
+              },
+              anchor: {
+                x: parseFloat(this.compAnchorX),
+                y: parseFloat(this.compAnchorY),
+              },
+              rotation: parseFloat(this.compRotation),
+              text: {
+                x: parseFloat(this.compTextX),
+                y: parseFloat(this.compTextY),
+                size: parseFloat(this.compTextSize),
+              },
+              tinting: this.compTinting
+            },
+          };
+          this.$bus.emit("rebuild_diagram");
+          break;
       }
     },
     cancelDiagramBuild() {
@@ -680,7 +529,6 @@ export default {
       this.getAllDiagramComponents();
       this.compType = "";
       this.selectedDiagramComponentName = "";
-      this.selectedModelItems = [];
       this.editorMode = 0;
     },
     deleteComponent() {
@@ -694,19 +542,15 @@ export default {
 
       let compType = this.state.diagram_definition.components[this.compName].compType;
       if (
-        compType === "GasCompartment" ||
-        compType === "BloodCompartment" ||
-        compType === "BloodVessel" ||
-        compType === "MicroVascularUnit" ||
-        compType === "BloodPump" ||
-        compType === "Oxygenator"
+        compType === "Compartment" ||
+        compType === "Device" ||
+        compType === "Pump"
       ) {
         Object.entries(this.state.diagram_definition.components).forEach(
           ([component_name, component]) => {
             if (
-              component.compType === "GasConnector" ||
-              component.compType === "BloodConnector" ||
-              component.compType === "Shunt"
+              component.compType === "Connector" ||
+              component.compType === "Valve"
             ) {
               if (
                 component.dbcFrom === this.compName ||
@@ -736,7 +580,7 @@ export default {
       this.compModelSelection = [];
 
       switch (this.selectedDiagramComponent.compType) {
-        case "BloodConnector":
+        case "Connector":
           this.compEnabled = this.selectedDiagramComponent.enabled;
           this.compType = this.selectedDiagramComponent.compType;
           this.compName = this.selectedDiagramComponentName;
@@ -745,15 +589,12 @@ export default {
           this.compModelSelection = this.selectedDiagramComponent.models;
           this.compDbcFrom = this.selectedDiagramComponent.dbcFrom;
           this.compDbcTo = this.selectedDiagramComponent.dbcTo;
-          this.findDiagramComponents("BloodCompartment");
-          this.findDiagramComponents("MicroVascularUnit");
-          this.findDiagramComponents("BloodVessel");
-          this.findDiagramComponents("BloodPump");
-          this.findDiagramComponents("Oxygenator");
-
+          this.findDiagramComponents("Compartment");
+          this.findDiagramComponents("Pump");
+          this.findDiagramComponents("Device");
           break;
 
-        case "GasConnector":
+        case "Valve":
           this.compEnabled = this.selectedDiagramComponent.enabled;
           this.compType = this.selectedDiagramComponent.compType;
           this.compName = this.selectedDiagramComponentName;
@@ -762,26 +603,12 @@ export default {
           this.compModelSelection = this.selectedDiagramComponent.models;
           this.compDbcFrom = this.selectedDiagramComponent.dbcFrom;
           this.compDbcTo = this.selectedDiagramComponent.dbcTo;
-          this.findDiagramComponents("GasCompartment");
+          this.findDiagramComponents("Compartment");
+          this.findDiagramComponents("Pump");
+          this.findDiagramComponents("Device");
           break;
 
-        case "Shunt":
-          this.compEnabled = this.selectedDiagramComponent.enabled;
-          this.compType = this.selectedDiagramComponent.compType;
-          this.compName = this.selectedDiagramComponentName;
-          this.compLabel = this.selectedDiagramComponent.label;
-          this.selectModelTypeToAdd(this.selectedDiagramComponent.compType);
-          this.compModelSelection = this.selectedDiagramComponent.models;
-          this.compDbcFrom = this.selectedDiagramComponent.dbcFrom;
-          this.compDbcTo = this.selectedDiagramComponent.dbcTo;
-          this.findDiagramComponents("BloodCompartment");
-          this.findDiagramComponents("MicroVascularUnit");
-          this.findDiagramComponents("BloodVessel");
-          this.findDiagramComponents("BloodPump");
-          this.findDiagramComponents("Oxygenator");
-          break;
-
-        case "BloodCompartment":
+        case "Compartment":
           if (this.selectedDiagramComponent.compPicto) {
             this.compPicto = this.selectedDiagramComponent.compPicto;
           } else {
@@ -823,11 +650,11 @@ export default {
           }
           break;
         
-        case "BloodVessel":
+        case "Device":
           if (this.selectedDiagramComponent.compPicto) {
             this.compPicto = this.selectedDiagramComponent.compPicto;
           } else {
-            this.compPicto = "vessel.png";
+            this.compPicto = "container.png";
           }
           this.compEnabled = this.selectedDiagramComponent.enabled;
           this.compType = this.selectedDiagramComponent.compType;
@@ -865,136 +692,11 @@ export default {
           }
           break;
 
-        case "MicroVascularUnit":
-          if (this.selectedDiagramComponent.compPicto) {
-            this.compPicto = this.selectedDiagramComponent.compPicto;
-          } else {
-            this.compPicto = "container.png";
-          }
-          this.compEnabled = this.selectedDiagramComponent.enabled;
-          this.compType = this.selectedDiagramComponent.compType;
-          this.compName = this.selectedDiagramComponentName;
-          this.compLabel = this.selectedDiagramComponent.label;
-          this.selectModelTypeToAdd(this.selectedDiagramComponent.compType);
-          this.compModelSelection = this.selectedDiagramComponent.models;
-          if (this.selectedDiagramComponent.layout.pos.type == "arc") {
-            this.compLayoutType = true;
-          } else {
-            this.compLayoutType = false;
-          }
-          this.compLayoutDgs = parseFloat(this.selectedDiagramComponent.layout.pos.dgs.toFixed(2));
-          this.compLayoutX = parseFloat(this.selectedDiagramComponent.layout.pos.x.toFixed(2));
-          this.compLayoutY = parseFloat(this.selectedDiagramComponent.layout.pos.y.toFixed(2));
-          this.compMorphX = parseFloat(this.selectedDiagramComponent.layout.morph.x.toFixed(2));
-          this.compMorphY = parseFloat(this.selectedDiagramComponent.layout.morph.y.toFixed(2));
-          this.compScaleX = parseFloat(this.selectedDiagramComponent.layout.scale.x.toFixed(2));
-          this.compScaleY = parseFloat(this.selectedDiagramComponent.layout.scale.y.toFixed(2));
-          if (this.selectedDiagramComponent.layout.anchor) {
-            this.compAnchorX = parseFloat(this.selectedDiagramComponent.layout.anchor.x.toFixed(2));
-            this.compAnchorY = parseFloat(this.selectedDiagramComponent.layout.anchor.y.toFixed(2));
-          } else {
-            this.compAnchorX = 0.5;
-            this.compAnchorY = 0.5
-          }
-          this.compTextX = parseFloat(this.selectedDiagramComponent.layout.text.x.toFixed(2));
-          this.compTextY = parseFloat(this.selectedDiagramComponent.layout.text.y.toFixed(2));
-          this.compRotation = parseFloat(this.selectedDiagramComponent.layout.rotation.toFixed(2));
-          this.compTextSize = parseFloat(this.selectedDiagramComponent.layout.text.size.toFixed(2));
-          if (this.selectedDiagramComponent.layout.anchor) {
-            this.compTinting = this.selectedDiagramComponent.layout.tinting;
-          } else {
-            this.compTinting = true;
-          }
-          break;
-        case "Oxygenator":
-          if (this.selectedDiagramComponent.compPicto) {
-            this.compPicto = this.selectedDiagramComponent.compPicto;
-          } else {
-            this.compPicto = "container.png";
-          }
-          this.compEnabled = this.selectedDiagramComponent.enabled;
-          this.compType = this.selectedDiagramComponent.compType;
-          this.compName = this.selectedDiagramComponentName;
-          this.compLabel = this.selectedDiagramComponent.label;
-          this.selectModelTypeToAdd(this.selectedDiagramComponent.compType);
-          this.compModelSelection = this.selectedDiagramComponent.models;
-          if (this.selectedDiagramComponent.layout.pos.type == "arc") {
-            this.compLayoutType = true;
-          } else {
-            this.compLayoutType = false;
-          }
-          this.compLayoutDgs = parseFloat(this.selectedDiagramComponent.layout.pos.dgs.toFixed(2));
-          this.compLayoutX = parseFloat(this.selectedDiagramComponent.layout.pos.x.toFixed(2));
-          this.compLayoutY = parseFloat(this.selectedDiagramComponent.layout.pos.y.toFixed(2));
-          this.compMorphX = parseFloat(this.selectedDiagramComponent.layout.morph.x.toFixed(2));
-          this.compMorphY = parseFloat(this.selectedDiagramComponent.layout.morph.y.toFixed(2));
-          this.compScaleX = parseFloat(this.selectedDiagramComponent.layout.scale.x.toFixed(2));
-          this.compScaleY = parseFloat(this.selectedDiagramComponent.layout.scale.y.toFixed(2));
-          if (this.selectedDiagramComponent.layout.anchor) {
-            this.compAnchorX = parseFloat(this.selectedDiagramComponent.layout.anchor.x.toFixed(2));
-            this.compAnchorY = parseFloat(this.selectedDiagramComponent.layout.anchor.y.toFixed(2));
-          } else {
-            this.compAnchorX = 0.5;
-            this.compAnchorY = 0.5
-          }
-          this.compTextX = parseFloat(this.selectedDiagramComponent.layout.text.x.toFixed(2));
-          this.compTextY = parseFloat(this.selectedDiagramComponent.layout.text.y.toFixed(2));
-          this.compRotation = parseFloat(this.selectedDiagramComponent.layout.rotation.toFixed(2));
-          this.compTextSize = parseFloat(this.selectedDiagramComponent.layout.text.size.toFixed(2));
-          if (this.selectedDiagramComponent.layout.anchor) {
-            this.compTinting = this.selectedDiagramComponent.layout.tinting;
-          } else {
-            this.compTinting = true;
-          }
-          break;
-        
-        case "BloodPump":
+        case "Pump":
           if (this.selectedDiagramComponent.compPicto) {
             this.compPicto = this.selectedDiagramComponent.compPicto;
           } else {
             this.compPicto = "pump.png";
-          }
-          this.compEnabled = this.selectedDiagramComponent.enabled;
-          this.compType = this.selectedDiagramComponent.compType;
-          this.compName = this.selectedDiagramComponentName;
-          this.compLabel = this.selectedDiagramComponent.label;
-          this.selectModelTypeToAdd(this.selectedDiagramComponent.compType);
-          this.compModelSelection = this.selectedDiagramComponent.models;
-          if (this.selectedDiagramComponent.layout.pos.type == "arc") {
-            this.compLayoutType = true;
-          } else {
-            this.compLayoutType = false;
-          }
-          this.compLayoutDgs = parseFloat(this.selectedDiagramComponent.layout.pos.dgs.toFixed(2));
-          this.compLayoutX = parseFloat(this.selectedDiagramComponent.layout.pos.x.toFixed(2));
-          this.compLayoutY = parseFloat(this.selectedDiagramComponent.layout.pos.y.toFixed(2));
-          this.compMorphX = parseFloat(this.selectedDiagramComponent.layout.morph.x.toFixed(2));
-          this.compMorphY = parseFloat(this.selectedDiagramComponent.layout.morph.y.toFixed(2));
-          this.compScaleX = parseFloat(this.selectedDiagramComponent.layout.scale.x.toFixed(2));
-          this.compScaleY = parseFloat(this.selectedDiagramComponent.layout.scale.y.toFixed(2));
-          if (this.selectedDiagramComponent.layout.anchor) {
-            this.compAnchorX = parseFloat(this.selectedDiagramComponent.layout.anchor.x.toFixed(2));
-            this.compAnchorY = parseFloat(this.selectedDiagramComponent.layout.anchor.y.toFixed(2));
-          } else {
-            this.compAnchorX = 0.5;
-            this.compAnchorY = 0.5
-          }
-          this.compTextX = parseFloat(this.selectedDiagramComponent.layout.text.x.toFixed(2));
-          this.compTextY = parseFloat(this.selectedDiagramComponent.layout.text.y.toFixed(2));
-          this.compRotation = parseFloat(this.selectedDiagramComponent.layout.rotation.toFixed(2));
-          this.compTextSize = parseFloat(this.selectedDiagramComponent.layout.text.size.toFixed(2));
-          if (this.selectedDiagramComponent.layout.anchor) {
-            this.compTinting = this.selectedDiagramComponent.layout.tinting;
-          } else {
-            this.compTinting = true;
-          }
-          break;
-        
-        case "GasCompartment":
-          if (this.selectedDiagramComponent.compPicto) {
-            this.compPicto = this.selectedDiagramComponent.compPicto;
-          } else {
-            this.compPicto = "gas_container.png";
           }
           this.compEnabled = this.selectedDiagramComponent.enabled;
           this.compType = this.selectedDiagramComponent.compType;
@@ -1074,7 +776,7 @@ export default {
           }
           break;
         
-        case "GasExchanger":
+        case "Exchanger":
           if (this.selectedDiagramComponent.compPicto) {
             this.compPicto = this.selectedDiagramComponent.compPicto;
           } else {
@@ -1144,6 +846,10 @@ export default {
       this.compScaleY = 1;
       this.compTextX = 0;
       this.compTextY = 0;
+      this.compAnchorX = 0.5;
+      this.compAnchorY = 0.5;
+      this.compZIndex = 10;
+      this.compTinting = false;
       this.compRotation = 0;
       this.compTextSize = 10;
       this.compDbcFroms = [];
@@ -1157,39 +863,18 @@ export default {
       this.compEnabled = true;
       this.selectModelTypeToAdd(compType);
       switch (compType) {
-        case "BloodConnector":
-          this.findDiagramComponents("BloodCompartment");
-          this.findDiagramComponents("BloodVessel");
-          this.findDiagramComponents("MicroVascularUnit");
-          this.findDiagramComponents("BloodPump");
-          this.findDiagramComponents("Oxygenator");
-          break;
-        case "GasConnector":
-          this.findDiagramComponents("GasCompartment");
+        case "Connector":
+          this.findDiagramComponents("Compartment");
+          this.findDiagramComponents("Pump");
           break;
         case "Container":
-          this.findDiagramComponents("BloodCompartment");
-          this.findDiagramComponents("BloodVessel");
-          this.findDiagramComponents("MicroVascularUnit");
-          this.findDiagramComponents("GasCompartment");
-          this.findDiagramComponents("BloodPump");
-          this.findDiagramComponents("Oxygenator");
-          break;
-        case "Shunt":
-          this.findDiagramComponents("BloodCompartment");
-          this.findDiagramComponents("BloodVessel");
-          this.findDiagramComponents("MicroVascularUnit");
-          this.findDiagramComponents("BloodPump");
-          this.findDiagramComponents("Oxygenator");
+          this.findDiagramComponents("Compartment");
+          this.findDiagramComponents("Container");
+          this.findDiagramComponents("Pump");
           break;
         case "Pump":
-          this.findDiagramComponents("BloodCompartment");
-          this.findDiagramComponents("BloodVessel");
-          this.findDiagramComponents("MicroVascularUnit");
-          this.findDiagramComponents("BloodPump");
-          this.findDiagramComponents("Oxygenator");
-          break;
-        case "Oxygenator":
+          this.findDiagramComponents("Compartment");
+          this.findDiagramComponents("Pump");
           break;
       }
     },
@@ -1200,55 +885,48 @@ export default {
       this.compModelSelection = [];
       let models = [];
       switch (this.compType) {
-        case "BloodPump":
+        case "Compartment":
+          // define the general compartment graphic
           this.compPicto = "container.png";
+          // list of the possible explain models this Compartment can hold
+          models = [
+            "Capacitance", 
+            "TimeVaryingElastance", 
+            "BloodCapacitance", 
+            "BloodPump", 
+            "BloodTimeVaryingElastance",  
+            "BloodVessel",
+            "HeartChamber", 
+            "MicroVascularUnit",
+            "GasCapacitance"
+          ];
+          break;
+        case "Connector":
+          // define the general compartment graphic
+          this.compPicto = "container.png";
+          // list of the possible explain models this Compartment can hold
+          models = [
+            "Resistor",
+            "Valve"
+          ];
+          break;
+        case "Pump":
+          // define the general compartment graphic
+          this.compPicto = "container.png";
+          // list of the possible explain models this Compartment can hold
           models = ["BloodPump"];
-          break;
-        case "BloodCompartment":
-          this.compPicto = "container.png";
-          models = [
-            "BloodCapacitance", "BloodTimeVaryingElastance", "BloodVessel", 
-            "HeartChamber", "MicroVascularUnit"];
-          break;
-        case "BloodVessel":
-          this.compPicto = "vessel.png";
-          models = [
-            "BloodCapacitance", "BloodTimeVaryingElastance", "BloodVessel", 
-            "HeartChamber", "MicroVascularUnit"];
-          break;
-        case "MicroVascularUnit":
-          this.compPicto = "container.png";
-          models = [
-            "BloodCapacitance", "BloodTimeVaryingElastance", "BloodVessel", 
-            "HeartChamber", "MicroVascularUnit"];
-          break;
-        case "BloodConnector":
-          this.compPicto = "blood.png";
-          models = ["BloodVesselResistor", "HeartValve", "Resistor"];
-          break;
-        case "Shunt":
-          this.compPicto = "blood.png";
-          models = ["BloodVesselResistor", "HeartValve", "Resistor"];
-          break;
-        case "GasCompartment":
-          this.compPicto = "gas_container.png";
-          models = ["GasCapacitance", "Airway", "AlveolarSpace"];
-          break;
-        case "GasConnector":
-          this.compPicto = "blood.png";
-          models = ["AirwayResistor", "Resistor"];
           break;
         case "Container":
           this.compPicto = "container.png";
-          models = ["Container", "Pericardium", "PleuralSpace", "Thorax"];
+          models = ["Container"];
           break;
-        case "GasExchanger":
-          this.compPicto = "exchange.png";
+        case "Exchanger":
+          this.compPicto = "container.png";
           models = ["GasExchanger", "BloodDiffusor", "GasDiffusor"];
           break;
-        case "Oxygenator":
-          this.compPicto = "gas_container.png";
-          models = ["BloodCapacitance"];
+        case "Device":
+          this.compPicto = "container.png";
+          models = [];
           break;
       }
       Object.keys(explain.modelState.models).forEach((model) => {
@@ -1257,10 +935,6 @@ export default {
         }
       });
       this.compModels.sort();
-    },
-    buildModelItemTree() {
-      // build the grouperItem tree from the ui store
-      this.modelsTree = {};
     },
     addToDiagramFromOutside(new_element) {
       // translate the new_element to an element which can be added to the diagram
@@ -1271,7 +945,6 @@ export default {
   },
   beforeUnmount() {
     // remove the model state event listener
-    document.removeEventListener("state", this.buildModelItemTree);
     document.removeEventListener(
       "edit_comp",
       (e) => {
@@ -1284,7 +957,6 @@ export default {
     this.rebuild_event = new CustomEvent("rebuild_diagram");
 
     try {
-      document.removeEventListener("state", this.buildModelItemTree);
       document.removeEventListener(
         "edit_comp",
         (e) => {
@@ -1293,8 +965,6 @@ export default {
         false
       );
     } catch { }
-    // add an event listener for when the model state is ready
-    document.addEventListener("state", this.buildModelItemTree);
 
     // get the model state
     explain.getModelState();

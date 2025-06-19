@@ -1,7 +1,7 @@
 import { PIXI } from "src/boot/pixi.js";
 
-export default class GasConnector {
-  compType = "GasConnector";
+export default class Valve {
+  compType = "Valve";
   compPicto = "blood.png";
   key = "";
   label = "";
@@ -21,7 +21,7 @@ export default class GasConnector {
   textStyle = {};
 
   path = null;
-  pathColor = 0x333333;
+  pathColor = 0x666666;
   pathWidth = 7;
   prevPosition = 0;
 
@@ -133,7 +133,7 @@ export default class GasConnector {
       this.arc.xCenter = this.dbcFrom.xCenter + this.dbcFrom.xOffset;
       this.arc.yCenter = this.dbcFrom.yCenter + this.dbcFrom.yOffset;
       // draw the path
-      this.path.lineStyle(this.pathWidth, this.pathColor, 0);
+      this.path.lineStyle(this.pathWidth, this.pathColor, 1);
       this.path.arc(
         this.arc.xCenter,
         this.arc.yCenter,
@@ -195,7 +195,7 @@ export default class GasConnector {
       }
       this.line.to = angle2 * 0.0174533;
 
-      this.path.lineStyle(this.pathWidth, this.pathColor, 0);
+      this.path.lineStyle(this.pathWidth, this.pathColor, 1);
       this.path.arc(
         this.line.xCenter,
         this.line.yCenter,
@@ -235,10 +235,10 @@ export default class GasConnector {
 
     if (flow >= 0) {
       direction = 0;
-      //this.sprite.tint = this.dbcFrom.sprite.tint;
+      this.sprite.tint = this.dbcFrom.sprite.tint;
     } else {
       direction = Math.PI;
-      //this.sprite.tint = this.dbcTo.sprite.tint;
+      this.sprite.tint = this.dbcTo.sprite.tint;
     }
 
     if (noData) {

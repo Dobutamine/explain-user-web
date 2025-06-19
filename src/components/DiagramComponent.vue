@@ -15,20 +15,15 @@
 <script>
 import { explain } from "../boot/explain";
 import { PIXI } from "../boot/pixi";
-import MicroVascularUnit from "./ui_elements/MicroVascularUnit";
-import BloodCompartment from "./ui_elements/BloodCompartment";
-import BloodVessel from "./ui_elements/BloodVessel";
-import LymphCompartment from "./ui_elements/LymphCompartment";
-import GasCompartment from "./ui_elements/GasCompartment";
-import BloodConnector from "./ui_elements/BloodConnector";
-import BloodPump from "./ui_elements/BloodPump";
-import Container from "./ui_elements/Container";
-import LymphConnector from "./ui_elements/LymphConnector";
-import GasConnector from "./ui_elements/GasConnector";
-import GasExchanger from "./ui_elements/GasExchanger";
-import Oxygenator from "./ui_elements/Oxygenator";
-import Shunt from "./ui_elements/Shunt";
 import { useStateStore } from "src/stores/state";
+
+import Compartment from "./ui_elements/Compartment";
+import Connector from "./ui_elements/Connector";
+import Container from "./ui_elements/Container";
+import Device from "./ui_elements/Device";
+import Exchanger from "./ui_elements/Exchanger";
+import Pump from "./ui_elements/Pump";
+import Valve from "./ui_elements/Valve";
 
 let canvas = null;
 let pixiApp = null;
@@ -295,13 +290,12 @@ export default {
       const yOffset = this.state.diagram_definition.settings.yOffset
       const radius = this.state.diagram_definition.settings.radius;
       let global_scaling = this.state.diagram_definition.settings.scaling * this.global_scale
-      // first render all compartments and then the connectors
+      // first render all compartments and then the connectors and other types
       Object.entries(component_list).forEach(([key, component]) => {
-        // inject the offsets
         if (component.enabled) {
           switch (component.compType) {
-            case "Oxygenator":
-              diagram_components[key] = new Oxygenator(
+            case "Compartment":
+              diagram_components[key] = new Compartment(
                 pixiApp,
                 key,
                 component.label,
@@ -315,15 +309,16 @@ export default {
                 component.compPicto,
                 global_scaling
               );
-              let watched_models_oxy = []
+              let watched_models_comp = []
               component.models.forEach(m => {
-                watched_models_oxy.push(m + ".vol")
-                watched_models_oxy.push(m + ".to2")
+                watched_models_comp.push(m + ".vol")
+                watched_models_comp.push(m + ".to2")
               })
-              explain.watchModelProps(watched_models_oxy)
+              explain.watchModelProps(watched_models_comp)
               break;
-            case "BloodPump":
-              diagram_components[key] = new BloodPump(
+
+            case "Pump":
+              diagram_components[key] = new Pump(
                 pixiApp,
                 key,
                 component.label,
@@ -345,7 +340,8 @@ export default {
               })
               explain.watchModelProps(watched_models_pump)
               break;
-            case "BloodCompartment":
+            
+
               diagram_components[key] = new BloodCompartment(
                 pixiApp,
                 key,
@@ -367,8 +363,9 @@ export default {
               })
               explain.watchModelProps(watched_models_bc)
               break;
-          case "BloodVessel":
-              diagram_components[key] = new BloodVessel(
+            
+            case "Device":
+              diagram_components[key] = new Device(
                 pixiApp,
                 key,
                 component.label,
@@ -382,56 +379,6 @@ export default {
                 component.compPicto,
                 global_scaling
               );
-              let watched_models_bv = []
-              component.models.forEach(m => {
-                watched_models_bv.push(m + ".vol")
-                watched_models_bv.push(m + ".to2")
-              })
-              explain.watchModelProps(watched_models_bv)
-              break;
-            case "MicroVascularUnit":
-              diagram_components[key] = new MicroVascularUnit(
-                pixiApp,
-                key,
-                component.label,
-                component.models,
-                component.layout,
-                xCenter,
-                yCenter,
-                xOffset,
-                yOffset,
-                radius,
-                component.compPicto,
-                global_scaling
-              );
-              let watched_models_mvu = []
-              component.models.forEach(m => {
-                watched_models_mvu.push(m + ".vol")
-                watched_models_mvu.push(m + ".to2")
-              })
-              explain.watchModelProps(watched_models_mvu)
-              break;
-            case "GasCompartment":
-              diagram_components[key] = new GasCompartment(
-                pixiApp,
-                key,
-                component.label,
-                component.models,
-                component.layout,
-                xCenter,
-                yCenter,
-                xOffset,
-                yOffset,
-                radius,
-                component.compPicto,
-                global_scaling
-              );
-              let watched_models_gc = []
-              component.models.forEach(m => {
-                watched_models_gc.push(m + ".vol")
-                watched_models_gc.push(m + ".po2")
-              })
-              explain.watchModelProps(watched_models_gc)
               break;
           }
         }
@@ -441,64 +388,6 @@ export default {
         // inject the offsets
         if (component.enabled) {
           switch (component.compType) {
-            case "BloodConnector":
-              //console.log(`Connecting ${component.dbcFrom} to ${component.dbcTo}`)
-              diagram_components[key] = new BloodConnector(
-                pixiApp,
-                key,
-                component.label,
-                component.models,
-                diagram_components[component.dbcFrom],
-                diagram_components[component.dbcTo],
-                {},
-                component.compPicto,
-                global_scaling,
-                this.global_speed
-              );
-              let watched_models_bcon = []
-              component.models.forEach(m => {
-                watched_models_bcon.push(m + ".flow")
-              })
-              explain.watchModelProps(watched_models_bcon)
-              break;
-            case "LymphConnector":
-              diagram_components[key] = new LymphConnector(
-                pixiApp,
-                key,
-                component.label,
-                component.models,
-                diagram_components[component.dbcFrom],
-                diagram_components[component.dbcTo],
-                {},
-                component.compPicto,
-                global_scaling,
-                this.global_speed
-              );
-              let watched_models_lcon = []
-              component.models.forEach(m => {
-                watched_models_lcon.push(m + ".flow")
-              })
-              explain.watchModelProps(watched_models_lcon)
-              break;
-            case "Shunt":
-              diagram_components[key] = new Shunt(
-                pixiApp,
-                key,
-                component.label,
-                component.models,
-                diagram_components[component.dbcFrom],
-                diagram_components[component.dbcTo],
-                {},
-                component.compPicto,
-                global_scaling,
-                this.global_speed
-              );
-              let watched_models_shunt = []
-              component.models.forEach(m => {
-                watched_models_shunt.push(m + ".flow")
-              })
-              explain.watchModelProps(watched_models_shunt)
-              break;
             case "Container":
               diagram_components[key] = new Container(
                 pixiApp,
@@ -520,8 +409,9 @@ export default {
               })
               explain.watchModelProps(watched_models_cont)
               break;
-            case "GasConnector":
-              diagram_components[key] = new GasConnector(
+
+            case "Connector":
+              diagram_components[key] = new Connector(
                 pixiApp,
                 key,
                 component.label,
@@ -533,14 +423,35 @@ export default {
                 global_scaling,
                 this.global_speed
               );
-              let watched_models_gascon = []
+              let watched_models_con = []
               component.models.forEach(m => {
-                watched_models_gascon.push(m + ".flow")
+                watched_models_con.push(m + ".flow")
               })
-              explain.watchModelProps(watched_models_gascon)
+              explain.watchModelProps(watched_models_con)
               break;
-            case "GasExchanger":
-              diagram_components[key] = new GasExchanger(
+          
+            case "Valve":
+              diagram_components[key] = new Valve(
+                pixiApp,
+                key,
+                component.label,
+                component.models,
+                diagram_components[component.dbcFrom],
+                diagram_components[component.dbcTo],
+                {},
+                component.compPicto,
+                global_scaling,
+                this.global_speed
+              );
+              let watched_models_valve = []
+              component.models.forEach(m => {
+                watched_models_valve.push(m + ".flow")
+              })
+              explain.watchModelProps(watched_models_valve)
+              break;
+
+            case "Exchanger":
+              diagram_components[key] = new Exchanger(
                 pixiApp,
                 key,
                 component.label,
@@ -561,7 +472,7 @@ export default {
               })
               explain.watchModelProps(watched_models_gasex)
               break;
-          }
+            }    
         }
       });
     },
@@ -570,15 +481,7 @@ export default {
         // inject the offsets
         if (component.enabled) {
           switch (component.compType) {
-            case "Oxygenator":
-              let watched_models_oxy = []
-              component.models.forEach(m => {
-                watched_models_oxy.push(m + ".vol")
-                watched_models_oxy.push(m + ".to2")
-              })
-              explain.watchModelProps(watched_models_oxy)
-              break;
-            case "BloodPump":
+            case "Pump":
               let watched_models_pump = []
               component.models.forEach(m => {
                 watched_models_pump.push(m + ".vol")
@@ -587,14 +490,7 @@ export default {
               })
               explain.watchModelProps(watched_models_pump)
               break;
-            case "LymphCompartment":
-              let watched_models_lc = []
-              component.models.forEach(m => {
-                watched_models_lc.push(m + ".vol")
-              })
-              explain.watchModelProps(watched_models_lc)
-              break;
-            case "BloodCompartment":
+            case "Compartment":
               let watched_models_bc = []
               component.models.forEach(m => {
                 watched_models_bc.push(m + ".vol")
@@ -602,50 +498,21 @@ export default {
               })
               explain.watchModelProps(watched_models_bc)
               break;
-            case "BloodVessel":
-              let watched_models_bv = []
-              component.models.forEach(m => {
-                watched_models_bv.push(m + ".vol")
-                watched_models_bv.push(m + ".to2")
-              })
-              explain.watchModelProps(watched_models_bv)
+            case "Device":
               break;
-            case "MicroVascularUnit":
-              let watched_models_mvu = []
+            case "Connector":
+              let watched_models_con = []
               component.models.forEach(m => {
-                watched_models_mvu.push(m + ".vol")
-                watched_models_mvu.push(m + ".to2")
+                watched_models_con.push(m + ".flow")
               })
-              explain.watchModelProps(watched_models_bc)
+              explain.watchModelProps(watched_models_con)
               break;
-            case "GasCompartment":
-              let watched_models_gc = []
+            case "Valve":
+              let watched_models_valve = []
               component.models.forEach(m => {
-                watched_models_gc.push(m + ".vol")
-                watched_models_gc.push(m + ".po2")
+                watched_models_valve.push(m + ".flow")
               })
-              explain.watchModelProps(watched_models_gc)
-              break;
-            case "BloodConnector":
-              let watched_models_bcon = []
-              component.models.forEach(m => {
-                watched_models_bcon.push(m + ".flow")
-              })
-              explain.watchModelProps(watched_models_bcon)
-              break;
-            case "LymphConnector":
-              let watched_models_lcon = []
-              component.models.forEach(m => {
-                watched_models_lcon.push(m + ".flow")
-              })
-              explain.watchModelProps(watched_models_lcon)
-              break;
-            case "Shunt":
-              let watched_models_shunt = []
-              component.models.forEach(m => {
-                watched_models_shunt.push(m + ".flow")
-              })
-              explain.watchModelProps(watched_models_shunt)
+              explain.watchModelProps(watched_models_valve)
               break;
             case "Container":
               let watched_models_cont = []
@@ -654,14 +521,7 @@ export default {
               })
               explain.watchModelProps(watched_models_cont)
               break;
-            case "GasConnector":
-              let watched_models_gcon = []
-              component.models.forEach(m => {
-                watched_models_gcon.push(m + ".flow")
-              })
-              explain.watchModelProps(watched_models_gcon)
-              break;
-            case "GasExchanger":
+            case "Exchanger":
               let watched_models_gasex = []
               component.models.forEach(m => {
                 watched_models_gasex.push(m + ".flux_" + component.gas)
@@ -695,9 +555,11 @@ export default {
       }
     },
     buildDiagram() {
+      // read the general diagram settings
       if (isNaN(this.state.diagram_definition.settings.speed) || this.state.diagram_definition.settings.speed <= 0.01) {
         this.state.diagram_definition.settings.speed = 1
       }
+
       if (isNaN(this.state.diagram_definition.settings.scaling) || this.state.diagram_definition.settings.scaling <= 0.01) {
         this.state.diagram_definition.settings.scaling = 1
       }
@@ -825,8 +687,6 @@ export default {
   mounted() {
     // initialize and build the diagram
     this.initDiagram().then(() => {
-
-
       // build the diagram
       this.buildDiagram()
     })
@@ -849,12 +709,14 @@ export default {
         this.update_component('ECLS_DR')
       } catch { }
     })
+
     this.$bus.on("update_return_site", (new_site) => {
       try {
         this.state.diagram_definition.components['ECLS_RE'].dbcTo = new_site
         this.update_component('ECLS_RE')
       } catch { }
     })
+
     this.$bus.on("ecls_state_changed", (state) => { 
       if (state) {
         this.selected_shunts.push('ECLS')
@@ -865,6 +727,7 @@ export default {
         this.toggleShunts()
       }
     })
+
     this.$bus.on("placenta_state_changed", (state) => { 
       if (state) {
         this.selected_shunts.push('PLACENTA')

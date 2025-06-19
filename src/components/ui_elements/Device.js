@@ -1,8 +1,8 @@
 import { PIXI } from "src/boot/pixi.js";
 
-export default class BloodVessel {
-  compType = "BloodVessel";
-  compPicto = "vessel.png";
+export default class Device {
+  compType = "Device";
+  compPicto = "container.png";
   pixiApp = {};
   key = "";
   label = "";
@@ -12,44 +12,20 @@ export default class BloodVessel {
   yCenter = 0;
   xOffset = 0;
   yOffset = 0;
-  zIndexSprite = 10;
-  zIndexText = 11;
   radius = 0;
   angle = 0;
   rotation = 0;
-  distanceToCenter = 0;
   global_scaling = 1.0;
   max_to2 = 7.1
-
   sprite = {};
   text = {};
   textStyle = {};
-
-  interactionData = null;
   connectors = {};
-
   volume = 0.1;
   to2 = 7.4;
+  animation = true;
 
-  edit_comp_event = null;
-  editingMode = 1;
-  prevX = 0;
-  prevyY = 0;
-
-  constructor(
-    pixiApp,
-    key,
-    label,
-    models,
-    layout,
-    xCenter,
-    yCenter,
-    xOffset,
-    yOffset,
-    radius,
-    picto,
-    scaling
-  ) {
+  constructor(pixiApp, key, label, models, layout, xCenter, yCenter, xOffset, yOffset, radius, picto, scaling, animation = true) {
     // store the parameters
     this.pixiApp = pixiApp;
     this.key = key;
@@ -63,32 +39,54 @@ export default class BloodVessel {
     this.radius = radius;
     this.compPicto = picto;
     this.global_scaling = scaling;
+    this.animation = animation;
 
     if (!this.compPicto) {
-      this.compPicto = "vessel.png";
+      this.compPicto = "general.png";
     }
 
-    // this is a blood compartment sprite which uses
+    // this is a general compartment sprite which uses
     this.sprite = PIXI.Sprite.from(this.compPicto);
     this.sprite["name_sprite"] = key;
     this.sprite["compType"] = this.compType;
-    this.sprite.scale.set(
-      this.volume * this.layout.scale.x * this.global_scaling,
-      this.volume * this.layout.scale.y * this.global_scaling
-    );
+    
+    if (this.layout.scale) {
+      this.sprite.scale.set(this.volume * this.layout.scale.x * this.global_scaling, this.volume * this.layout.scale.y * this.global_scaling);
+    } else {
+      this.layout['scale']['x'] = 1.0;
+      this.layout['scale']['y'] = 1.0;
+      this.sprite.scale.set(this.volume * this.global_scaling, this.volume * this.global_scaling);
+    }
+
     if (this.layout.anchor) {
       this.sprite.anchor = {  x: this.layout.anchor.x, y: this.layout.anchor.y };
     } else {
+      this.layout['anchor']['x'] = 0.5;
+      this.layout['anchor']['y'] = 0.5;
       this.sprite.anchor = {  x: 0.5, y: 0.5 };
     }
 
     if (this.layout.tinting) {
       this.sprite.tint = "0x151a7b";
+    } else {
+      this.layout['tinting'] = "0xffffff";
+      this.sprite.tint = "0xffffff";
     }
  
-    this.sprite.rotation = this.layout.rotation;
-    this.sprite.zIndex = this.zIndexSprite;
-
+    if (this.layout.rotation) {
+      this.sprite.rotation = this.layout.rotation;
+    } else {
+      this.layout["rotation"] = 0;
+      this.sprite.rotation = 0;
+    }
+    
+    if (this.layout.z_index) {
+      this.sprite.zIndex = this.layout.z_index;
+    } else {
+      this.layout["z_index"] = 10;
+      this.sprite.zIndex = 10;
+    }
+      
     // place the sprite on the stage
     switch (this.layout.pos.type) {
       case "arc":
@@ -137,10 +135,9 @@ export default class BloodVessel {
     this.text.x = this.sprite.x + this.layout.text.x;
     this.text.y = this.sprite.y + this.layout.text.y;
     this.text.rotation = this.layout.rotation;
-    this.text.zIndexText = 7;
-
     this.pixiApp.stage.addChild(this.text);
   }
+
   update(data) {
     let volume = 0;
     let volumes = [];
@@ -157,10 +154,10 @@ export default class BloodVessel {
       this.to2 += factor * to2s[i];
     }
 
-    if (isNaN(volume)) {
-      this.volume = (0.15 / this.layout.scale.x) * this.global_scaling;
-    } else {
+    if (this.animation && !isNaN(volume)) {
       this.volume = this.calculateRadius(volume);
+    } else {
+      this.volume = (0.15 / this.layout.scale.x) * this.global_scaling;
     }
 
     this.sprite.scale.set(
@@ -174,11 +171,11 @@ export default class BloodVessel {
 
     this.sprite.rotation = this.layout.rotation;
     this.text.rotation = this.layout.rotation;
-    this.sprite.zIndex = this.zIndexSprite;
+    this.sprite.zIndex = this.layout.z_index;
 
     this.text.x = this.sprite.x + this.layout.text.x;
     this.text.y = this.sprite.y + this.layout.text.y;
-    this.text.zIndex = this.zIndexText;
+    this.text.zIndex = this.sprite.zIndex + 1;
 
     this.text.scale.set(scaleFont, scaleFont);
     this.text.alpha = 1.0;
@@ -192,12 +189,11 @@ export default class BloodVessel {
     }
     
   }
-  setEditingMode(newMode) {
-    this.editingMode = newMode;
-  }
+
   redrawConnectors() {
     Object.values(this.connectors).forEach((connector) => connector.drawPath());
   }
+
   calculateOnCircle(x, y) {
     const f1 = Math.pow(x - this.xCenter, 2);
     const f2 = Math.pow(y - this.yCenter, 2);
@@ -224,11 +220,13 @@ export default class BloodVessel {
       this.layout.pos.type = "rel";
     }
   }
+
   calculateRadius(volume) {
     const _cubicRadius = volume / ((4.0 / 3.0) * Math.PI);
     const _radius = Math.pow(_cubicRadius, 1.0 / 3.0);
     return _radius;
   }
+
   calculateColor(to2) {
     if (isNaN(to2)) {
       return 0x666666;
@@ -237,7 +235,7 @@ export default class BloodVessel {
       to2 = this.max_to2;
     }
     //let remap = this.remap(to2, 0, this.max_to2, -10, 1);
-    let remap = this.remap(to2, 0, this.max_to2, -1.25, 1);
+    let remap = this._remap(to2, 0, this.max_to2, -1.25, 1);
     if (remap < 0) remap = 0;
     const red = (remap * 210).toFixed(0);
     const green = (remap * 80).toFixed(0);
@@ -245,20 +243,23 @@ export default class BloodVessel {
     const color = "0x" + this.fullColorHex(red, green, blue);
     return color;
   }
-  remap(value, from1, to1, from2, to2) {
+
+  _remap(value, from1, to1, from2, to2) {
     return ((value - from1) / (to1 - from1)) * (to2 - from2) + from2;
   }
-  rgbToHex(rgb) {
+
+  _rgbToHex(rgb) {
     let hex = Number(rgb).toString(16);
     if (hex.length < 2) {
       hex = "0" + hex;
     }
     return hex;
   }
+
   fullColorHex(r, g, b) {
-    const red = this.rgbToHex(r);
-    const green = this.rgbToHex(g);
-    const blue = this.rgbToHex(b);
+    const red = this._rgbToHex(r);
+    const green = this._rgbToHex(g);
+    const blue = this._rgbToHex(b);
     return red + green + blue;
   }
 }

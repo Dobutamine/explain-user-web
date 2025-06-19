@@ -1,7 +1,7 @@
 import { PIXI } from "src/boot/pixi.js";
 
-export default class BloodConnector {
-  compType = "BloodConnector";
+export default class Connector {
+  compType = "Connector";
   compPicto = "blood.png";
   key = "";
   label = "";
@@ -116,6 +116,9 @@ export default class BloodConnector {
     this.path.zIndex = 7;
     this.path.cacheAsBitmap = true;
 
+    if (this.dbcTo == undefined) {
+      console.log(this.dbcFrom)
+    }
     if (
       this.dbcFrom.layout.pos.type == "arc" &&
       this.dbcTo.layout.pos.type == "arc"
