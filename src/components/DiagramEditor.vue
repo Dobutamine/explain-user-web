@@ -78,7 +78,7 @@
             <q-toggle label="enabled" v-model="compEnabled" dense size="sm" style="width: 100%" />
             <q-input label="name" v-model="compName" square hide-hint dense dark stack-label style="width: 100%" />
             <q-input label="label" v-model="compLabel" square hide-hint dense dark stack-label style="width: 100%" />
-            <q-select class="col-9" label="models" v-model="compModelSelection" :options="compModels" hide-bottom-space
+            <q-select label="models" v-model="compModelSelection" :options="compModels" hide-bottom-space
               dense multiple style="font-size: 12px" />
             <div v-if="
               ( compType == 'Compartment' ||
@@ -86,54 +86,71 @@
                 compType == 'Container' ||
                 compType == 'Device' ||
                 compType == 'Exchanger')
-            ">
-              layout
-              <q-btn-toggle class="q-ma-sm col-9" v-model="compLayoutType" size="sm" dark spread dense no-caps
+            " style="width: 100%">
+
+              <div class="row">
+                <q-select class="col" label="pictogram" square hide-hint stack-label v-model="compPicto"
+                  :options="pictos" hide-bottom-space dense dark style="font-size: 12px" />   
+              </div>
+              <div class="row">
+                  <div class="q-mt-xs">animation settings:</div>
+              </div>
+              <div class="row">
+                  <q-btn-toggle class="q-mt-sm q-mb-md" v-model="compAnimatedBy" color="grey-9" size="xs" text-color="white" toggle-color="black" :options="[
+                    { label: 'NONE', value: 'none' },
+                    { label: 'VOLUME', value: 'vol' },
+                    { label: 'PRESSURE', value: 'pers' },
+                  ]" />
+                   <q-checkbox class="col q-ma-sm" label="tint" v-model="compTinting" dense size="xs" />
+              </div>
+              <div class="row">
+                  <div class="q-mt-xs">layout settings:</div>
+              </div>
+              <q-btn-toggle class="col-9 q-mr-sm" v-model="compLayoutType" size="sm" dark spread dense no-caps
                 toggle-color="blue-grey-6" color="grey-9" text-color="black" :options="[
                   { label: 'Arc', value: true },
                   { label: 'Relative', value: false },
                 ]" />
-              <div class="row">
-                <q-select class="col-8 q-ma-sm" label="pictogram" square hide-hint stack-label v-model="compPicto"
-                  :options="pictos" hide-bottom-space dense dark style="font-size: 12px" />
-                <q-toggle class="col q-ma-sm" label="tinting" v-model="compTinting" dense size="sm" style="width: 100%" />
-              </div>
               <div v-if="!compLayoutType" class="row">
-                <q-input class="col q-ma-sm" label="postion x" v-model="compLayoutX" square type="number" hide-hint
+                <q-input class="col q-mr-sm" label="postion x" v-model="compLayoutX" square type="number" hide-hint
                   dense dark stack-label />
-                <q-input class="col q-ma-sm" label="position Y" v-model="compLayoutY" square type="number" hide-hint
+                <q-input class="col q-mr-sm" label="position Y" v-model="compLayoutY" square type="number" hide-hint
                   dense dark stack-label />
               </div>
-
-              <div class="row">
-                <q-input class="col q-ma-sm" label="anchor X" v-model="compAnchorX" square type="number" hide-hint dense
-                  dark stack-label />
-                <q-input class="col q-ma-sm" label="anchor Y" v-model="compAnchorY" square type="number" hide-hint dense
-                  dark stack-label />
-              </div>
-
+              
               <div v-if="compLayoutType" class="row">
-                <q-input class="col q-ma-sm" label="position Degrees" v-model="compLayoutDgs" square type="number"
+                <q-input class="col q-mr-sm" label="position Degrees" v-model="compLayoutDgs" square type="number"
                   hide-hint dense dark stack-label />
               </div>
 
               <div class="row">
-                <q-input class="col q-ma-sm" label="scale X" v-model="compScaleX" square type="number" hide-hint dense
+                <q-input class="col q-mr-sm" label="anchor X" v-model="compAnchorX" square type="number" hide-hint dense
                   dark stack-label />
-                <q-input class="col q-ma-sm" label="scale Y" v-model="compScaleY" square type="number" hide-hint dense
+                <q-input class="col q-mr-sm" label="anchor Y" v-model="compAnchorY" square type="number" hide-hint dense
                   dark stack-label />
-                <q-input class="col q-ma-sm" label="rotation" v-model="compRotation" square type="number" hide-hint
+                <q-input class="col q-mr-sm" label="z index" v-model="compZIndex" square type="number" hide-hint
                   dense dark stack-label />
               </div>
 
 
 
               <div class="row">
-                <q-input class="col q-ma-sm" label="label pos X" v-model="compTextX" square type="number" hide-hint
+                <q-input class="col q-mr-sm" label="scale X" v-model="compScaleX" square type="number" hide-hint dense
+                  dark stack-label />
+                <q-input class="col q-mr-sm" label="scale Y" v-model="compScaleY" square type="number" hide-hint dense
+                  dark stack-label />
+                <q-input class="col q-mr-sm" label="rotation" v-model="compRotation" square type="number" hide-hint
                   dense dark stack-label />
-                <q-input class="col q-ma-sm" label="label pos Y" v-model="compTextY" square type="number" hide-hint
+              </div>
+
+
+
+              <div class="row">
+                <q-input class="col q-mr-sm" label="label pos X" v-model="compTextX" square type="number" hide-hint
                   dense dark stack-label />
-                <q-input class="col q-ma-sm" label="label size" v-model="compTextSize" square type="number" hide-hint
+                <q-input class="col q-mr-sm" label="label pos Y" v-model="compTextY" square type="number" hide-hint
+                  dense dark stack-label />
+                <q-input class="col q-mr-sm" label="label size" v-model="compTextSize" square type="number" hide-hint
                   dense dark stack-label />
               </div>
               
@@ -241,7 +258,9 @@ export default {
       compTextY: 0,
       compTextSize: 10,
       compLayoutDgs: 0,
+      compZIndex: 10,
       compTinting: true,
+      compAnimatedBy: "vol",
       compDbcFrom: "",
       compDbcFroms: [],
       compDbcTo: "",
@@ -263,6 +282,7 @@ export default {
       ],
       rebuild_event: null,
       statusMessage: "",
+      animationSources: ['no animation', 'volume', 'pressure', 'flow']
     };
   },
   methods: {
@@ -579,249 +599,51 @@ export default {
       this.compModels = [];
       this.compModelSelection = [];
 
-      switch (this.selectedDiagramComponent.compType) {
-        case "Connector":
-          this.compEnabled = this.selectedDiagramComponent.enabled;
-          this.compType = this.selectedDiagramComponent.compType;
-          this.compName = this.selectedDiagramComponentName;
-          this.compLabel = this.selectedDiagramComponent.label;
-          this.selectModelTypeToAdd(this.selectedDiagramComponent.compType);
-          this.compModelSelection = this.selectedDiagramComponent.models;
+      // get all properties for all types
+      this.compEnabled = this.selectedDiagramComponent.enabled;
+      this.compType = this.selectedDiagramComponent.compType;
+      this.compName = this.selectedDiagramComponentName;
+      this.compLabel = this.selectedDiagramComponent.label;
+      this.selectModelTypeToAdd(this.selectedDiagramComponent.compType);
+      this.compModelSelection = this.selectedDiagramComponent.models;
+      this.compAnimatedBy = this.selectedDiagramComponent.animatedBy;
+      this.compZIndex = parseInt(this.selectedDiagramComponent.layout.z_index);
+      this.compTinting = this.selectedDiagramComponent.layout.tinting;
+
+      if (this.selectedDiagramComponent.compType == 'Connector' || this.selectedDiagramComponent.compType == 'Valve') {
           this.compDbcFrom = this.selectedDiagramComponent.dbcFrom;
           this.compDbcTo = this.selectedDiagramComponent.dbcTo;
           this.findDiagramComponents("Compartment");
           this.findDiagramComponents("Pump");
           this.findDiagramComponents("Device");
-          break;
-
-        case "Valve":
-          this.compEnabled = this.selectedDiagramComponent.enabled;
-          this.compType = this.selectedDiagramComponent.compType;
-          this.compName = this.selectedDiagramComponentName;
-          this.compLabel = this.selectedDiagramComponent.label;
-          this.selectModelTypeToAdd(this.selectedDiagramComponent.compType);
-          this.compModelSelection = this.selectedDiagramComponent.models;
-          this.compDbcFrom = this.selectedDiagramComponent.dbcFrom;
-          this.compDbcTo = this.selectedDiagramComponent.dbcTo;
-          this.findDiagramComponents("Compartment");
-          this.findDiagramComponents("Pump");
-          this.findDiagramComponents("Device");
-          break;
-
-        case "Compartment":
-          if (this.selectedDiagramComponent.compPicto) {
-            this.compPicto = this.selectedDiagramComponent.compPicto;
-          } else {
-            this.compPicto = "container.png";
-          }
-          this.compEnabled = this.selectedDiagramComponent.enabled;
-          this.compType = this.selectedDiagramComponent.compType;
-          this.compName = this.selectedDiagramComponentName;
-          this.compLabel = this.selectedDiagramComponent.label;
-          this.selectModelTypeToAdd(this.selectedDiagramComponent.compType);
-          this.compModelSelection = this.selectedDiagramComponent.models;
-          if (this.selectedDiagramComponent.layout.pos.type == "arc") {
-            this.compLayoutType = true;
-          } else {
-            this.compLayoutType = false;
-          }
-          this.compLayoutDgs = parseFloat(this.selectedDiagramComponent.layout.pos.dgs.toFixed(2));
-          this.compLayoutX = parseFloat(this.selectedDiagramComponent.layout.pos.x.toFixed(2));
-          this.compLayoutY = parseFloat(this.selectedDiagramComponent.layout.pos.y.toFixed(2));
-          this.compMorphX = parseFloat(this.selectedDiagramComponent.layout.morph.x.toFixed(2));
-          this.compMorphY = parseFloat(this.selectedDiagramComponent.layout.morph.y.toFixed(2));
-          this.compScaleX = parseFloat(this.selectedDiagramComponent.layout.scale.x.toFixed(2));
-          this.compScaleY = parseFloat(this.selectedDiagramComponent.layout.scale.y.toFixed(2));
-          if (this.selectedDiagramComponent.layout.anchor) {
-            this.compAnchorX = parseFloat(this.selectedDiagramComponent.layout.anchor.x.toFixed(2));
-            this.compAnchorY = parseFloat(this.selectedDiagramComponent.layout.anchor.y.toFixed(2));
-          } else {
-            this.compAnchorX = 0.5;
-            this.compAnchorY = 0.5
-          }
-          this.compTextX = parseFloat(this.selectedDiagramComponent.layout.text.x.toFixed(2));
-          this.compTextY = parseFloat(this.selectedDiagramComponent.layout.text.y.toFixed(2));
-          this.compRotation = parseFloat(this.selectedDiagramComponent.layout.rotation.toFixed(2));
-          this.compTextSize = parseFloat(this.selectedDiagramComponent.layout.text.size.toFixed(2));
-          if (this.selectedDiagramComponent.layout.anchor) {
-            this.compTinting = this.selectedDiagramComponent.layout.tinting;
-          } else {
-            this.compTinting = true;
-          }
-          break;
-        
-        case "Device":
-          if (this.selectedDiagramComponent.compPicto) {
-            this.compPicto = this.selectedDiagramComponent.compPicto;
-          } else {
-            this.compPicto = "container.png";
-          }
-          this.compEnabled = this.selectedDiagramComponent.enabled;
-          this.compType = this.selectedDiagramComponent.compType;
-          this.compName = this.selectedDiagramComponentName;
-          this.compLabel = this.selectedDiagramComponent.label;
-          this.selectModelTypeToAdd(this.selectedDiagramComponent.compType);
-          this.compModelSelection = this.selectedDiagramComponent.models;
-          if (this.selectedDiagramComponent.layout.pos.type == "arc") {
-            this.compLayoutType = true;
-          } else {
-            this.compLayoutType = false;
-          }
-          this.compLayoutDgs = parseFloat(this.selectedDiagramComponent.layout.pos.dgs.toFixed(2));
-          this.compLayoutX = parseFloat(this.selectedDiagramComponent.layout.pos.x.toFixed(2));
-          this.compLayoutY = parseFloat(this.selectedDiagramComponent.layout.pos.y.toFixed(2));
-          this.compMorphX = parseFloat(this.selectedDiagramComponent.layout.morph.x.toFixed(2));
-          this.compMorphY = parseFloat(this.selectedDiagramComponent.layout.morph.y.toFixed(2));
-          this.compScaleX = parseFloat(this.selectedDiagramComponent.layout.scale.x.toFixed(2));
-          this.compScaleY = parseFloat(this.selectedDiagramComponent.layout.scale.y.toFixed(2));
-          if (this.selectedDiagramComponent.layout.anchor) {
-            this.compAnchorX = parseFloat(this.selectedDiagramComponent.layout.anchor.x.toFixed(2));
-            this.compAnchorY = parseFloat(this.selectedDiagramComponent.layout.anchor.y.toFixed(2));
-          } else {
-            this.compAnchorX = 0.5;
-            this.compAnchorY = 0.5
-          }
-          this.compTextX = parseFloat(this.selectedDiagramComponent.layout.text.x.toFixed(2));
-          this.compTextY = parseFloat(this.selectedDiagramComponent.layout.text.y.toFixed(2));
-          this.compRotation = parseFloat(this.selectedDiagramComponent.layout.rotation.toFixed(2));
-          this.compTextSize = parseFloat(this.selectedDiagramComponent.layout.text.size.toFixed(2));
-          if (this.selectedDiagramComponent.layout.anchor) {
-            this.compTinting = this.selectedDiagramComponent.layout.tinting;
-          } else {
-            this.compTinting = true;
-          }
-          break;
-
-        case "Pump":
-          if (this.selectedDiagramComponent.compPicto) {
-            this.compPicto = this.selectedDiagramComponent.compPicto;
-          } else {
-            this.compPicto = "pump.png";
-          }
-          this.compEnabled = this.selectedDiagramComponent.enabled;
-          this.compType = this.selectedDiagramComponent.compType;
-          this.compName = this.selectedDiagramComponentName;
-          this.compLabel = this.selectedDiagramComponent.label;
-          this.selectModelTypeToAdd(this.selectedDiagramComponent.compType);
-          this.compModelSelection = this.selectedDiagramComponent.models;
-          if (this.selectedDiagramComponent.layout.pos.type == "arc") {
-            this.compLayoutType = true;
-          } else {
-            this.compLayoutType = false;
-          }
-          this.compLayoutDgs = parseFloat(this.selectedDiagramComponent.layout.pos.dgs.toFixed(2));
-          this.compLayoutX = parseFloat(this.selectedDiagramComponent.layout.pos.x.toFixed(2));
-          this.compLayoutY = parseFloat(this.selectedDiagramComponent.layout.pos.y.toFixed(2));
-          this.compMorphX = parseFloat(this.selectedDiagramComponent.layout.morph.x.toFixed(2));
-          this.compMorphY = parseFloat(this.selectedDiagramComponent.layout.morph.y.toFixed(2));
-          this.compScaleX = parseFloat(this.selectedDiagramComponent.layout.scale.x.toFixed(2));
-          this.compScaleY = parseFloat(this.selectedDiagramComponent.layout.scale.y.toFixed(2));
-          if (this.selectedDiagramComponent.layout.anchor) {
-            this.compAnchorX = parseFloat(this.selectedDiagramComponent.layout.anchor.x.toFixed(2));
-            this.compAnchorY = parseFloat(this.selectedDiagramComponent.layout.anchor.y.toFixed(2));
-          } else {
-            this.compAnchorX = 0.5;
-            this.compAnchorY = 0.5
-          }
-          this.compTextX = parseFloat(this.selectedDiagramComponent.layout.text.x.toFixed(2));
-          this.compTextY = parseFloat(this.selectedDiagramComponent.layout.text.y.toFixed(2));
-          this.compRotation = parseFloat(this.selectedDiagramComponent.layout.rotation.toFixed(2));
-          this.compTextSize = parseFloat(this.selectedDiagramComponent.layout.text.size.toFixed(2));
-          if (this.selectedDiagramComponent.layout.anchor) {
-            this.compTinting = this.selectedDiagramComponent.layout.tinting;
-          } else {
-            this.compTinting = true;
-          }
-          break;
-        
-        case "Container":
-          if (this.selectedDiagramComponent.compPicto) {
-            this.compPicto = this.selectedDiagramComponent.compPicto;
-          } else {
-            this.compPicto = "container.png";
-          }
-          this.compEnabled = this.selectedDiagramComponent.enabled;
-          this.compType = this.selectedDiagramComponent.compType;
-          this.compName = this.selectedDiagramComponentName;
-          this.compLabel = this.selectedDiagramComponent.label;
-          this.selectModelTypeToAdd(this.selectedDiagramComponent.compType);
-          this.compModelSelection = this.selectedDiagramComponent.models;
-          if (this.selectedDiagramComponent.layout.pos.type == "arc") {
-            this.compLayoutType = true;
-          } else {
-            this.compLayoutType = false;
-          }
-          this.compLayoutDgs = parseFloat(this.selectedDiagramComponent.layout.pos.dgs.toFixed(2));
-          this.compLayoutX = parseFloat(this.selectedDiagramComponent.layout.pos.x.toFixed(2));
-          this.compLayoutY = parseFloat(this.selectedDiagramComponent.layout.pos.y.toFixed(2));
-          this.compMorphX = parseFloat(this.selectedDiagramComponent.layout.morph.x.toFixed(2));
-          this.compMorphY = parseFloat(this.selectedDiagramComponent.layout.morph.y.toFixed(2));
-          this.compScaleX = parseFloat(this.selectedDiagramComponent.layout.scale.x.toFixed(2));
-          this.compScaleY = parseFloat(this.selectedDiagramComponent.layout.scale.y.toFixed(2));
-          if (this.selectedDiagramComponent.layout.anchor) {
-            this.compAnchorX = parseFloat(this.selectedDiagramComponent.layout.anchor.x.toFixed(2));
-            this.compAnchorY = parseFloat(this.selectedDiagramComponent.layout.anchor.y.toFixed(2));
-          } else {
-            this.compAnchorX = 0.5;
-            this.compAnchorY = 0.5
-          }
-          this.compTextX = parseFloat(this.selectedDiagramComponent.layout.text.x.toFixed(2));
-          this.compTextY = parseFloat(this.selectedDiagramComponent.layout.text.y.toFixed(2));
-          this.compRotation = parseFloat(this.selectedDiagramComponent.layout.rotation.toFixed(2));
-          this.compTextSize = parseFloat(this.selectedDiagramComponent.layout.text.size.toFixed(2));
-          if (this.selectedDiagramComponent.layout.anchor) {
-            this.compTinting = this.selectedDiagramComponent.layout.tinting;
-          } else {
-            this.compTinting = true;
-          }
-          break;
-        
-        case "Exchanger":
-          if (this.selectedDiagramComponent.compPicto) {
-            this.compPicto = this.selectedDiagramComponent.compPicto;
-          } else {
-            this.compPicto = "exchange.png";
-          }
-          this.compEnabled = this.selectedDiagramComponent.enabled;
-          this.compType = this.selectedDiagramComponent.compType;
-          this.compName = this.selectedDiagramComponentName;
-          this.compLabel = this.selectedDiagramComponent.label;
-          this.selectModelTypeToAdd(this.selectedDiagramComponent.compType);
-          this.compModelSelection = this.selectedDiagramComponent.models;
-          if (this.selectedDiagramComponent.layout.pos.type == "arc") {
-            this.compLayoutType = true;
-          } else {
-            this.compLayoutType = false;
-          }
-          this.compLayoutDgs = parseFloat(this.selectedDiagramComponent.layout.pos.dgs.toFixed(2));
-          this.compLayoutX = parseFloat(this.selectedDiagramComponent.layout.pos.x.toFixed(2));
-          this.compLayoutY = parseFloat(this.selectedDiagramComponent.layout.pos.y.toFixed(2));
-          this.compMorphX = parseFloat(this.selectedDiagramComponent.layout.morph.x.toFixed(2));
-          this.compMorphY = parseFloat(this.selectedDiagramComponent.layout.morph.y.toFixed(2));
-          this.compScaleX = parseFloat(this.selectedDiagramComponent.layout.scale.x.toFixed(2));
-          this.compScaleY = parseFloat(this.selectedDiagramComponent.layout.scale.y.toFixed(2));
-          if (this.selectedDiagramComponent.layout.anchor) {
-            this.compAnchorX = parseFloat(this.selectedDiagramComponent.layout.anchor.x.toFixed(2));
-            this.compAnchorY = parseFloat(this.selectedDiagramComponent.layout.anchor.y.toFixed(2));
-          } else {
-            this.compAnchorX = 0.5;
-            this.compAnchorY = 0.5
-          }
-          this.compTextX = parseFloat(this.selectedDiagramComponent.layout.text.x.toFixed(2));
-          this.compTextY = parseFloat(this.selectedDiagramComponent.layout.text.y.toFixed(2));
-          this.compRotation = parseFloat(this.selectedDiagramComponent.layout.rotation.toFixed(2));
-          this.compTextSize = parseFloat(this.selectedDiagramComponent.layout.text.size.toFixed(2));
-          if (this.selectedDiagramComponent.layout.anchor) {
-            this.compTinting = this.selectedDiagramComponent.layout.tinting;
-          } else {
-            this.compTinting = true;
-          }
-          break;
       }
 
-      if (this.selectedDiagramComponent.compPicto) {
-        this.compPicto = this.selectedDiagramComponent.compPicto;
-      }
+      if (this.selectedDiagramComponent.compType == 'Compartment' || 
+          this.selectedDiagramComponent.compType == 'Device' ||
+          this.selectedDiagramComponent.compType == 'Pump' ||
+          this.selectedDiagramComponent.compType == 'Container' ||
+          this.selectedDiagramComponent.compType == 'Exchanger') 
+          {
+            this.compPicto = this.selectedDiagramComponent.compPicto;
+            if (this.selectedDiagramComponent.layout.pos.type == "arc") {
+              this.compLayoutType = true;
+            } else {
+              this.compLayoutType = false;
+            }
+            this.compLayoutDgs = parseFloat(this.selectedDiagramComponent.layout.pos.dgs.toFixed(2));
+            this.compLayoutX = parseFloat(this.selectedDiagramComponent.layout.pos.x.toFixed(2));
+            this.compLayoutY = parseFloat(this.selectedDiagramComponent.layout.pos.y.toFixed(2));
+            this.compMorphX = parseFloat(this.selectedDiagramComponent.layout.morph.x.toFixed(2));
+            this.compMorphY = parseFloat(this.selectedDiagramComponent.layout.morph.y.toFixed(2));
+            this.compScaleX = parseFloat(this.selectedDiagramComponent.layout.scale.x.toFixed(2));
+            this.compScaleY = parseFloat(this.selectedDiagramComponent.layout.scale.y.toFixed(2));
+            this.compAnchorX = parseFloat(this.selectedDiagramComponent.layout.anchor.x.toFixed(2));
+            this.compAnchorY = parseFloat(this.selectedDiagramComponent.layout.anchor.y.toFixed(2));
+            this.compTextX = parseFloat(this.selectedDiagramComponent.layout.text.x.toFixed(2));
+            this.compTextY = parseFloat(this.selectedDiagramComponent.layout.text.y.toFixed(2));
+            this.compRotation = parseFloat(this.selectedDiagramComponent.layout.rotation.toFixed(2));
+            this.compTextSize = parseFloat(this.selectedDiagramComponent.layout.text.size.toFixed(2));
+          }
     },
     findDiagramComponents(compType) {
       Object.keys(this.state.diagram_definition.components).forEach((compName) => {
@@ -935,12 +757,6 @@ export default {
         }
       });
       this.compModels.sort();
-    },
-    addToDiagramFromOutside(new_element) {
-      // translate the new_element to an element which can be added to the diagram
-      // add the new element to the diagram
-
-      console.log(new_element)
     }
   },
   beforeUnmount() {

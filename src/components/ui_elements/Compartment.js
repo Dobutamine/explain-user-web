@@ -69,7 +69,7 @@ export default class Compartment {
     if (this.layout.tinting) {
       this.sprite.tint = "0x151a7b";
     } else {
-      this.layout['tinting'] = "0xffffff";
+      this.layout['tinting'] = false
       this.sprite.tint = "0xffffff";
     }
  
