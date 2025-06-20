@@ -291,6 +291,9 @@ export default {
       const radius = this.state.diagram_definition.settings.radius;
       let global_scaling = this.state.diagram_definition.settings.scaling * this.global_scale
       // first render all compartments and then the connectors and other types
+      if (component_list == undefined) {
+        return
+      }
       Object.entries(component_list).forEach(([key, component]) => {
         if (component.enabled) {
           switch (component.compType) {

@@ -47,7 +47,7 @@
       <div class="text-center text-overline text-secondary" @click="componentSettingsCollapsed = !componentSettingsCollapsed">component
         settings</div>
       <div v-if="!componentSettingsCollapsed" class="q-ml-md q-mr-sm q-mb-sm row text-overline justify-center">
-        <q-select class="col-9" v-model:model-value="selectedDiagramComponentName"
+        <q-select v-if="state.diagram_definition.components != undefined" class="col-9" v-model:model-value="selectedDiagramComponentName"
           :options="Object.keys(state.diagram_definition.components)" label="diagram component" dense
           @update:model-value="editComponent"></q-select>
         <q-btn color="secondary" label="ADD NEW" dark class="q-ma-sm q-mt-md col" dense size="sm">
@@ -69,16 +69,18 @@
 
 
       <div v-if="!componentSettingsCollapsed">
-        <!-- editor mode 1 or 2 -->
+        <!-- editor mode 1 or 2  (new or edit mode)-->
         <div v-if="editorMode == 1 || editorMode == 2"
           class="q-pa-sm q-mt-xs q-mb-sm q-ml-md q-mr-md row text-overline justify-center">
           {{ compType }}
           <div :style="{ 'font-size': '10px', width: '100%' }">
+            <!-- General settings -->
             <q-toggle label="enabled" v-model="compEnabled" dense size="sm" style="width: 100%" />
             <q-input label="name" v-model="compName" square hide-hint dense dark stack-label style="width: 100%" />
             <q-input label="label" v-model="compLabel" square hide-hint dense dark stack-label style="width: 100%" />
             <q-select label="models" v-model="compModelSelection" :options="compModels" hide-bottom-space
               dense multiple style="font-size: 12px" />
+            <!-- Compartment/Pump/Container/Device/Exchanger -->
             <div v-if="
               ( compType == 'Compartment' ||
                 compType == 'Pump' ||
@@ -92,27 +94,72 @@
                   :options="pictos" hide-bottom-space dense dark style="font-size: 12px" />   
               </div>
               <div class="row">
-                  <div class="q-mt-xs">animation settings:</div>
+                  <div class="q-mt-xs">animation settings</div>
               </div>
               <div class="row">
-                  <q-btn-toggle class="q-mt-sm q-mb-md" v-model="compAnimatedBy" color="grey-9" size="xs" text-color="white" toggle-color="black" :options="[
+                <q-btn-toggle class="col q-mr-sm" v-model="compAnimatedBy" size="sm" dark spread dense no-caps
+                  toggle-color="blue-grey-6" color="grey-9" text-color="black" :options="[
                     { label: 'NONE', value: 'none' },
                     { label: 'VOLUME', value: 'vol' },
                     { label: 'PRESSURE', value: 'pers' },
-                  ]" />
+                ]" />
               </div>
 
+              <!-- general layout settings--> 
               <div class="row">
-                  <div class="q-mt-xs">color settings:</div>
+                  <div class="q-mt-xs">general layout settings</div>
               </div>
               <div class="row">
-                 <q-input class="col q-mr-sm" label="color alpha" v-model="compAlpha" square type="number" hide-hint dense
+                  <q-input class="col q-mr-sm" label="z-index" v-model="compZIndex" square type="number" hide-hint dense
+                    dark stack-label />
+                 <q-input class="col q-mr-sm" label="alpha" v-model="compAlpha" square type="number" hide-hint dense
                   dark stack-label />
                    <q-checkbox class="col q-ma-sm" label="to2 color" v-model="compTinting" dense size="xs" />
               </div>
-              
+
+              <!-- sprite settings--> 
+
+              <div class="row">
+                  <div class="q-mt-xs">image layout settings</div>
+              </div>
+              <!-- sprite position settings--> 
+              <q-btn-toggle class="col q-mr-sm" v-model="compSpritePosType" size="sm" dark spread dense no-caps
+                toggle-color="blue-grey-6" color="grey-9" text-color="black" :options="[
+                  { label: 'ARC', value: 'arc' },
+                  { label: 'RELATIVE', value: 'rel' },
+                ]" />
+              <div v-if="compSpritePosType == 'rel'" class="row">
+                <q-input class="col q-mr-sm" label="postion x" v-model="compSpritePosX" square type="number" hide-hint
+                  dense dark stack-label />
+                <q-input class="col q-mr-sm" label="position Y" v-model="compSpritePosY" square type="number" hide-hint
+                  dense dark stack-label />
+              </div>
+              <div v-if="compSpritePosType == 'arc'" class="row">
+                <q-input class="col q-mr-sm" label="position Degrees" v-model="compSpritePosDgs" square type="number"
+                  hide-hint dense dark stack-label />
+              </div>
+              <!-- sprite scale settings--> 
+              <div class="row">
+                <q-input class="col q-mr-sm" label="scale X" v-model="compSpriteScaleX" square type="number" hide-hint dense
+                  dark stack-label />
+                <q-input class="col q-mr-sm" label="scale Y" v-model="compSpriteScaleY" square type="number" hide-hint dense
+                  dark stack-label />
+              </div>
+              <!-- sprite anchor settings--> 
+              <div class="row">
+                <q-input class="col q-mr-sm" label="anchor X" v-model="compSpriteAnchorX" square type="number" hide-hint dense
+                  dark stack-label />
+                <q-input class="col q-mr-sm" label="anchor Y" v-model="compSpriteAnchorY" square type="number" hide-hint dense
+                  dark stack-label />
+              </div>
+              <!-- sprite rotation settings--> 
+              <div class="row">
+                <q-input class="col q-mr-sm" label="rotation" v-model="compSpriteRotation" square type="number" hide-hint
+                  dense dark stack-label />
+              </div>
+              <!-- sprite color settings--> 
               <div v-if="!compTinting" class="row">
-                <q-input v-model="compSpriteColor" size="xs" dense label="color mask" class="col q-mr-sm q-mb-sm">
+                <q-input v-model="compSpriteColor" size="xs" dense label="image color mask" class="col q-mr-sm q-mb-sm">
                   <template v-slot:append>
                     <q-icon name="colorize" class="cursor-pointer" size="xs">
                       <q-popup-proxy cover transition-show="scale" transition-hide="scale">
@@ -122,8 +169,28 @@
                   </template>
                 </q-input>
               </div>
-              
-              <div class="row">
+
+               <!-- label settings--> 
+
+              <div v-if="compLabel != ''" class="row">
+                  <div class="q-mt-xs">text label layout settings</div>
+              </div>
+               <!-- label position offset settings--> 
+              <div v-if="compLabel != ''" class="row">
+                <q-input class="col q-mr-sm" label="label x" v-model="compLabelPosX" square type="number" hide-hint
+                  dense dark stack-label />
+                <q-input class="col q-mr-sm" label="label y" v-model="compLabelPosY" square type="number" hide-hint
+                  dense dark stack-label />
+              </div>
+              <!-- label size and rotation settings--> 
+              <div v-if="compLabel != ''" class="row">
+                <q-input class="col q-mr-sm" label="label size" v-model="compLabelSize" square type="number" hide-hint
+                  dense dark stack-label />
+                <q-input class="col q-mr-sm" label="label rotation" v-model="compLabelRotation" square type="number" hide-hint
+                  dense dark stack-label />
+              </div>
+              <!-- label color settings--> 
+              <div v-if="compLabel != ''" class="row">
                 <q-input v-model="compLabelColor" size="xs" dense label="label color" class="col q-mr-sm q-mt-sm q-mb-sm">
                   <template v-slot:append>
                     <q-icon name="colorize" class="cursor-pointer" size="xs">
@@ -134,57 +201,9 @@
                   </template>
                 </q-input>
               </div>
-
-
-              <div class="row">
-                  <div class="q-mt-xs">layout settings:</div>
-              </div>
-              <q-btn-toggle class="col-9 q-mr-sm" v-model="compLayoutType" size="sm" dark spread dense no-caps
-                toggle-color="blue-grey-6" color="grey-9" text-color="black" :options="[
-                  { label: 'Arc', value: true },
-                  { label: 'Relative', value: false },
-                ]" />
-              <div v-if="!compLayoutType" class="row">
-                <q-input class="col q-mr-sm" label="postion x" v-model="compLayoutX" square type="number" hide-hint
-                  dense dark stack-label />
-                <q-input class="col q-mr-sm" label="position Y" v-model="compLayoutY" square type="number" hide-hint
-                  dense dark stack-label />
-              </div>
-              
-              <div v-if="compLayoutType" class="row">
-                <q-input class="col q-mr-sm" label="position Degrees" v-model="compLayoutDgs" square type="number"
-                  hide-hint dense dark stack-label />
-              </div>
-
-              <div class="row">
-                <q-input class="col q-mr-sm" label="anchor X" v-model="compAnchorX" square type="number" hide-hint dense
-                  dark stack-label />
-                <q-input class="col q-mr-sm" label="anchor Y" v-model="compAnchorY" square type="number" hide-hint dense
-                  dark stack-label />
-                <q-input class="col q-mr-sm" label="z index" v-model="compZIndex" square type="number" hide-hint
-                  dense dark stack-label />
-              </div>
-
-              <div class="row">
-                <q-input class="col q-mr-sm" label="scale X" v-model="compScaleX" square type="number" hide-hint dense
-                  dark stack-label />
-                <q-input class="col q-mr-sm" label="scale Y" v-model="compScaleY" square type="number" hide-hint dense
-                  dark stack-label />
-                <q-input class="col q-mr-sm" label="rotation" v-model="compRotation" square type="number" hide-hint
-                  dense dark stack-label />
-              </div>
-
-              <div class="row">
-                <q-input class="col q-mr-sm" label="label pos X" v-model="compTextX" square type="number" hide-hint
-                  dense dark stack-label />
-                <q-input class="col q-mr-sm" label="label pos Y" v-model="compTextY" square type="number" hide-hint
-                  dense dark stack-label />
-                <q-input class="col q-mr-sm" label="label size" v-model="compTextSize" square type="number" hide-hint
-                  dense dark stack-label />
-              </div>     
-
             </div>
 
+            <!-- Connector/Valve -->
             <div v-if="
               compType == 'Connector' ||
               compType == 'Valve'
@@ -195,42 +214,35 @@
                 <q-select class="col" label="Diagram comp To" v-model="compDbcTo" :options="compDbcTos"
                   hide-bottom-space dense style="font-size: 12px" />
               </div>
-              <div class="row">
-                <q-select class="col" label="pictogram" square hide-hint stack-label v-model="compPicto"
-                  :options="pictos" hide-bottom-space dense dark style="font-size: 12px" />   
-              </div>
-              <div class="row">
-                  <div class="q-mt-xs">animation settings:</div>
-              </div>
-              <div class="row">
-                  <q-btn-toggle class="q-mt-sm q-mb-md" v-model="compAnimatedBy" color="grey-9" size="sm" text-color="white" toggle-color="black" :options="[
-                    { label: 'NONE', value: 'none' },
-                    { label: 'FLOW', value: 'flow' }
-                  ]" />
-              </div>
 
-
-            <div class="row">
-                  <div class="q-mt-xs">color settings:</div>
+               <!-- general layout settings--> 
+              <div class="row">
+                  <div class="q-mt-xs">general layout settings</div>
               </div>
               <div class="row">
-                 <q-input class="col q-mr-sm" label="color alpha" v-model="compAlpha" square type="number" hide-hint dense
+                  <q-input class="col q-mr-sm" label="z-index" v-model="compZIndex" square type="number" hide-hint dense
+                    dark stack-label />
+                 <q-input class="col q-mr-sm" label="alpha" v-model="compAlpha" square type="number" hide-hint dense
                   dark stack-label />
                    <q-checkbox class="col q-ma-sm" label="to2 color" v-model="compTinting" dense size="xs" />
               </div>
-              
-              <div v-if="!compTinting" class="row">
-                <q-input v-model="compSpriteColor" size="xs" dense label="color mask" class="col q-mr-sm q-mb-sm">
-                  <template v-slot:append>
-                    <q-icon name="colorize" class="cursor-pointer" size="xs">
-                      <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-                        <q-color v-model="compSpriteColor" />
-                      </q-popup-proxy>
-                    </q-icon>
-                  </template>
-                </q-input>
-              </div>
 
+              <!-- path layout settings-->
+               <div class="row">
+                  <div class="q-mt-xs">path layout settings</div>
+              </div>
+              <div class="row">
+                <q-btn-toggle class="col q-mr-sm" v-model="compPathType" size="sm" dark spread dense no-caps
+                toggle-color="blue-grey-6" color="grey-9" text-color="black" :options="[
+                  { label: 'ARC LEFT', value: 'arc_left' },
+                  { label: 'ARC RIGHT', value: 'arc_right' },
+                  { label: 'STRAIGHT', value: 'straight' },
+                ]" />
+              </div>
+              <div class="row">
+                  <q-input class="col q-mr-sm" label="path width" v-model="compPathWidth" square type="number" hide-hint dense
+                    dark stack-label />
+              </div>
               <div class="row">
                 <q-input v-model="compPathColor" size="xs" dense label="path color" class="col q-mr-sm q-mt-sm q-mb-sm">
                   <template v-slot:append>
@@ -243,8 +255,70 @@
                 </q-input>
               </div>
 
-              
+              <!-- path sprite settings-->
+
               <div class="row">
+                  <div class="q-mt-xs">path sprite settings</div>
+              </div>
+              <!-- sprite position settings--> 
+              <div class="row">
+                <q-input class="col q-mr-sm" label="postion x" v-model="compSpritePosX" square type="number" hide-hint
+                  dense dark stack-label />
+                <q-input class="col q-mr-sm" label="position Y" v-model="compSpritePosY" square type="number" hide-hint
+                  dense dark stack-label />
+              </div>
+              <!-- sprite scale settings--> 
+              <div class="row">
+                <q-input class="col q-mr-sm" label="scale X" v-model="compSpriteScaleX" square type="number" hide-hint dense
+                  dark stack-label />
+                <q-input class="col q-mr-sm" label="scale Y" v-model="compSpriteScaleY" square type="number" hide-hint dense
+                  dark stack-label />
+              </div>
+              <!-- sprite anchor settings--> 
+              <div class="row">
+                <q-input class="col q-mr-sm" label="anchor X" v-model="compSpriteAnchorX" square type="number" hide-hint dense
+                  dark stack-label />
+                <q-input class="col q-mr-sm" label="anchor Y" v-model="compSpriteAnchorY" square type="number" hide-hint dense
+                  dark stack-label />
+              </div>
+              <!-- sprite rotation settings--> 
+              <div class="row">
+                <q-input class="col q-mr-sm" label="rotation" v-model="compSpriteRotation" square type="number" hide-hint
+                  dense dark stack-label />
+              </div>
+              <!-- sprite color settings--> 
+              <div v-if="!compTinting" class="row">
+                <q-input v-model="compSpriteColor" size="xs" dense label="image color mask" class="col q-mr-sm q-mb-sm">
+                  <template v-slot:append>
+                    <q-icon name="colorize" class="cursor-pointer" size="xs">
+                      <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                        <q-color v-model="compSpriteColor" />
+                      </q-popup-proxy>
+                    </q-icon>
+                  </template>
+                </q-input>
+              </div>
+
+               <!-- path label settings--> 
+              <div v-if="compLabel != ''" class="row">
+                  <div class="q-mt-xs">path text label settings</div>
+              </div>
+               <!-- label position offset settings--> 
+              <div v-if="compLabel != ''" class="row">
+                <q-input class="col q-mr-sm" label="label x" v-model="compLabelPosX" square type="number" hide-hint
+                  dense dark stack-label />
+                <q-input class="col q-mr-sm" label="label y" v-model="compLabelPosY" square type="number" hide-hint
+                  dense dark stack-label />
+              </div>
+              <!-- label size and rotation settings--> 
+              <div v-if="compLabel != ''" class="row">
+                <q-input class="col q-mr-sm" label="label size" v-model="compLabelSize" square type="number" hide-hint
+                  dense dark stack-label />
+                <q-input class="col q-mr-sm" label="label rotation" v-model="compLabelRotation" square type="number" hide-hint
+                  dense dark stack-label />
+              </div>
+              <!-- label color settings--> 
+              <div v-if="compLabel != ''" class="row">
                 <q-input v-model="compLabelColor" size="xs" dense label="label color" class="col q-mr-sm q-mt-sm q-mb-sm">
                   <template v-slot:append>
                     <q-icon name="colorize" class="cursor-pointer" size="xs">
@@ -255,39 +329,12 @@
                   </template>
                 </q-input>
               </div>
-
-
-
-              <div class="row">
-                  <div class="q-mt-xs">layout settings:</div>
-              </div>
-              <q-btn-toggle class="q-mt-sm q-mb-md" v-model="compAnimatedBy" color="grey-9" size="sm" text-color="white" toggle-color="black" :options="[
-                  { label: 'ARC LEFT', value: 'arc_left' },
-                  { label: 'ARC RIGHT', value: 'arc_right' },
-                  { label: 'STRAIGHT', value: 'straight' },
-                ]" />
-              <div class="row">
-                <q-input class="col q-mr-sm" label="path width" v-model="compAnchorX" square type="number" hide-hint dense
-                  dark stack-label />
-                <q-input class="col q-mr-sm" label="sprite size" v-model="compScaleX" square type="number" hide-hint dense
-                  dark stack-label />
-                <q-input class="col q-mr-sm" label="z index" v-model="compZIndex" square type="number" hide-hint
-                  dense dark stack-label />
-              </div>
-              <div class="row">
-                <q-input class="col q-mr-sm" label="label pos x" v-model="compTextX" square type="number" hide-hint
-                  dense dark stack-label />
-                <q-input class="col q-mr-sm" label="label pos y" v-model="compTextY" square type="number" hide-hint
-                  dense dark stack-label />
-                <q-input class="col q-mr-sm" label="label size" v-model="compTextSize" square type="number" hide-hint
-                  dense dark stack-label />
-              </div>   
             </div>
           </div>
         </div>
 
 
-        <!-- editor mode 3 -->
+        <!-- editor mode 3 (removal mode)-->
         <div v-if="editorMode === 3">
           <div class="q-gutter-sm row text-overline justify-center q-mb-sm q-mt-xs">
             Are you sure you want to remove {{ compName }}?
@@ -299,6 +346,7 @@
               icon="fa-solid fa-refresh"></q-btn>
           </div>
         </div>
+
         <!-- server communication buttons -->
         <div v-if="editorMode < 3 && editorMode > 0"
           class="q-gutter-sm row text-overline justify-center q-mb-sm q-mt-xs">
@@ -310,6 +358,7 @@
           <q-btn color="grey-14" size="xs" dense style="width: 50px" @click="cancelDiagramBuild"
             icon="fa-solid fa-xmark"></q-btn>
         </div>
+
         <!-- status message -->
         <div class="q-gutter-sm row text-overline justify-center q-mb-xs" style="font-size: 10px">
           {{ statusMessage }}
@@ -357,41 +406,6 @@ export default {
         "Valve"
       ],
       diagramComponentNames: [],
-      compEnabled: false,
-
-      compName: "",
-      compLabel: "",
-      compType: "",
-      compModels: [],
-      compLayoutType: true,
-      compRotation: 0,
-      compLayoutX: 1,
-      compLayoutY: 1,
-      compMorphX: 1,
-      compMorphY: 1,
-      compScaleX: 1,
-      compScaleY: 1,
-      compSpriteColor: "#ffffff",
-      compPathColor: "#666666",
-      compLabelColor: "#ffffff",
-      compAlpha: 1.0,
-      compAnchorX: 0.5,
-      compAnchorY: 0.5,
-      compTextX: 0,
-      compTextY: 0,
-      compTextSize: 10,
-      compLayoutDgs: 0,
-      compZIndex: 10,
-      compTinting: true,
-      compAnimatedBy: "vol",
-      compDbcFrom: "",
-      compDbcFroms: [],
-      compDbcTo: "",
-      compDbcTos: [],
-      compModelSelection: [],
-      compGas: "O2",
-      compGasses: ["O2", "Co2"],
-      compPicto: null,
       pictos: [
         "blood.png",
         "container.png",
@@ -405,7 +419,37 @@ export default {
       ],
       rebuild_event: null,
       statusMessage: "",
-      animationSources: ['no animation', 'volume', 'pressure', 'flow']
+      // state variables
+      compName: "",
+      compType: "",
+      compLabel: "",
+      compPicto: "",
+      compEnabled: true,
+      compModels: [],
+      compModelSelection: [],
+      compAnimatedBy: "none",
+      compZIndex: 10,
+      compAlpha: 1,
+      compTinting: true,
+      compSpriteColor: "#ffffff",
+      compSpritePosType: "rel",
+      compSpritePosX: 0,
+      compSpritePosY: 0,
+      compSpritePosDgs: 0,
+      compSpriteScaleX: 0,
+      compSpriteScaleY: 0,
+      compSpriteAnchorX: 0.5,
+      compSpriteAnchorY: 0.5,
+      compSpriteRotation: 0,
+      compLabelPosX: 0,
+      compLabelPosY: 0,
+      compLabelSize: 1,
+      compLabelRotation: 0,
+      compLabelColor: "#ffffff",
+      compPathType: "straight",
+      compPathWidth: 5,
+      compPathColor: "#666666"
+
     };
   },
   methods: {
@@ -424,254 +468,77 @@ export default {
       this.$bus.emit("rebuild_diagram");
     },
     getAllDiagramComponents() {
-      this.diagramComponentNames = [];
+      let diagram_component_names = [];
       if (this.state.diagram_definition.components) {
         Object.keys(this.state.diagram_definition.components).forEach((component) => {
-          this.diagramComponentNames.push(component);
+          diagram_component_names.push(component);
         });
       }
-      this.diagramComponentNames.sort();
+      diagram_component_names.sort();
+      return diagram_component_names;
     },
     saveDiagramComponent() {
-      let layoutType = "rel";
-      switch (this.compType) {
-        case "Compartment":
-          layoutType = "rel";
-          if (this.compLayoutType) {
-            layoutType = "arc";
-          }
-          this.state.diagram_definition.components[this.compName] = {
-            enabled: this.compEnabled,
-            label: this.compLabel,
-            models: this.compModelSelection,
-            compType: this.compType,
-            compPicto: this.compPicto,
-            layout: {
-              pos: {
-                type: layoutType,
-                x: parseFloat(this.compLayoutX),
-                y: parseFloat(this.compLayoutY),
-                dgs: parseFloat(this.compLayoutDgs),
-              },
-              morph: {
-                x: parseFloat(this.compMorphX),
-                y: parseFloat(this.compMorphY),
-              },
-              scale: {
-                x: parseFloat(this.compScaleX),
-                y: parseFloat(this.compScaleY),
-              },
-              anchor: {
-                x: parseFloat(this.compAnchorX),
-                y: parseFloat(this.compAnchorY),
-              },
-              rotation: parseFloat(this.compRotation),
-              text: {
-                x: parseFloat(this.compTextX),
-                y: parseFloat(this.compTextY),
-                size: parseFloat(this.compTextSize),
-              },
-              tinting: this.compTinting
+      // build the component settings
+      this.state.diagram_definition.components[this.compName] = {
+        compType: this.compType,
+        label: this.compLabel,
+        compPicto: this.compPicto,
+        enabled: this.compEnabled,
+        models: this.compModelSelection,
+        dbcFrom: this.compDbcFrom,
+        dbcTo: this.compDbcTo,
+        layout: {
+          general: {
+            animatedBy: this.compAnimatedBy,
+            z_index: parseInt(this.compZIndex),
+            alpha: parseInt(this.compAlpha),
+            tinting: this.compTinting
+          },
+          path: {
+            type: this.comPathType,
+            width: this.compPathWidth,
+            color: this.compPathColor,
+          },
+          sprite: {
+            color: this.compSpriteColor,
+            pos: {
+              type: this.compSpritePosType,
+              x: parseFloat(this.compSpritePosX),
+              y: parseFloat(this.compSpritePosY),
+              dgs: parseFloat(this.compSpritePosDgs),
             },
-          };
-          this.$bus.emit("rebuild_diagram");
-          break;
-        case "Connector":
-          this.state.diagram_definition.components[this.compName] = {
-            enabled: this.compEnabled,
-            label: this.compLabel,
-            models: this.compModelSelection,
-            compType: this.compType,
-            compPicto: this.compPicto,
-            dbcFrom: this.compDbcFrom,
-            dbcTo: this.compDbcTo
-          };
-          this.$bus.emit("rebuild_diagram");
-          break;
-        case "Pump":
-          layoutType = "rel";
-          if (this.compLayoutType) {
-            layoutType = "arc";
-          }
-          this.state.diagram_definition.components[this.compName] = {
-            enabled: this.compEnabled,
-            label: this.compLabel,
-            models: this.compModelSelection,
-            compType: this.compType,
-            compPicto: this.compPicto,
-            layout: {
-              pos: {
-                type: layoutType,
-                x: parseFloat(this.compLayoutX),
-                y: parseFloat(this.compLayoutY),
-                dgs: parseFloat(this.compLayoutDgs),
-              },
-              morph: {
-                x: parseFloat(this.compMorphX),
-                y: parseFloat(this.compMorphY),
-              },
-              scale: {
-                x: parseFloat(this.compScaleX),
-                y: parseFloat(this.compScaleY),
-              },
-              anchor: {
-                x: parseFloat(this.compAnchorX),
-                y: parseFloat(this.compAnchorY),
-              },
-              rotation: parseFloat(this.compRotation),
-              text: {
-                x: parseFloat(this.compTextX),
-                y: parseFloat(this.compTextY),
-                size: parseFloat(this.compTextSize),
-              },
-              tinting: this.compTinting
+            scale: {
+              x: parseFloat(this.compSpriteScaleX),
+              y: parseFloat(this.compSpriteScaleY),
             },
-          };
-          this.$bus.emit("rebuild_diagram");
-          break;
-        case "Container":
-          layoutType = "rel";
-          if (this.compLayoutType) {
-            layoutType = "arc";
-          }
-          this.state.diagram_definition.components[this.compName] = {
-            enabled: this.compEnabled,
-            label: this.compLabel,
-            models: this.compModelSelection,
-            compType: this.compType,
-            compPicto: this.compPicto,
-            layout: {
-              pos: {
-                type: layoutType,
-                x: parseFloat(this.compLayoutX),
-                y: parseFloat(this.compLayoutY),
-                dgs: parseFloat(this.compLayoutDgs),
-              },
-              morph: {
-                x: parseFloat(this.compMorphX),
-                y: parseFloat(this.compMorphY),
-              },
-              scale: {
-                x: parseFloat(this.compScaleX),
-                y: parseFloat(this.compScaleY),
-              },
-              anchor: {
-                x: parseFloat(this.compAnchorX),
-                y: parseFloat(this.compAnchorY),
-              },
-              rotation: parseFloat(this.compRotation),
-              text: {
-                x: parseFloat(this.compTextX),
-                y: parseFloat(this.compTextY),
-                size: parseFloat(this.compTextSize),
-              },
-              tinting: this.compTinting
+            anchor: {
+              x: parseFloat(this.compSpriteAnchorX),
+              y: parseFloat(this.compSpriteAnchorY),
             },
-          };
-          this.$bus.emit("rebuild_diagram");
-          break;
-        case "Exchanger":
-          layoutType = "rel";
-          if (this.compLayoutType) {
-            layoutType = "arc";
+            rotation: parseFloat(this.compSpriteRotation),
+          },
+          label: {
+            pos_x: parseFloat(this.compLabelPosX),
+            pos_y: parseFloat(this.compLabelPosY),
+            size: parseInt(this.compLabelSize),
+            rotation: parseFloat(this.compLabelRotation),
+            color: this.compLabelColor,
           }
-          this.state.diagram_definition.components[this.compName] = {
-            enabled: this.compEnabled,
-            label: this.compLabel,
-            models: this.compModelSelection,
-            compType: this.compType,
-            compPicto: this.compPicto,
-            gas: this.compGas,
-            layout: {
-              pos: {
-                type: layoutType,
-                x: parseFloat(this.compLayoutX),
-                y: parseFloat(this.compLayoutY),
-                dgs: parseFloat(this.compLayoutDgs),
-              },
-              morph: {
-                x: parseFloat(this.compMorphX),
-                y: parseFloat(this.compMorphY),
-              },
-              scale: {
-                x: parseFloat(this.compScaleX),
-                y: parseFloat(this.compScaleY),
-              },
-              anchor: {
-                x: parseFloat(this.compAnchorX),
-                y: parseFloat(this.compAnchorY),
-              },
-              rotation: parseFloat(this.compRotation),
-              text: {
-                x: parseFloat(this.compTextX),
-                y: parseFloat(this.compTextY),
-                size: parseFloat(this.compTextSize),
-              },
-              tinting: this.compTinting
-            },
-          };
-          this.$bus.emit("rebuild_diagram");
-          break;
-        case "Valve":
-          this.state.diagram_definition.components[this.compName] = {
-            enabled: this.compEnabled,
-            label: this.compLabel,
-            models: this.compModelSelection,
-            compType: this.compType,
-            compPicto: this.compPicto,
-            dbcFrom: this.compDbcFrom,
-            dbcTo: this.compDbcTo
-          };
-          this.$bus.emit("rebuild_diagram");
-          break;
-        case "Device":
-          layoutType = "rel";
-          if (this.compLayoutType) {
-            layoutType = "arc";
-          }
-          this.state.diagram_definition.components[this.compName] = {
-            enabled: this.compEnabled,
-            label: this.compLabel,
-            models: this.compModelSelection,
-            compType: this.compType,
-            compPicto: this.compPicto,
-            layout: {
-              pos: {
-                type: layoutType,
-                x: parseFloat(this.compLayoutX),
-                y: parseFloat(this.compLayoutY),
-                dgs: parseFloat(this.compLayoutDgs),
-              },
-              morph: {
-                x: parseFloat(this.compMorphX),
-                y: parseFloat(this.compMorphY),
-              },
-              scale: {
-                x: parseFloat(this.compScaleX),
-                y: parseFloat(this.compScaleY),
-              },
-              anchor: {
-                x: parseFloat(this.compAnchorX),
-                y: parseFloat(this.compAnchorY),
-              },
-              rotation: parseFloat(this.compRotation),
-              text: {
-                x: parseFloat(this.compTextX),
-                y: parseFloat(this.compTextY),
-                size: parseFloat(this.compTextSize),
-              },
-              tinting: this.compTinting
-            },
-          };
-          this.$bus.emit("rebuild_diagram");
-          break;
-      }
+        }
+      };
+      // rebuild the diagram
+      this.$bus.emit("rebuild_diagram");
     },
     cancelDiagramBuild() {
+      // clear all fields
       this.clearFields();
-      this.getAllDiagramComponents();
+      // get the diagram component list
+      this.diagramComponentNames = this.getAllDiagramComponents();
+      // reset the select comp type
       this.compType = "";
+      // reset the select diagram component
       this.selectedDiagramComponentName = "";
+      // set the editot mode to selection mode
       this.editorMode = 0;
     },
     deleteComponent() {
@@ -713,14 +580,60 @@ export default {
       this.$bus.emit("rebuild_diagram");
       this.cancelDiagramBuild();
     },
+    addComponent(compType) {
+      // set the editor mode to adding
+      this.editorMode = 1;
+
+      // clear all the fields
+      this.clearFields();
+
+      // start preparing the form 
+      this.compEnabled = true;
+
+      // find the explain model types which can by selected depending on the compoent type
+      this.compModels = this.selectModelTypeToAdd(compType);
+      
+      // reset the component mode selection
+      this.compModelSelection = [];
+
+      // component type specific default settings
+      switch (compType) {
+        case "Compartment":
+          this.compAnimatedBy = "vol"
+          break;
+        case "Connector":
+          this.compDbcFroms = this.findDiagramComponents(["Compartment", "Pump"]);
+          this.compDbcTos = this.findDiagramComponents(["Compartment", "Pump"]);
+          this.compAnimatedBy = "flow"
+          break;
+        case "Valve":
+          this.compDbcFroms = this.findDiagramComponents(["Compartment", "Pump"]);
+          this.compDbcTos = this.findDiagramComponents(["Compartment", "Pump"]);
+          this.compAnimatedBy = "flow"
+          break;
+        case "Container":
+          this.compDbcFroms = this.findDiagramComponents(["Compartment", "Pump", "Container", "Device"]);
+          this.compDbcTos = this.findDiagramComponents(["Compartment", "Pump", "Container", "Device"]);
+          this.compAnimatedBy = "vol"
+          break;
+        case "Device":
+          this.compAnimatedBy = "none"
+          break;
+        case "Pump":
+          this.compDbcFroms = this.findDiagramComponents(["Connector", "Valve"]);
+          this.compDbcTos = this.findDiagramComponents(["Connector", "Valve"]);
+          this.compAnimatedBy = "vol"
+          break;
+      }
+    },
     editComponent() {
+      // set the editor mode to editing
       this.editorMode = 2;
       // get all the properties
       this.selectedDiagramComponent = this.state.diagram_definition.components[this.selectedDiagramComponentName];
 
       // get all possible model types
-      this.compModels = [];
-      this.compModelSelection = [];
+
 
       // get all properties for all types
       this.compEnabled = this.selectedDiagramComponent.enabled;
@@ -762,19 +675,11 @@ export default {
             this.compScaleY = parseFloat(this.selectedDiagramComponent.layout.scale.y.toFixed(2));
             this.compAnchorX = parseFloat(this.selectedDiagramComponent.layout.anchor.x.toFixed(2));
             this.compAnchorY = parseFloat(this.selectedDiagramComponent.layout.anchor.y.toFixed(2));
-            this.compTextX = parseFloat(this.selectedDiagramComponent.layout.text.x.toFixed(2));
-            this.compTextY = parseFloat(this.selectedDiagramComponent.layout.text.y.toFixed(2));
+            this.compLabelX = parseFloat(this.selectedDiagramComponent.layout.text.x.toFixed(2));
+            this.compLabelY = parseFloat(this.selectedDiagramComponent.layout.text.y.toFixed(2));
             this.compRotation = parseFloat(this.selectedDiagramComponent.layout.rotation.toFixed(2));
-            this.compTextSize = parseFloat(this.selectedDiagramComponent.layout.text.size.toFixed(2));
+            this.compLabelSize = parseFloat(this.selectedDiagramComponent.layout.text.size.toFixed(2));
           }
-    },
-    findDiagramComponents(compType) {
-      Object.keys(this.state.diagram_definition.components).forEach((compName) => {
-        if (this.state.diagram_definition.components[compName].compType == compType) {
-          this.compDbcFroms.push(compName);
-          this.compDbcTos.push(compName);
-        }
-      });
     },
     clearFields() {
       this.compEnabled = true;
@@ -789,14 +694,14 @@ export default {
       this.compMorphY = 1;
       this.compScaleX = 1;
       this.compScaleY = 1;
-      this.compTextX = 0;
-      this.compTextY = 0;
+      this.compLabelX = 0;
+      this.compLabelY = 0;
       this.compAnchorX = 0.5;
       this.compAnchorY = 0.5;
       this.compZIndex = 10;
       this.compTinting = true;
       this.compRotation = 0;
-      this.compTextSize = 10;
+      this.compLabelSize = 10;
       this.compDbcFroms = [];
       this.compDbcFrom = "";
       this.compDbcTo = "";
@@ -807,71 +712,25 @@ export default {
       this.compAlpha = 1
       this.compAnimatedBy = "vol"
     },
-    addComponent(compType) {
-      this.editorMode = 1;
-      this.clearFields();
-      this.compEnabled = true;
-      this.selectModelTypeToAdd(compType);
-      switch (compType) {
-        case "Compartment":
-          this.findDiagramComponents("Compartment");
-          this.findDiagramComponents("Container");
-          this.findDiagramComponents("Pump");
-          this.compAnimatedBy = "vol"
-          this.compTinting = true
-          this.compAlpha = 1;
-          this.compZIndex = 10;
-          break;
-        case "Connector":
-          this.findDiagramComponents("Compartment");
-          this.findDiagramComponents("Pump");
-          this.compAnimatedBy = "flow"
-          this.compTinting = true
-          this.compAlpha = 1;
-          this.compZIndex = 10;
-          break;
-        case "Valve":
-          this.findDiagramComponents("Compartment");
-          this.findDiagramComponents("Pump");
-          this.compAnimatedBy = "flow"
-          this.compTinting = true
-          this.compAlpha = 1;
-          this.compZIndex = 10;
-          break;
-        case "Container":
-          this.findDiagramComponents("Compartment");
-          this.findDiagramComponents("Container");
-          this.findDiagramComponents("Pump");
-          this.compAnimatedBy = "vol"
-          this.compTinting = false
-          this.compAlpha = 1;
-          this.compZIndex = 10;
-          break;
-        case "Device":
-          this.findDiagramComponents("Compartment");
-          this.findDiagramComponents("Container");
-          this.findDiagramComponents("Pump");
-          this.compAnimatedBy = "none"
-          this.compTinting = false
-          this.compAlpha = 1;
-          this.compZIndex = 10;
-          break;
-        case "Pump":
-          this.findDiagramComponents("Compartment");
-          this.findDiagramComponents("Pump");
-          this.compAnimatedBy = "vol"
-          this.compTinting = false
-          this.compAlpha = 1;
-          this.compZIndex = 10;
-          break;
-      }
+    findDiagramComponents(compTypes) {
+      if (this.state.diagram_definition.components == undefined) return
+
+      let component_list = []
+      Object.keys(this.state.diagram_definition.components).forEach((compName) => {
+        if (compTypes.includes(this.state.diagram_definition.components[compName].compType)) {
+          component_list.push(compName)
+        }
+      });
+
+      component_list.sort();
+
+      return component_list;
     },
     selectModelTypeToAdd(compType) {
       this.compType = compType;
       // find all models which this compType could hold
-      this.compModels = [];
-      this.compModelSelection = [];
       let models = [];
+      let model_list = []
       switch (this.compType) {
         case "Compartment":
           // define the general compartment graphic
@@ -919,10 +778,12 @@ export default {
       }
       Object.keys(explain.modelState.models).forEach((model) => {
         if (models.includes(explain.modelState.models[model].model_type)) {
-          this.compModels.push(model);
+          model_list.push(model);
         }
       });
-      this.compModels.sort();
+      model_list.sort();
+
+      return model_list;
     }
   },
   beforeUnmount() {
@@ -952,7 +813,7 @@ export default {
     explain.getModelState();
 
     // get all diagram component names
-    this.getAllDiagramComponents();
+    this.diagramComponentNames = this.getAllDiagramComponents();
 
     document.addEventListener(
       "edit_comp",
@@ -962,7 +823,7 @@ export default {
       false
     );
 
-    this.$bus.on("diagram_loaded", () => this.getAllDiagramComponents());
+    this.$bus.on("diagram_loaded", () => this.diagramComponentNames = this.getAllDiagramComponents());
 
     this.$bus.on("addNewModelToDiagram", (new_element) => {
       this.addToDiagramFromOutside(new_element);
