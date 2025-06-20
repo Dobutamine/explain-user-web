@@ -65,7 +65,6 @@
             </q-list>
           </q-menu>
         </q-btn>
-
       </div>
 
 
@@ -101,8 +100,42 @@
                     { label: 'VOLUME', value: 'vol' },
                     { label: 'PRESSURE', value: 'pers' },
                   ]" />
-                   <q-checkbox class="col q-ma-sm" label="tint" v-model="compTinting" dense size="xs" />
               </div>
+
+              <div class="row">
+                  <div class="q-mt-xs">color settings:</div>
+              </div>
+              <div class="row">
+                 <q-input class="col q-mr-sm" label="color alpha" v-model="compAlpha" square type="number" hide-hint dense
+                  dark stack-label />
+                   <q-checkbox class="col q-ma-sm" label="to2 color" v-model="compTinting" dense size="xs" />
+              </div>
+              
+              <div v-if="!compTinting" class="row">
+                <q-input v-model="compSpriteColor" size="xs" dense label="color mask" class="col q-mr-sm q-mb-sm">
+                  <template v-slot:append>
+                    <q-icon name="colorize" class="cursor-pointer" size="xs">
+                      <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                        <q-color v-model="compSpriteColor" />
+                      </q-popup-proxy>
+                    </q-icon>
+                  </template>
+                </q-input>
+              </div>
+              
+              <div class="row">
+                <q-input v-model="compLabelColor" size="xs" dense label="label color" class="col q-mr-sm q-mt-sm q-mb-sm">
+                  <template v-slot:append>
+                    <q-icon name="colorize" class="cursor-pointer" size="xs">
+                      <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                        <q-color v-model="compLabelColor" />
+                      </q-popup-proxy>
+                    </q-icon>
+                  </template>
+                </q-input>
+              </div>
+
+
               <div class="row">
                   <div class="q-mt-xs">layout settings:</div>
               </div>
@@ -132,8 +165,6 @@
                   dense dark stack-label />
               </div>
 
-
-
               <div class="row">
                 <q-input class="col q-mr-sm" label="scale X" v-model="compScaleX" square type="number" hide-hint dense
                   dark stack-label />
@@ -143,8 +174,6 @@
                   dense dark stack-label />
               </div>
 
-
-
               <div class="row">
                 <q-input class="col q-mr-sm" label="label pos X" v-model="compTextX" square type="number" hide-hint
                   dense dark stack-label />
@@ -152,8 +181,8 @@
                   dense dark stack-label />
                 <q-input class="col q-mr-sm" label="label size" v-model="compTextSize" square type="number" hide-hint
                   dense dark stack-label />
-              </div>
-              
+              </div>     
+
             </div>
 
             <div v-if="
@@ -166,9 +195,98 @@
                 <q-select class="col" label="Diagram comp To" v-model="compDbcTo" :options="compDbcTos"
                   hide-bottom-space dense style="font-size: 12px" />
               </div>
+              <div class="row">
+                <q-select class="col" label="pictogram" square hide-hint stack-label v-model="compPicto"
+                  :options="pictos" hide-bottom-space dense dark style="font-size: 12px" />   
+              </div>
+              <div class="row">
+                  <div class="q-mt-xs">animation settings:</div>
+              </div>
+              <div class="row">
+                  <q-btn-toggle class="q-mt-sm q-mb-md" v-model="compAnimatedBy" color="grey-9" size="sm" text-color="white" toggle-color="black" :options="[
+                    { label: 'NONE', value: 'none' },
+                    { label: 'FLOW', value: 'flow' }
+                  ]" />
+              </div>
+
+
+            <div class="row">
+                  <div class="q-mt-xs">color settings:</div>
+              </div>
+              <div class="row">
+                 <q-input class="col q-mr-sm" label="color alpha" v-model="compAlpha" square type="number" hide-hint dense
+                  dark stack-label />
+                   <q-checkbox class="col q-ma-sm" label="to2 color" v-model="compTinting" dense size="xs" />
+              </div>
+              
+              <div v-if="!compTinting" class="row">
+                <q-input v-model="compSpriteColor" size="xs" dense label="color mask" class="col q-mr-sm q-mb-sm">
+                  <template v-slot:append>
+                    <q-icon name="colorize" class="cursor-pointer" size="xs">
+                      <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                        <q-color v-model="compSpriteColor" />
+                      </q-popup-proxy>
+                    </q-icon>
+                  </template>
+                </q-input>
+              </div>
+
+              <div class="row">
+                <q-input v-model="compPathColor" size="xs" dense label="path color" class="col q-mr-sm q-mt-sm q-mb-sm">
+                  <template v-slot:append>
+                    <q-icon name="colorize" class="cursor-pointer" size="xs">
+                      <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                        <q-color v-model="compPathColor" />
+                      </q-popup-proxy>
+                    </q-icon>
+                  </template>
+                </q-input>
+              </div>
+
+              
+              <div class="row">
+                <q-input v-model="compLabelColor" size="xs" dense label="label color" class="col q-mr-sm q-mt-sm q-mb-sm">
+                  <template v-slot:append>
+                    <q-icon name="colorize" class="cursor-pointer" size="xs">
+                      <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                        <q-color v-model="compLabelColor" />
+                      </q-popup-proxy>
+                    </q-icon>
+                  </template>
+                </q-input>
+              </div>
+
+
+
+              <div class="row">
+                  <div class="q-mt-xs">layout settings:</div>
+              </div>
+              <q-btn-toggle class="q-mt-sm q-mb-md" v-model="compAnimatedBy" color="grey-9" size="sm" text-color="white" toggle-color="black" :options="[
+                  { label: 'ARC LEFT', value: 'arc_left' },
+                  { label: 'ARC RIGHT', value: 'arc_right' },
+                  { label: 'STRAIGHT', value: 'straight' },
+                ]" />
+              <div class="row">
+                <q-input class="col q-mr-sm" label="path width" v-model="compAnchorX" square type="number" hide-hint dense
+                  dark stack-label />
+                <q-input class="col q-mr-sm" label="sprite size" v-model="compScaleX" square type="number" hide-hint dense
+                  dark stack-label />
+                <q-input class="col q-mr-sm" label="z index" v-model="compZIndex" square type="number" hide-hint
+                  dense dark stack-label />
+              </div>
+              <div class="row">
+                <q-input class="col q-mr-sm" label="label pos x" v-model="compTextX" square type="number" hide-hint
+                  dense dark stack-label />
+                <q-input class="col q-mr-sm" label="label pos y" v-model="compTextY" square type="number" hide-hint
+                  dense dark stack-label />
+                <q-input class="col q-mr-sm" label="label size" v-model="compTextSize" square type="number" hide-hint
+                  dense dark stack-label />
+              </div>   
             </div>
           </div>
         </div>
+
+
         <!-- editor mode 3 -->
         <div v-if="editorMode === 3">
           <div class="q-gutter-sm row text-overline justify-center q-mb-sm q-mt-xs">
@@ -240,6 +358,7 @@ export default {
       ],
       diagramComponentNames: [],
       compEnabled: false,
+
       compName: "",
       compLabel: "",
       compType: "",
@@ -252,6 +371,10 @@ export default {
       compMorphY: 1,
       compScaleX: 1,
       compScaleY: 1,
+      compSpriteColor: "#ffffff",
+      compPathColor: "#666666",
+      compLabelColor: "#ffffff",
+      compAlpha: 1.0,
       compAnchorX: 0.5,
       compAnchorY: 0.5,
       compTextX: 0,
@@ -654,11 +777,11 @@ export default {
       });
     },
     clearFields() {
-      this.compEnabled = false;
+      this.compEnabled = true;
       this.compLabel = "";
       this.compName = "";
       this.compModels = [];
-      this.compLayoutType = true;
+      this.compLayoutType = false;
       this.compLayoutDgs = 0;
       this.compLayoutX = 1;
       this.compLayoutY = 1;
@@ -671,13 +794,18 @@ export default {
       this.compAnchorX = 0.5;
       this.compAnchorY = 0.5;
       this.compZIndex = 10;
-      this.compTinting = false;
+      this.compTinting = true;
       this.compRotation = 0;
       this.compTextSize = 10;
       this.compDbcFroms = [];
       this.compDbcFrom = "";
       this.compDbcTo = "";
       this.compDbcTos = [];
+      this.compSpriteColor = "#ffffff"
+      this.compPathColor = "#666666"
+      this.compLabelColor = "#ffffff"
+      this.compAlpha = 1
+      this.compAnimatedBy = "vol"
     },
     addComponent(compType) {
       this.editorMode = 1;
@@ -685,18 +813,56 @@ export default {
       this.compEnabled = true;
       this.selectModelTypeToAdd(compType);
       switch (compType) {
+        case "Compartment":
+          this.findDiagramComponents("Compartment");
+          this.findDiagramComponents("Container");
+          this.findDiagramComponents("Pump");
+          this.compAnimatedBy = "vol"
+          this.compTinting = true
+          this.compAlpha = 1;
+          this.compZIndex = 10;
+          break;
         case "Connector":
           this.findDiagramComponents("Compartment");
           this.findDiagramComponents("Pump");
+          this.compAnimatedBy = "flow"
+          this.compTinting = true
+          this.compAlpha = 1;
+          this.compZIndex = 10;
+          break;
+        case "Valve":
+          this.findDiagramComponents("Compartment");
+          this.findDiagramComponents("Pump");
+          this.compAnimatedBy = "flow"
+          this.compTinting = true
+          this.compAlpha = 1;
+          this.compZIndex = 10;
           break;
         case "Container":
           this.findDiagramComponents("Compartment");
           this.findDiagramComponents("Container");
           this.findDiagramComponents("Pump");
+          this.compAnimatedBy = "vol"
+          this.compTinting = false
+          this.compAlpha = 1;
+          this.compZIndex = 10;
+          break;
+        case "Device":
+          this.findDiagramComponents("Compartment");
+          this.findDiagramComponents("Container");
+          this.findDiagramComponents("Pump");
+          this.compAnimatedBy = "none"
+          this.compTinting = false
+          this.compAlpha = 1;
+          this.compZIndex = 10;
           break;
         case "Pump":
           this.findDiagramComponents("Compartment");
           this.findDiagramComponents("Pump");
+          this.compAnimatedBy = "vol"
+          this.compTinting = false
+          this.compAlpha = 1;
+          this.compZIndex = 10;
           break;
       }
     },
