@@ -159,7 +159,7 @@
               </div>
               <!-- sprite color settings--> 
               <div v-if="!compTinting" class="row">
-                <q-input v-model="compSpriteColor" size="xs" dense label="image color mask" class="col q-mr-sm q-mb-sm">
+                <q-input v-model="compSpriteColor" dense label="image color mask" class="col q-mr-sm q-mb-sm">
                   <template v-slot:append>
                     <q-icon name="colorize" class="cursor-pointer" size="xs">
                       <q-popup-proxy cover transition-show="scale" transition-hide="scale">
@@ -191,7 +191,7 @@
               </div>
               <!-- label color settings--> 
               <div v-if="compLabel != ''" class="row">
-                <q-input v-model="compLabelColor" size="xs" dense label="label color" class="col q-mr-sm q-mt-sm q-mb-sm">
+                <q-input v-model="compLabelColor" dense label="label color" class="col q-mr-sm q-mt-sm q-mb-sm">
                   <template v-slot:append>
                     <q-icon name="colorize" class="cursor-pointer" size="xs">
                       <q-popup-proxy cover transition-show="scale" transition-hide="scale">
@@ -244,7 +244,7 @@
                     dark stack-label />
               </div>
               <div class="row">
-                <q-input v-model="compPathColor" size="xs" dense label="path color" class="col q-mr-sm q-mt-sm q-mb-sm">
+                <q-input v-model="compPathColor" dense label="path color" class="col q-mr-sm q-mt-sm q-mb-sm">
                   <template v-slot:append>
                     <q-icon name="colorize" class="cursor-pointer" size="xs">
                       <q-popup-proxy cover transition-show="scale" transition-hide="scale">
@@ -288,7 +288,7 @@
               </div>
               <!-- sprite color settings--> 
               <div v-if="!compTinting" class="row">
-                <q-input v-model="compSpriteColor" size="xs" dense label="image color mask" class="col q-mr-sm q-mb-sm">
+                <q-input v-model="compSpriteColor" dense label="image color mask" class="col q-mr-sm q-mb-sm">
                   <template v-slot:append>
                     <q-icon name="colorize" class="cursor-pointer" size="xs">
                       <q-popup-proxy cover transition-show="scale" transition-hide="scale">
@@ -319,7 +319,7 @@
               </div>
               <!-- label color settings--> 
               <div v-if="compLabel != ''" class="row">
-                <q-input v-model="compLabelColor" size="xs" dense label="label color" class="col q-mr-sm q-mt-sm q-mb-sm">
+                <q-input v-model="compLabelColor" dense label="label color" class="col q-mr-sm q-mt-sm q-mb-sm">
                   <template v-slot:append>
                     <q-icon name="colorize" class="cursor-pointer" size="xs">
                       <q-popup-proxy cover transition-show="scale" transition-hide="scale">
@@ -332,7 +332,6 @@
             </div>
           </div>
         </div>
-
 
         <!-- editor mode 3 (removal mode)-->
         <div v-if="editorMode === 3">
@@ -347,6 +346,11 @@
           </div>
         </div>
 
+        <!-- status message -->
+        <div class="q-gutter-sm row text-overline justify-center q-mb-xs" style="font-size: 10px">
+          {{ statusMessage }}
+        </div>
+
         <!-- server communication buttons -->
         <div v-if="editorMode < 3 && editorMode > 0"
           class="q-gutter-sm row text-overline justify-center q-mb-sm q-mt-xs">
@@ -359,10 +363,7 @@
             icon="fa-solid fa-xmark"></q-btn>
         </div>
 
-        <!-- status message -->
-        <div class="q-gutter-sm row text-overline justify-center q-mb-xs" style="font-size: 10px">
-          {{ statusMessage }}
-        </div>
+
       </div>
     </div>
   </q-card>
@@ -449,7 +450,6 @@ export default {
       compPathType: "straight",
       compPathWidth: 5,
       compPathColor: "#666666"
-
     };
   },
   methods: {
@@ -479,10 +479,14 @@ export default {
     },
     saveDiagramComponent() {
       // build the component settings
+      if (this.state.diagram_definition.components == undefined) {
+        this.state.diagram_definition.components = {}
+      }
+
       this.state.diagram_definition.components[this.compName] = {
-        compType: this.compType,
+        type: this.compType,
         label: this.compLabel,
-        compPicto: this.compPicto,
+        picto: this.compPicto,
         enabled: this.compEnabled,
         models: this.compModelSelection,
         dbcFrom: this.compDbcFrom,
@@ -526,8 +530,11 @@ export default {
           }
         }
       };
+
       // rebuild the diagram
-      this.$bus.emit("rebuild_diagram");
+      this.statusMessage = "component added to the component list"
+      setTimeout(() => { this.statusMessage = ""}, 2000)
+      //this.$bus.emit("rebuild_diagram");
     },
     cancelDiagramBuild() {
       // clear all fields
@@ -590,7 +597,7 @@ export default {
       // start preparing the form 
       this.compEnabled = true;
 
-      // find the explain model types which can by selected depending on the compoent type
+      // find the explain model types which can by selected depending on the component type
       this.compModels = this.selectModelTypeToAdd(compType);
       
       // reset the component mode selection
@@ -629,88 +636,108 @@ export default {
     editComponent() {
       // set the editor mode to editing
       this.editorMode = 2;
-      // get all the properties
+
+      // clear all the fields
+      this.clearFields();
+
+      // get all the properties of the selected diagram component
       this.selectedDiagramComponent = this.state.diagram_definition.components[this.selectedDiagramComponentName];
 
-      // get all possible model types
+      // get the component type
+      this.compType = this.selectedDiagramComponent.type
 
+      // find the explain model types which can by selected depending on the component type
+      this.compModels = this.selectModelTypeToAdd(this.compType);
+      
+      // reset the component mode selection
+      this.compModelSelection = [];
 
-      // get all properties for all types
-      this.compEnabled = this.selectedDiagramComponent.enabled;
-      this.compType = this.selectedDiagramComponent.compType;
+      // get the dbc comp froms and tos dependending on the component type
+      switch (this.compType) {
+        case "Connector":
+          this.compDbcFroms = this.findDiagramComponents(["Compartment", "Pump"]);
+          this.compDbcTos = this.findDiagramComponents(["Compartment", "Pump"]);
+          break;
+        case "Valve":
+          this.compDbcFroms = this.findDiagramComponents(["Compartment", "Pump"]);
+          this.compDbcTos = this.findDiagramComponents(["Compartment", "Pump"]);
+          break;
+        case "Container":
+          this.compDbcFroms = this.findDiagramComponents(["Compartment", "Pump", "Container", "Device"]);
+          this.compDbcTos = this.findDiagramComponents(["Compartment", "Pump", "Container", "Device"]);
+          break;
+        case "Device":
+          this.compAnimatedBy = "none"
+          break;
+        case "Pump":
+          this.compDbcFroms = this.findDiagramComponents(["Connector", "Valve"]);
+          this.compDbcTos = this.findDiagramComponents(["Connector", "Valve"]);
+          break;
+      }
+      
+      // now process all the selected daigram component settings
       this.compName = this.selectedDiagramComponentName;
       this.compLabel = this.selectedDiagramComponent.label;
-      this.selectModelTypeToAdd(this.selectedDiagramComponent.compType);
+      this.compPicto = this.selectedDiagramComponent.picto;
+      this.compEnabled = this.selectedDiagramComponent.enabled;
       this.compModelSelection = this.selectedDiagramComponent.models;
-      this.compAnimatedBy = this.selectedDiagramComponent.animatedBy;
-      this.compZIndex = parseInt(this.selectedDiagramComponent.layout.z_index);
-      this.compTinting = this.selectedDiagramComponent.layout.tinting;
 
-      if (this.selectedDiagramComponent.compType == 'Connector' || this.selectedDiagramComponent.compType == 'Valve') {
-          this.compDbcFrom = this.selectedDiagramComponent.dbcFrom;
-          this.compDbcTo = this.selectedDiagramComponent.dbcTo;
-          this.findDiagramComponents("Compartment");
-          this.findDiagramComponents("Pump");
-          this.findDiagramComponents("Device");
-      }
+      this.compAnimatedBy = this.selectedDiagramComponent.layout.general.animatedBy;
+      this.compZIndex = this.selectedDiagramComponent.layout.general.z_index;
+      this.compAlpha = this.selectedDiagramComponent.layout.general.alpha;
+      this.compTinting = this.selectedDiagramComponent.layout.general.tinting;
 
-      if (this.selectedDiagramComponent.compType == 'Compartment' || 
-          this.selectedDiagramComponent.compType == 'Device' ||
-          this.selectedDiagramComponent.compType == 'Pump' ||
-          this.selectedDiagramComponent.compType == 'Container' ||
-          this.selectedDiagramComponent.compType == 'Exchanger') 
-          {
-            this.compPicto = this.selectedDiagramComponent.compPicto;
-            if (this.selectedDiagramComponent.layout.pos.type == "arc") {
-              this.compLayoutType = true;
-            } else {
-              this.compLayoutType = false;
-            }
-            this.compLayoutDgs = parseFloat(this.selectedDiagramComponent.layout.pos.dgs.toFixed(2));
-            this.compLayoutX = parseFloat(this.selectedDiagramComponent.layout.pos.x.toFixed(2));
-            this.compLayoutY = parseFloat(this.selectedDiagramComponent.layout.pos.y.toFixed(2));
-            this.compMorphX = parseFloat(this.selectedDiagramComponent.layout.morph.x.toFixed(2));
-            this.compMorphY = parseFloat(this.selectedDiagramComponent.layout.morph.y.toFixed(2));
-            this.compScaleX = parseFloat(this.selectedDiagramComponent.layout.scale.x.toFixed(2));
-            this.compScaleY = parseFloat(this.selectedDiagramComponent.layout.scale.y.toFixed(2));
-            this.compAnchorX = parseFloat(this.selectedDiagramComponent.layout.anchor.x.toFixed(2));
-            this.compAnchorY = parseFloat(this.selectedDiagramComponent.layout.anchor.y.toFixed(2));
-            this.compLabelX = parseFloat(this.selectedDiagramComponent.layout.text.x.toFixed(2));
-            this.compLabelY = parseFloat(this.selectedDiagramComponent.layout.text.y.toFixed(2));
-            this.compRotation = parseFloat(this.selectedDiagramComponent.layout.rotation.toFixed(2));
-            this.compLabelSize = parseFloat(this.selectedDiagramComponent.layout.text.size.toFixed(2));
-          }
+      this.compPathType = this.selectedDiagramComponent.layout.path.type;
+      this.compPathWidth = this.selectedDiagramComponent.layout.path.width;
+      this.compPathColor = this.selectedDiagramComponent.layout.path.color;
+
+      this.compSpriteColor = this.selectedDiagramComponent.layout.sprite.color;
+      this.compSpritePosType = this.selectedDiagramComponent.layout.sprite.pos.type;
+      this.compSpritePosX = this.selectedDiagramComponent.layout.sprite.pos.x;
+      this.compSpritePosY = this.selectedDiagramComponent.layout.sprite.pos.y;
+      this.compSpritePosDgs = this.selectedDiagramComponent.layout.sprite.pos.dgs;
+      this.compSpriteScaleX = this.selectedDiagramComponent.layout.sprite.scale.x; 
+      this.compSpriteScaleY = this.selectedDiagramComponent.layout.sprite.scale.y; 
+      this.compSpriteAnchorX = this.selectedDiagramComponent.layout.sprite.anchor.x; 
+      this.compSpriteAnchorY = this.selectedDiagramComponent.layout.sprite.anchor.y; 
+      this.compSpriteRotation = this.selectedDiagramComponent.layout.sprite.rotation;
+
+      this.compLabelPosX = this.selectedDiagramComponent.layout.label.pos_x;
+      this.compLabelPosY = this.selectedDiagramComponent.layout.label.pos_y;
+      this.compLabelSize = this.selectedDiagramComponent.layout.label.size;
+      this.compLabelRotation = this.selectedDiagramComponent.layout.label.rotation;
+      this.compLabelColor = this.selectedDiagramComponent.layout.label.color;
     },
     clearFields() {
-      this.compEnabled = true;
-      this.compLabel = "";
       this.compName = "";
+      this.compType = "";
+      this.compLabel = "";
+      this.compPicto = "";
+      this.compEnabled = true;
       this.compModels = [];
-      this.compLayoutType = false;
-      this.compLayoutDgs = 0;
-      this.compLayoutX = 1;
-      this.compLayoutY = 1;
-      this.compMorphX = 1;
-      this.compMorphY = 1;
-      this.compScaleX = 1;
-      this.compScaleY = 1;
-      this.compLabelX = 0;
-      this.compLabelY = 0;
-      this.compAnchorX = 0.5;
-      this.compAnchorY = 0.5;
+      this.compModelSelection = [];
+      this.compAnimatedBy = "none";
       this.compZIndex = 10;
+      this.compAlpha = 1;
       this.compTinting = true;
-      this.compRotation = 0;
-      this.compLabelSize = 10;
-      this.compDbcFroms = [];
-      this.compDbcFrom = "";
-      this.compDbcTo = "";
-      this.compDbcTos = [];
-      this.compSpriteColor = "#ffffff"
+      this.compSpriteColor = "#ffffff";
+      this.compSpritePosType = "rel";
+      this.compSpritePosX = 0;
+      this.compSpritePosY = 0;
+      this.compSpritePosDgs = 0;
+      this.compSpriteScaleX = 0;
+      this.compSpriteScaleY = 0;
+      this.compSpriteAnchorX = 0.5;
+      this.compSpriteAnchorY = 0.5;
+      this.compSpriteRotation = 0;
+      this.compLabelPosX = 0;
+      this.compLabelPosY = 0;
+      this.compLabelSize = 1;
+      this.compLabelRotation = 0;
+      this.compLabelColor = "#ffffff";
+      this.compPathType = "straight";
+      this.compPathWidth = 5;
       this.compPathColor = "#666666"
-      this.compLabelColor = "#ffffff"
-      this.compAlpha = 1
-      this.compAnimatedBy = "vol"
     },
     findDiagramComponents(compTypes) {
       if (this.state.diagram_definition.components == undefined) return
