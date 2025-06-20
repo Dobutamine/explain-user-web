@@ -428,6 +428,10 @@ export default {
       compEnabled: true,
       compModels: [],
       compModelSelection: [],
+      compDbcFroms: [],
+      compDbcTos: [],
+      compDbcFrom: "",
+      compDbcTo: "",
       compAnimatedBy: "none",
       compZIndex: 10,
       compAlpha: 1,
@@ -499,7 +503,7 @@ export default {
             tinting: this.compTinting
           },
           path: {
-            type: this.comPathType,
+            type: this.compPathType,
             width: this.compPathWidth,
             color: this.compPathColor,
           },
@@ -534,7 +538,7 @@ export default {
       // rebuild the diagram
       this.statusMessage = "component added to the component list"
       setTimeout(() => { this.statusMessage = ""}, 2000)
-      //this.$bus.emit("rebuild_diagram");
+      this.$bus.emit("rebuild_diagram");
     },
     cancelDiagramBuild() {
       // clear all fields
@@ -744,7 +748,7 @@ export default {
 
       let component_list = []
       Object.keys(this.state.diagram_definition.components).forEach((compName) => {
-        if (compTypes.includes(this.state.diagram_definition.components[compName].compType)) {
+        if (compTypes.includes(this.state.diagram_definition.components[compName].type)) {
           component_list.push(compName)
         }
       });

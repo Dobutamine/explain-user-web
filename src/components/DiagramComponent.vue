@@ -296,9 +296,9 @@ export default {
       }
       Object.entries(component_list).forEach(([key, component]) => {
         if (component.enabled) {
-          switch (component.compType) {
+          switch (component.type) {
             case "Compartment":
-              diagram_components[key] = new Compartment(
+              this.diagram_components[key] = new Compartment(
                 pixiApp,
                 key,
                 component.label,
@@ -309,18 +309,19 @@ export default {
                 xOffset,
                 yOffset,
                 radius,
-                component.compPicto,
+                component.picto,
                 global_scaling
               );
               let watched_models_comp = []
               component.models.forEach(m => {
                 watched_models_comp.push(m + ".vol")
+                watched_models_comp.push(m + ".pres")
                 watched_models_comp.push(m + ".to2")
               })
               explain.watchModelProps(watched_models_comp)
               break;
 
-            case "Pump":
+            case "PumExp":
               diagram_components[key] = new Pump(
                 pixiApp,
                 key,
@@ -367,7 +368,7 @@ export default {
               explain.watchModelProps(watched_models_bc)
               break;
             
-            case "Device":
+            case "DeviceExp":
               diagram_components[key] = new Device(
                 pixiApp,
                 key,

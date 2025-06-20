@@ -1,8 +1,8 @@
 import { PIXI } from "src/boot/pixi.js";
 
 export default class Compartment {
-  compType = "Compartment";
-  compPicto = "container.png";
+  type = "Compartment";
+  picto = "container.png";
   pixiApp = {};
   key = "";
   label = "";
@@ -37,69 +37,49 @@ export default class Compartment {
     this.xOffset = xOffset;
     this.yOffset = yOffset;
     this.radius = radius;
-    this.compPicto = picto;
+    this.picto = picto;
     this.global_scaling = scaling;
     this.animation = animation;
 
-    if (!this.compPicto) {
-      this.compPicto = "general.png";
-    }
-
-    // this is a general compartment sprite which uses
-    this.sprite = PIXI.Sprite.from(this.compPicto);
+    // define a PIXI sprite
+    this.sprite = PIXI.Sprite.from(this.picto);
     this.sprite["name_sprite"] = key;
-    this.sprite["compType"] = this.compType;
+    this.sprite["type"] = this.type;
     
-    if (this.layout.scale) {
-      this.sprite.scale.set(this.volume * this.layout.scale.x * this.global_scaling, this.volume * this.layout.scale.y * this.global_scaling);
-    } else {
-      this.layout['scale']['x'] = 1.0;
-      this.layout['scale']['y'] = 1.0;
-      this.sprite.scale.set(this.volume * this.global_scaling, this.volume * this.global_scaling);
-    }
-
-    if (this.layout.anchor) {
-      this.sprite.anchor = {  x: this.layout.anchor.x, y: this.layout.anchor.y };
-    } else {
-      this.layout['anchor']['x'] = 0.5;
-      this.layout['anchor']['y'] = 0.5;
-      this.sprite.anchor = {  x: 0.5, y: 0.5 };
-    }
-
-    if (this.layout.tinting) {
+    if (this.layout.general.tinting) {
       this.sprite.tint = "0x151a7b";
     } else {
-      this.layout['tinting'] = false
-      this.sprite.tint = "0xffffff";
+      this.sprite.tint = this.layout.sprite.color;
     }
- 
-    if (this.layout.rotation) {
-      this.sprite.rotation = this.layout.rotation;
-    } else {
-      this.layout["rotation"] = 0;
-      this.sprite.rotation = 0;
+
+    this.sprite.alpha = this.layout.general.alpha;
+
+    this.sprite.scale.set(
+      this.volume * this.layout.sprite.scale.x * this.global_scaling,
+      this.volume * this.layout.sprite.scale.y * this.global_scaling
+    )
+
+    this.sprite.anchor = { 
+      x: this.layout.sprite.anchor.x,
+      y: this.layout.sprite.anchor.y 
     }
-    
-    if (this.layout.z_index) {
-      this.sprite.zIndex = this.layout.z_index;
-    } else {
-      this.layout["z_index"] = 10;
-      this.sprite.zIndex = 10;
-    }
+
+    this.sprite.rotation = this.layout.sprite.rotation;
+    this.sprite.zIndex = this.layout.general.z_index;
       
     // place the sprite on the stage
-    switch (this.layout.pos.type) {
+    switch (this.layout.sprite.pos.type) {
       case "arc":
         this.sprite.x =
           this.xCenter +
           this.xOffset +
-          Math.cos(this.layout.pos.dgs * 0.0174533) *
+          Math.cos(this.layout.sprite.pos.dgs * 0.0174533) *
             this.xCenter *
             this.radius;
         this.sprite.y =
           this.yCenter +
           this.yOffset +
-          Math.sin(this.layout.pos.dgs * 0.0174533) *
+          Math.sin(this.layout.sprite.pos.dgs * 0.0174533) *
             this.xCenter *
             this.radius;
         break;
@@ -107,11 +87,11 @@ export default class Compartment {
         this.sprite.x =
           this.xCenter +
           this.xOffset +
-          this.layout.pos.x * (this.xCenter * radius);
+          this.layout.sprite.pos.x * (this.xCenter * radius);
         this.sprite.y =
           this.yCenter +
           this.yOffset +
-          this.layout.pos.y * (this.xCenter * radius);
+          this.layout.sprite.pos.y * (this.xCenter * radius);
         break;
     }
 
@@ -119,26 +99,26 @@ export default class Compartment {
 
     //define the caption style and text object and add it to the stage
     this.textStyle = new PIXI.TextStyle({
-      fill: "white",
-      fontSize: this.layout.text.size,
+      fill: this.layout.label.color,
+      fontSize: this.layout.label.size,
       fontFamily: "Arial",
       strokeThickness: 0,
     });
 
     this.text = new PIXI.Text(this.label, this.textStyle);
     this.text["name_text"] = key;
-    if (this.layout.anchor) {
-      this.text.anchor = {  x: this.layout.anchor.x, y: this.layout.anchor.y };
-    } else {
-      this.text.anchor = {  x: 0.5, y: 0.5 };
-    }
-    this.text.x = this.sprite.x + this.layout.text.x;
-    this.text.y = this.sprite.y + this.layout.text.y;
-    this.text.rotation = this.layout.rotation;
+    this.text.anchor = {  x: this.layout.sprite.anchor.x, y: this.layout.sprite.anchor.y };
+    this.text.alpha = this.layout.general.alpha;
+    this.text.x = this.sprite.x + this.layout.label.pos_x;
+    this.text.y = this.sprite.y + this.layout.label.pos_y;
+    this.text.rotation = this.layout.label.rotation;
+    this.text.zIndex = this.layout.general.z_index + 1;
+    
     this.pixiApp.stage.addChild(this.text);
   }
 
   update(data) {
+    return
     let volume = 0;
     let volumes = [];
     let to2s = [];
