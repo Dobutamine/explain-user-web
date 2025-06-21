@@ -460,7 +460,6 @@ export default {
                 key,
                 component.label,
                 component.models,
-                component.gas,
                 component.layout,
                 xCenter,
                 yCenter,
@@ -472,7 +471,7 @@ export default {
               );
               let watched_models_gasex = []
               component.models.forEach(m => {
-                watched_models_gasex.push(m + ".flux_" + component.gas)
+                watched_models_gasex.push(m + ".flux_" + component.layout.general.animatedBy)
               })
               explain.watchModelProps(watched_models_gasex)
               break;

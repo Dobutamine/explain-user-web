@@ -1,7 +1,8 @@
 import { PIXI } from "src/boot/pixi.js";
 
 export default class Exchanger {
-  compType = "Exchanger";
+  type = "Exchanger";
+  picto = "exchanger.png"
   pixiApp = {};
   key = "";
   label = "";
@@ -14,28 +15,22 @@ export default class Exchanger {
   radius = 0;
   rotation = 0;
   global_scaling = 1.0;
-
   sprite = {};
   text = {};
   textStyle = {};
-
-  interactionData = null;
   connectors = {};
-
-  gas = "O2";
   rotation = 0;
-
-  edit_comp_event = null;
+  volume = 0.1;
   editingMode = 1;
   prevX = 0;
   prevyY = 0;
+  gas = ""
 
   constructor(
     pixiApp,
     key,
     label,
     models,
-    gas,
     layout,
     xCenter,
     yCenter,
@@ -50,48 +45,49 @@ export default class Exchanger {
     this.key = key;
     this.label = label;
     this.models = models;
-    this.gas = ".flux_" + gas;
     this.layout = layout;
     this.xCenter = xCenter;
     this.yCenter = yCenter;
     this.xOffset = xOffset;
     this.yOffset = yOffset;
     this.radius = radius;
-    this.compPicto = picto;
+    this.picto = picto;
     this.global_scaling = scaling;
 
-    if (!this.compPicto) {
-      this.compPicto = "exchange.png";
+    // this is a blood compartment sprite which uses
+    this.sprite = PIXI.Sprite.from(this.picto);
+    this.sprite["name_sprite"] = key;
+    this.sprite["type"] = this.type;
+    this.sprite.tint = this.layout.sprite.color;
+    this.sprite.alpha = this.layout.general.alpha;
+
+    this.sprite.scale.set(
+      this.volume * this.layout.sprite.scale.x * this.global_scaling,
+      this.volume * this.layout.sprite.scale.y * this.global_scaling
+    )
+
+    this.sprite.anchor = { 
+      x: this.layout.sprite.anchor.x,
+      y: this.layout.sprite.anchor.y 
     }
 
-    this.edit_comp_event = new CustomEvent("edit_comp", { detail: this.key });
+    this.sprite.rotation = this.layout.sprite.rotation;
+    this.sprite.zIndex = this.layout.general.z_index;
 
-    // this is a blood compartment sprite which uses
-    this.sprite = PIXI.Sprite.from(this.compPicto);
-    this.sprite["name_sprite"] = key;
-    this.sprite["compType"] = this.compType;
-    this.sprite.eventMode = "none";
-    this.sprite.scale.set(
-      this.layout.scale.x * this.global_scaling,
-      this.layout.scale.y * this.global_scaling
-    );
-    this.sprite.anchor = { x: 0.5, y: 0.5 };
-    this.sprite.tint = "0xbbbbbb";
-    this.sprite.zIndex = 12;
-
+    this.gas = ".flux_" + this.layout.general.animatedBy;
     // place the sprite on the stage
-    switch (this.layout.pos.type) {
+    switch (this.layout.sprite.pos.type) {
       case "arc":
         this.sprite.x =
           this.xCenter +
           this.xOffset +
-          Math.cos(this.layout.pos.dgs * 0.0174533) *
+          Math.cos(this.layout.sprite.pos.dgs * 0.0174533) *
             this.xCenter *
             this.radius;
         this.sprite.y =
           this.yCenter +
           this.yOffset +
-          Math.sin(this.layout.pos.dgs * 0.0174533) *
+          Math.sin(this.layout.sprite.pos.dgs * 0.0174533) *
             this.xCenter *
             this.radius;
         break;
@@ -99,11 +95,11 @@ export default class Exchanger {
         this.sprite.x =
           this.xCenter +
           this.xOffset +
-          this.layout.pos.x * (this.xCenter * radius);
+          this.layout.sprite.pos.x * (this.xCenter * radius);
         this.sprite.y =
           this.yCenter +
           this.yOffset +
-          this.layout.pos.y * (this.xCenter * radius);
+          this.layout.sprite.pos.y * (this.xCenter * radius);
         break;
     }
 
@@ -111,24 +107,24 @@ export default class Exchanger {
 
     //define the caption style and text object and add it to the stage
     this.textStyle = new PIXI.TextStyle({
-      fill: "white",
-      fontSize: this.layout.text.size * this.global_scaling,
+      fill: this.layout.label.color,
+      fontSize: this.layout.label.size,
       fontFamily: "Arial",
       strokeThickness: 0,
     });
+
     this.text = new PIXI.Text(this.label, this.textStyle);
     this.text["name_text"] = key;
-    this.text.anchor = { x: 0.5, y: 0.5 };
-    this.text.x = this.sprite.x + this.layout.text.x;
-    this.text.y = this.sprite.y + this.layout.text.y;
-    this.text.rotation = this.layout.rotation;
-    this.text.zIndex = 13;
+    this.text.anchor = {  x: this.layout.sprite.anchor.x, y: this.layout.sprite.anchor.y };
+    this.text.alpha = this.layout.general.alpha;
+    this.text.x = this.sprite.x + this.layout.label.pos_x;
+    this.text.y = this.sprite.y + this.layout.label.pos_y;
+    this.text.rotation = this.layout.label.rotation;
+    this.text.zIndex = this.layout.general.z_index + 1;
 
     this.pixiApp.stage.addChild(this.text);
   }
-  setEditingMode(newMode) {
-    this.editingMode = newMode;
-  }
+
   update(data) {
     let difO2 = 0;
 
@@ -153,6 +149,7 @@ export default class Exchanger {
     this.sprite.rotation = -this.rotation;
     this.text.rotation = this.layout.rotation;
   }
+
   redrawConnectors() {
     Object.values(this.connectors).forEach((connector) => connector.drawPath());
   }

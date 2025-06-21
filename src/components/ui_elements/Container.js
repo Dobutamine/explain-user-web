@@ -45,13 +45,7 @@ export default class Container {
     this.sprite = PIXI.Sprite.from(this.picto);
     this.sprite["name_sprite"] = key;
     this.sprite["type"] = this.type;
-    
-    if (this.layout.general.tinting) {
-      this.sprite.tint = "0x151a7b";
-    } else {
-      this.sprite.tint = this.layout.sprite.color;
-    }
-
+    this.sprite.tint = this.layout.sprite.color;
     this.sprite.alpha = this.layout.general.alpha;
 
     this.sprite.scale.set(
@@ -119,23 +113,11 @@ export default class Container {
 
   update(data) {
     let volume = 0;
-    let volumes = [];
-    let pressure = 0;
-    let to2s = [];
     this.models.forEach((model) => {
       volume += data[model + ".vol"];
-      volumes.push(data[model + ".vol"]);
-      pressure += data[model + ".pres"]
-      to2s.push(data[model + ".to2"]);
     });
-    // calculate factors
-    this.to2 = 0;
-    for (let i = 0; i < volumes.length; i++) {
-      let factor = volumes[i] / volume;
-      this.to2 += factor * to2s[i];
-    }
-  
-    if (!isNaN(volume) && this.animation == 'vol') {
+
+    if (!isNaN(volume)) {
       this.volume = this.calculateRadiusFromVolume(volume);
     } else {
       this.volume = (0.15 / this.layout.sprite.scale.x) * this.global_scaling;
@@ -162,14 +144,7 @@ export default class Container {
     this.text.scale.set(scaleFont, scaleFont);
     this.text.alpha = this.layout.general.alpha;
 
-    if (isNaN(this.to2)) {
-      this.text.alpha = 0.1;
-    }
-    if (this.layout.general.tinting) {
-      this.sprite.tint = this.calculateColor(this.to2);
-    } else {
-      this.sprite.tint = this.layout.sprite.color;
-    }
+    this.sprite.tint = this.layout.sprite.color;
     
   }
 
@@ -208,41 +183,5 @@ export default class Container {
     const _cubicRadius = volume / ((4.0 / 3.0) * Math.PI);
     const _radius = Math.pow(_cubicRadius, 1.0 / 3.0);
     return _radius;
-  }
-
-  calculateColor(to2) {
-    if (isNaN(to2)) {
-      return 0x666666;
-    }
-    if (to2 > this.max_to2) {
-      to2 = this.max_to2;
-    }
-    //let remap = this.remap(to2, 0, this.max_to2, -10, 1);
-    let remap = this._remap(to2, 0, this.max_to2, -1.25, 1);
-    if (remap < 0) remap = 0;
-    const red = (remap * 210).toFixed(0);
-    const green = (remap * 80).toFixed(0);
-    const blue = (80 + remap * 75).toFixed(0);
-    const color = "0x" + this.fullColorHex(red, green, blue);
-    return color;
-  }
-
-  _remap(value, from1, to1, from2, to2) {
-    return ((value - from1) / (to1 - from1)) * (to2 - from2) + from2;
-  }
-
-  _rgbToHex(rgb) {
-    let hex = Number(rgb).toString(16);
-    if (hex.length < 2) {
-      hex = "0" + hex;
-    }
-    return hex;
-  }
-
-  fullColorHex(r, g, b) {
-    const red = this._rgbToHex(r);
-    const green = this._rgbToHex(g);
-    const blue = this._rgbToHex(b);
-    return red + green + blue;
   }
 }

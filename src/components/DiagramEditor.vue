@@ -95,10 +95,10 @@
                 <q-select class="col" label="pictogram" square hide-hint stack-label v-model="compPicto"
                   :options="pictos" hide-bottom-space dense dark style="font-size: 12px" />   
               </div>
-              <div class="row">
+              <div v-if="compType != 'Container'" class="row">
                   <div class="q-mt-xs">animation settings</div>
               </div>
-              <div class="row">
+              <div v-if="compType != 'Container' && compType != 'Exchanger'" class="row">
                 <q-btn-toggle class="col q-mr-sm" v-model="compAnimatedBy" size="sm" dark spread dense no-caps
                   toggle-color="blue-grey-6" color="grey-9" text-color="black" :options="[
                     { label: 'NONE', value: 'none' },
@@ -106,6 +106,14 @@
                     { label: 'PRESSURE', value: 'pers' },
                 ]" />
               </div>
+              <div v-if="compType == 'Exchanger'" class="row">
+                <q-btn-toggle class="col q-mr-sm" v-model="compAnimatedBy" size="sm" dark spread dense no-caps
+                  toggle-color="blue-grey-6" color="grey-9" text-color="black" :options="[
+                    { label: 'O2', value: 'o2' },
+                    { label: 'CO2', value: 'co2' }
+                ]" />
+              </div>
+
 
               <!-- general layout settings--> 
               <div class="row">
@@ -116,7 +124,7 @@
                     dark stack-label />
                  <q-input class="col q-mr-sm" label="alpha" v-model="compAlpha" square type="number" hide-hint dense
                   dark stack-label />
-                   <q-checkbox class="col q-ma-sm" label="to2 color" v-model="compTinting" dense size="xs" />
+                   <q-checkbox v-if="compType != 'Container' && compType != 'Exchanger'" class="col q-ma-sm" label="to2 color" v-model="compTinting" dense size="xs" />
               </div>
 
               <!-- sprite settings--> 
@@ -155,7 +163,7 @@
                   dark stack-label />
               </div>
               <!-- sprite rotation settings--> 
-              <div class="row">
+              <div v-if="compType != 'Exchanger'" class="row">
                 <q-input class="col q-mr-sm" label="rotation" v-model="compSpriteRotation" square type="number" hide-hint
                   dense dark stack-label />
               </div>
@@ -523,7 +531,7 @@ export default {
       pictos: [
         "arrow.png",
         "container.png",
-        "exchange.png",
+        "exchanger.png",
         "gas_container.png",
         "general.png",
         "lung.png",
@@ -748,6 +756,7 @@ export default {
           this.compDbcFroms = this.findDiagramComponents(["Compartment", "Pump", "Container", "Device"]);
           this.compDbcTos = this.findDiagramComponents(["Compartment", "Pump", "Container", "Device"]);
           this.compAnimatedBy = "vol"
+          this.compTinting = false;
           break;
         case "Device":
           this.compAnimatedBy = "none"
@@ -756,6 +765,10 @@ export default {
           this.compDbcFroms = this.findDiagramComponents(["Connector", "Valve"]);
           this.compDbcTos = this.findDiagramComponents(["Connector", "Valve"]);
           this.compAnimatedBy = "vol"
+          break;
+        case "Exchanger":
+          this.compPicto = "exchanger.png"
+          this.compAnimatedBy = "o2"
           break;
       }
     },
@@ -795,9 +808,16 @@ export default {
         case "Container":
           this.compDbcFroms = this.findDiagramComponents(["Compartment", "Pump", "Container", "Device"]);
           this.compDbcTos = this.findDiagramComponents(["Compartment", "Pump", "Container", "Device"]);
+          this.compAnimatedBy = "vol"
+          this.compTinting = false
           break;
         case "Device":
           this.compAnimatedBy = "none"
+          this.compTinting = false
+          break;
+        case "Exchanger":
+          this.compAnimatedBy = "o2"
+          this.compTinting = false
           break;
         case "Pump":
           this.compDbcFroms = this.findDiagramComponents(["Connector", "Valve"]);
