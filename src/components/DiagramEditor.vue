@@ -234,8 +234,8 @@
               <div class="row">
                 <q-btn-toggle class="col q-mr-sm" v-model="compPathType" size="sm" dark spread dense no-caps
                 toggle-color="blue-grey-6" color="grey-9" text-color="black" :options="[
-                  { label: 'ARC LEFT', value: 'arc_left' },
-                  { label: 'ARC RIGHT', value: 'arc_right' },
+                  { label: 'ARC', value: 'arc' },
+                  { label: 'ARC_R', value: 'arc_r' },
                   { label: 'STRAIGHT', value: 'straight' },
                 ]" />
               </div>
@@ -441,14 +441,14 @@ export default {
       compSpritePosX: 0,
       compSpritePosY: 0,
       compSpritePosDgs: 0,
-      compSpriteScaleX: 0,
-      compSpriteScaleY: 0,
+      compSpriteScaleX: 1,
+      compSpriteScaleY: 1,
       compSpriteAnchorX: 0.5,
       compSpriteAnchorY: 0.5,
       compSpriteRotation: 0,
       compLabelPosX: 0,
       compLabelPosY: 0,
-      compLabelSize: 1,
+      compLabelSize: 12,
       compLabelRotation: 0,
       compLabelColor: "#ffffff",
       compPathType: "straight",
@@ -616,11 +616,15 @@ export default {
           this.compDbcFroms = this.findDiagramComponents(["Compartment", "Pump"]);
           this.compDbcTos = this.findDiagramComponents(["Compartment", "Pump"]);
           this.compAnimatedBy = "flow"
+          this.compSpriteScaleX = 1.0;
+          this.compSpriteScaleY = 2.0;
           break;
         case "Valve":
           this.compDbcFroms = this.findDiagramComponents(["Compartment", "Pump"]);
           this.compDbcTos = this.findDiagramComponents(["Compartment", "Pump"]);
           this.compAnimatedBy = "flow"
+          this.compSpriteScaleX = 1.0;
+          this.compSpriteScaleY = 2.0;
           break;
         case "Container":
           this.compDbcFroms = this.findDiagramComponents(["Compartment", "Pump", "Container", "Device"]);
@@ -661,10 +665,14 @@ export default {
         case "Connector":
           this.compDbcFroms = this.findDiagramComponents(["Compartment", "Pump"]);
           this.compDbcTos = this.findDiagramComponents(["Compartment", "Pump"]);
+          this.compDbcFrom = this.selectedDiagramComponent.dbcFrom;
+          this.compDbcTo = this.selectedDiagramComponent.dbcTo;
           break;
         case "Valve":
           this.compDbcFroms = this.findDiagramComponents(["Compartment", "Pump"]);
           this.compDbcTos = this.findDiagramComponents(["Compartment", "Pump"]);
+          this.compDbcFrom = this.selectedDiagramComponent.dbcFrom;
+          this.compDbcTo = this.selectedDiagramComponent.dbcTo;
           break;
         case "Container":
           this.compDbcFroms = this.findDiagramComponents(["Compartment", "Pump", "Container", "Device"]);
@@ -676,6 +684,8 @@ export default {
         case "Pump":
           this.compDbcFroms = this.findDiagramComponents(["Connector", "Valve"]);
           this.compDbcTos = this.findDiagramComponents(["Connector", "Valve"]);
+          this.compDbcFrom = this.selectedDiagramComponent.dbcFrom;
+          this.compDbcTo = this.selectedDiagramComponent.dbcTo;
           break;
       }
       
@@ -717,6 +727,8 @@ export default {
       this.compType = "";
       this.compLabel = "";
       this.compPicto = "";
+      this.compDbcFrom = "";
+      this.compDbcTo = "";
       this.compEnabled = true;
       this.compModels = [];
       this.compModelSelection = [];
@@ -729,14 +741,14 @@ export default {
       this.compSpritePosX = 0;
       this.compSpritePosY = 0;
       this.compSpritePosDgs = 0;
-      this.compSpriteScaleX = 0;
-      this.compSpriteScaleY = 0;
+      this.compSpriteScaleX = 1;
+      this.compSpriteScaleY = 1;
       this.compSpriteAnchorX = 0.5;
       this.compSpriteAnchorY = 0.5;
       this.compSpriteRotation = 0;
       this.compLabelPosX = 0;
       this.compLabelPosY = 0;
-      this.compLabelSize = 1;
+      this.compLabelSize = 12;
       this.compLabelRotation = 0;
       this.compLabelColor = "#ffffff";
       this.compPathType = "straight";

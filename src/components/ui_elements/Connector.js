@@ -1,26 +1,29 @@
 import { PIXI } from "src/boot/pixi.js";
 
 export default class Connector {
-  compType = "Connector";
-  compPicto = "blood.png";
+  type = "Connector";
+  picto = "blood.png";
+  pixiApp = {};
   key = "";
   label = "";
-  pixiApp = {};
   models = [];
+  layout = null;
   dbcFrom = {};
   dbcTo = {};
-  layout = {};
+  
   global_scaling = 1.0;
   global_speed = 1.0;
 
   sprite = {};
   spriteColor = 0xffffff;
+  angle = 0;
   angleCorrection = 0;
 
   text = {};
   textStyle = {};
 
   path = null;
+  pathType = "straight"
   pathColor = 0x666666;
   pathWidth = 7;
   prevPosition = 0;
@@ -32,6 +35,9 @@ export default class Connector {
     xCenter: 0,
     yCenter: 0,
     radius: 0,
+    reverse: false,
+    from_reverse: 0,
+    to_reverse: 0,
   };
 
   line = {
@@ -45,13 +51,14 @@ export default class Connector {
     xCenter: 0,
     yCenter: 0,
     radius: 0,
+    reverse: false,
+    from_reverse: 0,
+    to_reverse: 0,
   };
 
   spritePosition = 0;
   prevSpriteX = 0;
   prevSpriteY = 0;
-
-  edit_comp_event = null;
 
   constructor(
     pixiApp,
@@ -71,29 +78,29 @@ export default class Connector {
     this.models = models;
     this.dbcFrom = dbcFrom;
     this.dbcTo = dbcTo;
-    this.compPicto = picto;
+    this.layout = layout;
+    this.picto = picto;
     this.global_scaling = scaling;
     this.global_speed = global_speed;
-    this.pathWidth = this.pathWidth * this.global_scaling;
-
-    if (!this.compPicto) {
-      this.compPicto = "blood.png";
-    }
+    this.pathWidth = this.layout.path.width * this.global_scaling;
+    this.pathColor = this.layout.path.color;
+    this.pathType = this.layout.path.type
 
     this.drawPath();
-    this.sprite = PIXI.Sprite.from(this.compPicto);
+
+    this.sprite = PIXI.Sprite.from(this.picto);
     this.sprite["name_sprite"] = key;
-    this.sprite["compType"] = this.compType;
-    this.sprite.anchor = { x: 0.5, y: 0.5 };
+    this.sprite["compType"] = this.type;
+    this.sprite.anchor = { x: this.layout.sprite.anchor.x, y: this.layout.sprite.anchor.y };
     this.sprite.x = this.dbcFrom.sprite.x;
     this.sprite.y = this.dbcFrom.sprite.y;
     this.sprite.scale.set(
-      0.035 * this.dbcFrom.global_scaling,
-      0.07 * this.dbcFrom.global_scaling
+      0.035 * this.dbcFrom.global_scaling * this.layout.sprite.scale.x,
+      0.035 * this.dbcFrom.global_scaling * this.layout.sprite.scale.y
     );
-    this.sprite.eventMode = "none";
-    this.sprite.tint = this.spriteColor;
-    this.sprite.zIndex = 8;
+    this.sprite.tint = this.layout.sprite.color;
+    this.sprite.zIndex = this.layout.general.z_index + 1;
+    this.sprite.alpha = this.layout.general.alpha;
 
     this.pixiApp.stage.addChild(this.sprite);
     this.sprite.eventMode = "none";
@@ -105,7 +112,6 @@ export default class Connector {
     this.dbcFrom.connectors[this.key] = this;
     this.dbcTo.connectors[this.key] = this;
   }
-  setEditingMode(newMode) {}
   drawPath() {
     if (this.path) {
       this.path.clear();
@@ -113,38 +119,48 @@ export default class Connector {
     }
     this.path = new PIXI.Graphics();
     this.path["name_path"] = this.key;
-    this.path.zIndex = 7;
+    this.path.zIndex = this.layout.general.z_index;
     this.path.cacheAsBitmap = true;
 
-    if (this.dbcTo == undefined) {
-      console.log(this.dbcFrom)
+    switch (this.pathType) {
+      case "straight":
+        this.drawPathStraight();
+        break;
+      default:
+        this.drawPathArc();
+        break;
     }
-    if (
-      this.dbcFrom.layout.pos.type == "arc" &&
-      this.dbcTo.layout.pos.type == "arc"
-    ) {
+  
+    this.path.eventMode = "none";
+    this.pixiApp.stage.addChild(this.path);
+  }
+
+  drawPathArc() {
+    if (this.dbcFrom.layout.sprite.pos.type == "arc" && this.dbcTo.layout.sprite.pos.type == "arc") {
       // get the path characteristics
       this.line.enabled = false;
       this.arc.enabled = true;
       let c = 0;
-      if (this.dbcFrom.layout.pos.dgs > this.dbcTo.layout.pos.dgs) {
+      if (this.dbcFrom.layout.sprite.pos.dgs > this.dbcTo.layout.sprite.pos.dgs) {
         c = 360;
       }
-      this.arc.from = this.dbcFrom.layout.pos.dgs * 0.0174533;
-      this.arc.to = (this.dbcTo.layout.pos.dgs + c) * 0.0174533;
+      this.arc.from = this.dbcFrom.layout.sprite.pos.dgs * 0.0174533;
+      this.arc.to = (this.dbcTo.layout.sprite.pos.dgs + c) * 0.0174533;
       this.arc.radius = this.dbcFrom.xCenter * this.dbcFrom.radius;
       this.arc.xCenter = this.dbcFrom.xCenter + this.dbcFrom.xOffset;
       this.arc.yCenter = this.dbcFrom.yCenter + this.dbcFrom.yOffset;
+      this.arc.reverse = false
+      if (this.pathType == "arc_r") {
+        this.arc.reverse = true;
+        let arc_delta = this.arc.to - this.arc.from
+        this.arc.from_reverse = this.arc.to
+        this.arc.to_reverse = this.arc.to + (2 * Math.PI - arc_delta)
+      }
+
       // draw the path
       this.path.lineStyle(this.pathWidth, this.pathColor, 1);
-      this.path.arc(
-        this.arc.xCenter,
-        this.arc.yCenter,
-        this.arc.radius,
-        this.arc.from,
-        this.arc.to
-      );
-      this.spritePosition = this.dbcFrom.layout.pos.dgs * 0.0174533;
+      this.path.arc(this.arc.xCenter, this.arc.yCenter, this.arc.radius, this.arc.from, this.arc.to, this.arc.reverse);
+        this.spritePosition = this.dbcFrom.layout.sprite.pos.dgs * 0.0174533;
     } else {
       this.arc.enabled = false;
       this.line.enabled = true;
@@ -156,29 +172,35 @@ export default class Connector {
       this.line.y2 = this.dbcTo.sprite.y;
       this.line.radius = this.dbcFrom.xCenter * this.dbcFrom.radius;
 
-      let radsq = this.line.radius * this.line.radius;
-      let q = Math.sqrt(
-        (this.line.x2 - this.line.x1) * (this.line.x2 - this.line.x1) +
-          (this.line.y2 - this.line.y1) * (this.line.y2 - this.line.y1)
-      );
-      let x3 = (this.line.x1 + this.line.x2) / 2;
-      let y3 = (this.line.y1 + this.line.y2) / 2;
+      if (this.pathType == "arc_r") {
+        this.line.reverse = true;
+      }
 
-      this.line.xCenter =
-        x3 +
-        Math.sqrt(radsq - (q / 2) * (q / 2)) *
-          ((this.line.y1 - this.line.y2) / q);
+      if (this.line.reverse) {
+        let radsq = this.line.radius * this.line.radius;
+        let q = Math.sqrt(
+          (this.line.x2 - this.line.x1) * (this.line.x2 - this.line.x1) +
+            (this.line.y2 - this.line.y1) * (this.line.y2 - this.line.y1)
+        );
+        let x3 = (this.line.x1 + this.line.x2) / 2;
+        let y3 = (this.line.y1 + this.line.y2) / 2;
 
-      this.line.yCenter =
-        y3 +
-        Math.sqrt(radsq - (q / 2) * (q / 2)) *
-          ((this.line.x2 - this.line.x1) / q);
+        this.line.xCenter = x3 - Math.sqrt(radsq - (q / 2) * (q / 2)) * ((this.line.y1 - this.line.y2) / q);
+        this.line.yCenter = y3 - Math.sqrt(radsq - (q / 2) * (q / 2)) * ((this.line.x2 - this.line.x1) / q)
+      } else {
+        let radsq = this.line.radius * this.line.radius;
+        let q = Math.sqrt(
+          (this.line.x2 - this.line.x1) * (this.line.x2 - this.line.x1) +
+            (this.line.y2 - this.line.y1) * (this.line.y2 - this.line.y1)
+        );
+        let x3 = (this.line.x1 + this.line.x2) / 2;
+        let y3 = (this.line.y1 + this.line.y2) / 2;
 
-      let angle1 =
-        Math.atan2(
-          this.line.yCenter - this.line.y1,
-          this.line.x1 - this.line.xCenter
-        ) * 57.2958;
+        this.line.xCenter = x3 + Math.sqrt(radsq - (q / 2) * (q / 2)) * ((this.line.y1 - this.line.y2) / q);
+        this.line.yCenter = y3 + Math.sqrt(radsq - (q / 2) * (q / 2)) * ((this.line.x2 - this.line.x1) / q);
+      }
+
+      let angle1 = Math.atan2(this.line.yCenter - this.line.y1, this.line.x1 - this.line.xCenter) * 57.2958;
       if (this.line.yCenter - this.line.y1 >= 0) {
         angle1 = 180 + (180 - angle1);
       } else {
@@ -186,11 +208,7 @@ export default class Connector {
       }
       this.line.from = angle1 * 0.0174533;
 
-      let angle2 =
-        Math.atan2(
-          this.line.yCenter - this.line.y2,
-          this.line.x2 - this.line.xCenter
-        ) * 57.2958;
+      let angle2 = Math.atan2(this.line.yCenter - this.line.y2, this.line.x2 - this.line.xCenter) * 57.2958;
       if (this.line.yCenter - this.line.y2 >= 0) {
         angle2 = 180 + (180 - angle2);
       } else {
@@ -198,14 +216,14 @@ export default class Connector {
       }
       this.line.to = angle2 * 0.0174533;
 
+      if (this.line.reverse) {
+        let line_delta = this.line.to - this.line.from
+        this.line.from_reverse = this.line.to;
+        this.line.to_reverse = this.line.to + (2 * Math.PI - line_delta)
+      }
+
       this.path.lineStyle(this.pathWidth, this.pathColor, 1);
-      this.path.arc(
-        this.line.xCenter,
-        this.line.yCenter,
-        this.line.radius,
-        this.line.from,
-        this.line.to
-      );
+      this.path.arc(this.line.xCenter, this.line.yCenter, this.line.radius, this.line.from, this.line.to, this.line.reverse);
 
       this.angleCorrection = 0;
       // if the position line.from is greater then line.to we need a correction factor
@@ -213,9 +231,23 @@ export default class Connector {
         this.angleCorrection = Math.PI * 2.0;
       }
     }
-    this.path.eventMode = "none";
-    this.pixiApp.stage.addChild(this.path);
   }
+
+  drawPathStraight() {
+    this.arc.enabled = false;
+    this.line.enabled = true;
+
+    // now it is difficult to calculate the arc. first calculate center x
+    this.line.x1 = this.dbcFrom.sprite.x;
+    this.line.y1 = this.dbcFrom.sprite.y;
+    this.line.x2 = this.dbcTo.sprite.x;
+    this.line.y2 = this.dbcTo.sprite.y;
+
+    this.path.lineStyle(this.pathWidth, this.pathColor, 1);
+    this.path.moveTo(this.line.x1, this.line.y1);
+    this.path.lineTo(this.line.x2, this.line.y2);
+  }
+  
   update(data) {
     let noData = false;
     this.xCenter = this.dbcFrom.xCenter + this.dbcFrom.xOffset;
@@ -234,20 +266,29 @@ export default class Connector {
       noData = true;
     }
 
-    this.spritePosition += (flow / this.models.length) * this.global_speed;
+    if (this.pathType == 'arc_r') {
+      this.spritePosition -= (flow / this.models.length) * this.global_speed;
+    } else {
+      this.spritePosition += (flow / this.models.length) * this.global_speed;
+    }
+    
 
     if (flow >= 0) {
       direction = 0;
-      this.sprite.tint = this.dbcFrom.sprite.tint;
+      if (this.layout.general.tinting) {
+        this.sprite.tint = this.dbcFrom.sprite.tint;
+      } 
     } else {
       direction = Math.PI;
-      this.sprite.tint = this.dbcTo.sprite.tint;
+      if (this.layout.general.tinting) {
+        this.sprite.tint = this.dbcTo.sprite.tint;
+      }
     }
 
     if (noData) {
       this.sprite.alpha = 0.0;
     } else {
-      this.sprite.alpha = 1.0;
+      this.sprite.alpha = this.layout.general.alpha;
     }
 
     // get the position of the dbc's
@@ -257,50 +298,86 @@ export default class Connector {
     const y2 = this.dbcTo.sprite.y;
 
     // calculate the angle
-    let angle = 0;
-    angle = Math.atan2(this.sprite.y - y2, this.sprite.x - x2) - 0.785 * 2;
+    this.angle = 0;
+    this.angle = Math.atan2(this.sprite.y - y2, this.sprite.x - x2) - 0.785 * 2;
     if (flow < 0) {
-      angle = Math.atan2(this.sprite.y - y1, this.sprite.x - x1) - 0.785 * 2;
+      this.angle = Math.atan2(this.sprite.y - y1, this.sprite.x - x1) - 0.785 * 2;
     }
 
     // caulcate the new position if the
-    if (this.line.enabled) {
-      // it only looks at x coordinates which why it fails
-      if (this.spritePosition > this.line.to) {
-        this.spritePosition = this.line.from - this.angleCorrection;
-      }
-      if (this.spritePosition < this.line.from - this.angleCorrection) {
-        this.spritePosition = this.line.to;
-      }
-
-      this.sprite.x =
-        this.line.xCenter + Math.cos(this.spritePosition) * this.line.radius;
-      this.sprite.y =
-        this.line.yCenter + Math.sin(this.spritePosition) * this.line.radius;
-
-      angle = this.spritePosition + Math.PI;
+    if (this.pathType == "straight") {
+      this.followPathStraight(x1, y1, x2, y2)
+    } else {
+      this.followPathArc(x1, y1, x2, y2)
     }
 
-    if (this.arc.enabled) {
-      if (this.spritePosition > this.arc.to) {
-        this.spritePosition = this.arc.from;
-      }
-      if (this.spritePosition < this.arc.from) {
-        this.spritePosition = this.arc.to;
-      }
-      this.sprite.x =
-        this.arc.xCenter + Math.cos(this.spritePosition) * this.arc.radius;
-      this.sprite.y =
-        this.arc.yCenter + Math.sin(this.spritePosition) * this.arc.radius;
-
-      angle = this.spritePosition + Math.PI;
-    }
-
-    this.sprite.rotation = angle + direction;
+    this.sprite.rotation = this.angle + direction;
     this.prevPosition = this.spritePosition;
 
     this.prevSpriteX = this.sprite.x;
     this.prevSpriteY = this.sprite.y;
+  }
+
+  followPathArc(x1, y1, x2, y2) {
+    if (this.line.enabled) {
+      if (this.line.reverse) {
+        if (this.spritePosition > this.line.to_reverse) {
+          this.spritePosition = this.line.from_reverse + this.angleCorrection;
+        }
+        if (this.spritePosition < this.line.from_reverse + this.angleCorrection) {
+          this.spritePosition = this.line.to_reverse;
+        }
+      } else {
+        if (this.spritePosition > this.line.to) {
+          this.spritePosition = this.line.from - this.angleCorrection;
+        }
+        if (this.spritePosition < this.line.from - this.angleCorrection) {
+          this.spritePosition = this.line.to;
+        }
+      }
+
+      this.sprite.x = this.line.xCenter + Math.cos(this.spritePosition) * this.line.radius;
+      this.sprite.y = this.line.yCenter + Math.sin(this.spritePosition) * this.line.radius;
+
+      this.angle = this.spritePosition + Math.PI;
+    }
+
+    if (this.arc.enabled) {
+      if (this.arc.reverse) {
+        if (this.spritePosition > this.arc.to_reverse) {
+          this.spritePosition = this.arc.from_reverse;
+        }
+        if (this.spritePosition < this.arc.from_reverse) {
+          this.spritePosition = this.arc.to_reverse;
+        }
+      } else {
+        if (this.spritePosition > this.arc.to) {
+          this.spritePosition = this.arc.from;
+        }
+        if (this.spritePosition < this.arc.from) {
+          this.spritePosition = this.arc.to;
+        }
+      }
+
+        this.sprite.x = this.arc.xCenter + Math.cos(this.spritePosition) * this.arc.radius;
+        this.sprite.y = this.arc.yCenter + Math.sin(this.spritePosition) * this.arc.radius;
+
+        this.angle = this.spritePosition + Math.PI;
+    }
+  }
+
+  followPathStraight(x1, y1, x2, y2) {
+    const remapT = this.remap(this.spritePosition, 0, 1, 0, 1);
+    const t = remapT / 1;
+    this.sprite.x = (1 - t) * x1 + t * x2;
+    this.sprite.y = (1 - t) * y1 + t * y2;
+
+    if (remapT > 1) {
+      this.spritePosition = 0;
+    }
+    if (remapT < 0) {
+      this.spritePosition = 1;
+    }
   }
 
   remap(value, from1, to1, from2, to2) {

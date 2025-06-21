@@ -23,9 +23,9 @@ export default class Compartment {
   connectors = {};
   volume = 0.1;
   to2 = 7.4;
-  animation = true;
+  animation = "none";
 
-  constructor(pixiApp, key, label, models, layout, xCenter, yCenter, xOffset, yOffset, radius, picto, scaling, animation = true) {
+  constructor(pixiApp, key, label, models, layout, xCenter, yCenter, xOffset, yOffset, radius, picto, scaling) {
     // store the parameters
     this.pixiApp = pixiApp;
     this.key = key;
@@ -39,7 +39,7 @@ export default class Compartment {
     this.radius = radius;
     this.picto = picto;
     this.global_scaling = scaling;
-    this.animation = animation;
+    this.animation = layout.general.animatedBy;
 
     // define a PIXI sprite
     this.sprite = PIXI.Sprite.from(this.picto);
@@ -113,18 +113,19 @@ export default class Compartment {
     this.text.y = this.sprite.y + this.layout.label.pos_y;
     this.text.rotation = this.layout.label.rotation;
     this.text.zIndex = this.layout.general.z_index + 1;
-    
+
     this.pixiApp.stage.addChild(this.text);
   }
 
   update(data) {
-    return
     let volume = 0;
     let volumes = [];
+    let pressure = 0;
     let to2s = [];
     this.models.forEach((model) => {
       volume += data[model + ".vol"];
       volumes.push(data[model + ".vol"]);
+      pressure += data[model + ".pres"]
       to2s.push(data[model + ".to2"]);
     });
     // calculate factors
@@ -133,39 +134,41 @@ export default class Compartment {
       let factor = volumes[i] / volume;
       this.to2 += factor * to2s[i];
     }
-
-    if (this.animation && !isNaN(volume)) {
-      this.volume = this.calculateRadius(volume);
+  
+    if (!isNaN(volume) && this.animation == 'vol') {
+      this.volume = this.calculateRadiusFromVolume(volume);
     } else {
-      this.volume = (0.15 / this.layout.scale.x) * this.global_scaling;
+      this.volume = (0.15 / this.layout.sprite.scale.x) * this.global_scaling;
     }
 
     this.sprite.scale.set(
-      this.volume * this.layout.scale.x * this.global_scaling,
-      this.volume * this.layout.scale.y * this.global_scaling
+      this.volume * this.layout.sprite.scale.x * this.global_scaling,
+      this.volume * this.layout.sprite.scale.y * this.global_scaling
     );
-    let scaleFont = this.volume * this.layout.text.size * this.global_scaling;
+
+    this.sprite.rotation = this.layout.sprite.rotation;
+    this.sprite.zIndex = this.layout.general.z_index;
+
+    let scaleFont = this.volume * this.layout.label.size * this.global_scaling;
     if (scaleFont > 1.1) {
       scaleFont = 1.1;
     }
 
-    this.sprite.rotation = this.layout.rotation;
-    this.text.rotation = this.layout.rotation;
-    this.sprite.zIndex = this.layout.z_index;
-
-    this.text.x = this.sprite.x + this.layout.text.x;
-    this.text.y = this.sprite.y + this.layout.text.y;
+    this.text.rotation = this.layout.label.rotation;
+    this.text.x = this.sprite.x + this.layout.label.pos_x;
+    this.text.y = this.sprite.y + this.layout.label.pos_y;
     this.text.zIndex = this.sprite.zIndex + 1;
 
     this.text.scale.set(scaleFont, scaleFont);
-    this.text.alpha = 1.0;
+    this.text.alpha = this.layout.general.alpha;
+
     if (isNaN(this.to2)) {
       this.text.alpha = 0.1;
     }
-    if (this.layout.tinting) {
+    if (this.layout.general.tinting) {
       this.sprite.tint = this.calculateColor(this.to2);
     } else {
-      this.sprite.tint = "0xffffff"
+      this.sprite.tint = this.layout.sprite.color;
     }
     
   }
@@ -201,7 +204,7 @@ export default class Compartment {
     }
   }
 
-  calculateRadius(volume) {
+  calculateRadiusFromVolume(volume) {
     const _cubicRadius = volume / ((4.0 / 3.0) * Math.PI);
     const _radius = Math.pow(_cubicRadius, 1.0 / 3.0);
     return _radius;

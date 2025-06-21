@@ -298,7 +298,7 @@ export default {
         if (component.enabled) {
           switch (component.type) {
             case "Compartment":
-              this.diagram_components[key] = new Compartment(
+              diagram_components[key] = new Compartment(
                 pixiApp,
                 key,
                 component.label,
@@ -391,7 +391,7 @@ export default {
       Object.entries(component_list).forEach(([key, component]) => {
         // inject the offsets
         if (component.enabled) {
-          switch (component.compType) {
+          switch (component.type) {
             case "Container":
               diagram_components[key] = new Container(
                 pixiApp,
@@ -422,8 +422,8 @@ export default {
                 component.models,
                 diagram_components[component.dbcFrom],
                 diagram_components[component.dbcTo],
-                {},
-                component.compPicto,
+                component.layout,
+                component.picto,
                 global_scaling,
                 this.global_speed
               );
