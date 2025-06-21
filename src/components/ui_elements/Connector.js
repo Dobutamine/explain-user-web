@@ -57,6 +57,7 @@ export default class Connector {
   };
 
   spritePosition = 0;
+  direction_correction = 1;
   prevSpriteX = 0;
   prevSpriteY = 0;
 
@@ -266,19 +267,23 @@ export default class Connector {
       noData = true;
     }
 
+  
     if (this.pathType == 'arc_r') {
+      this.direction_correction = Math.PI;
       this.spritePosition -= (flow / this.models.length) * this.global_speed;
     } else {
+      this.direction_correction = 0;
       this.spritePosition += (flow / this.models.length) * this.global_speed;
     }
     
+
     if (flow >= 0) {
-      direction = 0;
+      direction = this.direction_correction;
       if (this.layout.general.tinting) {
         this.sprite.tint = this.dbcFrom.sprite.tint;
       } 
     } else {
-      direction = Math.PI;
+      direction = Math.PI - this.direction_correction
       if (this.layout.general.tinting) {
         this.sprite.tint = this.dbcTo.sprite.tint;
       }
@@ -310,7 +315,7 @@ export default class Connector {
       this.followPathArc(x1, y1, x2, y2)
     }
 
-    this.sprite.rotation = this.angle + direction;
+    this.sprite.rotation = this.angle + direction
     this.prevPosition = this.spritePosition;
 
     this.prevSpriteX = this.sprite.x;

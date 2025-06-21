@@ -214,6 +214,10 @@
                 <q-select class="col" label="Diagram comp To" v-model="compDbcTo" :options="compDbcTos"
                   hide-bottom-space dense style="font-size: 12px" />
               </div>
+              <div class="row">
+                <q-select class="col" label="pictogram" square hide-hint stack-label v-model="compPicto"
+                  :options="pictos" hide-bottom-space dense dark style="font-size: 12px" />   
+              </div>
 
                <!-- general layout settings--> 
               <div class="row">
