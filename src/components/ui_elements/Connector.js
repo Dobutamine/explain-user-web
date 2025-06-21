@@ -272,7 +272,6 @@ export default class Connector {
       this.spritePosition += (flow / this.models.length) * this.global_speed;
     }
     
-
     if (flow >= 0) {
       direction = 0;
       if (this.layout.general.tinting) {
