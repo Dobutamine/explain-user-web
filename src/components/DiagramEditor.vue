@@ -412,15 +412,17 @@ export default {
       ],
       diagramComponentNames: [],
       pictos: [
-        "blood.png",
+        "arrow.png",
         "container.png",
         "exchange.png",
         "gas_container.png",
-        "pump.png",
-        "vessel.png",
+        "general.png",
         "lung.png",
+        "placenta.png",
+        "pump.png",
+        "thoracic_cage.png",
         "trachea.png",
-        "thoracic_cage.png"
+        "vessel.png"
       ],
       rebuild_event: null,
       statusMessage: "",
@@ -620,6 +622,7 @@ export default {
           this.compDbcFroms = this.findDiagramComponents(["Compartment", "Pump"]);
           this.compDbcTos = this.findDiagramComponents(["Compartment", "Pump"]);
           this.compAnimatedBy = "flow"
+          this.compPicto = "arrow.png"
           this.compSpriteScaleX = 1.0;
           this.compSpriteScaleY = 2.0;
           break;
@@ -627,6 +630,7 @@ export default {
           this.compDbcFroms = this.findDiagramComponents(["Compartment", "Pump"]);
           this.compDbcTos = this.findDiagramComponents(["Compartment", "Pump"]);
           this.compAnimatedBy = "flow"
+          this.compPicto = "arrow.png"
           this.compSpriteScaleX = 1.0;
           this.compSpriteScaleY = 2.0;
           break;
