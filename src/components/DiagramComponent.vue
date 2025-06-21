@@ -321,7 +321,7 @@ export default {
               explain.watchModelProps(watched_models_comp)
               break;
 
-            case "PumExp":
+            case "Pump":
               diagram_components[key] = new Pump(
                 pixiApp,
                 key,
@@ -333,7 +333,7 @@ export default {
                 xOffset,
                 yOffset,
                 radius,
-                component.compPicto,
+                component.picto,
                 global_scaling
               );
               let watched_models_pump = []
@@ -368,7 +368,7 @@ export default {
               explain.watchModelProps(watched_models_bc)
               break;
             
-            case "DeviceExp":
+            case "Device":
               diagram_components[key] = new Device(
                 pixiApp,
                 key,
@@ -380,7 +380,7 @@ export default {
                 xOffset,
                 yOffset,
                 radius,
-                component.compPicto,
+                component.picto,
                 global_scaling
               );
               break;
@@ -404,7 +404,7 @@ export default {
                 xOffset,
                 yOffset,
                 radius,
-                component.compPicto,
+                component.picto,
                 global_scaling
               );
               let watched_models_cont = []
@@ -442,8 +442,8 @@ export default {
                 component.models,
                 diagram_components[component.dbcFrom],
                 diagram_components[component.dbcTo],
-                {},
-                component.compPicto,
+                component.layout,
+                component.picto,
                 global_scaling,
                 this.global_speed
               );
@@ -467,7 +467,7 @@ export default {
                 xOffset,
                 yOffset,
                 radius,
-                component.compPicto,
+                component.picto,
                 global_scaling
               );
               let watched_models_gasex = []

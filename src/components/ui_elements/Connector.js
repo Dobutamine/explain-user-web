@@ -2,7 +2,7 @@ import { PIXI } from "src/boot/pixi.js";
 
 export default class Connector {
   type = "Connector";
-  picto = "blood.png";
+  picto = "arrow.png";
   pixiApp = {};
   key = "";
   label = "";

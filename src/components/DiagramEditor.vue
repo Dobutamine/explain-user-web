@@ -74,21 +74,23 @@
           class="q-pa-sm q-mt-xs q-mb-sm q-ml-md q-mr-md row text-overline justify-center">
           {{ compType }}
           <div :style="{ 'font-size': '10px', width: '100%' }">
+            
             <!-- General settings -->
             <q-toggle label="enabled" v-model="compEnabled" dense size="sm" style="width: 100%" />
             <q-input label="name" v-model="compName" square hide-hint dense dark stack-label style="width: 100%" />
             <q-input label="label" v-model="compLabel" square hide-hint dense dark stack-label style="width: 100%" />
-            <q-select label="models" v-model="compModelSelection" :options="compModels" hide-bottom-space
-              dense multiple style="font-size: 12px" />
-            <!-- Compartment/Pump/Container/Device/Exchanger -->
+
+            <!-- Compartment/Pump/Container/Exchanger -->
             <div v-if="
               ( compType == 'Compartment' ||
                 compType == 'Pump' ||
                 compType == 'Container' ||
-                compType == 'Device' ||
                 compType == 'Exchanger')
             " style="width: 100%">
-
+              <div class="row">
+                <q-select class="col" label="models" v-model="compModelSelection" 
+                  :options="compModels" hide-bottom-space dense multiple style="font-size: 12px" />
+              </div>
               <div class="row">
                 <q-select class="col" label="pictogram" square hide-hint stack-label v-model="compPicto"
                   :options="pictos" hide-bottom-space dense dark style="font-size: 12px" />   
@@ -208,6 +210,10 @@
               compType == 'Connector' ||
               compType == 'Valve'
             ">
+              <div class="row">
+                <q-select class="col" label="models" v-model="compModelSelection" 
+                  :options="compModels" hide-bottom-space dense multiple style="font-size: 12px" />
+              </div>
               <div class="row">
                 <q-select class="col" label="Diagram comp from" v-model="compDbcFrom" :options="compDbcFroms"
                   hide-bottom-space dense style="font-size: 12px" />
@@ -334,6 +340,109 @@
                 </q-input>
               </div>
             </div>
+
+            <!-- Device -->
+            <div v-if="compType == 'Device'">
+              <div class="row">
+                <q-select class="col" label="pictogram" square hide-hint stack-label v-model="compPicto"
+                  :options="pictos" hide-bottom-space dense dark style="font-size: 12px" />   
+              </div>
+
+               <!-- general layout settings--> 
+              <div class="row">
+                  <div class="q-mt-xs">general layout settings</div>
+              </div>
+              <div class="row">
+                  <q-input class="col q-mr-sm" label="z-index" v-model="compZIndex" square type="number" hide-hint dense
+                    dark stack-label />
+                 <q-input class="col q-mr-sm" label="alpha" v-model="compAlpha" square type="number" hide-hint dense
+                  dark stack-label />
+              </div>
+
+              <!-- sprite settings--> 
+
+              <div class="row">
+                  <div class="q-mt-xs">image layout settings</div>
+              </div>
+              <!-- sprite position settings--> 
+              <q-btn-toggle class="col q-mr-sm" v-model="compSpritePosType" size="sm" dark spread dense no-caps
+                toggle-color="blue-grey-6" color="grey-9" text-color="black" :options="[
+                  { label: 'ARC', value: 'arc' },
+                  { label: 'RELATIVE', value: 'rel' },
+                ]" />
+              <div v-if="compSpritePosType == 'rel'" class="row">
+                <q-input class="col q-mr-sm" label="postion x" v-model="compSpritePosX" square type="number" hide-hint
+                  dense dark stack-label />
+                <q-input class="col q-mr-sm" label="position Y" v-model="compSpritePosY" square type="number" hide-hint
+                  dense dark stack-label />
+              </div>
+              <div v-if="compSpritePosType == 'arc'" class="row">
+                <q-input class="col q-mr-sm" label="position Degrees" v-model="compSpritePosDgs" square type="number"
+                  hide-hint dense dark stack-label />
+              </div>
+              <!-- sprite scale settings--> 
+              <div class="row">
+                <q-input class="col q-mr-sm" label="scale X" v-model="compSpriteScaleX" square type="number" hide-hint dense
+                  dark stack-label />
+                <q-input class="col q-mr-sm" label="scale Y" v-model="compSpriteScaleY" square type="number" hide-hint dense
+                  dark stack-label />
+              </div>
+              <!-- sprite anchor settings--> 
+              <div class="row">
+                <q-input class="col q-mr-sm" label="anchor X" v-model="compSpriteAnchorX" square type="number" hide-hint dense
+                  dark stack-label />
+                <q-input class="col q-mr-sm" label="anchor Y" v-model="compSpriteAnchorY" square type="number" hide-hint dense
+                  dark stack-label />
+              </div>
+              <!-- sprite rotation settings--> 
+              <div class="row">
+                <q-input class="col q-mr-sm" label="rotation" v-model="compSpriteRotation" square type="number" hide-hint
+                  dense dark stack-label />
+              </div>
+              <!-- sprite color settings--> 
+              <div class="row">
+                <q-input v-model="compSpriteColor" dense label="image color mask" class="col q-mr-sm q-mb-sm">
+                  <template v-slot:append>
+                    <q-icon name="colorize" class="cursor-pointer" size="xs">
+                      <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                        <q-color v-model="compSpriteColor" />
+                      </q-popup-proxy>
+                    </q-icon>
+                  </template>
+                </q-input>
+              </div>
+
+               <!-- label settings--> 
+              <div v-if="compLabel != ''" class="row">
+                  <div class="q-mt-xs">text label settings</div>
+              </div>
+               <!-- label position offset settings--> 
+              <div v-if="compLabel != ''" class="row">
+                <q-input class="col q-mr-sm" label="label x" v-model="compLabelPosX" square type="number" hide-hint
+                  dense dark stack-label />
+                <q-input class="col q-mr-sm" label="label y" v-model="compLabelPosY" square type="number" hide-hint
+                  dense dark stack-label />
+              </div>
+              <!-- label size and rotation settings--> 
+              <div v-if="compLabel != ''" class="row">
+                <q-input class="col q-mr-sm" label="label size" v-model="compLabelSize" square type="number" hide-hint
+                  dense dark stack-label />
+                <q-input class="col q-mr-sm" label="label rotation" v-model="compLabelRotation" square type="number" hide-hint
+                  dense dark stack-label />
+              </div>
+              <!-- label color settings--> 
+              <div v-if="compLabel != ''" class="row">
+                <q-input v-model="compLabelColor" dense label="label color" class="col q-mr-sm q-mt-sm q-mb-sm">
+                  <template v-slot:append>
+                    <q-icon name="colorize" class="cursor-pointer" size="xs">
+                      <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                        <q-color v-model="compLabelColor" />
+                      </q-popup-proxy>
+                    </q-icon>
+                  </template>
+                </q-input>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -422,6 +531,7 @@ export default {
         "pump.png",
         "thoracic_cage.png",
         "trachea.png",
+        "ventilator.png",
         "vessel.png"
       ],
       rebuild_event: null,

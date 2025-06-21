@@ -1,8 +1,8 @@
 import { PIXI } from "src/boot/pixi.js";
 
 export default class Device {
-  compType = "Device";
-  compPicto = "container.png";
+  type = "Device";
+  picto = "general.png";
   pixiApp = {};
   key = "";
   label = "";
@@ -23,9 +23,9 @@ export default class Device {
   connectors = {};
   volume = 0.1;
   to2 = 7.4;
-  animation = true;
+  animation = "none";
 
-  constructor(pixiApp, key, label, models, layout, xCenter, yCenter, xOffset, yOffset, radius, picto, scaling, animation = true) {
+  constructor(pixiApp, key, label, models, layout, xCenter, yCenter, xOffset, yOffset, radius, picto, scaling) {
     // store the parameters
     this.pixiApp = pixiApp;
     this.key = key;
@@ -37,69 +37,43 @@ export default class Device {
     this.xOffset = xOffset;
     this.yOffset = yOffset;
     this.radius = radius;
-    this.compPicto = picto;
+    this.picto = picto;
     this.global_scaling = scaling;
-    this.animation = animation;
+    this.animation = layout.general.animatedBy;
 
-    if (!this.compPicto) {
-      this.compPicto = "general.png";
-    }
-
-    // this is a general compartment sprite which uses
-    this.sprite = PIXI.Sprite.from(this.compPicto);
+    // define a PIXI sprite
+    this.sprite = PIXI.Sprite.from(this.picto);
     this.sprite["name_sprite"] = key;
-    this.sprite["compType"] = this.compType;
-    
-    if (this.layout.scale) {
-      this.sprite.scale.set(this.volume * this.layout.scale.x * this.global_scaling, this.volume * this.layout.scale.y * this.global_scaling);
-    } else {
-      this.layout['scale']['x'] = 1.0;
-      this.layout['scale']['y'] = 1.0;
-      this.sprite.scale.set(this.volume * this.global_scaling, this.volume * this.global_scaling);
+    this.sprite["type"] = this.type;
+    this.sprite.tint = this.layout.sprite.color;
+    this.sprite.alpha = this.layout.general.alpha;
+
+    this.sprite.scale.set(
+      this.volume * this.layout.sprite.scale.x * this.global_scaling,
+      this.volume * this.layout.sprite.scale.y * this.global_scaling
+    )
+
+    this.sprite.anchor = { 
+      x: this.layout.sprite.anchor.x,
+      y: this.layout.sprite.anchor.y 
     }
 
-    if (this.layout.anchor) {
-      this.sprite.anchor = {  x: this.layout.anchor.x, y: this.layout.anchor.y };
-    } else {
-      this.layout['anchor']['x'] = 0.5;
-      this.layout['anchor']['y'] = 0.5;
-      this.sprite.anchor = {  x: 0.5, y: 0.5 };
-    }
-
-    if (this.layout.tinting) {
-      this.sprite.tint = "0x151a7b";
-    } else {
-      this.layout['tinting'] = "0xffffff";
-      this.sprite.tint = "0xffffff";
-    }
- 
-    if (this.layout.rotation) {
-      this.sprite.rotation = this.layout.rotation;
-    } else {
-      this.layout["rotation"] = 0;
-      this.sprite.rotation = 0;
-    }
-    
-    if (this.layout.z_index) {
-      this.sprite.zIndex = this.layout.z_index;
-    } else {
-      this.layout["z_index"] = 10;
-      this.sprite.zIndex = 10;
-    }
+    this.sprite.rotation = this.layout.sprite.rotation;
+    this.sprite.zIndex = this.layout.general.z_index;
       
     // place the sprite on the stage
-    switch (this.layout.pos.type) {
+    switch (this.layout.sprite.pos.type) {
       case "arc":
         this.sprite.x =
           this.xCenter +
           this.xOffset +
-          Math.cos(this.layout.pos.dgs * 0.0174533) *
+          Math.cos(this.layout.sprite.pos.dgs * 0.0174533) *
             this.xCenter *
             this.radius;
         this.sprite.y =
           this.yCenter +
           this.yOffset +
-          Math.sin(this.layout.pos.dgs * 0.0174533) *
+          Math.sin(this.layout.sprite.pos.dgs * 0.0174533) *
             this.xCenter *
             this.radius;
         break;
@@ -107,11 +81,11 @@ export default class Device {
         this.sprite.x =
           this.xCenter +
           this.xOffset +
-          this.layout.pos.x * (this.xCenter * radius);
+          this.layout.sprite.pos.x * (this.xCenter * radius);
         this.sprite.y =
           this.yCenter +
           this.yOffset +
-          this.layout.pos.y * (this.xCenter * radius);
+          this.layout.sprite.pos.y * (this.xCenter * radius);
         break;
     }
 
@@ -119,76 +93,25 @@ export default class Device {
 
     //define the caption style and text object and add it to the stage
     this.textStyle = new PIXI.TextStyle({
-      fill: "white",
-      fontSize: this.layout.text.size,
+      fill: this.layout.label.color,
+      fontSize: this.layout.label.size,
       fontFamily: "Arial",
       strokeThickness: 0,
     });
 
     this.text = new PIXI.Text(this.label, this.textStyle);
     this.text["name_text"] = key;
-    if (this.layout.anchor) {
-      this.text.anchor = {  x: this.layout.anchor.x, y: this.layout.anchor.y };
-    } else {
-      this.text.anchor = {  x: 0.5, y: 0.5 };
-    }
-    this.text.x = this.sprite.x + this.layout.text.x;
-    this.text.y = this.sprite.y + this.layout.text.y;
-    this.text.rotation = this.layout.rotation;
+    this.text.anchor = {  x: this.layout.sprite.anchor.x, y: this.layout.sprite.anchor.y };
+    this.text.alpha = this.layout.general.alpha;
+    this.text.x = this.sprite.x + this.layout.label.pos_x;
+    this.text.y = this.sprite.y + this.layout.label.pos_y;
+    this.text.rotation = this.layout.label.rotation;
+    this.text.zIndex = this.layout.general.z_index + 1;
+
     this.pixiApp.stage.addChild(this.text);
   }
 
-  update(data) {
-    let volume = 0;
-    let volumes = [];
-    let to2s = [];
-    this.models.forEach((model) => {
-      volume += data[model + ".vol"];
-      volumes.push(data[model + ".vol"]);
-      to2s.push(data[model + ".to2"]);
-    });
-    // calculate factors
-    this.to2 = 0;
-    for (let i = 0; i < volumes.length; i++) {
-      let factor = volumes[i] / volume;
-      this.to2 += factor * to2s[i];
-    }
-
-    if (this.animation && !isNaN(volume)) {
-      this.volume = this.calculateRadius(volume);
-    } else {
-      this.volume = (0.15 / this.layout.scale.x) * this.global_scaling;
-    }
-
-    this.sprite.scale.set(
-      this.volume * this.layout.scale.x * this.global_scaling,
-      this.volume * this.layout.scale.y * this.global_scaling
-    );
-    let scaleFont = this.volume * this.layout.text.size * this.global_scaling;
-    if (scaleFont > 1.1) {
-      scaleFont = 1.1;
-    }
-
-    this.sprite.rotation = this.layout.rotation;
-    this.text.rotation = this.layout.rotation;
-    this.sprite.zIndex = this.layout.z_index;
-
-    this.text.x = this.sprite.x + this.layout.text.x;
-    this.text.y = this.sprite.y + this.layout.text.y;
-    this.text.zIndex = this.sprite.zIndex + 1;
-
-    this.text.scale.set(scaleFont, scaleFont);
-    this.text.alpha = 1.0;
-    if (isNaN(this.to2)) {
-      this.text.alpha = 0.1;
-    }
-    if (this.layout.tinting) {
-      this.sprite.tint = this.calculateColor(this.to2);
-    } else {
-      this.sprite.tint = "0xffffff"
-    }
-    
-  }
+  update(data) {}
 
   redrawConnectors() {
     Object.values(this.connectors).forEach((connector) => connector.drawPath());
@@ -221,7 +144,7 @@ export default class Device {
     }
   }
 
-  calculateRadius(volume) {
+  calculateRadiusFromVolume(volume) {
     const _cubicRadius = volume / ((4.0 / 3.0) * Math.PI);
     const _radius = Math.pow(_cubicRadius, 1.0 / 3.0);
     return _radius;
