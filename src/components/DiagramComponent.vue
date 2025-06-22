@@ -87,7 +87,7 @@ export default {
         label: 'LUNGS',
         value: 'LUNGS',
         description: 'lungs',
-        models: ['ALL', 'ALR', 'GASEX_LL', 'GASEX_RL']
+        models: ['LUNG', 'LUNGS', 'ALL', 'ALR', 'GASEX_LL', 'GASEX_RL']
       },
       {
         label: 'ECLS',
@@ -629,7 +629,7 @@ export default {
         } catch {}
 
         try {
-          if (this.state.diagram_definition.components['ALL'].enabled) {
+          if (this.state.diagram_definition.components['LUNG'].enabled) {
             this.selected_shunts.push('LUNGS')
           }
         } catch {}

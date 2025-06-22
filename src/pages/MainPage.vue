@@ -36,8 +36,8 @@
                 width: '5px',
                 opacity: 1.0
               }">
-              <ModelEditor title="MODEL EDITOR A"></ModelEditor>
-              <ModelEditor title="MODEL EDITOR B"></ModelEditor>
+              <ModelEditor title="MODEL EDITOR"></ModelEditor>
+              <!-- <ModelEditor title="MODEL EDITOR B"></ModelEditor> -->
               </q-scroll-area>
             </q-tab-panel>
             <q-tab-panel name="model_builder">

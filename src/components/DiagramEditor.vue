@@ -47,8 +47,8 @@
       <div class="text-center text-overline text-secondary" @click="componentSettingsCollapsed = !componentSettingsCollapsed">component
         settings</div>
       <div v-if="!componentSettingsCollapsed" class="q-ml-md q-mr-sm q-mb-sm row text-overline justify-center">
-        <q-select v-if="state.diagram_definition.components != undefined" class="col-9" v-model:model-value="selectedDiagramComponentName"
-          :options="Object.keys(state.diagram_definition.components)" label="diagram component" dense
+        <q-select v-if="diagramComponentNames != undefined" class="col-9" v-model:model-value="selectedDiagramComponentName"
+          :options="diagramComponentNames" label="diagram component" dense
           @update:model-value="editComponent"></q-select>
         <q-btn color="secondary" label="ADD NEW" dark class="q-ma-sm q-mt-md col" dense size="sm">
           <q-menu dark>
@@ -708,7 +708,10 @@ export default {
         );
       }
       compToDelete.forEach((c) => {
-        delete this.state.diagram_definition.components[c];
+        try {
+          delete this.state.diagram_definition.components[c];
+        } catch {}
+        
       });
 
       //delete this.state.diagram_definition.components[this.compName];
@@ -734,15 +737,21 @@ export default {
       // component type specific default settings
       switch (compType) {
         case "Compartment":
+          this.compPicto = "container.png"
+          this.compSpritePosType = "arc"
+          this.compLabelSize = 10;
           this.compAnimatedBy = "vol"
           break;
         case "Connector":
           this.compDbcFroms = this.findDiagramComponents(["Compartment", "Pump"]);
           this.compDbcTos = this.findDiagramComponents(["Compartment", "Pump"]);
           this.compAnimatedBy = "flow"
-          this.compPicto = "arrow.png"
+          this.compPicto = "container.png"
+          this.compPathType = "arc"
           this.compSpriteScaleX = 1.0;
           this.compSpriteScaleY = 2.0;
+          this.compPathWidth = 7.0;
+          this.compZIndex = 8.0;
           break;
         case "Valve":
           this.compDbcFroms = this.findDiagramComponents(["Compartment", "Pump"]);
@@ -755,15 +764,18 @@ export default {
         case "Container":
           this.compDbcFroms = this.findDiagramComponents(["Compartment", "Pump", "Container", "Device"]);
           this.compDbcTos = this.findDiagramComponents(["Compartment", "Pump", "Container", "Device"]);
+          this.compPicto = "container.png"
           this.compAnimatedBy = "vol"
           this.compTinting = false;
           break;
         case "Device":
+          this.compPicto = "general.png"
           this.compAnimatedBy = "none"
           break;
         case "Pump":
           this.compDbcFroms = this.findDiagramComponents(["Connector", "Valve"]);
           this.compDbcTos = this.findDiagramComponents(["Connector", "Valve"]);
+          this.compPicto = "pump.png"
           this.compAnimatedBy = "vol"
           break;
         case "Exchanger":
@@ -886,7 +898,7 @@ export default {
       this.compSpriteRotation = 0;
       this.compLabelPosX = 0;
       this.compLabelPosY = 0;
-      this.compLabelSize = 12;
+      this.compLabelSize = 10;
       this.compLabelRotation = 0;
       this.compLabelColor = "#ffffff";
       this.compPathType = "straight";

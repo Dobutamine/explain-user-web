@@ -1,7 +1,8 @@
 import { PIXI } from "src/boot/pixi.js";
 
 export default class Pump {
-  compType = "Pump";
+  type = "Pump";
+  picto = "pump.png"
   pixiApp = {};
   key = "";
   label = "";
@@ -17,21 +18,12 @@ export default class Pump {
   rotationFlow = 0;
   distanceToCenter = 0;
   global_scaling = 1.0;
-
   sprite = {};
   text = {};
   textStyle = {};
-
-  interactionData = null;
   connectors = {};
-
   volume = 0.1;
-  to2 = 7.4;
-
-  edit_comp_event = null;
-  editingMode = 1;
-  prevX = 0;
-  prevyY = 0;
+  animation = ""
 
   constructor(
     pixiApp,
@@ -58,42 +50,49 @@ export default class Pump {
     this.xOffset = xOffset;
     this.yOffset = yOffset;
     this.radius = radius;
-    this.compPicto = picto;
+    this.picto = picto;
     this.global_scaling = scaling;
+    this.animation = layout.general.animatedBy;
+    
+    // this is a blood compartment sprite which uses
+    this.sprite = PIXI.Sprite.from(this.picto);
+    this.sprite["name_sprite"] = key;
+    this.sprite["compType"] = this.type;
 
-    if (!this.compPicto) {
-      this.compPicto = "pump.png";
+    if (this.layout.general.tinting) {
+      this.sprite.tint = "0x151a7b";
+    } else {
+      this.sprite.tint = this.layout.sprite.color;
     }
 
-    this.edit_comp_event = new CustomEvent("edit_comp", { detail: this.key });
+    this.sprite.alpha = this.layout.general.alpha;
 
-    // this is a blood compartment sprite which uses
-    this.sprite = PIXI.Sprite.from(this.compPicto);
-    this.sprite["name_sprite"] = key;
-    this.sprite["compType"] = this.compType;
-    this.sprite.eventMode = "none";
     this.sprite.scale.set(
-      this.volume * this.layout.scale.x * this.global_scaling,
-      this.volume * this.layout.scale.y * this.global_scaling
-    );
-    this.sprite.anchor = { x: 0.5, y: 0.5 };
-    this.sprite.tint = "0x151a7b";
-    this.sprite.rotation = this.layout.rotation;
-    this.sprite.zIndex = 12;
+      this.volume * this.layout.sprite.scale.x * this.global_scaling,
+      this.volume * this.layout.sprite.scale.y * this.global_scaling
+    )
+
+    this.sprite.anchor = { 
+      x: this.layout.sprite.anchor.x,
+      y: this.layout.sprite.anchor.y 
+    }
+
+    this.sprite.rotation = this.layout.sprite.rotation;
+    this.sprite.zIndex = this.layout.general.z_index;
 
     // place the sprite on the stage
-    switch (this.layout.pos.type) {
+    switch (this.layout.sprite.pos.type) {
       case "arc":
         this.sprite.x =
           this.xCenter +
           this.xOffset +
-          Math.cos(this.layout.pos.dgs * 0.0174533) *
+          Math.cos(this.layout.sprite.pos.dgs * 0.0174533) *
             this.xCenter *
             this.radius;
         this.sprite.y =
           this.yCenter +
           this.yOffset +
-          Math.sin(this.layout.pos.dgs * 0.0174533) *
+          Math.sin(this.layout.sprite.pos.dgs * 0.0174533) *
             this.xCenter *
             this.radius;
         break;
@@ -101,11 +100,11 @@ export default class Pump {
         this.sprite.x =
           this.xCenter +
           this.xOffset +
-          this.layout.pos.x * (this.xCenter * radius);
+          this.layout.sprite.pos.x * (this.xCenter * radius);
         this.sprite.y =
           this.yCenter +
           this.yOffset +
-          this.layout.pos.y * (this.xCenter * radius);
+          this.layout.sprite.pos.y * (this.xCenter * radius);
         break;
     }
 
@@ -113,18 +112,20 @@ export default class Pump {
 
     //define the caption style and text object and add it to the stage
     this.textStyle = new PIXI.TextStyle({
-      fill: "white",
-      fontSize: this.layout.text.size,
+      fill: this.layout.label.color,
+      fontSize: this.layout.label.size,
       fontFamily: "Arial",
       strokeThickness: 0,
     });
+
     this.text = new PIXI.Text(this.label, this.textStyle);
     this.text["name_text"] = key;
-    this.text.anchor = { x: 0.5, y: 0.5 };
-    this.text.x = this.sprite.x + this.layout.text.x;
-    this.text.y = this.sprite.y + this.layout.text.y;
-    this.text.rotation = this.layout.rotation;
-    this.text.zIndex = 13;
+    this.text.anchor = {  x: this.layout.sprite.anchor.x, y: this.layout.sprite.anchor.y };
+    this.text.alpha = this.layout.general.alpha;
+    this.text.x = this.sprite.x + this.layout.label.pos_x;
+    this.text.y = this.sprite.y + this.layout.label.pos_y;
+    this.text.rotation = this.layout.label.rotation;
+    this.text.zIndex = this.layout.general.z_index + 1;
 
     this.pixiApp.stage.addChild(this.text);
   }
@@ -157,35 +158,41 @@ export default class Pump {
       this.rotationFlow = 0.0;
     }
 
-    if (isNaN(volume)) {
-      this.volume = (0.15 / this.layout.scale.x) * this.global_scaling;
+    if (!isNaN(volume) && this.animation == 'vol') {
+      this.volume = this.calculateRadiusFromVolume(volume);
     } else {
-      this.volume = this.calculateRadius(volume);
+      this.volume = (0.15 / this.layout.sprite.scale.x) * this.global_scaling;
     }
 
     this.sprite.scale.set(
-      this.volume * this.layout.scale.x * this.global_scaling,
-      this.volume * this.layout.scale.y * this.global_scaling
+      this.volume * this.layout.sprite.scale.x * this.global_scaling,
+      this.volume * this.layout.sprite.scale.y * this.global_scaling
     );
-    let scaleFont = this.volume * this.layout.text.size * this.global_scaling;
+    let scaleFont = this.volume * this.layout.label.size * this.global_scaling;
     if (scaleFont > 1.1) {
       scaleFont = 1.1;
     }
 
+    this.sprite.zIndex = this.layout.general.z_index;
     this.sprite.rotation = this.rotationFlow;
     this.text.rotation = this.layout.rotation;
 
+    this.text.x = this.sprite.x + this.layout.label.pos_x;
+    this.text.y = this.sprite.y + this.layout.label.pos_y;
+    this.text.zIndex = this.sprite.zIndex + 1;
     this.text.scale.set(scaleFont, scaleFont);
-    this.text.alpha = 1.0;
+    this.text.alpha = this.layout.general.alpha;
+
     if (isNaN(this.to2)) {
       this.text.alpha = 0.1;
     }
-    this.sprite.tint = this.calculateColor(this.to2);
+    if (this.layout.general.tinting) {
+      this.sprite.tint = this.calculateColor(this.to2);
+    } else {
+      this.sprite.tint = this.layout.sprite.color;
+    }
   }
 
-  setEditingMode(newMode) {
-    this.editingMode = newMode;
-  }
   redrawConnectors() {
     Object.values(this.connectors).forEach((connector) => connector.drawPath());
   }
@@ -202,20 +209,20 @@ export default class Pump {
       } else {
         angle = -angle;
       }
-      this.layout.pos.type = "arc";
-      this.layout.pos.dgs = angle;
+      this.layout.sprite.pos.type = "arc";
+      this.layout.sprite.pos.dgs = angle;
       // snap to the circle
       this.sprite.x =
         this.xCenter + Math.cos(angle * 0.0174533) * this.xCenter * this.radius;
       this.sprite.y =
         this.yCenter + Math.sin(angle * 0.0174533) * this.xCenter * this.radius;
-      this.text.x = this.sprite.x + this.layout.text.x;
-      this.text.y = this.sprite.y + this.layout.text.y;
+      this.text.x = this.sprite.x + this.layout.label.x;
+      this.text.y = this.sprite.y + this.layout.label.y;
     } else {
-      this.layout.pos.type = "rel";
+      this.layout.sprite.pos.type = "rel";
     }
   }
-  calculateRadius(volume) {
+  calculateRadiusFromVolume(volume) {
     const _cubicRadius = volume / ((4.0 / 3.0) * Math.PI);
     const _radius = Math.pow(_cubicRadius, 1.0 / 3.0);
     return _radius;
@@ -224,28 +231,30 @@ export default class Pump {
     if (isNaN(to2)) {
       return 0x666666;
     }
-    return 0x226666;
-    //   if (to2 > 6.95) {
-    //     to2 = 6.95;
-    //   }
-    //   let remap = this.remap(to2, 0, 6.95, -10, 1);
-    //   if (remap < 0) remap = 0;
-    //   const red = (remap * 210).toFixed(0);
-    //   const green = (remap * 80).toFixed(0);
-    //   const blue = (80 + remap * 75).toFixed(0);
-    //   const color = "0x" + this.fullColorHex(red, green, blue);
-    //   return color;
-    // }
-    // remap(value, from1, to1, from2, to2) {
-    //   return ((value - from1) / (to1 - from1)) * (to2 - from2) + from2;
-    // }
-    // rgbToHex(rgb) {
-    //   let hex = Number(rgb).toString(16);
-    //   if (hex.length < 2) {
-    //     hex = "0" + hex;
-    //   }
-    //   return hex;
+    if (to2 > this.max_to2) {
+      to2 = this.max_to2;
+    }
+    //let remap = this.remap(to2, 0, this.max_to2, -10, 1);
+    let remap = this._remap(to2, 0, this.max_to2, -1.25, 1);
+    if (remap < 0) remap = 0;
+    const red = (remap * 210).toFixed(0);
+    const green = (remap * 80).toFixed(0);
+    const blue = (80 + remap * 75).toFixed(0);
+    const color = "0x" + this.fullColorHex(red, green, blue);
+    return color;
   }
+    _remap(value, from1, to1, from2, to2) {
+    return ((value - from1) / (to1 - from1)) * (to2 - from2) + from2;
+  }
+
+  _rgbToHex(rgb) {
+    let hex = Number(rgb).toString(16);
+    if (hex.length < 2) {
+      hex = "0" + hex;
+    }
+    return hex;
+  }
+
   fullColorHex(r, g, b) {
     const red = this.rgbToHex(r);
     const green = this.rgbToHex(g);

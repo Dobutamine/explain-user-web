@@ -1,8 +1,8 @@
 import { PIXI } from "src/boot/pixi.js";
 
-export default class Compartment {
-  type = "Compartment";
-  picto = "container.png";
+export default class Text {
+  type = "Text";
+  picto = "general.png";
   pixiApp = {};
   key = "";
   label = "";
@@ -16,7 +16,7 @@ export default class Compartment {
   angle = 0;
   rotation = 0;
   global_scaling = 1.0;
-  max_to2 = 8.0
+  max_to2 = 7.1
   sprite = {};
   text = {};
   textStyle = {};
@@ -45,13 +45,7 @@ export default class Compartment {
     this.sprite = PIXI.Sprite.from(this.picto);
     this.sprite["name_sprite"] = key;
     this.sprite["type"] = this.type;
-    
-    if (this.layout.general.tinting) {
-      this.sprite.tint = "0x151a7b";
-    } else {
-      this.sprite.tint = this.layout.sprite.color;
-    }
-
+    this.sprite.tint = this.layout.sprite.color;
     this.sprite.alpha = this.layout.general.alpha;
 
     this.sprite.scale.set(
@@ -117,61 +111,7 @@ export default class Compartment {
     this.pixiApp.stage.addChild(this.text);
   }
 
-  update(data) {
-    let volume = 0;
-    let volumes = [];
-    let pressure = 0;
-    let to2s = [];
-    this.models.forEach((model) => {
-      volume += data[model + ".vol"];
-      volumes.push(data[model + ".vol"]);
-      pressure += data[model + ".pres"]
-      to2s.push(data[model + ".to2"]);
-    });
-    // calculate factors
-    this.to2 = 0;
-    for (let i = 0; i < volumes.length; i++) {
-      let factor = volumes[i] / volume;
-      this.to2 += factor * to2s[i];
-    }
-  
-    if (!isNaN(volume) && this.animation == 'vol') {
-      this.volume = this.calculateRadiusFromVolume(volume);
-    } else {
-      this.volume = (0.15 / this.layout.sprite.scale.x) * this.global_scaling;
-    }
-
-    this.sprite.scale.set(
-      this.volume * this.layout.sprite.scale.x * this.global_scaling,
-      this.volume * this.layout.sprite.scale.y * this.global_scaling
-    );
-
-    this.sprite.rotation = this.layout.sprite.rotation;
-    this.sprite.zIndex = this.layout.general.z_index;
-
-    let scaleFont = this.volume * this.layout.label.size * this.global_scaling;
-    if (scaleFont > 1.1) {
-      scaleFont = 1.1;
-    }
-
-    this.text.rotation = this.layout.label.rotation;
-    this.text.x = this.sprite.x + this.layout.label.pos_x;
-    this.text.y = this.sprite.y + this.layout.label.pos_y;
-    this.text.zIndex = this.sprite.zIndex + 1;
-
-    this.text.scale.set(scaleFont, scaleFont);
-    this.text.alpha = this.layout.general.alpha;
-
-    if (isNaN(this.to2)) {
-      this.text.alpha = 0.1;
-    }
-    if (this.layout.general.tinting) {
-      this.sprite.tint = this.calculateColor(this.to2);
-    } else {
-      this.sprite.tint = this.layout.sprite.color;
-    }
-    
-  }
+  update(data) {}
 
   redrawConnectors() {
     Object.values(this.connectors).forEach((connector) => connector.drawPath());
