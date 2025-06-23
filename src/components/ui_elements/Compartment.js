@@ -138,7 +138,7 @@ export default class Compartment {
     if (!isNaN(volume) && this.animation == 'vol') {
       this.volume = this.calculateRadiusFromVolume(volume);
     } else {
-      this.volume = (0.15 / this.layout.sprite.scale.x) * this.global_scaling;
+      this.volume = 0.15 * this.global_scaling;
     }
 
     this.sprite.scale.set(

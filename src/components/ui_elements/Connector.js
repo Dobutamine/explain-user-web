@@ -101,7 +101,7 @@ export default class Connector {
     );
     this.sprite.tint = this.layout.sprite.color;
     this.sprite.zIndex = this.layout.general.z_index + 1;
-    this.sprite.alpha = this.layout.general.alpha;
+    this.sprite.alpha = 1.0
 
     this.pixiApp.stage.addChild(this.sprite);
     this.sprite.eventMode = "none";
@@ -159,6 +159,7 @@ export default class Connector {
     this.path["name_path"] = this.key;
     this.path.zIndex = this.layout.general.z_index;
     this.path.cacheAsBitmap = true;
+    this.path.alpha = this.layout.general.alpha
 
     switch (this.pathType) {
       case "straight":
@@ -324,12 +325,6 @@ export default class Connector {
       if (this.layout.general.tinting) {
         this.sprite.tint = this.dbcTo.sprite.tint;
       }
-    }
-
-    if (noData) {
-      this.sprite.alpha = 0.0;
-    } else {
-      this.sprite.alpha = this.layout.general.alpha;
     }
 
     // get the position of the dbc's

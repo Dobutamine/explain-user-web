@@ -13,6 +13,8 @@
             </q-tab>
            <q-tab name="diagram_editor"><q-icon name="fa-solid fa-diagram-project" size="xs"></q-icon><q-tooltip>edit diagram</q-tooltip>
             </q-tab>
+            <q-tab name="animation_editor"><q-icon name="fa-solid fa-diagram-project" size="xs"></q-icon><q-tooltip>edit animation</q-tooltip>
+            </q-tab>
              <!-- <q-tab name="respiratory_system"><q-icon name="fa-solid fa-lungs" size="xs"></q-icon><q-tooltip>edit
                 respiratory system</q-tooltip>
             </q-tab>
@@ -49,6 +51,21 @@
                 opacity: 1.0
               }">
               <ModelBuilderComponent title="MODEL BUILDER"></ModelBuilderComponent>
+              </q-scroll-area>
+            </q-tab-panel>
+            <q-tab-panel name="animation_editor">
+              <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
+                right: '5px',
+                borderRadius: '5px',
+                background: 'black',
+                width: '5px',
+                opacity: 0.5
+              }">
+                <AnimationEditor></AnimationEditor>
+                <!-- <div v-for="item in state.configuration.enabled_controllers.circulation">
+                  <NiceController :config="state.configuration.controllers[item]"></NiceController>
+                </div> -->
+
               </q-scroll-area>
             </q-tab-panel>
             <q-tab-panel name="diagram_editor">
@@ -128,6 +145,11 @@
           <q-tabs v-model="tab_center" dense class="text-white" active-color="primary" indicator-color="primary"
            narrow-indicator outside-arrows @update:model-value="tabCenterChanged">
 
+            <q-tab name="animation">
+              <q-icon name="fa-solid fa-diagram-project" size="xs"></q-icon>
+              <q-tooltip>animation</q-tooltip>
+            </q-tab>
+
             <q-tab name="diagram">
               <q-icon name="fa-solid fa-diagram-project" size="xs"></q-icon>
               <q-tooltip>diagram</q-tooltip>
@@ -168,6 +190,19 @@
 
 
           <q-tab-panels v-model="tab_center" keep-alive style="background-color: black">
+
+            <q-tab-panel name="animation">
+              <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
+                right: '5px',
+                borderRadius: '5px',
+                background: 'black',
+                width: '5px',
+                opacity: 0.5
+              }">
+                <AnimationComponent :alive="animation_alive">
+                </AnimationComponent>
+              </q-scroll-area>
+            </q-tab-panel>
 
             <q-tab-panel name="diagram">
               <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
@@ -367,9 +402,12 @@ import BigNumbersComponent from 'src/components/BigNumbersComponent.vue';
 import DiagramEditorComponent from 'src/components/DiagramEditor.vue';
 import TaskScheduler from 'src/components/TaskScheduler.vue';
 import EclsComponent from 'src/components/EclsComponent.vue';
+import AnimationComponent from 'src/components/AnimationComponent.vue';
+import AnimationEditor from 'src/components/AnimationEditor.vue';
+import ModelBuilderComponent from 'src/components/ModelBuilderComponent.vue';
 
 import { explain } from 'src/boot/explain';
-import ModelBuilderComponent from 'src/components/ModelBuilderComponent.vue';
+
 
 export default defineComponent({
   name: 'MainPage',
@@ -395,7 +433,9 @@ export default defineComponent({
     NiceController,
     DiagramEditorComponent,
     TaskScheduler,
-    EclsComponent
+    EclsComponent,
+    AnimationComponent,
+    AnimationEditor
   },
   data() {
     return {
@@ -422,7 +462,17 @@ export default defineComponent({
     tabCenterChanged(tabName) {
       explain.getModelState()
       switch (tabName) {
+        case "animation":
+          this.animation_alive = true
+          this.ventilator_alive = false
+          this.heart_alive = false
+          this.chart_alive = false
+          this.xy_alive = false
+          this.diagram_alive = false
+          this.ecls_alive = false
+          break;
         case "ventilator":
+          this.animation_alive = false
           this.ventilator_alive = true
           this.heart_alive = false
           this.chart_alive = false
@@ -431,6 +481,7 @@ export default defineComponent({
           this.ecls_alive = false
           break;
         case "ecls":
+          this.animation_alive = false
           this.ecls_alive = true
           this.ventilator_alive = false
           this.heart_alive = false
@@ -439,6 +490,7 @@ export default defineComponent({
           this.diagram_alive = false
           break;
         case "heart":
+          this.animation_alive = false
           this.ventilator_alive = false
           this.heart_alive = true
           this.chart_alive = false
@@ -447,6 +499,7 @@ export default defineComponent({
           this.ecls_alive = false
           break;
         case "time_chart":
+          this.animation_alive = false
           this.ventilator_alive = false
           this.heart_alive = false
           this.chart_alive = true
@@ -455,6 +508,7 @@ export default defineComponent({
           this.ecls_alive = false
           break;
         case "xy_chart":
+          this.animation_alive = false
           this.ventilator_alive = false
           this.heart_alive = false
           this.chart_alive = false
@@ -463,6 +517,7 @@ export default defineComponent({
           this.ecls_alive = false
           break;
         case "diagram":
+          this.animation_alive = false
           this.ventilator_alive = false
           this.heart_alive = false
           this.chart_alive = false
@@ -471,6 +526,7 @@ export default defineComponent({
           this.ecls_alive = false
           break;
         case "placenta":
+          this.animation_alive = false
           this.ventilator_alive = false
           this.heart_alive = false
           this.chart_alive = false

@@ -12,6 +12,10 @@ export const useStateStore = defineStore("state", {
       settings: {},
       components: {},
     },
+    animation_definition: {
+      settings: {},
+      components: {},
+    },
     model_definition: {},
     configuration: {},
     tasks: {},
@@ -99,6 +103,7 @@ export const useStateStore = defineStore("state", {
         this.dateCreated = data.dateCreated;
         this.dateLastUpdated = data.dateLastUpdated;
         this.diagram_definition = data.diagram_definition;
+        this.animation_definition = data.animation_definition;
         this.model_definition = data.model_definition;
         this.configuration = data.configuration;
         this.tasks = data.tasks;
@@ -132,6 +137,7 @@ export const useStateStore = defineStore("state", {
         this.dateCreated = data.dateCreated;
         this.dateLastUpdated = data.dateLastUpdated;
         this.diagram_definition = data.diagram_definition;
+        this.animation_definition = data.animation_definition;
         this.model_definition = data.model_definition;
         this.configuration = data.configuration;
         this.tasks = data.tasks;
@@ -164,6 +170,7 @@ export const useStateStore = defineStore("state", {
         this.dateCreated = data.dateCreated;
         this.dateLastUpdated = data.dateLastUpdated;
         this.diagram_definition = data.diagram_definition;
+        this.animation_definition = data.animation_definition;
         this.model_definition = data.model_definition;
         this.configuration = data.configuration;
         this.tasks = data.tasks;
@@ -195,6 +202,7 @@ export const useStateStore = defineStore("state", {
             dateCreated: this.dateCreated,
             dateLastUpdated: this.dateLastUpdated,
             diagram_definition: this.diagram_definition,
+            animation_definition: this.animation_definition,
             model_definition: this.model_definition,
             configuration: this.configuration,
             tasks: this.tasks,
