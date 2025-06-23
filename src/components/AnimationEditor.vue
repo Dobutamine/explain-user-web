@@ -7,39 +7,39 @@
       <div class="q-ml-md q-mr-sm q-mb-sm  text-overline justify-center">
         <div class="text-center text-secondary" @click="generalSettingsCollapsed = !generalSettingsCollapsed">general settings</div>
         <div v-if="!generalSettingsCollapsed" class="q-ma-sm row justify-center">
-          <q-toggle class="col-3" v-model="state.diagram_definition.settings.grid" label="grid" dense dark size="sm"
-            @update:model-value="updateDiagram" />
-          <q-input v-if="state.diagram_definition.settings.grid" class="q-ml-sm col-3" v-model.number="state.diagram_definition.settings.gridSize" type="number" :min="5"
-            :max="100" :step="1" label="grid size" dense dark @update:model-value="updateDiagram" />
-          <q-toggle class="q-ml-sm col-3" v-model="state.diagram_definition.settings.skeleton" label="skeleton" dense dark size="sm"
-            @update:model-value="updateDiagram" />
+          <q-toggle class="col-3" v-model="state.animation_definition.settings.grid" label="grid" dense dark size="sm"
+            @update:model-value="updateAnimation" />
+          <q-input v-if="state.animation_definition.settings.grid" class="q-ml-sm col-3" v-model.number="state.animation_definition.settings.gridSize" type="number" :min="5"
+            :max="100" :step="1" label="grid size" dense dark @update:model-value="updateAnimation" />
+          <q-toggle class="q-ml-sm col-3" v-model="state.animation_definition.settings.skeleton" label="skeleton" dense dark size="sm"
+            @update:model-value="updateAnimation" />
         </div>
 
-        <div v-if="state.diagram_definition.settings.skeleton && !generalSettingsCollapsed" class="q-ma-sm row">
-          <q-input class="col" v-model.number="state.diagram_definition.settings.xOffset" label="x-offset"
-            type="number" :min="-1000" :max="1000" :step="1" dense dark @update:model-value="updateDiagram" />
-          <q-input class="q-ml-sm col" v-model.number="state.diagram_definition.settings.yOffset" label="y-offset"
-            type="number" :min="-1000" :max="1000" :step="1" dense dark @update:model-value="updateDiagram" />
-          <q-input class="q-ml-sm col" v-model.number="state.diagram_definition.settings.radius" label="radius" dense dark
-            type="number" :min="0.01" :max="1" :step="0.01" @update:model-value="updateDiagram" />
-        </div>
-
-        <div v-if="!generalSettingsCollapsed" class="q-ma-sm row">
-          <q-input class="col" v-model.number="state.diagram_definition.settings.scaling" label="scaling" dense dark
-            type="number" :min="0.1" :max="1000" :step="0.1" @update:model-value="updateDiagram" />
-          <q-input class="q-ml-sm col" v-model.number="state.diagram_definition.settings.speed" label="speed" dense dark
-            type="number" :min="0.1" :max="1000" :step="0.1" @update:model-value="updateDiagram" />
+        <div v-if="state.animation_definition.settings.skeleton && !generalSettingsCollapsed" class="q-ma-sm row">
+          <q-input class="col" v-model.number="state.animation_definition.settings.xOffset" label="x-offset"
+            type="number" :min="-1000" :max="1000" :step="1" dense dark @update:model-value="updateAnimation" />
+          <q-input class="q-ml-sm col" v-model.number="state.animation_definition.settings.yOffset" label="y-offset"
+            type="number" :min="-1000" :max="1000" :step="1" dense dark @update:model-value="updateAnimation" />
+          <q-input class="q-ml-sm col" v-model.number="state.animation_definition.settings.radius" label="radius" dense dark
+            type="number" :min="0.01" :max="1" :step="0.01" @update:model-value="updateAnimation" />
         </div>
 
         <div v-if="!generalSettingsCollapsed" class="q-ma-sm row">
-          <q-toggle v-model="state.diagram_definition.settings.shuntOptionsVisible" label="shunt and ecls options" dense
-            dark size="sm" @update:model-value="updateDiagram" />
+          <q-input class="col" v-model.number="state.animation_definition.settings.scaling" label="scaling" dense dark
+            type="number" :min="0.1" :max="1000" :step="0.1" @update:model-value="updateAnimation" />
+          <q-input class="q-ml-sm col" v-model.number="state.animation_definition.settings.speed" label="speed" dense dark
+            type="number" :min="0.1" :max="1000" :step="0.1" @update:model-value="updateAnimation" />
+        </div>
+
+        <div v-if="!generalSettingsCollapsed" class="q-ma-sm row">
+          <q-toggle v-model="state.animation_definition.settings.shuntOptionsVisible" label="shunt and ecls options" dense
+            dark size="sm" @update:model-value="updateAnimation" />
         </div>
 
         <div v-if="!generalSettingsCollapsed" class="q-ma-sm row justify-center">
-          <q-btn class="col q-ma-sm" color="negative" size="sm" @click="clearDiagram">CLEAR DIAGRAM</q-btn>
-          <q-btn v-if="this.state.prev_diagram_definition" class="col q-ma-sm" color="secondary" size="sm"
-            @click="restore_diagram">RESTORE DIAGRAM</q-btn>
+          <q-btn class="col q-ma-sm" color="negative" size="sm" @click="clearAnimation">CLEAR DIAGRAM</q-btn>
+          <q-btn v-if="this.state.prev_animation_definition" class="col q-ma-sm" color="secondary" size="sm"
+            @click="restore_animation">RESTORE DIAGRAM</q-btn>
         </div>
 
       </div>
@@ -47,18 +47,18 @@
       <div class="text-center text-overline text-secondary" @click="componentSettingsCollapsed = !componentSettingsCollapsed">component
         settings</div>
       <div v-if="!componentSettingsCollapsed" class="q-ml-md q-mr-sm q-mb-sm row text-overline justify-center">
-        <q-select v-if="diagramComponentNames != undefined" class="col-9" v-model:model-value="selectedDiagramComponentName"
-          :options="diagramComponentNames" label="diagram component" dense
+        <q-select v-if="animationComponentNames != undefined" class="col-9" v-model:model-value="selectedAnimationComponentName"
+          :options="animationComponentNames" label="animation component" dense
           @update:model-value="editComponent"></q-select>
         <q-btn color="secondary" label="ADD NEW" dark class="q-ma-sm q-mt-md col" dense size="sm">
           <q-menu dark>
             <q-list dense>
               <div v-for="(
-                  diagramComponentType, index
-                ) in diagramComponentTypes" :key="index">
+                  animationComponentType, index
+                ) in animationComponentTypes" :key="index">
                 <q-item clickable dense>
-                  <q-item-section clickable v-close-popup @click="addComponent(diagramComponentType)">
-                    {{ diagramComponentType }}
+                  <q-item-section clickable v-close-popup @click="addComponent(animationComponentType)">
+                    {{ animationComponentType }}
                   </q-item-section>
                 </q-item>
               </div>
@@ -223,9 +223,9 @@
                   :options="compModels" hide-bottom-space dense multiple style="font-size: 12px" />
               </div>
               <div class="row">
-                <q-select class="col" label="Diagram comp from" v-model="compDbcFrom" :options="compDbcFroms"
+                <q-select class="col" label="Animation comp from" v-model="compDbcFrom" :options="compDbcFroms"
                   hide-bottom-space dense style="font-size: 12px" />
-                <q-select class="col" label="Diagram comp To" v-model="compDbcTo" :options="compDbcTos"
+                <q-select class="col" label="Animation comp To" v-model="compDbcTo" :options="compDbcTos"
                   hide-bottom-space dense style="font-size: 12px" />
               </div>
               <div class="row">
@@ -462,7 +462,7 @@
           <div class="q-gutter-sm row text-overline justify-center q-mb-sm q-mt-xs">
             <q-btn color="red-10" dense size="sm" style="width: 50px" icon="fa-solid fa-trash-can"
               @click="deleteComponentFromStore"></q-btn>
-            <q-btn color="grey-14" size="xs" dense style="width: 50px" @click="cancelDiagramBuild"
+            <q-btn color="grey-14" size="xs" dense style="width: 50px" @click="cancelAnimationBuild"
               icon="fa-solid fa-refresh"></q-btn>
           </div>
         </div>
@@ -476,11 +476,11 @@
         <div v-if="editorMode < 3 && editorMode > 0"
           class="q-gutter-sm row text-overline justify-center q-mb-sm q-mt-xs">
           <q-btn color="secondary" dense size="sm" style="width: 50px" icon="fa-solid fa-check"
-            @click="saveDiagramComponent"></q-btn>
+            @click="saveAnimationComponent"></q-btn>
           <q-btn color="negative" dense size="sm" style="width: 50px" icon="fa-solid fa-trash-can"
             @click="deleteComponent">
           </q-btn>
-          <q-btn color="grey-14" size="xs" dense style="width: 50px" @click="cancelDiagramBuild"
+          <q-btn color="grey-14" size="xs" dense style="width: 50px" @click="cancelAnimationBuild"
             icon="fa-solid fa-xmark"></q-btn>
         </div>
 
@@ -510,15 +510,15 @@ export default {
   },
   data() {
     return {
-      selectedDiagramComponentName: "",
+      selectedAnimationComponentName: "",
       editorMode: 0,
       title: "DIAGRAM EDITOR",
       generalSettingsCollapsed: true,
       componentSettingsCollapsed: false,
       collapsed: false,
       modelTypes: [],
-      selectedDiagramComponent: "",
-      diagramComponentTypes: [
+      selectedAnimationComponent: "",
+      animationComponentTypes: [
         "Compartment",
         "Connector",
         "Container",
@@ -527,7 +527,7 @@ export default {
         "Pump", 
         "Valve"
       ],
-      diagramComponentNames: [],
+      animationComponentNames: [],
       pictos: [
         "arrow.png",
         "container.png",
@@ -583,37 +583,37 @@ export default {
     };
   },
   methods: {
-    restore_diagram() {
-      if (this.state.prev_diagram_definition) {
-        this.state.diagram_definition = JSON.parse(JSON.stringify(this.prev_diagram_definition));
-        this.$bus.emit("rebuild_diagram");
+    restore_animation() {
+      if (this.state.prev_animation_definition) {
+        this.state.animation_definition = JSON.parse(JSON.stringify(this.prev_animation_definition));
+        this.$bus.emit("rebuild_animation");
       }
     },
-    clearDiagram() {
-      this.prev_diagram_definition = JSON.parse(JSON.stringify(this.state.diagram_definition));
-      this.state.diagram_definition.components = {};
-      this.$bus.emit("rebuild_diagram");
+    clearAnimation() {
+      this.prev_animation_definition = JSON.parse(JSON.stringify(this.state.animation_definition));
+      this.state.animation_definition.components = {};
+      this.$bus.emit("rebuild_animation");
     },
-    updateDiagram() {
-      this.$bus.emit("rebuild_diagram");
+    updateAnimation() {
+      this.$bus.emit("rebuild_animation");
     },
-    getAllDiagramComponents() {
-      let diagram_component_names = [];
-      if (this.state.diagram_definition.components) {
-        Object.keys(this.state.diagram_definition.components).forEach((component) => {
-          diagram_component_names.push(component);
+    getAllAnimationComponents() {
+      let animation_component_names = [];
+      if (this.state.animation_definition.components) {
+        Object.keys(this.state.animation_definition.components).forEach((component) => {
+          animation_component_names.push(component);
         });
       }
-      diagram_component_names.sort();
-      return diagram_component_names;
+      animation_component_names.sort();
+      return animation_component_names;
     },
-    saveDiagramComponent() {
+    saveAnimationComponent() {
       // build the component settings
-      if (this.state.diagram_definition.components == undefined) {
-        this.state.diagram_definition.components = {}
+      if (this.state.animation_definition.components == undefined) {
+        this.state.animation_definition.components = {}
       }
 
-      this.state.diagram_definition.components[this.compName] = {
+      this.state.animation_definition.components[this.compName] = {
         type: this.compType,
         label: this.compLabel,
         picto: this.compPicto,
@@ -661,39 +661,39 @@ export default {
         }
       };
 
-      // rebuild the diagram
+      // rebuild the animation
       this.statusMessage = "component added to the component list"
       setTimeout(() => { this.statusMessage = ""}, 2000)
-      this.$bus.emit("rebuild_diagram");
+      this.$bus.emit("rebuild_animation");
     },
-    cancelDiagramBuild() {
+    cancelAnimationBuild() {
       // clear all fields
       this.clearFields();
-      // get the diagram component list
-      this.diagramComponentNames = this.getAllDiagramComponents();
+      // get the animation component list
+      this.animationComponentNames = this.getAllAnimationComponents();
       // reset the select comp type
       this.compType = "";
-      // reset the select diagram component
-      this.selectedDiagramComponentName = "";
+      // reset the select animation component
+      this.selectedAnimationComponentName = "";
       // set the editot mode to selection mode
       this.editorMode = 0;
     },
     deleteComponent() {
       this.editorMode = 3;
-      this.compName = this.selectedDiagramComponentName;
+      this.compName = this.selectedAnimationComponentName;
     },
     deleteComponentFromStore() {
       // also delete all connector which are pointing to this component
       let compToDelete = [];
       compToDelete.push(this.compName);
 
-      let compType = this.state.diagram_definition.components[this.compName].compType;
+      let compType = this.state.animation_definition.components[this.compName].compType;
       if (
         compType === "Compartment" ||
         compType === "Device" ||
         compType === "Pump"
       ) {
-        Object.entries(this.state.diagram_definition.components).forEach(
+        Object.entries(this.state.animation_definition.components).forEach(
           ([component_name, component]) => {
             if (
               component.compType === "Connector" ||
@@ -711,14 +711,14 @@ export default {
       }
       compToDelete.forEach((c) => {
         try {
-          delete this.state.diagram_definition.components[c];
+          delete this.state.animation_definition.components[c];
         } catch {}
         
       });
 
-      //delete this.state.diagram_definition.components[this.compName];
-      this.$bus.emit("rebuild_diagram");
-      this.cancelDiagramBuild();
+      //delete this.state.animation_definition.components[this.compName];
+      this.$bus.emit("rebuild_animation");
+      this.cancelAnimationBuild();
     },
     addComponent(compType) {
       // set the editor mode to adding
@@ -745,8 +745,8 @@ export default {
           this.compAnimatedBy = "vol"
           break;
         case "Connector":
-          this.compDbcFroms = this.findDiagramComponents(["Compartment", "Pump"]);
-          this.compDbcTos = this.findDiagramComponents(["Compartment", "Pump"]);
+          this.compDbcFroms = this.findAnimationComponents(["Compartment", "Pump"]);
+          this.compDbcTos = this.findAnimationComponents(["Compartment", "Pump"]);
           this.compAnimatedBy = "flow"
           this.compPicto = "container.png"
           this.compPathType = "arc"
@@ -756,16 +756,16 @@ export default {
           this.compZIndex = 8.0;
           break;
         case "Valve":
-          this.compDbcFroms = this.findDiagramComponents(["Compartment", "Pump"]);
-          this.compDbcTos = this.findDiagramComponents(["Compartment", "Pump"]);
+          this.compDbcFroms = this.findAnimationComponents(["Compartment", "Pump"]);
+          this.compDbcTos = this.findAnimationComponents(["Compartment", "Pump"]);
           this.compAnimatedBy = "flow"
           this.compPicto = "arrow.png"
           this.compSpriteScaleX = 1.0;
           this.compSpriteScaleY = 2.0;
           break;
         case "Container":
-          this.compDbcFroms = this.findDiagramComponents(["Compartment", "Pump", "Container", "Device"]);
-          this.compDbcTos = this.findDiagramComponents(["Compartment", "Pump", "Container", "Device"]);
+          this.compDbcFroms = this.findAnimationComponents(["Compartment", "Pump", "Container", "Device"]);
+          this.compDbcTos = this.findAnimationComponents(["Compartment", "Pump", "Container", "Device"]);
           this.compPicto = "container.png"
           this.compAnimatedBy = "vol"
           this.compTinting = false;
@@ -775,8 +775,8 @@ export default {
           this.compAnimatedBy = "none"
           break;
         case "Pump":
-          this.compDbcFroms = this.findDiagramComponents(["Connector", "Valve"]);
-          this.compDbcTos = this.findDiagramComponents(["Connector", "Valve"]);
+          this.compDbcFroms = this.findAnimationComponents(["Connector", "Valve"]);
+          this.compDbcTos = this.findAnimationComponents(["Connector", "Valve"]);
           this.compPicto = "pump.png"
           this.compAnimatedBy = "vol"
           break;
@@ -793,11 +793,11 @@ export default {
       // clear all the fields
       this.clearFields();
 
-      // get all the properties of the selected diagram component
-      this.selectedDiagramComponent = this.state.diagram_definition.components[this.selectedDiagramComponentName];
+      // get all the properties of the selected animation component
+      this.selectedAnimationComponent = this.state.animation_definition.components[this.selectedAnimationComponentName];
 
       // get the component type
-      this.compType = this.selectedDiagramComponent.type
+      this.compType = this.selectedAnimationComponent.type
 
       // find the explain model types which can by selected depending on the component type
       this.compModels = this.selectModelTypeToAdd(this.compType);
@@ -808,20 +808,20 @@ export default {
       // get the dbc comp froms and tos dependending on the component type
       switch (this.compType) {
         case "Connector":
-          this.compDbcFroms = this.findDiagramComponents(["Compartment", "Pump"]);
-          this.compDbcTos = this.findDiagramComponents(["Compartment", "Pump"]);
-          this.compDbcFrom = this.selectedDiagramComponent.dbcFrom;
-          this.compDbcTo = this.selectedDiagramComponent.dbcTo;
+          this.compDbcFroms = this.findAnimationComponents(["Compartment", "Pump"]);
+          this.compDbcTos = this.findAnimationComponents(["Compartment", "Pump"]);
+          this.compDbcFrom = this.selectedAnimationComponent.dbcFrom;
+          this.compDbcTo = this.selectedAnimationComponent.dbcTo;
           break;
         case "Valve":
-          this.compDbcFroms = this.findDiagramComponents(["Compartment", "Pump"]);
-          this.compDbcTos = this.findDiagramComponents(["Compartment", "Pump"]);
-          this.compDbcFrom = this.selectedDiagramComponent.dbcFrom;
-          this.compDbcTo = this.selectedDiagramComponent.dbcTo;
+          this.compDbcFroms = this.findAnimationComponents(["Compartment", "Pump"]);
+          this.compDbcTos = this.findAnimationComponents(["Compartment", "Pump"]);
+          this.compDbcFrom = this.selectedAnimationComponent.dbcFrom;
+          this.compDbcTo = this.selectedAnimationComponent.dbcTo;
           break;
         case "Container":
-          this.compDbcFroms = this.findDiagramComponents(["Compartment", "Pump", "Container", "Device"]);
-          this.compDbcTos = this.findDiagramComponents(["Compartment", "Pump", "Container", "Device"]);
+          this.compDbcFroms = this.findAnimationComponents(["Compartment", "Pump", "Container", "Device"]);
+          this.compDbcTos = this.findAnimationComponents(["Compartment", "Pump", "Container", "Device"]);
           this.compAnimatedBy = "vol"
           this.compTinting = false
           break;
@@ -834,45 +834,45 @@ export default {
           this.compTinting = false
           break;
         case "Pump":
-          this.compDbcFroms = this.findDiagramComponents(["Connector", "Valve"]);
-          this.compDbcTos = this.findDiagramComponents(["Connector", "Valve"]);
-          this.compDbcFrom = this.selectedDiagramComponent.dbcFrom;
-          this.compDbcTo = this.selectedDiagramComponent.dbcTo;
+          this.compDbcFroms = this.findAnimationComponents(["Connector", "Valve"]);
+          this.compDbcTos = this.findAnimationComponents(["Connector", "Valve"]);
+          this.compDbcFrom = this.selectedAnimationComponent.dbcFrom;
+          this.compDbcTo = this.selectedAnimationComponent.dbcTo;
           break;
       }
       
       // now process all the selected daigram component settings
-      this.compName = this.selectedDiagramComponentName;
-      this.compLabel = this.selectedDiagramComponent.label;
-      this.compPicto = this.selectedDiagramComponent.picto;
-      this.compEnabled = this.selectedDiagramComponent.enabled;
-      this.compModelSelection = this.selectedDiagramComponent.models;
+      this.compName = this.selectedAnimationComponentName;
+      this.compLabel = this.selectedAnimationComponent.label;
+      this.compPicto = this.selectedAnimationComponent.picto;
+      this.compEnabled = this.selectedAnimationComponent.enabled;
+      this.compModelSelection = this.selectedAnimationComponent.models;
 
-      this.compAnimatedBy = this.selectedDiagramComponent.layout.general.animatedBy;
-      this.compZIndex = this.selectedDiagramComponent.layout.general.z_index;
-      this.compAlpha = this.selectedDiagramComponent.layout.general.alpha;
-      this.compTinting = this.selectedDiagramComponent.layout.general.tinting;
+      this.compAnimatedBy = this.selectedAnimationComponent.layout.general.animatedBy;
+      this.compZIndex = this.selectedAnimationComponent.layout.general.z_index;
+      this.compAlpha = this.selectedAnimationComponent.layout.general.alpha;
+      this.compTinting = this.selectedAnimationComponent.layout.general.tinting;
 
-      this.compPathType = this.selectedDiagramComponent.layout.path.type;
-      this.compPathWidth = this.selectedDiagramComponent.layout.path.width;
-      this.compPathColor = this.selectedDiagramComponent.layout.path.color;
+      this.compPathType = this.selectedAnimationComponent.layout.path.type;
+      this.compPathWidth = this.selectedAnimationComponent.layout.path.width;
+      this.compPathColor = this.selectedAnimationComponent.layout.path.color;
 
-      this.compSpriteColor = this.selectedDiagramComponent.layout.sprite.color;
-      this.compSpritePosType = this.selectedDiagramComponent.layout.sprite.pos.type;
-      this.compSpritePosX = this.selectedDiagramComponent.layout.sprite.pos.x;
-      this.compSpritePosY = this.selectedDiagramComponent.layout.sprite.pos.y;
-      this.compSpritePosDgs = this.selectedDiagramComponent.layout.sprite.pos.dgs;
-      this.compSpriteScaleX = this.selectedDiagramComponent.layout.sprite.scale.x; 
-      this.compSpriteScaleY = this.selectedDiagramComponent.layout.sprite.scale.y; 
-      this.compSpriteAnchorX = this.selectedDiagramComponent.layout.sprite.anchor.x; 
-      this.compSpriteAnchorY = this.selectedDiagramComponent.layout.sprite.anchor.y; 
-      this.compSpriteRotation = this.selectedDiagramComponent.layout.sprite.rotation;
+      this.compSpriteColor = this.selectedAnimationComponent.layout.sprite.color;
+      this.compSpritePosType = this.selectedAnimationComponent.layout.sprite.pos.type;
+      this.compSpritePosX = this.selectedAnimationComponent.layout.sprite.pos.x;
+      this.compSpritePosY = this.selectedAnimationComponent.layout.sprite.pos.y;
+      this.compSpritePosDgs = this.selectedAnimationComponent.layout.sprite.pos.dgs;
+      this.compSpriteScaleX = this.selectedAnimationComponent.layout.sprite.scale.x; 
+      this.compSpriteScaleY = this.selectedAnimationComponent.layout.sprite.scale.y; 
+      this.compSpriteAnchorX = this.selectedAnimationComponent.layout.sprite.anchor.x; 
+      this.compSpriteAnchorY = this.selectedAnimationComponent.layout.sprite.anchor.y; 
+      this.compSpriteRotation = this.selectedAnimationComponent.layout.sprite.rotation;
 
-      this.compLabelPosX = this.selectedDiagramComponent.layout.label.pos_x;
-      this.compLabelPosY = this.selectedDiagramComponent.layout.label.pos_y;
-      this.compLabelSize = this.selectedDiagramComponent.layout.label.size;
-      this.compLabelRotation = this.selectedDiagramComponent.layout.label.rotation;
-      this.compLabelColor = this.selectedDiagramComponent.layout.label.color;
+      this.compLabelPosX = this.selectedAnimationComponent.layout.label.pos_x;
+      this.compLabelPosY = this.selectedAnimationComponent.layout.label.pos_y;
+      this.compLabelSize = this.selectedAnimationComponent.layout.label.size;
+      this.compLabelRotation = this.selectedAnimationComponent.layout.label.rotation;
+      this.compLabelColor = this.selectedAnimationComponent.layout.label.color;
     },
     clearFields() {
       this.compName = "";
@@ -907,12 +907,12 @@ export default {
       this.compPathWidth = 5;
       this.compPathColor = "#666666"
     },
-    findDiagramComponents(compTypes) {
-      if (this.state.diagram_definition.components == undefined) return
+    findAnimationComponents(compTypes) {
+      if (this.state.animation_definition.components == undefined) return
 
       let component_list = []
-      Object.keys(this.state.diagram_definition.components).forEach((compName) => {
-        if (compTypes.includes(this.state.diagram_definition.components[compName].type)) {
+      Object.keys(this.state.animation_definition.components).forEach((compName) => {
+        if (compTypes.includes(this.state.animation_definition.components[compName].type)) {
           component_list.push(compName)
         }
       });
@@ -992,36 +992,18 @@ export default {
     );
   },
   mounted() {
-    this.rebuild_event = new CustomEvent("rebuild_diagram");
-
-    try {
-      document.removeEventListener(
-        "edit_comp",
-        (e) => {
-          this.editComponent(e.detail);
-        },
-        false
-      );
-    } catch { }
+    this.rebuild_event = new CustomEvent("rebuild_animation");
 
     // get the model state
     explain.getModelState();
 
-    // get all diagram component names
-    this.diagramComponentNames = this.getAllDiagramComponents();
+    // get all animation component names
+    this.animationComponentNames = this.getAllAnimationComponents();
 
-    document.addEventListener(
-      "edit_comp",
-      (e) => {
-        this.editComponent(e.detail);
-      },
-      false
-    );
+    this.$bus.on("animation_loaded", () => this.animationComponentNames = this.getAllAnimationComponents());
 
-    this.$bus.on("diagram_loaded", () => this.diagramComponentNames = this.getAllDiagramComponents());
-
-    this.$bus.on("addNewModelToDiagram", (new_element) => {
-      this.addToDiagramFromOutside(new_element);
+    this.$bus.on("addNewModelToAnimation", (new_element) => {
+      this.addToAnimationFromOutside(new_element);
     });
   },
 };
