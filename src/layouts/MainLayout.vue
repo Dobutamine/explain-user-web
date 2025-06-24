@@ -170,15 +170,6 @@
           <q-tooltip> save model state to server </q-tooltip></q-btn>
 
 
-        <q-btn flat round dense size="sm" icon="fa-solid fa-download" color="white" class="q-ml-sm"
-          @click="getAllUserDiagrams">
-          <q-tooltip> get diagrams from server </q-tooltip></q-btn>
-
-        <q-btn flat round dense size="sm" icon="fa-solid fa-upload" color="white" class="q-mr-sm q-ml-sm"
-          @click="saveDiagram">
-          <q-tooltip> save diagram to server </q-tooltip></q-btn>
-
-
         <q-btn flat round dense size="sm" icon="fa-brands fa-js" color="white" class="q-mr-sm"
           @click="download_json">
           <q-tooltip> export model state to disk (json) </q-tooltip></q-btn>
@@ -316,7 +307,7 @@ export default defineComponent({
       let result = await this.diagram.getDiagramFromServer(this.general.apiUrl, this.user.name, this.selectedDiagram, this.user.token)
       if (result) {
         this.showLoadDiagramPopUp = false
-        console.log('loaded diagram')
+        console.log(this.diagram.diagram_definition)
         this.$bus.emit("rebuild_diagram");
       }
       this.showLoadDiagramPopUp = false
@@ -461,7 +452,6 @@ export default defineComponent({
     },
     upload_diagram() {
       // update the name of the diagram definition
-      this.diagram.diagram_definition = {...this.state.diagram_definition}
       this.diagram.diagram_definition.settings.name = this.selectedDiagram;
       // save the diagram definition
       this.diagram.saveDiagramToServer(this.general.apiUrl, this.user.name, this.selectedDiagram, this.user.token).then((t) => {
@@ -581,6 +571,8 @@ export default defineComponent({
     document.removeEventListener("model_types", (e) => this.$bus.emit("model_types", e.detail));
     document.removeEventListener("modeltype_interface", (e) => this.$bus.emit("modeltype_interface", e.detail));
     document.removeEventListener("state_saved", this.stateSaved);
+    this.$bus.off('open_diagram_dialog', () => this.getAllUserDiagrams())
+    this.$bus.off('open_diagram_dialog', () => this.saveDiagram())
     
   },
   mounted() {
@@ -668,6 +660,8 @@ export default defineComponent({
     } catch { }
     document.addEventListener("state_saved", this.stateSaved);
 
+    this.$bus.on('load_diagram_dialog', () => this.getAllUserDiagrams())
+    this.$bus.on('save_diagram_dialog', () => this.saveDiagram())
   }
 })
 </script>

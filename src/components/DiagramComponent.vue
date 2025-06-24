@@ -9,6 +9,15 @@
       <q-option-group v-model="selected_shunts" :options="shunt_options" color="primary" inline size="xs" dense
         class="text-overline" type="checkbox" @update:model-value="toggleShunts"></q-option-group>
     </div>
+    <div class="row justify-center">
+          <q-btn flat round dense size="sm" icon="fa-solid fa-download" color="white" class="q-ml-sm"
+          @click="loadDiagram">
+          <q-tooltip> get a diagram from the server </q-tooltip></q-btn>
+
+        <q-btn flat round dense size="sm" icon="fa-solid fa-upload" color="white" class="q-mr-sm q-ml-sm"
+          @click="saveDiagram">
+          <q-tooltip> save diagram to the server </q-tooltip></q-btn>
+    </div>
 
   </q-card>
 </template>
@@ -114,6 +123,12 @@ export default {
     };
   },
   methods: {
+    loadDiagram(){
+      this.$bus.emit('load_diagram_dialog');
+    },
+    saveDiagram() {
+      this.$bus.emit('save_diagram_dialog');
+    },
     toggleShunts() {
       this.shunt_options.forEach((shunt_option) => {
         this.showOrHideShunt(this.selected_shunts.includes(shunt_option.value), shunt_option.models)
@@ -702,6 +717,7 @@ export default {
     this.initDiagram().then(() => {
       // load the diagram from the server
       this.loadModelDefinition().then (() => {
+        console.log(`Diagram ${this.diagram.diagram_definition.settings.name} loaded.`)
         this.buildDiagram()
       })
     })
