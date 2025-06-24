@@ -73,6 +73,23 @@
         </q-card>
       </q-dialog>
 
+      <q-dialog v-model="showLoadDiagramPopUp" persistent transition-show="slide-up" transition-hide="slide-down">
+        <q-card>
+          <q-card-section>
+            <div class="text-h6">Select diagram from server</div>
+          </q-card-section>
+
+          <q-card-section class="q-pt-none">
+            <q-select v-model="selectedDiagram" :options="diagramList" label="user diagrams" filled dense />
+          </q-card-section>
+
+          <q-card-actions>
+            <q-btn flat label="Cancel" color="primary" size="sm" v-close-popup />
+            <q-btn flat label="Load" color="primary" size="sm" @click="loadSelectedDiagram" />
+          </q-card-actions>
+        </q-card>
+      </q-dialog>
+
       <q-dialog v-model="showSaveStatePopUp" persistent transition-show="slide-up" transition-hide="slide-down">
         <q-card>
           <q-card-section>
@@ -88,6 +105,23 @@
           <q-card-actions>
             <q-btn flat label="Cancel" color="primary" size="sm" v-close-popup />
             <q-btn flat label="Save" color="primary" size="sm" @click="upload" />
+          </q-card-actions>
+        </q-card>
+      </q-dialog>
+
+      <q-dialog v-model="showSaveDiagramPopUp" persistent transition-show="slide-up" transition-hide="slide-down">
+        <q-card>
+          <q-card-section>
+            <div class="text-h6">Save diagram to server</div>
+          </q-card-section>
+
+          <q-card-section class="q-pt-none">
+            <q-input v-model="selectedDiagram" label="diagram name" filled clearable />
+          </q-card-section>
+
+          <q-card-actions>
+            <q-btn flat label="Cancel" color="primary" size="sm" v-close-popup />
+            <q-btn flat label="Save" color="primary" size="sm" @click="upload_diagram" />
           </q-card-actions>
         </q-card>
       </q-dialog>
@@ -135,6 +169,16 @@
           @click="saveState">
           <q-tooltip> save model state to server </q-tooltip></q-btn>
 
+
+        <q-btn flat round dense size="sm" icon="fa-solid fa-download" color="white" class="q-ml-sm"
+          @click="getAllUserDiagrams">
+          <q-tooltip> get diagrams from server </q-tooltip></q-btn>
+
+        <q-btn flat round dense size="sm" icon="fa-solid fa-upload" color="white" class="q-mr-sm q-ml-sm"
+          @click="saveDiagram">
+          <q-tooltip> save diagram to server </q-tooltip></q-btn>
+
+
         <q-btn flat round dense size="sm" icon="fa-brands fa-js" color="white" class="q-mr-sm"
           @click="download_json">
           <q-tooltip> export model state to disk (json) </q-tooltip></q-btn>
@@ -168,6 +212,7 @@ import { defineComponent } from 'vue'
 import { useGeneralStore } from 'src/stores/general';
 import { useUserStore } from 'src/stores/user';
 import { useStateStore } from 'src/stores/state';
+import { useDiagramStore } from 'src/stores/diagram';
 import { explain } from 'src/boot/explain';
 
 export default defineComponent({
@@ -177,11 +222,13 @@ export default defineComponent({
     const user = useUserStore()
     const general = useGeneralStore()
     const state = useStateStore()
+    const diagram = useDiagramStore()
 
     return {
       user,
       general,
-      state
+      state,
+      diagram
     }
   },
   data() {
@@ -215,6 +262,12 @@ export default defineComponent({
       stateList: [],
       userStateList: [],
       sharedStateList: [],
+      showLoadDiagramPopUp: false,
+      showSaveDiagramPopUp: false,
+      selectedDiagram: "",
+      diagramList: [],
+      userDiagramList: [],
+      sharedDiagramList: [],
       userInput: "",
       durations: [1, 2, 3, 5, 10, 20, 30, 60, 120, 240, 360, 600, 1200, 1800],
       current_model_definition: 'baseline_neonate',
@@ -259,6 +312,24 @@ export default defineComponent({
       this.buildStateList()
       this.showLoadStatePopUp = true
     },
+    async loadSelectedDiagram() {
+      let result = await this.diagram.getDiagramFromServer(this.general.apiUrl, this.user.name, this.selectedDiagram, this.user.token)
+      if (result) {
+        this.showLoadDiagramPopUp = false
+        console.log('loaded diagram')
+        this.$bus.emit("rebuild_diagram");
+      }
+      this.showLoadDiagramPopUp = false
+    },
+    async getAllUserDiagrams() {
+      this.diagramList = []
+      this.userDiagramList = []
+
+      this.userDiagramList = await this.diagram.getAllUserDiagramsFromServer(this.general.apiUrl, this.user.name, this.user.token)
+
+      this.buildDiagramList()
+      this.showLoadDiagramPopUp = true
+    },
     toggleSharedStates() {
       this.buildStateList()
     },
@@ -270,6 +341,10 @@ export default defineComponent({
           this.stateList.push(t + " (shared)")
         })
       }
+    },
+    buildDiagramList() {
+      this.selectedDiagram = ""
+      this.diagramList = [...this.userDiagramList]
     },
     protectState() {
       this.state.protected = !this.state.protected
@@ -360,6 +435,11 @@ export default defineComponent({
       this.selectedState = this.state.name
       this.showSaveStatePopUp = true
     },
+    saveDiagram() {
+      this.stopRt()
+      this.selectedDiagram = this.state.name
+      this.showSaveDiagramPopUp = true
+    },
     submitInput() {
       if (this.userInput.length > 0) {
         this.state.renameState(this.userInput, this.user.name)
@@ -378,6 +458,23 @@ export default defineComponent({
       this.state_format = "json"
       this.stopRt()
       explain.saveModelState()
+    },
+    upload_diagram() {
+      // update the name of the diagram definition
+      this.diagram.diagram_definition = {...this.state.diagram_definition}
+      this.diagram.diagram_definition.settings.name = this.selectedDiagram;
+      // save the diagram definition
+      this.diagram.saveDiagramToServer(this.general.apiUrl, this.user.name, this.selectedDiagram, this.user.token).then((t) => {
+        if (t.result) {
+          this.popupClass = "text-h6"
+          this.$bus.emit('show_popup', { title: "Success!", message: t.message })
+          this.showSaveDiagramPopUp = false;
+        } else {
+          this.popupClass = "text-h6 text-negative"
+          this.$bus.emit('show_popup', { title: "Error!", message: t.message })
+          //this.showSaveDiagramPopUp = false;
+        }
+      })
     },
     upload() {
       this.state_destination = "server"
@@ -455,14 +552,13 @@ export default defineComponent({
     // not finished
     uploadStateToServer() {
       this.state.model_definition = { ...explain.savedState }
+      this.state.diagram_definition.settings.name = this.diagram.diagram_definition.settings.name;
       this.state.saveStateToServer(this.general.apiUrl, this.user.name, this.user.token).then((t) => {
         if (t.result) {
           this.popupClass = "text-h6"
-          this.$bus.emit('show_popup', { title: "Success!", message: t.message })
           this.state.saved = true;
         } else {
           this.popupClass = "text-h6 text-negative"
-          this.$bus.emit('show_popup', { title: "Error!", message: t.message })
           this.state.saved = false
         }
       })

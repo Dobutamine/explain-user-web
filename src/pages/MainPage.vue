@@ -549,6 +549,7 @@ export default defineComponent({
       })
     },
     modelReady() {
+      console.log('model ready')
       // make sure the modelengine watches everything which is visible on the main screen.
       this.updateWatchlist()
 
@@ -559,6 +560,7 @@ export default defineComponent({
   beforeUnmount() {
     this.$bus.off("reset", this.updateWatchlist)
     this.$bus.off("model_ready", this.modelReady)
+    document.removeEventListener("model_ready", () => this.$bus.emit("model_ready"));
   },
   mounted() {
     // return if the user is not logged in
@@ -578,6 +580,7 @@ export default defineComponent({
 
     // if the models resets make sure the watchlist is up to date
     this.$bus.on("reset", this.modelReady)
+
   }
 })
 </script>

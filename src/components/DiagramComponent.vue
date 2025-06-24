@@ -16,6 +16,9 @@
 import { explain } from "../boot/explain";
 import { PIXI } from "../boot/pixi";
 import { useStateStore } from "src/stores/state";
+import { useDiagramStore } from "src/stores/diagram";
+import { useGeneralStore } from "src/stores/general";
+import { useUserStore } from "src/stores/user";
 
 import Compartment from "./ui_elements/Compartment";
 import Connector from "./ui_elements/Connector";
@@ -24,6 +27,7 @@ import Device from "./ui_elements/Device";
 import Exchanger from "./ui_elements/Exchanger";
 import Pump from "./ui_elements/Pump";
 import Valve from "./ui_elements/Valve";
+
 
 let canvas = null;
 let pixiApp = null;
@@ -36,7 +40,10 @@ let diagram_components = {};
 export default {
   setup() {
     const state = useStateStore();
-    return { state };
+    const general = useGeneralStore();
+    const user = useUserStore();
+    const diagram = useDiagramStore();
+    return { state, diagram, general, user };
   },
   props: {
     alive: Boolean,
@@ -181,34 +188,34 @@ export default {
         diagram_components.radius = 0.6
       }
 
-      if (this.state.diagram_definition.settings.skeleton) {
+      if (this.diagram.diagram_definition.settings.skeleton) {
         if (skeletonGraphics) {
           skeletonGraphics.clear();
           pixiApp.stage.removeChild(skeletonGraphics);
         }
-        const radius = this.state.diagram_definition.settings.radius;
-        const color = this.state.diagram_definition.settings.skeletonColor;
+        const radius = this.diagram.diagram_definition.settings.radius;
+        const color = this.diagram.diagram_definition.settings.skeletonColor;
 
         // initalize the skeleton graphics
         skeletonGraphics = new PIXI.Graphics();
 
         // get center stage
-        const xCenter = (pixiApp.renderer.width / 4) + this.state.diagram_definition.settings.xOffset
-        const yCenter = (pixiApp.renderer.height / 4) + this.state.diagram_definition.settings.yOffset
+        const xCenter = (pixiApp.renderer.width / 4) + this.diagram.diagram_definition.settings.xOffset
+        const yCenter = (pixiApp.renderer.height / 4) + this.diagram.diagram_definition.settings.yOffset
         skeletonGraphics.zIndex = 0;
         skeletonGraphics.beginFill(color);
         skeletonGraphics.lineStyle(1, color, 1);
-        skeletonGraphics.drawCircle(xCenter, yCenter, (xCenter - this.state.diagram_definition.settings.xOffset) * radius);
+        skeletonGraphics.drawCircle(xCenter, yCenter, (xCenter - this.diagram.diagram_definition.settings.xOffset) * radius);
         skeletonGraphics.endFill();
         pixiApp.stage.addChild(skeletonGraphics);
       }
     },
     drawGrid() {
-      if (this.state.diagram_definition.settings.grid) {
-        if (isNaN(this.state.diagram_definition.settings.gridSize) || this.state.diagram_definition.settings.gridSize <= 5) {
-          this.state.diagram_definition.settings.gridSize = 15
+      if (this.diagram.diagram_definition.settings.grid) {
+        if (isNaN(this.diagram.diagram_definition.settings.gridSize) || this.diagram.diagram_definition.settings.gridSize <= 5) {
+          this.diagram.diagram_definition.settings.gridSize = 15
         }
-        const gridSize = this.state.diagram_definition.settings.gridSize;
+        const gridSize = this.diagram.diagram_definition.settings.gridSize;
 
         if (gridVertical) {
           gridVertical.clear();
@@ -261,7 +268,7 @@ export default {
         pixiApp.stage.removeChild(pixiApp.stage.children[index_path])
       }
 
-      this.state.diagram_definition.components[comp_name].enabled = false
+      this.diagram.diagram_definition.components[comp_name].enabled = false
     },
     addDiagramComponent(comp_name) {
       const index_sprite = pixiApp.stage.children.findIndex((obj) => obj.name_sprite == comp_name);
@@ -269,8 +276,8 @@ export default {
       const index_path = pixiApp.stage.children.findIndex((obj) => obj.name_path == comp_name);
       if (index_sprite < 0 && index_text < 0 && index_path < 0) {
         let component = {}
-        this.state.diagram_definition.components[comp_name].enabled = true
-        component[comp_name] = this.state.diagram_definition.components[comp_name]
+        this.diagram.diagram_definition.components[comp_name].enabled = true
+        component[comp_name] = this.diagram.diagram_definition.components[comp_name]
         this.drawComponents(component)
       }
     },
@@ -286,10 +293,10 @@ export default {
       // get the layout properties
       const xCenter = (pixiApp.renderer.width / 4)
       const yCenter = (pixiApp.renderer.height / 4)
-      const xOffset = this.state.diagram_definition.settings.xOffset
-      const yOffset = this.state.diagram_definition.settings.yOffset
-      const radius = this.state.diagram_definition.settings.radius;
-      let global_scaling = this.state.diagram_definition.settings.scaling * this.global_scale
+      const xOffset = this.diagram.diagram_definition.settings.xOffset
+      const yOffset = this.diagram.diagram_definition.settings.yOffset
+      const radius = this.diagram.diagram_definition.settings.radius;
+      let global_scaling = this.diagram.diagram_definition.settings.scaling * this.global_scale
       // first render all compartments and then the connectors and other types
       if (component_list == undefined) {
         return
@@ -480,7 +487,7 @@ export default {
       });
     },
     update_watchlist() {
-      Object.entries(this.state.diagram_definition.components).forEach(([key, component]) => {
+      Object.entries(this.diagram.diagram_definition.components).forEach(([key, component]) => {
         // inject the offsets
         if (component.enabled) {
           switch (component.compType) {
@@ -559,15 +566,15 @@ export default {
     },
     buildDiagram() {
       // read the general diagram settings
-      if (isNaN(this.state.diagram_definition.settings.speed) || this.state.diagram_definition.settings.speed <= 0.01) {
-        this.state.diagram_definition.settings.speed = 1
+      if (isNaN(this.diagram.diagram_definition.settings.speed) || this.diagram.diagram_definition.settings.speed <= 0.01) {
+        this.diagram.diagram_definition.settings.speed = 1
       }
 
-      if (isNaN(this.state.diagram_definition.settings.scaling) || this.state.diagram_definition.settings.scaling <= 0.01) {
-        this.state.diagram_definition.settings.scaling = 1
+      if (isNaN(this.diagram.diagram_definition.settings.scaling) || this.diagram.diagram_definition.settings.scaling <= 0.01) {
+        this.diagram.diagram_definition.settings.scaling = 1
       }
-      this.global_speed = this.state.diagram_definition.settings.speed
-      this.global_scale = this.state.diagram_definition.settings.scaling
+      this.global_speed = this.diagram.diagram_definition.settings.speed
+      this.global_scale = this.diagram.diagram_definition.settings.scaling
 
       pixiApp.stage.removeChildren();
 
@@ -579,7 +586,7 @@ export default {
 
       // draw the components
       diagram_components = {}
-      this.drawComponents(this.state.diagram_definition.components)
+      this.drawComponents(this.diagram.diagram_definition.components)
 
       // remove the event listeners
       pixiApp.stage.children.forEach((child) => {
@@ -594,48 +601,48 @@ export default {
       this.ticker = pixiApp.ticker.add(this.tickerFunction);
 
       // get the shunt options state of the diagram
-      this.shuntOptionsVisible = this.state.diagram_definition.settings.shuntOptionsVisible
+      this.shuntOptionsVisible = this.diagram.diagram_definition.settings.shuntOptionsVisible
 
       // get the current shunts state
       this.selected_shunts = []
       if (this.shuntOptionsVisible) {
         try {
-          if (this.state.diagram_definition.components['DA'].enabled) {
+          if (this.diagram.diagram_definition.components['DA'].enabled) {
             this.selected_shunts.push('DA')
           }
         } catch {}
         try {
-          if (this.state.diagram_definition.components['FO'].enabled) {
+          if (this.diagram.diagram_definition.components['FO'].enabled) {
             this.selected_shunts.push('FO')
           }
         } catch {}
         
         try {
-          if (this.state.diagram_definition.components['IPS'].enabled) {
+          if (this.diagram.diagram_definition.components['IPS'].enabled) {
             this.selected_shunts.push('IPS')
           }
         } catch {}
 
         try {
-          if (this.state.diagram_definition.components['VSD'].enabled) {
+          if (this.diagram.diagram_definition.components['VSD'].enabled) {
             this.selected_shunts.push('VSD')
           }
         } catch {}
 
         try {
-          if (this.state.diagram_definition.components['ECLS'].enabled) {
+          if (this.diagram.diagram_definition.components['ECLS'].enabled) {
             this.selected_shunts.push('ECLS')
           }
         } catch {}
 
         try {
-          if (this.state.diagram_definition.components['LUNG'].enabled) {
+          if (this.diagram.diagram_definition.components['LUNG'].enabled) {
             this.selected_shunts.push('LUNGS')
           }
         } catch {}
 
         try {
-          if (this.state.diagram_definition.components['PLF'].enabled) {
+          if (this.diagram.diagram_definition.components['PLF'].enabled) {
             this.selected_shunts.push('PLACENTA')
           }
         } catch {}
@@ -644,6 +651,9 @@ export default {
     },
     changeEclsMode(mode) {
 
+    },
+    async loadModelDefinition() {
+      let result = await this.diagram.getDiagramFromServer(this.general.apiUrl, this.user.name, this.state.diagram_definition.settings.name, this.user.token)
     }
   },
   beforeUnmount() { 
@@ -655,13 +665,13 @@ export default {
     this.$bus.off("update_watchlist", () => this.update_watchlist())
     this.$bus.off("update_drainage_site", (new_site) => {
       try {
-        this.state.diagram_definition.components['ECLS_DR'].dbcFrom = new_site
+        this.diagram.diagram_definition.components['ECLS_DR'].dbcFrom = new_site
         this.update_component('ECLS_DR')
       } catch { }
     })
     this.$bus.off("update_return_site", (new_site) => {
       try {
-        this.state.diagram_definition.components['ECLS_RE'].dbcTo = new_site
+        this.diagram.diagram_definition.components['ECLS_RE'].dbcTo = new_site
         this.update_component('ECLS_RE')
       } catch { }
     })
@@ -690,8 +700,10 @@ export default {
   mounted() {
     // initialize and build the diagram
     this.initDiagram().then(() => {
-      // build the diagram
-      this.buildDiagram()
+      // load the diagram from the server
+      this.loadModelDefinition().then (() => {
+        this.buildDiagram()
+      })
     })
 
     // add the event listener for the state change
@@ -708,14 +720,14 @@ export default {
 
     this.$bus.on("update_drainage_site", (new_site) => {
       try {
-        this.state.diagram_definition.components['ECLS_DR'].dbcFrom = new_site
+        this.diagram.diagram_definition.components['ECLS_DR'].dbcFrom = new_site
         this.update_component('ECLS_DR')
       } catch { }
     })
 
     this.$bus.on("update_return_site", (new_site) => {
       try {
-        this.state.diagram_definition.components['ECLS_RE'].dbcTo = new_site
+        this.diagram.diagram_definition.components['ECLS_RE'].dbcTo = new_site
         this.update_component('ECLS_RE')
       } catch { }
     })

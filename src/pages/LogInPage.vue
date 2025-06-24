@@ -318,7 +318,7 @@ export default {
         });
       }
     });
-
+    
     this.$bus.on("registered", () => {
       this.newUserEntry = false;
     });
