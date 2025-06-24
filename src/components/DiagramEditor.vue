@@ -7,32 +7,32 @@
       <div class="q-ml-md q-mr-sm q-mb-sm  text-overline justify-center">
         <div class="text-center text-secondary" @click="generalSettingsCollapsed = !generalSettingsCollapsed">general settings</div>
         <div v-if="!generalSettingsCollapsed" class="q-ma-sm row justify-center">
-          <q-toggle class="col-3" v-model="state.diagram_definition.settings.grid" label="grid" dense dark size="sm"
+          <q-toggle class="col-3" v-model="diagram.diagram_definition.settings.grid" label="grid" dense dark size="sm"
             @update:model-value="updateDiagram" />
-          <q-input v-if="state.diagram_definition.settings.grid" class="q-ml-sm col-3" v-model.number="state.diagram_definition.settings.gridSize" type="number" :min="5"
+          <q-input v-if="diagram.diagram_definition.settings.grid" class="q-ml-sm col-3" v-model.number="diagram.diagram_definition.settings.gridSize" type="number" :min="5"
             :max="100" :step="1" label="grid size" dense dark @update:model-value="updateDiagram" />
-          <q-toggle class="q-ml-sm col-3" v-model="state.diagram_definition.settings.skeleton" label="skeleton" dense dark size="sm"
+          <q-toggle class="q-ml-sm col-3" v-model="diagram.diagram_definition.settings.skeleton" label="skeleton" dense dark size="sm"
             @update:model-value="updateDiagram" />
         </div>
 
-        <div v-if="state.diagram_definition.settings.skeleton && !generalSettingsCollapsed" class="q-ma-sm row">
-          <q-input class="col" v-model.number="state.diagram_definition.settings.xOffset" label="x-offset"
+        <div v-if="diagram.diagram_definition.settings.skeleton && !generalSettingsCollapsed" class="q-ma-sm row">
+          <q-input class="col" v-model.number="diagram.diagram_definition.settings.xOffset" label="x-offset"
             type="number" :min="-1000" :max="1000" :step="1" dense dark @update:model-value="updateDiagram" />
-          <q-input class="q-ml-sm col" v-model.number="state.diagram_definition.settings.yOffset" label="y-offset"
+          <q-input class="q-ml-sm col" v-model.number="diagram.diagram_definition.settings.yOffset" label="y-offset"
             type="number" :min="-1000" :max="1000" :step="1" dense dark @update:model-value="updateDiagram" />
-          <q-input class="q-ml-sm col" v-model.number="state.diagram_definition.settings.radius" label="radius" dense dark
+          <q-input class="q-ml-sm col" v-model.number="diagram.diagram_definition.settings.radius" label="radius" dense dark
             type="number" :min="0.01" :max="1" :step="0.01" @update:model-value="updateDiagram" />
         </div>
 
         <div v-if="!generalSettingsCollapsed" class="q-ma-sm row">
-          <q-input class="col" v-model.number="state.diagram_definition.settings.scaling" label="scaling" dense dark
+          <q-input class="col" v-model.number="diagram.diagram_definition.settings.scaling" label="scaling" dense dark
             type="number" :min="0.1" :max="1000" :step="0.1" @update:model-value="updateDiagram" />
-          <q-input class="q-ml-sm col" v-model.number="state.diagram_definition.settings.speed" label="speed" dense dark
+          <q-input class="q-ml-sm col" v-model.number="diagram.diagram_definition.settings.speed" label="speed" dense dark
             type="number" :min="0.1" :max="1000" :step="0.1" @update:model-value="updateDiagram" />
         </div>
 
         <div v-if="!generalSettingsCollapsed" class="q-ma-sm row">
-          <q-toggle v-model="state.diagram_definition.settings.shuntOptionsVisible" label="shunt and ecls options" dense
+          <q-toggle v-model="diagram.diagram_definition.settings.shuntOptionsVisible" label="shunt and ecls options" dense
             dark size="sm" @update:model-value="updateDiagram" />
         </div>
 
@@ -494,6 +494,7 @@
 import { explain } from "../boot/explain";
 import { useUserStore } from "src/stores/user";
 import { useStateStore } from "src/stores/state";
+import { useDiagramStore } from "src/stores/diagram";
 import { useGeneralStore } from "src/stores/general";
 
 export default {
@@ -502,10 +503,12 @@ export default {
     const user = useUserStore();
     const state = useStateStore();
     const general = useGeneralStore();
+    const diagram = useDiagramStore();
     return {
       user,
       state,
       general,
+      diagram
     };
   },
   data() {
@@ -585,13 +588,13 @@ export default {
   methods: {
     restore_diagram() {
       if (this.state.prev_diagram_definition) {
-        this.state.diagram_definition = JSON.parse(JSON.stringify(this.prev_diagram_definition));
+        this.diagram.diagram_definition = JSON.parse(JSON.stringify(this.prev_diagram_definition));
         this.$bus.emit("rebuild_diagram");
       }
     },
     clearDiagram() {
-      this.prev_diagram_definition = JSON.parse(JSON.stringify(this.state.diagram_definition));
-      this.state.diagram_definition.components = {};
+      this.prev_diagram_definition = JSON.parse(JSON.stringify(this.diagram.diagram_definition));
+      this.diagram.diagram_definition.components = {};
       this.$bus.emit("rebuild_diagram");
     },
     updateDiagram() {
@@ -599,8 +602,8 @@ export default {
     },
     getAllDiagramComponents() {
       let diagram_component_names = [];
-      if (this.state.diagram_definition.components) {
-        Object.keys(this.state.diagram_definition.components).forEach((component) => {
+      if (this.diagram.diagram_definition.components) {
+        Object.keys(this.diagram.diagram_definition.components).forEach((component) => {
           diagram_component_names.push(component);
         });
       }
@@ -609,11 +612,11 @@ export default {
     },
     saveDiagramComponent() {
       // build the component settings
-      if (this.state.diagram_definition.components == undefined) {
-        this.state.diagram_definition.components = {}
+      if (this.diagram.diagram_definition.components == undefined) {
+        this.diagram.diagram_definition.components = {}
       }
 
-      this.state.diagram_definition.components[this.compName] = {
+      this.diagram.diagram_definition.components[this.compName] = {
         type: this.compType,
         label: this.compLabel,
         picto: this.compPicto,
@@ -687,13 +690,13 @@ export default {
       let compToDelete = [];
       compToDelete.push(this.compName);
 
-      let compType = this.state.diagram_definition.components[this.compName].compType;
+      let compType = this.diagram.diagram_definition.components[this.compName].compType;
       if (
         compType === "Compartment" ||
         compType === "Device" ||
         compType === "Pump"
       ) {
-        Object.entries(this.state.diagram_definition.components).forEach(
+        Object.entries(this.diagram.diagram_definition.components).forEach(
           ([component_name, component]) => {
             if (
               component.compType === "Connector" ||
@@ -711,12 +714,12 @@ export default {
       }
       compToDelete.forEach((c) => {
         try {
-          delete this.state.diagram_definition.components[c];
+          delete this.diagram.diagram_definition.components[c];
         } catch {}
         
       });
 
-      //delete this.state.diagram_definition.components[this.compName];
+      //delete this.diagram.diagram_definition.components[this.compName];
       this.$bus.emit("rebuild_diagram");
       this.cancelDiagramBuild();
     },
@@ -794,7 +797,7 @@ export default {
       this.clearFields();
 
       // get all the properties of the selected diagram component
-      this.selectedDiagramComponent = this.state.diagram_definition.components[this.selectedDiagramComponentName];
+      this.selectedDiagramComponent = this.diagram.diagram_definition.components[this.selectedDiagramComponentName];
 
       // get the component type
       this.compType = this.selectedDiagramComponent.type
@@ -908,11 +911,11 @@ export default {
       this.compPathColor = "#666666"
     },
     findDiagramComponents(compTypes) {
-      if (this.state.diagram_definition.components == undefined) return
+      if (this.diagram.diagram_definition.components == undefined) return
 
       let component_list = []
-      Object.keys(this.state.diagram_definition.components).forEach((compName) => {
-        if (compTypes.includes(this.state.diagram_definition.components[compName].type)) {
+      Object.keys(this.diagram.diagram_definition.components).forEach((compName) => {
+        if (compTypes.includes(this.diagram.diagram_definition.components[compName].type)) {
           component_list.push(compName)
         }
       });
