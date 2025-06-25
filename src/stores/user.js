@@ -37,10 +37,32 @@ export const useUserStore = defineStore("user", {
       };
       this.additionalData = {};
       this.token = "";
+      this.token_monitor = "";
       this.admin = false;
       this.defaultState = "normal_neonate_24h";
       this.loggedIn = false;
       this.errorText = "";
+    },
+    async logInMonitor(apiUrl, name, password) {
+      const url = `${apiUrl}/api/auth`;
+      // get the user login data
+      let response = await fetch(url, {
+        method: "POST",
+        headers: {
+          Accept: "application/json, text/plain, */*",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name: name, password: password }),
+      });
+      if (response.status === 200) {
+        let data = await response.json();
+        this.token_monitor = data.token;
+        console.log("User monitor logged in.");
+        return true;
+      } else {
+        this.token_monitor = "";
+      }
+
     },
     async logIn(apiUrl, name, password) {
       const url = `${apiUrl}/api/auth`;
