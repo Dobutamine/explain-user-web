@@ -7,32 +7,32 @@
       <div class="q-ml-md q-mr-sm q-mb-sm  text-overline justify-center">
         <div class="text-center text-secondary" @click="generalSettingsCollapsed = !generalSettingsCollapsed">general settings</div>
         <div v-if="!generalSettingsCollapsed" class="q-ma-sm row justify-center">
-          <q-toggle class="col-3" v-model="state.animation_definition.settings.grid" label="grid" dense dark size="sm"
+          <q-toggle class="col-3" v-model="animation.animation_definition.settings.grid" label="grid" dense dark size="sm"
             @update:model-value="updateAnimation" />
-          <q-input v-if="state.animation_definition.settings.grid" class="q-ml-sm col-3" v-model.number="state.animation_definition.settings.gridSize" type="number" :min="5"
+          <q-input v-if="animation.animation_definition.settings.grid" class="q-ml-sm col-3" v-model.number="animation.animation_definition.settings.gridSize" type="number" :min="5"
             :max="100" :step="1" label="grid size" dense dark @update:model-value="updateAnimation" />
-          <q-toggle class="q-ml-sm col-3" v-model="state.animation_definition.settings.skeleton" label="skeleton" dense dark size="sm"
+          <q-toggle class="q-ml-sm col-3" v-model="animation.animation_definition.settings.skeleton" label="skeleton" dense dark size="sm"
             @update:model-value="updateAnimation" />
         </div>
 
-        <div v-if="state.animation_definition.settings.skeleton && !generalSettingsCollapsed" class="q-ma-sm row">
-          <q-input class="col" v-model.number="state.animation_definition.settings.xOffset" label="x-offset"
+        <div v-if="animation.animation_definition.settings.skeleton && !generalSettingsCollapsed" class="q-ma-sm row">
+          <q-input class="col" v-model.number="animation.animation_definition.settings.xOffset" label="x-offset"
             type="number" :min="-1000" :max="1000" :step="1" dense dark @update:model-value="updateAnimation" />
-          <q-input class="q-ml-sm col" v-model.number="state.animation_definition.settings.yOffset" label="y-offset"
+          <q-input class="q-ml-sm col" v-model.number="animation.animation_definition.settings.yOffset" label="y-offset"
             type="number" :min="-1000" :max="1000" :step="1" dense dark @update:model-value="updateAnimation" />
-          <q-input class="q-ml-sm col" v-model.number="state.animation_definition.settings.radius" label="radius" dense dark
+          <q-input class="q-ml-sm col" v-model.number="animation.animation_definition.settings.radius" label="radius" dense dark
             type="number" :min="0.01" :max="1" :step="0.01" @update:model-value="updateAnimation" />
         </div>
 
         <div v-if="!generalSettingsCollapsed" class="q-ma-sm row">
-          <q-input class="col" v-model.number="state.animation_definition.settings.scaling" label="scaling" dense dark
+          <q-input class="col" v-model.number="animation.animation_definition.settings.scaling" label="scaling" dense dark
             type="number" :min="0.1" :max="1000" :step="0.1" @update:model-value="updateAnimation" />
-          <q-input class="q-ml-sm col" v-model.number="state.animation_definition.settings.speed" label="speed" dense dark
+          <q-input class="q-ml-sm col" v-model.number="animation.animation_definition.settings.speed" label="speed" dense dark
             type="number" :min="0.1" :max="1000" :step="0.1" @update:model-value="updateAnimation" />
         </div>
 
         <div v-if="!generalSettingsCollapsed" class="q-ma-sm row">
-          <q-toggle v-model="state.animation_definition.settings.shuntOptionsVisible" label="shunt and ecls options" dense
+          <q-toggle v-model="animation.animation_definition.settings.shuntOptionsVisible" label="shunt and ecls options" dense
             dark size="sm" @update:model-value="updateAnimation" />
         </div>
 
@@ -494,6 +494,7 @@
 import { explain } from "../boot/explain";
 import { useUserStore } from "src/stores/user";
 import { useStateStore } from "src/stores/state";
+import { useAnimationStore } from "src/stores/animation";
 import { useGeneralStore } from "src/stores/general";
 
 export default {
@@ -502,10 +503,12 @@ export default {
     const user = useUserStore();
     const state = useStateStore();
     const general = useGeneralStore();
+    const animation = useAnimationStore();
     return {
       user,
       state,
       general,
+      animation
     };
   },
   data() {
@@ -585,13 +588,13 @@ export default {
   methods: {
     restore_animation() {
       if (this.state.prev_animation_definition) {
-        this.state.animation_definition = JSON.parse(JSON.stringify(this.prev_animation_definition));
+        this.animation.animation_definition = JSON.parse(JSON.stringify(this.prev_animation_definition));
         this.$bus.emit("rebuild_animation");
       }
     },
     clearAnimation() {
-      this.prev_animation_definition = JSON.parse(JSON.stringify(this.state.animation_definition));
-      this.state.animation_definition.components = {};
+      this.prev_animation_definition = JSON.parse(JSON.stringify(this.animation.animation_definition));
+      this.animation.animation_definition.components = {};
       this.$bus.emit("rebuild_animation");
     },
     updateAnimation() {
@@ -599,8 +602,8 @@ export default {
     },
     getAllAnimationComponents() {
       let animation_component_names = [];
-      if (this.state.animation_definition.components) {
-        Object.keys(this.state.animation_definition.components).forEach((component) => {
+      if (this.animation.animation_definition.components) {
+        Object.keys(this.animation.animation_definition.components).forEach((component) => {
           animation_component_names.push(component);
         });
       }
@@ -609,11 +612,11 @@ export default {
     },
     saveAnimationComponent() {
       // build the component settings
-      if (this.state.animation_definition.components == undefined) {
-        this.state.animation_definition.components = {}
+      if (this.animation.animation_definition.components == undefined) {
+        this.animation.animation_definition.components = {}
       }
 
-      this.state.animation_definition.components[this.compName] = {
+      this.animation.animation_definition.components[this.compName] = {
         type: this.compType,
         label: this.compLabel,
         picto: this.compPicto,
@@ -687,13 +690,13 @@ export default {
       let compToDelete = [];
       compToDelete.push(this.compName);
 
-      let compType = this.state.animation_definition.components[this.compName].compType;
+      let compType = this.animation.animation_definition.components[this.compName].compType;
       if (
         compType === "Compartment" ||
         compType === "Device" ||
         compType === "Pump"
       ) {
-        Object.entries(this.state.animation_definition.components).forEach(
+        Object.entries(this.animation.animation_definition.components).forEach(
           ([component_name, component]) => {
             if (
               component.compType === "Connector" ||
@@ -711,12 +714,12 @@ export default {
       }
       compToDelete.forEach((c) => {
         try {
-          delete this.state.animation_definition.components[c];
+          delete this.animation.animation_definition.components[c];
         } catch {}
         
       });
 
-      //delete this.state.animation_definition.components[this.compName];
+      //delete this.animation.animation_definition.components[this.compName];
       this.$bus.emit("rebuild_animation");
       this.cancelAnimationBuild();
     },
@@ -794,7 +797,7 @@ export default {
       this.clearFields();
 
       // get all the properties of the selected animation component
-      this.selectedAnimationComponent = this.state.animation_definition.components[this.selectedAnimationComponentName];
+      this.selectedAnimationComponent = this.animation.animation_definition.components[this.selectedAnimationComponentName];
 
       // get the component type
       this.compType = this.selectedAnimationComponent.type
@@ -908,11 +911,11 @@ export default {
       this.compPathColor = "#666666"
     },
     findAnimationComponents(compTypes) {
-      if (this.state.animation_definition.components == undefined) return
+      if (this.animation.animation_definition.components == undefined) return
 
       let component_list = []
-      Object.keys(this.state.animation_definition.components).forEach((compName) => {
-        if (compTypes.includes(this.state.animation_definition.components[compName].type)) {
+      Object.keys(this.animation.animation_definition.components).forEach((compName) => {
+        if (compTypes.includes(this.animation.animation_definition.components[compName].type)) {
           component_list.push(compName)
         }
       });
@@ -994,11 +997,29 @@ export default {
   mounted() {
     this.rebuild_event = new CustomEvent("rebuild_animation");
 
+    try {
+      document.removeEventListener(
+        "edit_comp",
+        (e) => {
+          this.editComponent(e.detail);
+        },
+        false
+      );
+    } catch { }
+
     // get the model state
     explain.getModelState();
 
     // get all animation component names
     this.animationComponentNames = this.getAllAnimationComponents();
+
+    document.addEventListener(
+      "edit_comp",
+      (e) => {
+        this.editComponent(e.detail);
+      },
+      false
+    );
 
     this.$bus.on("animation_loaded", () => this.animationComponentNames = this.getAllAnimationComponents());
 
