@@ -515,7 +515,7 @@ export default {
     return {
       selectedAnimationComponentName: "",
       editorMode: 0,
-      title: "DIAGRAM EDITOR",
+      title: "ANIMATION EDITOR",
       generalSettingsCollapsed: true,
       componentSettingsCollapsed: false,
       collapsed: false,
