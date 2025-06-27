@@ -16,7 +16,7 @@ export default class Compartment {
   angle = 0;
   rotation = 0;
   global_scaling = 1.0;
-  max_to2 = 8.0
+  max_to2 = 9
   sprite = {};
   text = {};
   textStyle = {};

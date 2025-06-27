@@ -13,7 +13,7 @@
             </q-tab>
            <q-tab name="diagram_editor"><q-icon name="fa-solid fa-diagram-project" size="xs"></q-icon><q-tooltip>edit diagram</q-tooltip>
             </q-tab>
-            <q-tab name="animation_editor"><q-icon name="fa-solid fa-diagram-project" size="xs"></q-icon><q-tooltip>edit animation</q-tooltip>
+            <q-tab name="animation_editor"><q-icon name="fa-solid fa-person" size="xs"></q-icon><q-tooltip>edit animation</q-tooltip>
             </q-tab>
              <!-- <q-tab name="respiratory_system"><q-icon name="fa-solid fa-lungs" size="xs"></q-icon><q-tooltip>edit
                 respiratory system</q-tooltip>
@@ -146,7 +146,7 @@
            narrow-indicator outside-arrows @update:model-value="tabCenterChanged">
 
             <q-tab name="animation">
-              <q-icon name="fa-solid fa-diagram-project" size="xs"></q-icon>
+              <q-icon name="fa-solid fa-person" size="xs"></q-icon>
               <q-tooltip>animation</q-tooltip>
             </q-tab>
 
