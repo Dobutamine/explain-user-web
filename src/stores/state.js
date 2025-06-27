@@ -2,8 +2,10 @@ import { defineStore } from "pinia";
 
 export const useStateStore = defineStore("state", {
   state: () => ({
+    explain_version: "",
     user: "",
     name: "",
+    description: "",
     protected: false,
     shared: false,
     dateCreated: "r",
@@ -24,6 +26,7 @@ export const useStateStore = defineStore("state", {
     saved: false,
     default: true,
     prev_diagram_definition: {},
+    prev_animation_definition: {}
   }),
 
   getters: {},
@@ -97,11 +100,12 @@ export const useStateStore = defineStore("state", {
       if (response.status === 200) {
         let data = await response.json();
         this.user = userName.toLowerCase();
-        this.name = "baseline neonate";
+        this.name = "default_state";
         this.protected = true;
         this.shared = data.shared;
         this.dateCreated = data.dateCreated;
         this.dateLastUpdated = data.dateLastUpdated;
+        this.animation_definition = data.animation_definition;
         this.diagram_definition = data.diagram_definition;
         this.animation_definition = data.animation_definition;
         this.model_definition = data.model_definition;
@@ -130,12 +134,15 @@ export const useStateStore = defineStore("state", {
 
       if (response.status === 200) {
         let data = await response.json();
+        this.explain_version = data.explain_version;
         this.user = data.user.toLowerCase();
         this.name = data.name;
+        this.description = data.description;
         this.protected = data.protected;
         this.shared = data.shared;
         this.dateCreated = data.dateCreated;
         this.dateLastUpdated = data.dateLastUpdated;
+        this.animation_definition = data.animation_definition;
         this.diagram_definition = data.diagram_definition;
         this.animation_definition = data.animation_definition;
         this.model_definition = data.model_definition;
@@ -163,12 +170,15 @@ export const useStateStore = defineStore("state", {
 
       if (response.status === 200) {
         let data = await response.json();
+        this.explain_version = data.explain_version;
         this.user = data.user.toLowerCase();
         this.name = data.name;
+        this.description = data.description;
         this.protected = true;
         this.shared = data.shared;
         this.dateCreated = data.dateCreated;
         this.dateLastUpdated = data.dateLastUpdated;
+        this.animation_definition = data.animation_definition;
         this.diagram_definition = data.diagram_definition;
         this.animation_definition = data.animation_definition;
         this.model_definition = data.model_definition;
@@ -195,12 +205,15 @@ export const useStateStore = defineStore("state", {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
+            explain_version: this.explain_version,
             user: userName.toLowerCase(),
             name: this.name,
+            description: this.description,
             protected: this.protected,
             shared: this.shared,
             dateCreated: this.dateCreated,
             dateLastUpdated: this.dateLastUpdated,
+            animation_definition: this.animation_definition,
             diagram_definition: this.diagram_definition,
             animation_definition: this.animation_definition,
             model_definition: this.model_definition,
