@@ -668,7 +668,7 @@ export default {
 
     },
     async loadModelDefinition() {
-      let result = await this.diagram.getDiagramFromServer(this.general.apiUrl, this.user.name, this.state.diagram_definition.settings.name, this.user.token)
+      let result = await this.diagram.getDiagramFromServer(this.general.apiUrl, this.user.name, this.state.diagram_definition.name, this.user.token)
     }
   },
   beforeUnmount() { 

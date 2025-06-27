@@ -9,12 +9,12 @@ export const useStateStore = defineStore("state", {
     dateCreated: "r",
     dateLastUpdated: "r",
     diagram_definition: {
-      settings: {},
-      components: {},
+      name: "",
+      settings: {}
     },
     animation_definition: {
-      settings: {},
-      components: {},
+      name: "",
+      settings: {}
     },
     model_definition: {},
     configuration: {},

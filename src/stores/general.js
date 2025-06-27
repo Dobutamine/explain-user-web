@@ -9,4 +9,5 @@ export const useGeneralStore = defineStore("general", {
   getters: {},
 
   actions: {},
+  
 });

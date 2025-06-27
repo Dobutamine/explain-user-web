@@ -668,7 +668,7 @@ export default {
 
     },
     async loadModelDefinition() {
-      let result = await this.animation.getAnimationFromServer(this.general.apiUrl, this.user.name, this.state.animation_definition.settings.name, this.user.token)
+      let result = await this.animation.getAnimationFromServer(this.general.apiUrl, this.user.name, this.state.animation_definition.name, this.user.token)
     }
   },
   beforeUnmount() { 
