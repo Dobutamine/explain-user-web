@@ -6,8 +6,6 @@ export const useDiagramStore = defineStore("diagram", {
     name: "",
     protected: false,
     shared: false,
-    dateCreated: "r",
-    dateLastUpdated: "r",
     diagram_definition: {
       settings: {},
       components: {},
@@ -23,8 +21,6 @@ export const useDiagramStore = defineStore("diagram", {
         this.default = false;
         this.protected = false;
         this.user = userName.toLowerCase();
-        this.dateCreated = new Date();
-        this.dateCreated = this.dateCreated.toISOString();
         this.saved = false;
       }
     },
@@ -73,12 +69,6 @@ export const useDiagramStore = defineStore("diagram", {
     async saveDiagramToServer(apiUrl, userName, diagramName, token) {
       if (!this.protected) {
         this.name = diagramName;
-        this.dateCreated = new Date();
-        this.dateCreated = this.dateCreated.toISOString();
-        this.dateLastUpdated = new Date();
-        this.dateLastUpdated = this.dateLastUpdated.toISOString();
-
-        console.log(this.diagram_definition)
         const url = `${apiUrl}/api/diagrams/update_diagram?token=${token}`;
         let response = await fetch(url, {
           method: "POST",
@@ -91,8 +81,6 @@ export const useDiagramStore = defineStore("diagram", {
             name: this.name,
             protected: this.protected,
             shared: this.shared,
-            dateCreated: this.dateCreated,
-            dateLastUpdated: this.dateLastUpdated,
             diagram_definition: this.diagram_definition
           }),
         });

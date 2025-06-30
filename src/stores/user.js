@@ -18,6 +18,8 @@ export const useUserStore = defineStore("user", {
     defaultState: "baseline neonate_exp",
     errorText: "",
     token: "",
+    newUserConfig: {},
+    newUserStateName: "baseline_state"
   }),
 
   getters: {},
@@ -38,7 +40,7 @@ export const useUserStore = defineStore("user", {
       this.additionalData = {};
       this.token = "";
       this.admin = false;
-      this.defaultState = "normal_neonate_24h";
+      this.defaultState = "";
       this.loggedIn = false;
       this.errorText = "";
     },
@@ -110,7 +112,7 @@ export const useUserStore = defineStore("user", {
             subscriptionAutoRenew: false,
           },
           additionalData: additionalData,
-          defaultState: "normal_neonate_24h",
+          defaultState: this.newUserStateName
         }),
       });
 

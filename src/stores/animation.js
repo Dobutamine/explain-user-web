@@ -6,8 +6,6 @@ export const useAnimationStore = defineStore("animation", {
     name: "",
     protected: false,
     shared: false,
-    dateCreated: "r",
-    dateLastUpdated: "r",
     animation_definition: {
       settings: {},
       components: {},
@@ -23,8 +21,6 @@ export const useAnimationStore = defineStore("animation", {
         this.default = false;
         this.protected = false;
         this.user = userName.toLowerCase();
-        this.dateCreated = new Date();
-        this.dateCreated = this.dateCreated.toISOString();
         this.saved = false;
       }
     },
@@ -73,12 +69,6 @@ export const useAnimationStore = defineStore("animation", {
     async saveAnimationToServer(apiUrl, userName, animationName, token) {
       if (!this.protected) {
         this.name = animationName;
-        this.dateCreated = new Date();
-        this.dateCreated = this.dateCreated.toISOString();
-        this.dateLastUpdated = new Date();
-        this.dateLastUpdated = this.dateLastUpdated.toISOString();
-
-        console.log(this.animation_definition)
         const url = `${apiUrl}/api/animations/update_animation?token=${token}`;
         let response = await fetch(url, {
           method: "POST",
@@ -91,8 +81,6 @@ export const useAnimationStore = defineStore("animation", {
             name: this.name,
             protected: this.protected,
             shared: this.shared,
-            dateCreated: this.dateCreated,
-            dateLastUpdated: this.dateLastUpdated,
             animation_definition: this.animation_definition
           }),
         });
