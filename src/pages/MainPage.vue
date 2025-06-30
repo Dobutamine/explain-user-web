@@ -5,28 +5,16 @@
         <div class="col-3">
           <q-tabs v-model="tab_left" dense class="text-white" active-color="primary" indicator-color="primary"
             narrow-indicator outside-arrows @update:model-value="tabLeftChanged">
-            <q-tab name="model_editor"><q-icon name="fa-solid fa-wrench" size="xs"></q-icon><q-tooltip>edit model
-                components</q-tooltip>
+            <q-tab name="interventions"><q-icon name="fa-solid fa-sliders" size="xs"></q-icon><q-tooltip>interventions</q-tooltip>
             </q-tab>
-            <q-tab name="model_builder"><q-icon name="fa-solid fa-pen-to-square" size="xs"></q-icon><q-tooltip>build model
-                components</q-tooltip>
+            <q-tab name="model_editor"><q-icon name="fa-solid fa-wrench" size="xs"></q-icon><q-tooltip>model editor</q-tooltip>
             </q-tab>
-           <q-tab name="diagram_editor"><q-icon name="fa-solid fa-diagram-project" size="xs"></q-icon><q-tooltip>edit diagram</q-tooltip>
+            <q-tab name="model_builder"><q-icon name="fa-solid fa-pen-to-square" size="xs"></q-icon><q-tooltip>model builder</q-tooltip>
             </q-tab>
-            <q-tab name="animation_editor"><q-icon name="fa-solid fa-person" size="xs"></q-icon><q-tooltip>edit animation</q-tooltip>
+           <q-tab name="diagram_editor"><q-icon name="fa-solid fa-diagram-project" size="xs"></q-icon><q-tooltip>diagram editor</q-tooltip>
             </q-tab>
-             <!-- <q-tab name="respiratory_system"><q-icon name="fa-solid fa-lungs" size="xs"></q-icon><q-tooltip>edit
-                respiratory system</q-tooltip>
+            <q-tab name="animation_editor"><q-icon name="fa-solid fa-person" size="xs"></q-icon><q-tooltip>animation editor</q-tooltip>
             </q-tab>
-            <q-tab name="brain"><q-icon name="fa-solid fa-brain" size="xs"></q-icon><q-tooltip>edit
-                nervous system</q-tooltip>
-            </q-tab>
-            <q-tab name="other_systems"><q-icon name="fa-solid fa-bars" size="xs"></q-icon><q-tooltip>edit
-                other systems</q-tooltip>
-            </q-tab>
-            <q-tab name="scaling"><q-icon name="fa-solid fa-weight-scale" size="xs"></q-icon><q-tooltip>global moddel
-                scaling</q-tooltip>
-            </q-tab> -->
           </q-tabs>
 
           <q-tab-panels v-model="tab_left" keep-alive style="background-color: black">
@@ -83,7 +71,7 @@
 
               </q-scroll-area>
             </q-tab-panel>
-            <!-- <q-tab-panel name="respiratory_system">
+            <q-tab-panel name="interventions">
               <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
                 right: '5px',
                 borderRadius: '5px',
@@ -91,53 +79,11 @@
                 width: '5px',
                 opacity: 0.5
               }">
-
-                <div v-for="item in state.configuration.enabled_controllers.respiration">
-                  <NiceController :config="state.configuration.controllers[item]"></NiceController>
-                </div>
-
-              </q-scroll-area>
-            </q-tab-panel>
-            <q-tab-panel name="brain">
-              <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
-                right: '5px',
-                borderRadius: '5px',
-                background: 'black',
-                width: '5px',
-                opacity: 0.5
-              }">
-                <div v-for="item in state.configuration.enabled_controllers.brain">
-                  <NiceController :config="state.configuration.controllers[item]"></NiceController>
+                <div v-for="controller in state.configuration.controllers">
+                  <NiceController v-if="controller.enabled" :title="controller.title" :collapsed="controller.collapsed" :parameters="controller.parameters"></NiceController>
                 </div>
               </q-scroll-area>
             </q-tab-panel>
-            <q-tab-panel name="other_systems">
-              <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
-                right: '5px',
-                borderRadius: '5px',
-                background: 'black',
-                width: '5px',
-                opacity: 0.5
-              }">
-                <div v-for="item in state.configuration.enabled_controllers.others">
-                  <NiceController :config="state.configuration.controllers[item]"></NiceController>
-                </div>
-
-
-              </q-scroll-area>
-            </q-tab-panel>
-            <q-tab-panel name="scaling">
-              <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
-                right: '5px',
-                borderRadius: '5px',
-                background: 'black',
-                width: '5px',
-                opacity: 0.5
-              }">
-                <NiceController :config="state.configuration.controllers.scaler_controller"></NiceController>
-              </q-scroll-area>
-            </q-tab-panel> -->
-
           </q-tab-panels>
         </div>
 
@@ -298,18 +244,6 @@
               <q-icon name="fa-solid fa-desktop" size="xs"></q-icon>
               <q-tooltip>monitoring</q-tooltip>
             </q-tab>
-            <!-- <q-tab name="circulation">
-              <q-icon name="fa-solid fa-heart" size="xs"></q-icon>
-              <q-tooltip>monitoring</q-tooltip>
-            </q-tab>
-            <q-tab name="respiration">
-              <q-icon name="fa-solid fa-lungs" size="xs"></q-icon>
-              <q-tooltip>monitoring</q-tooltip>
-            </q-tab>
-            <q-tab name="other">
-              <q-icon name="fa-solid fa-list" size="xs"></q-icon>
-              <q-tooltip>monitoring</q-tooltip>
-            </q-tab> -->
 
           </q-tabs>
           <q-tab-panels v-model="tab_right" keep-alive style="background-color: black">
@@ -322,62 +256,15 @@
                 opacity: 0.5
               }">
                 <BigNumbersComponent></BigNumbersComponent>
-                <div v-for="enabled_numeric in state.configuration.enabled_monitors.general">
-                  <NumericsComponent :title="state.configuration.monitors[enabled_numeric].title"
-                    :collapsed="state.configuration.monitors[enabled_numeric].collapsed"
-                    :parameters="state.configuration.monitors[enabled_numeric].parameters"></NumericsComponent>
+                <div v-for="monitor in state.configuration.monitors">
+                  <div>
+                    <NumericsComponent v-if="monitor.enabled" :title="monitor.title"
+                      :collapsed="monitor.collapsed"
+                      :parameters="monitor.parameters"></NumericsComponent>
+                  </div>
                 </div>
-
               </q-scroll-area>
             </q-tab-panel>
-            <!-- <q-tab-panel name="circulation">
-              <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
-                right: '5px',
-                borderRadius: '5px',
-                background: 'black',
-                width: '5px',
-                opacity: 0.5
-              }">
-                <div v-for="enabled_numeric in state.configuration.enabled_monitors.circulation">
-                  <NumericsComponent :title="state.configuration.monitors[enabled_numeric].title"
-                    :collapsed="state.configuration.monitors[enabled_numeric].collapsed"
-                    :parameters="state.configuration.monitors[enabled_numeric].parameters"></NumericsComponent>
-                </div>
-
-              </q-scroll-area>
-            </q-tab-panel>
-            <q-tab-panel name="respiration">
-              <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
-                right: '5px',
-                borderRadius: '5px',
-                background: 'black',
-                width: '5px',
-                opacity: 0.5
-              }">
-                <div v-for="enabled_numeric in state.configuration.enabled_monitors.respiration">
-                  <NumericsComponent :title="state.configuration.monitors[enabled_numeric].title"
-                    :collapsed="state.configuration.monitors[enabled_numeric].collapsed"
-                    :parameters="state.configuration.monitors[enabled_numeric].parameters"></NumericsComponent>
-                </div>
-
-              </q-scroll-area>
-            </q-tab-panel>
-            <q-tab-panel name="other">
-              <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
-                right: '5px',
-                borderRadius: '5px',
-                background: 'black',
-                width: '5px',
-                opacity: 0.5
-              }">
-                <div v-for="enabled_numeric in state.configuration.enabled_monitors.other">
-                  <NumericsComponent :title="state.configuration.monitors[enabled_numeric].title"
-                    :collapsed="state.configuration.monitors[enabled_numeric].collapsed"
-                    :parameters="state.configuration.monitors[enabled_numeric].parameters"></NumericsComponent>
-                </div>
-
-              </q-scroll-area>
-            </q-tab-panel> -->
           </q-tab-panels>
         </div>
       </div>

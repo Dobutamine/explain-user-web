@@ -90,6 +90,23 @@
         </q-card>
       </q-dialog>
 
+      <q-dialog v-model="showLoadAnimationPopUp" persistent transition-show="slide-up" transition-hide="slide-down">
+        <q-card>
+          <q-card-section>
+            <div class="text-h6">Select animation from server</div>
+          </q-card-section>
+
+          <q-card-section class="q-pt-none">
+            <q-select v-model="selectedAnimation" :options="animationList" label="user animations" filled dense />
+          </q-card-section>
+
+          <q-card-actions>
+            <q-btn flat label="Cancel" color="primary" size="sm" v-close-popup />
+            <q-btn flat label="Load" color="primary" size="sm" @click="loadSelectedAnimation" />
+          </q-card-actions>
+        </q-card>
+      </q-dialog>
+
       <q-dialog v-model="showSaveStatePopUp" persistent transition-show="slide-up" transition-hide="slide-down">
         <q-card>
           <q-card-section>
@@ -122,6 +139,23 @@
           <q-card-actions>
             <q-btn flat label="Cancel" color="primary" size="sm" v-close-popup />
             <q-btn flat label="Save" color="primary" size="sm" @click="upload_diagram" />
+          </q-card-actions>
+        </q-card>
+      </q-dialog>
+
+      <q-dialog v-model="showSaveAnimationPopUp" persistent transition-show="slide-up" transition-hide="slide-down">
+        <q-card>
+          <q-card-section>
+            <div class="text-h6">Save animation to server</div>
+          </q-card-section>
+
+          <q-card-section class="q-pt-none">
+            <q-input v-model="selectedAnimation" label="animation name" filled clearable />
+          </q-card-section>
+
+          <q-card-actions>
+            <q-btn flat label="Cancel" color="primary" size="sm" v-close-popup />
+            <q-btn flat label="Save" color="primary" size="sm" @click="upload_animation" />
           </q-card-actions>
         </q-card>
       </q-dialog>
@@ -204,6 +238,7 @@ import { useGeneralStore } from 'src/stores/general';
 import { useUserStore } from 'src/stores/user';
 import { useStateStore } from 'src/stores/state';
 import { useDiagramStore } from 'src/stores/diagram';
+import { useAnimationStore } from 'src/stores/animation';
 import { explain } from 'src/boot/explain';
 
 export default defineComponent({
@@ -214,12 +249,14 @@ export default defineComponent({
     const general = useGeneralStore()
     const state = useStateStore()
     const diagram = useDiagramStore()
+    const animation = useAnimationStore()
 
     return {
       user,
       general,
       state,
-      diagram
+      diagram,
+      animation
     }
   },
   data() {
@@ -255,10 +292,16 @@ export default defineComponent({
       sharedStateList: [],
       showLoadDiagramPopUp: false,
       showSaveDiagramPopUp: false,
+      showLoadAnimationPopUp: false,
+      showSaveAnimationPopUp: false,
       selectedDiagram: "",
+      selectedAnimation: "",
       diagramList: [],
       userDiagramList: [],
       sharedDiagramList: [],
+      animationList: [],
+      userAnimationList: [],
+      sharedAnimationList: [],
       userInput: "",
       durations: [1, 2, 3, 5, 10, 20, 30, 60, 120, 240, 360, 600, 1200, 1800],
       current_model_definition: 'baseline_neonate',
@@ -321,6 +364,24 @@ export default defineComponent({
       this.buildDiagramList()
       this.showLoadDiagramPopUp = true
     },
+    async loadSelectedAnimation() {
+      let result = await this.animation.getAnimationFromServer(this.general.apiUrl, this.user.name, this.selectedAnimation, this.user.token)
+      if (result) {
+        this.showLoadAnimationPopUp = false
+        console.log(this.animation.animation_definition)
+        this.$bus.emit("rebuild_animation");
+      }
+      this.showLoadAnimationPopUp = false
+    },
+    async getAllUserAnimations() {
+      this.animationList = []
+      this.userAnimationList = []
+
+      this.userAnimationList = await this.animation.getAllUserAnimationsFromServer(this.general.apiUrl, this.user.name, this.user.token)
+
+      this.buildAnimationList()
+      this.showLoadAnimationPopUp = true
+    },
     toggleSharedStates() {
       this.buildStateList()
     },
@@ -336,6 +397,10 @@ export default defineComponent({
     buildDiagramList() {
       this.selectedDiagram = ""
       this.diagramList = [...this.userDiagramList]
+    },
+    buildAnimationList() {
+      this.selectedAnimation = ""
+      this.animationList = [...this.userAnimationList]
     },
     protectState() {
       this.state.protected = !this.state.protected
@@ -431,6 +496,11 @@ export default defineComponent({
       this.selectedDiagram = this.state.name
       this.showSaveDiagramPopUp = true
     },
+    saveAnimation() {
+      this.stopRt()
+      this.selectedAnimation = this.state.name
+      this.showSaveAnimationPopUp = true
+    },
     submitInput() {
       if (this.userInput.length > 0) {
         this.state.renameState(this.userInput, this.user.name)
@@ -459,6 +529,22 @@ export default defineComponent({
           this.popupClass = "text-h6"
           this.$bus.emit('show_popup', { title: "Success!", message: t.message })
           this.showSaveDiagramPopUp = false;
+        } else {
+          this.popupClass = "text-h6 text-negative"
+          this.$bus.emit('show_popup', { title: "Error!", message: t.message })
+          //this.showSaveDiagramPopUp = false;
+        }
+      })
+    },
+    upload_animation() {
+      // update the name of the diagram definition
+      this.animation.animation_definition.settings.name = this.selectedAnimation;
+      // save the diagram definition
+      this.animation.saveAnimationToServer(this.general.apiUrl, this.user.name, this.selectedAnimation, this.user.token).then((t) => {
+        if (t.result) {
+          this.popupClass = "text-h6"
+          this.$bus.emit('show_popup', { title: "Success!", message: t.message })
+          this.showSaveAnimationPopUp = false;
         } else {
           this.popupClass = "text-h6 text-negative"
           this.$bus.emit('show_popup', { title: "Error!", message: t.message })
@@ -573,6 +659,8 @@ export default defineComponent({
     document.removeEventListener("state_saved", this.stateSaved);
     this.$bus.off('open_diagram_dialog', () => this.getAllUserDiagrams())
     this.$bus.off('open_diagram_dialog', () => this.saveDiagram())
+    this.$bus.off('load_animation_dialog', () => this.getAllUserAnimations())
+    this.$bus.off('save_animation_dialog', () => this.saveAnimation())
     
   },
   mounted() {
@@ -662,6 +750,9 @@ export default defineComponent({
 
     this.$bus.on('load_diagram_dialog', () => this.getAllUserDiagrams())
     this.$bus.on('save_diagram_dialog', () => this.saveDiagram())
+
+    this.$bus.on('load_animation_dialog', () => this.getAllUserAnimations())
+    this.$bus.on('save_animation_dialog', () => this.saveAnimation())
   }
 })
 </script>
