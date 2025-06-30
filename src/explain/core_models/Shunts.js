@@ -406,7 +406,7 @@ export class Shunts {
         this.fo_length,
         this.viscosity
       );
-      this._fo.r_for = this.fo_res * this.fo_res_forwardflow_factor; // RA -> LA
+      //this._fo.r_for = this.fo_res * this.fo_res_forwardflow_factor; // RA -> LA
       this._fo.r_back = this.fo_res * this.fo_res_backflow_factor; // LA -> RA
       this._fo.r_k = this.fo_r_k;
     } else {
@@ -517,7 +517,7 @@ export class Shunts {
     this._fo.is_enabled = this.fo_enabled;
     this._fo.no_flow = false;
     this._fo.no_back_flow = false;
-    this._fo.r_for = this.fo_res;
+    //this._fo.r_for = this.fo_res;
     this._fo.r_back = this.fo_res * this.fo_res_backflow_factor;
     this._fo.r_k = this.ips_r_k;
     // add the shunt to the list

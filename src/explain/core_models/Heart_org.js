@@ -1,5 +1,5 @@
-export class Heart {
-  static model_type = "Heart";
+export class Heart_org {
+  static model_type = "Heart_org";
   static model_interface = [
     {
       target: "is_enabled",
@@ -572,8 +572,6 @@ export class Heart {
   pericardium = "";
   left_atrium = "";
   right_atrium = "";
-  right_atrium_1 = "";
-  right_atrium_2 = "";
   left_ventricle = "";
   right_ventricle = "";
   mitral_valve = "";
@@ -613,8 +611,6 @@ export class Heart {
   _lv = {};
   _av = {};
   _ra = {};
-  _ra1 = {};
-  _ra2 = {};
   _tv = {};
   _rv = {};
   _pv = {};
@@ -656,8 +652,6 @@ export class Heart {
     // get a reference to all the heart models
     this._la = this._model_engine.models[this.left_atrium];
     this._ra = this._model_engine.models[this.right_atrium];
-    this._ra1 = this._model_engine.models[this.right_atrium_1];
-    this._ra2 = this._model_engine.models[this.right_atrium_2];
     this._lv = this._model_engine.models[this.left_ventricle];
     this._rv = this._model_engine.models[this.right_ventricle];
 
@@ -827,8 +821,6 @@ export class Heart {
     // transfer the activation factor to the heart components
     this._la.act_factor = this.aaf;
     this._ra.act_factor = this.aaf;
-    this._ra1.act_factor = this.aaf;
-    this._ra2.act_factor = this.aaf;
     this._lv.act_factor = this.vaf;
     this._rv.act_factor = this.vaf;
 

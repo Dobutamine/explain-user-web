@@ -255,8 +255,11 @@ export class Blood {
   descending_aorta = "AD";
   inferior_vena_cava = "IVCI";
   superior_vena_cava = "SVC";
-  right_atrium = "RA";
-  right_atrium_2 = "RA2"
+  //right_atrium = "RA";
+  right_atrium_1 = "RA1";
+  right_atrium_2 = "RA2";
+  right_ventricle = "RV";
+  left_ventricle = "LV";
   viscosity = 6.0;
   blood_containing_components = [];
   pres_cor_factor = 1.0;
@@ -312,7 +315,11 @@ export class Blood {
   _ad = {};
   _ivci = {};
   _svc = {};
-  _ra = {};
+  //_ra = {};
+  _ra1 = {};
+  _ra2 = {};
+  _rv = {};
+  _lv = {};
 
   to2 = 0.0;
   tco2 = 0.0;
@@ -359,8 +366,11 @@ export class Blood {
     this._ad = this._model_engine.models[this.descending_aorta];
     this._ivci = this._model_engine.models[this.inferior_vena_cava];
     this._svc = this._model_engine.models[this.superior_vena_cava];
-    this._ra = this._model_engine.models[this.right_atrium];
+    //this._ra = this._model_engine.models[this.right_atrium];
+    this._ra1 = this._model_engine.models[this.right_atrium_1];
     this._ra2 = this._model_engine.models[this.right_atrium_2];
+    this._rv = this._model_engine.models[this.right_ventricle];
+    this._lv = this._model_engine.models[this.left_ventricle];
 
     // set the flag to model is initialized
     this._is_initialized = true;
@@ -510,9 +520,13 @@ export class Blood {
 
       set_blood_composition(this._aa);
       set_blood_composition(this._ad);
-      set_blood_composition(this._ra);
+      //set_blood_composition(this._ra);
+      set_blood_composition(this._ra1);
       set_blood_composition(this._ra2);
       set_blood_composition(this._ivci);
+      set_blood_composition(this._svc);
+      set_blood_composition(this._rv);
+      set_blood_composition(this._lv);
 
       this.ph_pre = this._aa.aboxy.ph;
       this.po2_pre = this._aa.aboxy.po2;
@@ -550,26 +564,20 @@ export class Blood {
       this.be = this.be_post;
       this.so2 = this.so2_post;
 
-      this.ph_ven = this._ra.aboxy.ph;
-      this.po2_ven = this._ra.aboxy.po2;
-      this.pco2_ven = this._ra.aboxy.pco2;
-      this.hco3_ven = this._ra.aboxy.hco3;
-      this.be_ven = this._ra.aboxy.be;
-      this.so2_ven = this._ra.aboxy.so2;
+      //this.ph_ven = this._ra.aboxy.ph;
+      //this.po2_ven = this._ra.aboxy.po2;
+      //this.pco2_ven = this._ra.aboxy.pco2;
+      //this.hco3_ven = this._ra.aboxy.hco3;
+      //this.be_ven = this._ra.aboxy.be;
+      //this.so2_ven = this._ra.aboxy.so2;
 
-      this.ph_ivci = this._ivci.aboxy.ph;
-      this.po2_ivci = this._ivci.aboxy.po2;
-      this.pco2_ivci = this._ivci.aboxy.pco2;
-      this.hco3_ivci = this._ivci.aboxy.hco3;
-      this.be_ivci = this._ivci.aboxy.be;
+      this.so2_svc = this._svc.aboxy.so2;
       this.so2_ivci = this._ivci.aboxy.so2;
-
-      this.ph_ra2 = this._ra2.aboxy.ph;
-      this.po2_ra2 = this._ra2.aboxy.po2;
-      this.pco2_ra2 = this._ra2.aboxy.pco2;
-      this.hco3_ra2 = this._ra2.aboxy.hco3;
-      this.be_ra2 = this._ra2.aboxy.be;
+      this.so2_ra1 = this._ra1.aboxy.so2;
       this.so2_ra2 = this._ra2.aboxy.so2;
+      this.so2_rv = this._rv.aboxy.so2;
+      this.so2_lv = this._lv.aboxy.so2;
+      
     }
     this._update_counter += this._t;
   }

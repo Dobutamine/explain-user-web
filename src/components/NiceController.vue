@@ -385,7 +385,8 @@ export default {
       if (explain.modelState.models) {
         if (this.controllers.items) {
           for (let [controller_name, controller] of Object.entries(this.controllers.items)) {
-            switch (controller.type) {
+            try {
+                          switch (controller.type) {
               case 'factor':
                 controller.model_value = explain.modelState.models[controller.model][controller.prop]
                 controller.slider_value = this.translateValueToSlider(controller.model_value)
@@ -411,6 +412,11 @@ export default {
                 controller.display_value = controller.model_value
                 break;
             }
+               
+            } catch {
+              console.log('ugly fix')
+            }
+
           }
         }
       }

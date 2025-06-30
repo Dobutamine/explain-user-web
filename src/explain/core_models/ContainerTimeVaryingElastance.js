@@ -1,5 +1,5 @@
-export class Container {
-  static model_type = "Container";
+export class ContainerTimeVaryingElastance {
+  static model_type = "ContainerTimeVaryingElastance";
   static model_interface = [
     {
       target: "is_enabled",
@@ -28,8 +28,18 @@ export class Container {
       ll: 0.0,
     },
     {
-      target: "el_base",
-      caption: "baseline elastance (mmHg/l)",
+      target: "el_min",
+      caption: "minimal elastance (mmHg/l)",
+      type: "number",
+      factor: 1,
+      delta: 1,
+      rounding: 0,
+      ul: 100000000.0,
+      ll: 1,
+    },
+    {
+      target: "el_max",
+      caption: "maximal elastance (mmHg/l)",
       type: "number",
       factor: 1,
       delta: 1,
@@ -62,10 +72,6 @@ export class Container {
   el_min = 0.0;
   el_max = 0.0;
   el_k = 0.0;
-  solutes = {};
-  aboxy = {};
-  drugs = {};
-  temp = 37.0;
 
   pres_ext = 0.0;
   pres_cc = 0.0;
@@ -228,7 +234,7 @@ export class Container {
     // calculate the end diastolic pressure
     this.pres_ed = _e_min * vol_diff + _el_k * Math.pow(vol_diff, 2);
 
-    this.el = ((_e_max - _e_min) * this.act_factor) / 1000.0;
+    this.el = ((_e_max - _e_min) * this.act_factor);
 
     // calculate the maximal systolic pressure
     this.pres_ms = _e_max * vol_diff;
