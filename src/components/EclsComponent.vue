@@ -21,7 +21,6 @@
         </div>
       </div>
   
-  
       <!-- chart -->
       <div>
         <div v-if="isEnabled" class="q-mt-sm row text-overline justify-center"> {{  chart_title }}</div>

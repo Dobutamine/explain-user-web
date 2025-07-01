@@ -71,6 +71,7 @@ import { explain } from "../boot/explain";
             "type": "factor/number/boolean/string",
             "caller": "direct/function",
             "target": "Circulation.svr_factor",
+            "function": "Pda.set_diameter",
             "unit": "x",
             "min": 0.001,
             "max": 10,
@@ -123,7 +124,7 @@ export default {
             explain.setPropValue(parameter.target, parameter.model_value, 0.0)
           }
           if (parameter.caller == 'function') {
-            explain.callModelFunction(parameter.target, [parameter.model_value])
+            explain.callModelFunction(parameter.function, [parameter.model_value])
           }
           break;
         case "number":
@@ -133,7 +134,7 @@ export default {
             explain.setPropValue(parameter.target, parameter.model_value, 0.0)
           }
           if (parameter.caller == 'function') {
-            explain.callModelFunction(parameter.target, [parameter.model_value])
+            explain.callModelFunction(parameter.function, [parameter.model_value])
           }
           break;
         case "boolean":
@@ -141,7 +142,7 @@ export default {
             explain.setPropValue(parameter.target, parameter.model_value, 0.0)
           }
           if (parameter.caller == 'function') {
-            explain.callModelFunction(parameter.target, [parameter.model_value])
+            explain.callModelFunction(parameter.function, [parameter.model_value])
           }
           break;
         case "string":
@@ -149,7 +150,7 @@ export default {
             explain.setPropValue(parameter.target, parameter.model_value, 0.0)
           }
           if (parameter.caller == 'function') {
-            explain.callModelFunction(parameter.target, [parameter.model_value])
+            explain.callModelFunction(parameter.function, [parameter.model_value])
           }
           break;
       }
@@ -218,6 +219,13 @@ export default {
                 break;
               case 'string':
                 parameter.model_value = this.getModelValue(parameter.target)
+                break;
+              case 'function':
+                parameter.model_value = this.getModelValue(parameter.target)
+                parameter.slider_value = parameter.model_value;
+                if (!isNaN(parameter.model_value)) {
+                  parameter.display_value = parameter.model_value.toFixed(parameter.rounding)
+                }
                 break;
             }
           })

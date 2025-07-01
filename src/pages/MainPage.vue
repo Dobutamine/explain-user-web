@@ -16,7 +16,6 @@
             <q-tab name="animation_editor"><q-icon name="fa-solid fa-person" size="xs"></q-icon><q-tooltip>animation editor</q-tooltip>
             </q-tab>
           </q-tabs>
-
           <q-tab-panels v-model="tab_left" keep-alive style="background-color: black">
             <q-tab-panel name="model_editor">
               <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
@@ -80,7 +79,7 @@
                 opacity: 0.5
               }">
                 <div v-for="controller in state.configuration.controllers">
-                  <NiceController v-if="controller.enabled" :title="controller.title" :collapsed="controller.collapsed" :parameters="controller.parameters"></NiceController>
+                  <ControllerComponent v-if="controller.enabled" :title="controller.title" :collapsed="controller.collapsed" :properties="controller.properties"></ControllerComponent>
                 </div>
               </q-scroll-area>
             </q-tab-panel>
@@ -294,6 +293,7 @@ import AnimationEditor from 'src/components/AnimationEditor.vue';
 import ModelBuilderComponent from 'src/components/ModelBuilderComponent.vue';
 
 import { explain } from 'src/boot/explain';
+import ControllerComponent from 'src/components/ControllerComponent.vue';
 
 
 export default defineComponent({
@@ -322,7 +322,8 @@ export default defineComponent({
     TaskScheduler,
     EclsComponent,
     AnimationComponent,
-    AnimationEditor
+    AnimationEditor,
+    ControllerComponent
   },
   data() {
     return {

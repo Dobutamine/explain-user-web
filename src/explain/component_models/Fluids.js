@@ -67,11 +67,11 @@ export class Fluids extends BaseModelClass {
     // initialize independent properties
     this.fluids_temp = 37.0
     this.fluids = {}
+    this.default_volume = 10;
 
     // initialize dependent properties
     
     // initialize local properties (preceded with _)
-    this._default_volume = 10;
     this._default_time = 10;
     this._default_type = "normal_saline"
     this._running_fluid_list = []
@@ -90,6 +90,7 @@ export class Fluids extends BaseModelClass {
         this.process_fluid_list();
     }
   }
+
    add_volume(volume, in_time = 10, fluid_in = "normal_saline", site = "VLB") {
     // build a fluid object which can be fed to a BloodVessel, BloodCapacitance or BloodTimeVaryingElastance
     let fluid = {

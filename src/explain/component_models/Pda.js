@@ -276,6 +276,11 @@ export class Pda extends BaseModelClass {
 
   }
 
+  set_diameter(new_diameter) {
+    this.diameter_ao = new_diameter;
+    this.diameter_pa = new_diameter;
+  }
+
   calc_closure() {}
 
   calc_resistance(diameter, length = 20.0, viscosity = 6.0) {

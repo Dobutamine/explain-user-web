@@ -79,7 +79,7 @@ export class Circulation extends BaseModelClass {
     {
       caption: "svr factor",
       target: "svr_factor",
-      type: "number",
+      type: "factor",
       factor: 1.0,
       delta: 0.01,
       rounding: 2,
