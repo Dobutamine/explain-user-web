@@ -11,15 +11,18 @@
 
         <div>
           <div class="q-pa-sm q-mt-xs q-mb-xs q-ml-md q-mr-md text-overline justify-center row">
-            <q-btn-toggle v-model="edit_mode" color="grey-9" size="xs" text-color="white" toggle-color="black" :options="[
-              { label: 'BASIC', value: 'basic' },
-              { label: 'ADVANCED', value: 'advanced' },
-              { label: 'FACTORS', value: 'factors' },
-              { label: 'ALL', value: 'all' },
-            ]" />
+            <div class="q-ma-sm q-gutter-xs row items-center">
+              <div v-for="(field, index) in state.configuration.controllers" :key="index">
+                <q-btn-toggle v-model="selectedModelName" color="grey-9" size="xs" spread text-color="white" toggle-color="primary" :options="field" @update:model-value="modelChanged"/>
+              </div>
+            </div>
+
+
+   
           </div>
+
           <div v-if="redraw > 0.0" class="q-ma-sm q-mb-md">
-            <div v-for="(field, index) in itemList" :key="index">
+            <div v-for="(field, index) in selectedModelInterface" :key="index">
               <div v-if="field.edit_mode == edit_mode || edit_mode == 'all'">
                 <div v-if="field.type == 'number'">
                   <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
@@ -33,27 +36,17 @@
                   </div>
                 </div>
 
-                 <div v-if="field.type == 'factor'">
-                    <div class="row justify-center">
-                        <q-badge class="q-pa-sm" color="grey-10">
-                        <div class="text-secondary" style="font-size: small;">
-                            {{ field.caption }} = {{ field.display_value }} x N
-                        </div>
-                        </q-badge>
+                <div v-if="field.type == 'factor' && factorsEnabled">
+                  <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
+                    <div class="text-white" :style="{ 'font-size': '10px' }">
+                      <q-input v-model="field.value" :label="field.caption" :max="10000000000" :min="0" :readonly="field.readonly"
+                        :step="0.05" color="blue" hide-hint filled dense
+                        @update:model-value="changePropState(field, arg)" stack-label type="number"
+                        style="font-size: 12px" class="q-mb-sm" squared>
+                      </q-input>
                     </div>
-                    <div class="row  justify-center">
-                        <q-btn @click="decreaseValue(field)" class="q-ma-sm col" color="grey-10" dense size="xs"
-                        icon="fa-solid fa-chevron-left"></q-btn>
-
-                        <q-slider class="q-ma-sm q-mr-sm col-8" v-model="field.slider_value" :step="field.step"
-                        :min="field.ll" :max="field.ul" snap :markers="10" dense thumb-color="teal"
-                        color="transparent" @change="changeValue(field)" />
-                        
-                        <q-btn @click="increaseValue(field)" class="q-ma-sm col" dense size="xs" color="grey-10"
-                        icon="fa-solid fa-chevron-right"></q-btn>
-                    </div>
+                  </div>
                 </div>
-
 
                 <div v-if="field.type == 'boolean'">
                   <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary row" :style="{ 'font-size': '12px' }">
@@ -159,10 +152,21 @@
                         style="font-size: 12px" class="q-ml-md q-mr-md q-mb-sm" squared>
                       </q-select>
                     </div>
+
                   </div>
                 </div>
               </div>
             </div>
+          </div>
+
+
+          <div v-if="selectedModelName && state_changed" class="row q-ma-md">
+            <q-select label-color="white" class="col q-ma-sm" v-model="changeInTime" :options="timeOptions"
+              label="apply changes in (sec)" style="font-size: 12px" hide-hint dense dark stack-label />
+          </div>
+          <div v-if="selectedModelName && state_changed" class="row q-ma-md">
+            <q-btn class="col q-ma-sm q-ml-xl q-mr-xl" color="primary" size="sm" dense @click="updateValue"
+              style="font-size: 10px">APPLY CHANGES<q-tooltip>apply property changes</q-tooltip></q-btn>
           </div>
         </div>
       </q-card>
@@ -176,92 +180,242 @@
 import { explain } from "../boot/explain";
 import { useStateStore } from "src/stores/state";
 
+
 export default {
   setup() {
-    let itemList = []
+    let selectedModelInterface = []
+    let selectedNewModelProps = []
     const state = useStateStore();
 
     return {
-      itemList, state
+      selectedModelInterface: selectedModelInterface, selectedNewModelProps, state
     }
   },
   props: {
-    title: String,
-    collapsed: Boolean,
-    properties: Array
+    title: String
   },
   data() {
     return {
+      collapsed: false,
       isEnabled: true,
+      addEnabled: false,
       factorsEnabled: true,
       redraw: 1,
+      availableModelTypes: [],
+      selectedModelType: "",
+      selectedNewModelPropsChoices: [],
+      showNewModelInDiagram: false,
+      newModelErrorFlag: false,
+      noNewModelError: "q-ml-md q-mr-md q-mt-md text-secondary text-center",
+      newModelError: "q-ml-md q-mr-md q-mt-md text-negative text-center",
+      newModelErrorClass: "q-ml-md q-mr-md q-mt-md text-secondary text-center",
+      newModelErrorMessage: "no error",
+      modelTypes: ["BloodCapacitance", "BloodTimeVaryingElastance", "BloodResistor", "BloodValve", "BloodDiffusor", "BloodPump", "GasCapacitance"],
+      selectedModelName: "",
+      show_optionals: false,
+      show_relatives: false,
+      optionals_caption: "SHOW ADVANCED",
+      optionals_color: "grey-9",
+      optionals_text: "show advanced properties",
+      relatives_caption: "SHOW RELATIVES",
+      relatives_color: "grey-9",
+      relatives_text: "show relative properties",
+      modelNames: [],
       timeOptions: [1, 5, 10, 30, 60, 120, 240, 360],
-      changeInTime: 1,
+      changeInTime: 5,
       state_changed: false,
-      edit_mode: "basic",
-      propertyList: []
+      collaps_icon: "fa-solid fa-chevron-up",
+      edit_mode: "basic"
     };
   },
   methods: {
-    processPropertyList() {
-        this.itemList = []
-        this.propertyList.forEach(prop => {
-            // process the prop
-            let t  = prop.split('.')
-            let m = t[0]
-            let p = t[1]
-            // find the the correct modelInterface item for this prop
-            let model_interface = explain.getModelInterface(m)
-            // find the correct item in the model interface
-            let param = model_interface.find(item => item.target === p);
-            // add the model name to the parameter
-            param['model'] = m;
-            // we have to extend the param with some additional properties
-            param['state_changed'] = false
-            if (param.readonly === undefined) {
-            param['readonly'] = false
-            }
-            if (!param['edit_mode']) {
-            param['edit_mode'] = 'basic'
-            }
-            // process the different types of parameters
-            switch (param.type) {
-            case 'number':
-                this.processNumberType(param)
-                break;
-            case 'factor':
-                this.processFactorType(param)
-                break;
-            case 'string':
-                this.processStringType(param)
-                break;
-            case 'boolean':
-                this.processBooleanType(param)
-                break;
-            case 'list':
-                this.processListType(param)
-                break;
-            case 'multiple-list':
-                this.processMultipleListType(param)
-                break;
-            case 'prop-list':
-                this.processPropListType(param)
-                break;
-            case 'function':
-                this.processFunctionType(param)
-                break;
-            case 'object':
-                // for objects we don't need to do anything here, they will be processed later
-                break;
-            case 'object-list':
-                this.processObjectListType(param)
-                break;
-            default:
-                console.error("Unknown type: ", param.type)
-            }
-            this.itemList.push(param)
-        })
-        this.redraw += 1
+    selectMode() {},
+    cancelAddModel() {
+      this.selectedModelType = ""
+      this.resetNewModel()
+    },
+    addNewModelToEngine() {
+      this.newModelErrorFlag = false
+      this.selectedNewModelProps.forEach(prop => {
+        if (prop.target == "name" && prop.value == "") {
+          this.newModelErrorFlag = true
+          this.newModelErrorClass = this.newModelError
+          this.newModelErrorMessage = "name is missing"
+        }
+        if (prop.target == "name" && this.modelNames.includes(prop.value)) {
+          this.newModelErrorFlag = true
+          this.newModelErrorClass = this.newModelError
+          this.newModelErrorMessage = "this is name is already in use"
+        }
+      })
+
+      if (this.newModelErrorFlag) return
+
+      // convert the properties to a dictionary which the model engine can understand
+      let new_model = {
+        model_type: this.selectedModelType
+      }
+      // add the properties
+      this.selectedNewModelProps.forEach(prop => {
+        if (prop.type !== 'function') {
+          new_model[prop.target] = prop.value
+          if (prop.type == 'number') {
+            new_model[prop.target] = parseFloat(prop.value / prop.factor)
+          }
+        }
+      })
+      // send to the model for processing
+      explain.addNewModel(new_model)
+
+      this.resetNewModel()
+      this.selectedModelType = ""
+    },
+    resetNewModel() {
+      this.selectedNewModelProps = []
+      this.newModelErrorClass = this.noNewModelError
+      this.newModelErrorFlag = false
+      this.redraw += 1
+    },
+    addNewModel() {
+      // reset the new model properties
+      this.resetNewModel()
+
+      // get the model interface of the selected model
+      explain.getModelTypeInterface(this.selectedModelType)
+    },
+    deleteModel() {
+      explain.deleteModel(this.selectedModelName)
+    },
+    processModelTypeInterface(modeltype_interface) {
+      // we have to convert the model properties to a format which the editor can understand, this is an array of objects and store in selectedNewModelProps
+      // clear the current selectedNewModelProps holding the new model properties
+      this.selectedNewModelProps = []
+      // add a new name and description field
+      this.selectedNewModelProps.push({
+        "caption": "name",
+        "target": "name",
+        "type": "string",
+        "value": "",
+      })
+      this.selectedNewModelProps.push({
+        "caption": "description",
+        "target": "description",
+        "type": "string",
+        "value": "",
+      })
+      // process the model interface
+      modeltype_interface.forEach(prop => {
+        if (prop.type == 'number') {
+          prop['value'] = prop['default'] * prop['factor']
+        } else {
+          prop['value'] = prop['default']
+        }
+        //if the property is a list then add the options to the choices
+        if (prop.type == 'list') {
+          prop['choices'] = []
+          if (prop['option_default']) {
+            prop['choices'] = prop['options_default']
+          }
+          if (prop.options) {
+            Object.values(explain.modelState.models).forEach(model => {
+              if (prop.options.includes(model.model_type)) {
+                prop["choices"].push(model.name)
+              }
+            })
+
+          }
+        }
+        if (prop.type == 'multiple-list') {
+          prop['choices'] = []
+          if (prop['option_default']) {
+            prop['choices'] = prop['options_default']
+          }
+          if (prop.options) {
+            Object.values(explain.modelState.models).forEach(model => {
+              if (prop.options.includes(model.model_type)) {
+                prop["choices"].push(model.name)
+              }
+            })
+          }
+        }
+        this.selectedNewModelProps.push(prop)
+      })
+      this.redraw += 1
+    },
+    processModelInterface(model_type, model_props) {
+      console.log("received model interface of ", model_type)
+      console.log(model_props)
+      // we have to convert the model properties to a format which the editor can understand, this is an array of objects and store in selectedNewModelProps
+      // clear the current selectedNewModelProps holding the new model properties
+      this.selectedNewModelProps = []
+      // add a new name and description field
+      this.selectedNewModelProps.push({
+        "caption": "name",
+        "target": "name",
+        "type": "string",
+        "value": "",
+      })
+      this.selectedNewModelProps.push({
+        "caption": "description",
+        "target": "description",
+        "type": "string",
+        "value": "",
+      })
+      // process the model interface
+      model_props.forEach(prop => {
+        if (prop.type == 'number') {
+          prop['value'] = prop['default'] * prop['factor']
+        } else {
+          prop['value'] = prop['default']
+        }
+        // if the property is a list then add the options to the choices
+        if (prop.type == 'list') {
+          prop['choices'] = []
+          if (prop['option_default']) {
+            prop['choices'] = prop['options_default']
+          }
+          if (prop.options) {
+            Object.values(explain.modelState.models).forEach(model => {
+              if (prop.options.includes(model.model_type)) {
+                prop["choices"].push(model.name)
+              }
+            })
+
+          }
+        }
+        if (prop.type == 'multiple-list') {
+          prop['choices'] = []
+          if (prop['option_default']) {
+            prop['choices'] = prop['options_default']
+          }
+          if (prop.options) {
+            Object.values(explain.modelState.models).forEach(model => {
+              if (prop.options.includes(model.model_type)) {
+                prop["choices"].push(model.name)
+              }
+            })
+          }
+        }
+        this.selectedNewModelProps.push(prop)
+      })
+      this.redraw += 1
+
+
+    },
+    collapsEditor() {
+
+      if (this.isEnabled) {
+        this.isEnabled = false
+        this.collaps_icon = "fa-solid fa-chevron-up"
+      } else {
+        this.isEnabled = true
+        this.collaps_icon = "fa-solid fa-chevron-down"
+      }
+    },
+    changeNewPropState(param, arg) {
+      this.state_changed = true
+      param.state_changed = true
+      this.redraw += 1
     },
     changePropState(param, arg) {
       if (param.type == "prop-list" && arg == 'model_changed') {
@@ -278,14 +432,13 @@ export default {
       }
       this.state_changed = true
       param.state_changed = true
-      this.updateValue();
       this.redraw += 1
     },
     updateValue() {
-      this.itemList.forEach(prop => {
+      this.selectedModelInterface.forEach(prop => {
         if (prop.state_changed) {
           if (prop.type == 'function') {
-            let function_name = prop.model + "." + prop.target;
+            let function_name = this.selectedModelName + "." + prop.target;
             let function_args = []
             prop.args.forEach(arg => {
               if (arg.type == 'number') {
@@ -298,39 +451,39 @@ export default {
           }
 
           if (prop.type == 'number') {
-            let p = prop.model + "." + prop.target
+            let p = this.selectedModelName + "." + prop.target
             explain.setPropValue(p, parseFloat(prop.value / prop.factor), parseFloat(this.changeInTime), 0)
           }
           if (prop.type == 'factor') {
-            let p = prop.model + "." + prop.target
+            let p = this.selectedModelName + "." + prop.target
             explain.setPropValue(p, parseFloat(prop.value / prop.factor), parseFloat(this.changeInTime), 0)
           }
           if (prop.type == 'boolean') {
-            let p = prop.model + "." + prop.target
+            let p = this.selectedModelName + "." + prop.target
             explain.setPropValue(p, prop.value, 0, 0)
           }
           if (prop.type == 'string') {
             let new_value = prop.value
-            let p = prop.model+ "." + prop.target
+            let p = this.selectedModelName + "." + prop.target
             explain.setPropValue(p, new_value, 0, 0)
           }
           if (prop.type == 'list') {
             let new_value = prop.value
-            let p = prop.model + "." + prop.target
+            let p = this.selectedModelName + "." + prop.target
             explain.setPropValue(p, new_value, 0, 0)
           }
           if (prop.type == 'multiple-list') {
             let new_value = prop.value
-            let p = prop.model + "." + prop.target
+            let p = this.selectedModelName + "." + prop.target
             explain.setPropValue(p, new_value, 0, 0)
           }
           if (prop.type == 'prop-list') {
             let new_value_model = prop.value_model
-            let p_model = prop.model + "." + prop.target_model
+            let p_model = this.selectedModelName + "." + prop.target_model
             explain.setPropValue(p_model, new_value_model, 0, 0)
 
             let new_value_prop = prop.value_prop
-            let p_prop = prop.model + "." + prop.target_prop
+            let p_prop = this.selectedModelName + "." + prop.target_prop
             explain.setPropValue(p_prop, new_value_prop, 0, 0)
           }
         }
@@ -340,17 +493,84 @@ export default {
       this.state_changed = false
 
     },
+    cancel() {
+      this.selectedModelName = ""
+      this.selectedModelInterface = {}
+      this.state_changed = false
+      explain.getModelState()
+    },
+    modelChanged() {
+      // enable the full control
+      this.isEnabled = true
+      this.collaps_icon = "fa-solid fa-chevron-down"
+      this.state_changed = false
+      this.selectModel()
+      explain.getModelState()
+    },
+    selectModel() {
+      // get the model interface of the model type of the seleced model
+      this.selectedModelInterface = explain.getModelInterface(this.selectedModelName)
+
+      // add a flag to the property which can be set when the property needs to be updated
+      this.selectedModelInterface.forEach(param => {
+        // we have to extend the param with some additional properties
+        param['state_changed'] = false
+        if (param.readonly === undefined) {
+          param['readonly'] = false
+        }
+
+        if (!param['edit_mode']) {
+          param['edit_mode'] = 'basic'
+        }
+        // process the different types of parameters
+        switch (param.type) {
+          case 'number':
+            this.processNumberType(param)
+            break;
+          case 'factor':
+            this.processFactorType(param)
+            break;
+          case 'string':
+            this.processStringType(param)
+            break;
+          case 'boolean':
+            this.processBooleanType(param)
+            break;
+          case 'list':
+            this.processListType(param)
+            break;
+          case 'multiple-list':
+            this.processMultipleListType(param)
+            break;
+          case 'prop-list':
+            this.processPropListType(param)
+            break;
+          case 'function':
+            this.processFunctionType(param)
+            break;
+          case 'object':
+            // for objects we don't need to do anything here, they will be processed later
+            break;
+          case 'object-list':
+            this.processObjectListType(param)
+            break;
+          default:
+            console.error("Unknown type: ", param.type)
+        }
+      })
+      this.redraw += 1
+    },
     processNumberType(param) {
       let f_number = param.target.split('.')
       switch (f_number.length) {
         case 1:
-          param['value'] = explain.modelState.models[param.model][f_number[0]]
+          param['value'] = explain.modelState.models[this.selectedModelName][f_number[0]]
           break;
         case 2:
-          param['value'] = explain.modelState.models[param.model][f_number[0]][f_number[1]]
+          param['value'] = explain.modelState.models[this.selectedModelName][f_number[0]][f_number[1]]
           break;
         case 3:
-          param['value'] = explain.modelState.models[param.model][f_number[0]][f_number[1]][f_number[2]]
+          param['value'] = explain.modelState.models[this.selectedModelName][f_number[0]][f_number[1]][f_number[2]]
           break;
       }
       param['value'] = (param['value'] * param.factor).toFixed(param.rounding)
@@ -359,13 +579,13 @@ export default {
       let f_string = param.target.split('.')
       switch (f_string.length) {
         case 1:
-          param['value'] = explain.modelState.models[param.model][f_string[0]]
+          param['value'] = explain.modelState.models[this.selectedModelName][f_string[0]]
           break;
         case 2:
-          param['value'] = explain.modelState.models[param.model][f_string[0]][f_string[1]]
+          param['value'] = explain.modelState.models[this.selectedModelName][f_string[0]][f_string[1]]
           break;
         case 3:
-          param['value'] = explain.modelState.models[param.model][f_string[0]][f_string[1]][f_string[2]]
+          param['value'] = explain.modelState.models[this.selectedModelName][f_string[0]][f_string[1]][f_string[2]]
           break;
       }
     },
@@ -373,13 +593,13 @@ export default {
       let f_bool = param.target.split('.')
       switch (f_bool.length) {
         case 1:
-          param['value'] = explain.modelState.models[param.model][f_bool[0]]
+          param['value'] = explain.modelState.models[this.selectedModelName][f_bool[0]]
           break;
         case 2:
-          param['value'] = explain.modelState.models[param.model][f_bool[0]][f_bool[1]]
+          param['value'] = explain.modelState.models[this.selectedModelName][f_bool[0]][f_bool[1]]
           break;
         case 3:
-          param['value'] = explain.modelState.models[param.model][f_bool[0]][f_bool[1]][f_bool[2]]
+          param['value'] = explain.modelState.models[this.selectedModelName][f_bool[0]][f_bool[1]][f_bool[2]]
           break;
       }
     },
@@ -387,13 +607,13 @@ export default {
       let f_list = param.target.split('.')
       switch (f_list.length) {
         case 1:
-          param['value'] = explain.modelState.models[param.model][f_list[0]]
+          param['value'] = explain.modelState.models[this.selectedModelName][f_list[0]]
           break;
         case 2:
-          param['value'] = explain.modelState.models[param.model][f_list[0]][f_list[1]]
+          param['value'] = explain.modelState.models[this.selectedModelName][f_list[0]][f_list[1]]
           break;
         case 3:
-          param['value'] = explain.modelState.models[param.model][f_list[0]][f_list[1]][f_list[2]]
+          param['value'] = explain.modelState.models[this.selectedModelName][f_list[0]][f_list[1]][f_list[2]]
           break;
       }
       // if there's a default number then use it
@@ -415,13 +635,13 @@ export default {
       let f_mlist = param.target.split('.')
       switch (f_mlist.length) {
         case 1:
-          param['value'] = explain.modelState.models[param.model][f_mlist[0]]
+          param['value'] = explain.modelState.models[this.selectedModelName][f_mlist[0]]
           break;
         case 2:
-          param['value'] = explain.modelState.models[param.model][f_mlist[0]][f_mlist[1]]
+          param['value'] = explain.modelState.models[this.selectedModelName][f_mlist[0]][f_mlist[1]]
           break;
         case 3:
-          param['value'] = explain.modelState.models[param.model][f_mlist[0]][f_mlist[1]][f_mlist[2]]
+          param['value'] = explain.modelState.models[this.selectedModelName][f_mlist[0]][f_mlist[1]][f_mlist[2]]
           break;
       }
       if (param['default']) {
@@ -443,26 +663,22 @@ export default {
       param['edit_mode'] = 'factors'
       switch (f_factor.length) {
         case 1:
-          param['value'] = explain.modelState.models[param.model][f_factor[0]]
+          param['value'] = explain.modelState.models[this.selectedModelName][f_factor[0]]
           break;
         case 2:
-          param['value'] = explain.modelState.models[param.model][f_factor[0]][f_factor[1]]
+          param['value'] = explain.modelState.models[this.selectedModelName][f_factor[0]][f_factor[1]]
           break;
         case 3:
-          param['value'] = explain.modelState.models[param.model][f_factor[0]][f_factor[1]][f_factor[2]]
+          param['value'] = explain.modelState.models[this.selectedModelName][f_factor[0]][f_factor[1]][f_factor[2]]
           break;
       }
-      param['slider_value'] = this.translateValueToSlider(param.value)
       param['value'] = (param['value']).toFixed(2)
-      if (!isNaN(param.model_value)) {
-        param['display_value'] = param.model_value.toFixed(param.rounding)
-      }
     },
     processPropListType(param) {
       let f_model = param.target_model.split('.')
-      param['value_model'] = explain.modelState.models[param.model][f_model[0]]
+      param['value_model'] = explain.modelState.models[this.selectedModelName][f_model[0]]
       let f_prop = param.target_prop.split('.')
-      param['value_prop'] = explain.modelState.models[param.model][f_prop[0]]
+      param['value_prop'] = explain.modelState.models[this.selectedModelName][f_prop[0]]
       // file the options list
       param['choices_model'] = []
       param["choices_props"] = []
@@ -489,13 +705,13 @@ export default {
       // get the current value
       let f = arg.target.split('.')
       if (f.length == 1) {
-        arg['value'] = explain.modelState.models[param.model][f[0]]
+        arg['value'] = explain.modelState.models[this.selectedModelName][f[0]]
       }
       if (f.length == 2) {
-        arg['value'] = explain.modelState.models[param.model][f[0]][f[1]]
+        arg['value'] = explain.modelState.models[this.selectedModelName][f[0]][f[1]]
       }
       if (f.length == 3) {
-        arg['value'] = explain.modelState.models[param.model][f[0]][f[1]][f[2]]
+        arg['value'] = explain.modelState.models[this.selectedModelName][f[0]][f[1]][f[2]]
       }
 
       if (arg.target) {
@@ -511,7 +727,7 @@ export default {
             if (arg['options_default']) {
               arg['choices'] = arg['options_default']
             }
-            arg['value'] = explain.modelState.models[param.model][arg.target]
+            arg['value'] = explain.modelState.models[this.selectedModelName][arg.target]
             if (arg['default']) {
               arg['value'] = arg['default']
             }
@@ -526,7 +742,7 @@ export default {
             if (arg['options_default']) {
               arg['choices'] = arg['options_default']
             }
-            arg['value'] = explain.modelState.models[param.model][arg.target]
+            arg['value'] = explain.modelState.models[this.selectedModelName][arg.target]
             if (arg['default']) {
               arg['value'] = arg['default']
             }
@@ -540,6 +756,7 @@ export default {
       }
     })
     },
+    processObjectType(param) {},
     processObjectListType(param) {
       param.objects.forEach((object)=> {
                 // we have to extend the param with some additional properties
@@ -582,74 +799,34 @@ export default {
       })
       console.log(param)
     },
-    getModelValue(prop_name) {
-      let model_value = NaN;
-      let f_number = prop_name.split('.')
-      switch (f_number.length) {
-        case 1:
-          model_value = explain.modelState.models[f_number[0]]
-          break;
-        case 2:
-          model_value = explain.modelState.models[f_number[0]][f_number[1]]
-          break;
-        case 3:
-          model_value = explain.modelState.models[f_number[0]][f_number[1]][f_number[2]]
-          break;
-      }
-      return model_value;
+    processAvailableModels() {
+      this.modelNames = []
+      try {
+        if (Object.keys(explain.modelState.models)) {
+          this.modelNames = [...Object.keys(explain.modelState.models)].sort();
+          this.selectModel()
+        }
+      } catch { }
     },
-    increaseValue(parameter) {
-      parameter.slider_value += parameter.step
-      if (parameter.slider_value > parameter.max) {
-        parameter.slider_value = parameter.max
-      }
-      //this.changeValue(parameter)
-    },
-    decreaseValue(parameter) {
-      parameter.slider_value -= parameter.step
-      if (parameter.slider_value < parameter.min) {
-        parameter.slider_value = parameter.min
-      }
-      //this.changeValue(parameter)
-    },
-    translateSliderToValue(v) {
-      if (v == 0) {
-        return 1;
-      }
-
-      if (v < 0) {
-        return -(1 / (v - 1));
-      }
-
-      if (v < 1) {
-        return 1 + v
-      }
-
-      return 1 + v
-    },
-    translateValueToSlider(v) {
-      if (v < 1) {
-        return (-(1 / v) + 1.0)
-      }
-
-      if (v > 1) {
-        return (v - 1)
-      }
-
-      return 0;
+    processAvailableModelTypes(data) {
+      this.availableModelTypes = data
     },
   },
   beforeUnmount() {
+    this.state_changed = false
+    this.$bus.off("state", this.processAvailableModels)
+    this.$bus.off("model_interface", this.processModelInterface)
+    this.$bus.off("modeltype_interface",  this.processModelTypeInterface)
+    this.$bus.off("model_types", (e) => this.processAvailableModelTypes(e))
   },
   mounted() {
-    // set enabled state
-    this.isEnabled = !this.collapsed;
+    // update if state changes
+    this.$bus.on("state", this.processAvailableModels)
+    this.$bus.on("model_interface",  this.processModelInterface)
+    this.$bus.on("modeltype_interface",  (e) => this.processModelTypeInterface(e))
+    this.$bus.on("model_types", (e) => this.processAvailableModelTypes(e))
+    explain.getModelTypes()
 
-    // make a mutable list from the properties thic controller controls
-    this.propertyList = [...this.properties];
-
-    // process the controlled properties
-    this.processPropertyList();
   },
 };
 </script>

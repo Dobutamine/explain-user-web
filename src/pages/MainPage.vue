@@ -78,9 +78,7 @@
                 width: '5px',
                 opacity: 0.5
               }">
-                <div v-for="controller in state.configuration.controllers">
-                  <ControllerComponent v-if="controller.enabled" :title="controller.title" :collapsed="controller.collapsed" :properties="controller.properties"></ControllerComponent>
-                </div>
+              <ControllerComponent title="INTERVENTIONS"></ControllerComponent>
               </q-scroll-area>
             </q-tab-panel>
           </q-tab-panels>
