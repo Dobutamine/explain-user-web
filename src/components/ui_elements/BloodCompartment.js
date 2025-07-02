@@ -28,7 +28,8 @@ export default class BloodCompartment {
   connectors = {};
 
   volume = 0.1;
-  to2 = 7.4;
+  to2 = 6.4;
+  maxto2 = 4.2;
 
   edit_comp_event = null;
   editingMode = 1;
@@ -215,10 +216,10 @@ export default class BloodCompartment {
     if (isNaN(to2)) {
       return 0x666666;
     }
-    if (to2 > 6.95) {
-      to2 = 6.95;
+    if (to2 > this.maxto2) {
+      to2 = this.maxto2;
     }
-    let remap = this.remap(to2, 0, 6.95, -10, 1);
+    let remap = this.remap(to2, 0, this.maxto2, -10, 1);
     if (remap < 0) remap = 0;
     const red = (remap * 210).toFixed(0);
     const green = (remap * 80).toFixed(0);

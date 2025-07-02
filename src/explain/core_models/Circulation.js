@@ -61,6 +61,24 @@ export class Circulation {
       ],
     },
     {
+      target: "change_syst_ven_res", 
+      caption: "systemic veins resistance factor",
+      type: "function",
+      optional: false,
+      relative: false,
+      args: [
+        {
+          target: "svenres_change",
+          type: "number",
+          factor: 1,
+          delta: 0.01,
+          rounding: 2,
+          ul: 1000.0,
+          ll: 0.01,
+        },
+      ],
+    },
+    {
       target: "change_pulm_arterial_elastance",
       caption: "pulmonary arterial elastance factor",
       type: "function",
@@ -214,6 +232,7 @@ export class Circulation {
   systemic_veins = [];
   svr_targets = [];
   pvr_targets = [];
+  svenres_targets = ['LS_VLB', 'INT_VLB', 'KID_VLB', 'RLB_VLB']
   venpool_targets = [];
   current_blood_volume = 0.0;
 
@@ -221,6 +240,7 @@ export class Circulation {
   coarc_change = 1.0;
   pvr_change = 1.0;
   svr_change = 1.0;
+  svenres_change = 1.0;
   venpool_change = 1.0;
   pulmartcomp_change = 1.0;
   systartcomp_change = 1.0;
@@ -273,6 +293,20 @@ export class Circulation {
       this.total_blood_volume = this.get_total_blood_volume();
     }
     this._update_counter += this._t;
+  }
+
+  change_syst_ven_res(change_forward, change_backward = -1) {
+    console.log("Change systemic venous resistance with factor: ", change_forward);
+    if (change_forward > 0.0) {
+      this.svenres_change = change_forward;
+      this.svenres_targets.forEach((target) => {
+        this._model_engine.models[target].r_for_factor = change_forward;
+        this._model_engine.models[target].r_back_factor = change_forward;
+        if (change_backward >= 0.0) {
+          this._model_engine.models[target].r_back_factor = change_backward;
+        }
+      });
+    }
   }
 
   change_coarc(change_forward, change_backward = -1) {

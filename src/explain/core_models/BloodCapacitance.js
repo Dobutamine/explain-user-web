@@ -114,6 +114,9 @@ export class BloodCapacitance {
   pres_cor_max = 0.0;
   pres_cor_min = 0.0;
   pres_cor_mean = 0.0;
+  to2 = 0.0;
+  po2 = 0.0;
+  so2 = 0.0;
 
   // local parameters
   _model_engine = {};
@@ -216,6 +219,10 @@ export class BloodCapacitance {
 
     // analyze the pressures and volume
     this.analyze();
+
+    this.to2 = this.aboxy.to2;
+    this.po2 = this.aboxy.po2;
+    this.so2 = this.aboxy.so2;
 
     // reset the pressure which are recalculated every model iterattion
     this.pres_ext = 0.0;
