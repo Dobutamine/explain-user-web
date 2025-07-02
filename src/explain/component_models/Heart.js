@@ -5,19 +5,11 @@ export class Heart extends BaseModelClass {
   // static properties
   static model_type = "Heart";
   static model_interface = [
-    {    
-      target: "model_type",  
-      type: "string",
-      build_prop: false,
-      edit_mode: "basic",
-      readonly: true,
-      caption: "model type",
-    },
     {
       target: "description",
       type: "string",
       build_prop: true,
-      edit_mode: "basic",
+      edit_mode: "all",
       readonly: true,
       caption: "description",
     },
@@ -25,7 +17,7 @@ export class Heart extends BaseModelClass {
       target: "is_enabled",
       type: "boolean",
       build_prop: true,
-      edit_mode: "basic",
+      edit_mode: "all",
       readonly: false,
       caption: "enabled",
     },
@@ -37,6 +29,9 @@ export class Heart extends BaseModelClass {
       factor: 1.0,
       rounding: 0,
       readonly: false,
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
     },
     {
       caption: "pq time (s)",
@@ -45,6 +40,10 @@ export class Heart extends BaseModelClass {
       delta: 0.001,
       factor: 1.0,
       rounding: 3,
+      readonly: false,
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
     },
     {
       caption: "qrs time (s)",
@@ -53,6 +52,10 @@ export class Heart extends BaseModelClass {
       delta: 0.001,
       factor: 1.0,
       rounding: 3,
+      readonly: false,
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
     },
     {
       caption: "qt time (s)",
@@ -61,6 +64,10 @@ export class Heart extends BaseModelClass {
       delta: 0.001,
       factor: 1.0,
       rounding: 3,
+      readonly: false,
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
     },
     {
       caption: "av delay time (s)",
@@ -69,6 +76,10 @@ export class Heart extends BaseModelClass {
       delta: 0.0001,
       factor: 1.0,
       rounding: 4,
+      readonly: false,
+      build_prop: true,
+      edit_mode: "advanced",
+      readonly: false,
     },
     {
       caption: "heartrate factor",

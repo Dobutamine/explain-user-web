@@ -5,19 +5,11 @@ export class Blood extends BaseModelClass {
   // static properties
   static model_type = "Blood";
   static model_interface = [
-    {    
-      target: "model_type",  
-      type: "string",
-      build_prop: false,
-      edit_mode: "basic",
-      readonly: true,
-      caption: "model type",
-    },
     {
       target: "description",
       type: "string",
       build_prop: true,
-      edit_mode: "basic",
+      edit_mode: "all",
       readonly: true,
       caption: "description",
     },
@@ -25,12 +17,13 @@ export class Blood extends BaseModelClass {
       target: "is_enabled",
       type: "boolean",
       build_prop: true,
-      edit_mode: "basic",
+      edit_mode: "all",
       readonly: false,
       caption: "enabled",
     },
     {
       caption: "set temperature (C)",
+      edit_mode: "basic",
       target: "set_temperature",
       type: "function",
       args:[
@@ -48,6 +41,7 @@ export class Blood extends BaseModelClass {
     },
     {
       caption: "set viscosity (cP)",
+      edit_mode: "basic",
       target: "set_viscosity",
       type: "function",
       args:[
@@ -66,6 +60,7 @@ export class Blood extends BaseModelClass {
     {
       caption: "set total oxygen concentration (mmol/l)",
       target: "set_to2",
+      edit_mode: "advanced",
       type: "function",
       args:[
         {
@@ -89,6 +84,7 @@ export class Blood extends BaseModelClass {
     {
       caption: "set total carbon dioxide concentration (mmol/l)",
       target: "set_tco2",
+      edit_mode: "advanced",
       type: "function",
       args:[
         {
@@ -112,6 +108,7 @@ export class Blood extends BaseModelClass {
     {
       caption: "set solute concentration",
       target: "set_solute",
+      edit_mode: "basic",
       type: "function",
       args:[
         {

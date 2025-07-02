@@ -5,22 +5,28 @@
     </div>
     <div v-if="!collapsed">
       <!-- edit model part -->
-      <q-card class="q-pb-xs q-pt-xs q-ma-sm" bordered>
-        <div class="q-mt-es row gutter text-overline justify-center" @click="isEnabled = !isEnabled">
-        </div>
-
+      <q-card class="q-mr-sm q-ml-sm" bordered>
         <div>
-          <div class="q-pa-sm q-mt-xs q-mb-xs q-ml-md q-mr-md text-overline justify-center row">
-            <div class="q-ma-sm q-gutter-xs row items-center">
+          <div class="q-pa-sm q-mt-xs q-mb-sm q-ml-md q-mr-md text-overline justify-center row">
+            <div class="q-gutter-xs row items-center">
               <div v-for="(field, index) in state.configuration.controllers" :key="index">
-                <q-btn-toggle v-model="selectedModelName" color="grey-9" size="xs" spread text-color="white" toggle-color="primary" :options="field" @update:model-value="modelChanged"/>
+                <q-btn-toggle v-model="selectedModelName" color="grey-9" size="sm" spread text-color="white" toggle-color="primary" :options="field" @update:model-value="modelChanged"/>
               </div>
             </div>
-
-
-   
+          </div>
+          <q-separator></q-separator>
+          <div v-if="selectedModelInterface.length > 0" class="row text-overline justify-center" @click="collapsed = !collapsed">
+            properties
           </div>
 
+          <div v-if="selectedModelInterface.length > 0" class="q-pa-sm q-mb-xs q-ml-md q-mr-md text-overline justify-center row">
+            <q-btn-toggle v-model="edit_mode" color="grey-9" size="xs" text-color="white" toggle-color="secondary" :options="[
+              { label: 'BASIC', value: 'basic' },
+              { label: 'ADVANCED', value: 'advanced' },
+              { label: 'FACTORS', value: 'factors' },
+              { label: 'ALL', value: 'all' },
+            ]" @update:model-value="selectMode" />
+          </div>
           <div v-if="redraw > 0.0" class="q-ma-sm q-mb-md">
             <div v-for="(field, index) in selectedModelInterface" :key="index">
               <div v-if="field.edit_mode == edit_mode || edit_mode == 'all'">
@@ -504,8 +510,12 @@ export default {
       this.isEnabled = true
       this.collaps_icon = "fa-solid fa-chevron-down"
       this.state_changed = false
-      this.selectModel()
-      explain.getModelState()
+      if (this.selectedModelName == 'X') {
+        this.cancel()
+      } else {
+        this.selectModel()
+        explain.getModelState()
+      }
     },
     selectModel() {
       // get the model interface of the model type of the seleced model

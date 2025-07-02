@@ -4,27 +4,19 @@ export class Breathing extends BaseModelClass {
   // static properties
   static model_type = "Breathing";
   static model_interface = [
-    {    
-      target: "model_type",  
-      type: "string",
-      build_prop: false,
-      edit_mode: "basic",
-      readonly: true,
-      caption: "model type",
-    },
     {
       target: "description",
       type: "string",
+      edit_mode: "all",
       build_prop: true,
-      edit_mode: "basic",
       readonly: true,
       caption: "description",
     },
     {
       target: "is_enabled",
       type: "boolean",
+      edit_mode: "all",
       build_prop: true,
-      edit_mode: "basic",
       readonly: false,
       caption: "enabled",
     },
@@ -32,6 +24,9 @@ export class Breathing extends BaseModelClass {
       caption: "spont breathing enabled",
       target: "breathing_enabled",
       type: "boolean",
+      edit_mode: "basic",
+      build_prop: true,
+      readonly: false,
     },
     {
       caption: "reference minute volume (L/kg/min)",
@@ -40,6 +35,9 @@ export class Breathing extends BaseModelClass {
       delta: 0.01,
       factor: 1.0,
       rounding: 2,
+      edit_mode: "basic",
+      build_prop: true,
+      readonly: false,
     },
     {
       caption: "vt rr ratio",
@@ -48,6 +46,9 @@ export class Breathing extends BaseModelClass {
       delta: 0.001,
       factor: 1000.0,
       rounding: 4,
+      edit_mode: "basic",
+      build_prop: true,
+      readonly: false,
     },
     {
       caption: "insp/exp ratio",
@@ -56,6 +57,9 @@ export class Breathing extends BaseModelClass {
       delta: 0.01,
       factor: 1.0,
       rounding: 2,
+      edit_mode: "basic",
+      build_prop: true,
+      readonly: false,
     },
     {
       caption: "rmp gain max",
@@ -64,6 +68,9 @@ export class Breathing extends BaseModelClass {
       delta: 1,
       factor: 1.0,
       rounding: 0,
+      edit_mode: "basic",
+      build_prop: true,
+      readonly: false,
     },
   ];
 

@@ -10,19 +10,11 @@ export class Circulation extends BaseModelClass {
   // static properties
   static model_type = "Circulation";
   static model_interface = [
-        {    
-      target: "model_type",  
-      type: "string",
-      build_prop: false,
-      edit_mode: "basic",
-      readonly: true,
-      caption: "model type",
-    },
     {
       target: "description",
       type: "string",
       build_prop: true,
-      edit_mode: "basic",
+      edit_mode: "all",
       readonly: true,
       caption: "description",
     },
@@ -30,7 +22,7 @@ export class Circulation extends BaseModelClass {
       target: "is_enabled",
       type: "boolean",
       build_prop: true,
-      edit_mode: "basic",
+      edit_mode: "all",
       readonly: false,
       caption: "enabled",
     },
@@ -38,48 +30,72 @@ export class Circulation extends BaseModelClass {
       caption: "heart chambers",
       target: "heart_chambers",
       type: "multiple-list",
+      edit_mode: "advanced",
+      build_prop: true,
+      readonly: false,
       options: ["HeartChamber", "BloodTimeVaryingElastance"]
     },
     {
       caption: "systemic arteries",
       target: "systemic_arteries",
       type: "multiple-list",
+      edit_mode: "advanced",
+      build_prop: true,
+      readonly: false,
       options: ["BloodVessel", "MicroVascularUnit"]
     },
     {
       caption: "systemic capillaries",
       target: "systemic_capillaries",
       type: "multiple-list",
+      edit_mode: "advanced",
+      build_prop: true,
+      readonly: false,
       options: ["BloodVessel", "MicroVascularUnit"]
     },
     {
       caption: "systemic veins",
       target: "systemic_veins",
       type: "multiple-list",
+      edit_mode: "advanced",
+      build_prop: true,
+      readonly: false,
       options: ["BloodVessel", "MicroVascularUnit"]
     },
     {
       caption: "pulmonary arteries",
       target: "pulmonary_arteries",
       type: "multiple-list",
+      edit_mode: "advanced",
+      build_prop: true,
+      readonly: false,
       options: ["BloodVessel", "MicroVascularUnit"]
     },
     {
       caption: "pulmonary capillaries",
       target: "pulmonary_capillaries",
       type: "multiple-list",
+      edit_mode: "advanced",
+      build_prop: true,
+      readonly: false,
       options: ["BloodVessel", "MicroVascularUnit"]
     },
     {
       caption: "pulmonary veins",
       target: "pulmonary_veins",
       type: "multiple-list",
+      edit_mode: "advanced",
+      build_prop: true,
+      readonly: false,
       options: ["BloodVessel", "MicroVascularUnit"]
     },
     {
       caption: "svr factor",
       target: "svr_factor",
       type: "number",
+      edit_mode: "basic",
+      build_prop: false,
+      readonly: false,
       factor: 1.0,
       delta: 0.01,
       rounding: 2,
@@ -90,6 +106,9 @@ export class Circulation extends BaseModelClass {
       caption: "pvr factor",
       target: "pvr_factor",
       type: "number",
+      edit_mode: "basic",
+      build_prop: false,
+      readonly: false,
       factor: 1.0,
       delta: 0.01,
       rounding: 2,
@@ -100,6 +119,9 @@ export class Circulation extends BaseModelClass {
       caption: "add fluid",
       type: "function",
       target: "add_volume",
+      edit_mode: "basic",
+      build_prop: false,
+      readonly: false,
       args: [
         {
           caption: "volume (ml)",
