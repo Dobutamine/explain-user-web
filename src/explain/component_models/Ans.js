@@ -5,34 +5,37 @@ export class Ans extends BaseModelClass {
   // static properties
   static model_type = "Ans";
   static model_interface = [
-    {    
-      target: "model_type",  
-      type: "string",
-      build_prop: false,
-      edit_mode: "basic",
-      readonly: true,
-      caption: "model type",
-    },
     {
       target: "description",
       type: "string",
+      caption: "description",
       build_prop: true,
       edit_mode: "basic",
-      readonly: true,
-      caption: "description",
+      readonly: true
     },
     {
       target: "is_enabled",
       type: "boolean",
+      caption: "enabled",
+      build_prop: true,
+      edit_mode: "all",
+      readonly: false,
+    },
+    {
+      target: "ans_active",
+      type: "boolean",
+      caption: "ANS active",
       build_prop: true,
       edit_mode: "basic",
       readonly: false,
-      caption: "enabled",
     },
     {
-      caption: "ANS components active",
-      target: "ans_active",
-      type: "boolean",
+      target: "BR_MAP",
+      type: "reference",
+      caption: "Baroreceptor",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
     }
   ];
 
@@ -43,6 +46,14 @@ export class Ans extends BaseModelClass {
     this.ans_active = true; // flag whether the ANS is active
     this.components = {}
     this.blood_composition_models= []; // list of models from which the ANS needs to calculate blood gases
+    this.baroreflex_model = {}
+    this.chemoreflex_ph = {}
+    this.chemoreflex_po2 = {}
+    this.chemoreflex_pco2 = {}
+    this.chemoreflex_hco3 = {}
+    this.chemoreflex_be = {}
+
+    this.br_map = "BR_MAP"
 
     // initialize local properties
     this._update_interval = 0.05; // update interval of the ANS (seconds)
@@ -75,5 +86,22 @@ export class Ans extends BaseModelClass {
         }
       });
     }
+  }
+
+  // Afferents
+  baroreflex() {
+
+  }
+
+  chemoreceptor_pco2() {
+
+  }
+
+  chemoreceptor_po2() {
+
+  }
+
+  chemoreceptor_ph() {
+
   }
 }

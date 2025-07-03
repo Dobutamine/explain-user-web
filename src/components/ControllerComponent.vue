@@ -25,186 +25,188 @@
               { label: 'EXTRA', value: 'extra' },
               { label: 'FACTORS', value: 'factors' },
               { label: 'ALL', value: 'all' },
-            ]" @update:model-value="selectMode" />
+            ]"/>
           </div>
           <div v-if="redraw > 0.0" class="q-ma-sm q-mb-md">
-            <div v-for="(field, index) in selectedModelInterface" :key="index">
-              <div v-if="field.edit_mode == edit_mode || edit_mode == 'all'">
-                <div v-if="field.type == 'number'">
+            <div v-for="(mi, index_main) in modelInterfaces" :key="index_main">
+              <div v-for="(field, index) in mi" :key="index">
+                <div v-if="field.edit_mode == edit_mode || edit_mode == 'all'">
+                  <div v-if="field.type == 'number'">
 
-                  <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
-                    <div class="text-white" :style="{ 'font-size': '10px' }">
-                      <div v-if="!field.slider" class="row">
-                        <q-input v-if="!field.slider" class="q-mb-sm col-10" v-model="field.value" :label="field.caption" :max="field.ul" :min="field.ll" :readonly="field.readonly"
-                          :step="field.delta" color="blue" hide-hint filled dense
-                          @update:model-value="changePropState(field, arg)" stack-label type="number"
-                          style="font-size: 12px" squared>
-                        </q-input>
-                        <div class="col q-ml-sm">
-                            <q-btn  dense size="xs" @click="toggleSlider(field)">slider</q-btn>
-                        </div>
-                        
-                      </div>
-
-                      <div v-if="field.slider">
-                        <div class="row justify-left">
-                            <q-badge class="q-pa-sm" color="grey-10">
-                              <div class="text-secondary" style="font-size: small;">
-                                  {{ field.caption }} = {{ field.value }}
-                              </div>
-                            </q-badge>
-                        </div>
-                        <div class="row">
-                          <q-slider class="q-ma-sm q-mr-sm col-10" v-model="field.value" :step="field.delta"
-                            :min="field.ll" :max="field.ul" snap :markers="1" dense thumb-color="teal"
-                            color="transparent" @change="sliderChange(field)"/>
-
+                    <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
+                      <div class="text-white" :style="{ 'font-size': '10px' }">
+                        <div v-if="!field.slider" class="row">
+                          <q-input v-if="!field.slider" class="q-mb-sm col-10" v-model="field.value" :label="field.caption" :max="field.ul" :min="field.ll" :readonly="field.readonly"
+                            :step="field.delta" color="blue" hide-hint filled dense
+                            @update:model-value="changePropState(field, arg)" stack-label type="number"
+                            style="font-size: 12px" squared>
+                          </q-input>
                           <div class="col q-ml-sm">
-                            <q-btn  dense size="xs" @click="toggleSlider(field)">num</q-btn>
-                        </div>
-                        </div>
-                      </div>
-                    
-                    </div>
-                  </div>
-                </div>
-
-                <div v-if="field.type == 'factor' && factorsEnabled">
-                  <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
-                    <div class="text-white" :style="{ 'font-size': '10px' }">
-                      <!-- <q-input v-model="field.value" :label="field.caption" :max="10000000000" :min="0" :readonly="field.readonly"
-                        :step="0.05" color="blue" hide-hint filled dense
-                        @update:model-value="changePropState(field, arg)" stack-label type="number"
-                        style="font-size: 12px" class="q-mb-sm" squared>
-                      </q-input> -->
-
-                      <div class="row justify-center">
-                        <q-badge class="q-pa-sm" color="grey-10">
-                          <div class="text-secondary" style="font-size: small;">
-                              {{ field.caption }} = {{ field.display_value }} x N
+                              <q-btn  dense size="xs" @click="toggleSlider(field)">slider</q-btn>
                           </div>
-                        </q-badge>
+                          
+                        </div>
+
+                        <div v-if="field.slider">
+                          <div class="row justify-left">
+                              <q-badge class="q-pa-sm" color="grey-10">
+                                <div class="text-secondary" style="font-size: small;">
+                                    {{ field.caption }} = {{ field.value }}
+                                </div>
+                              </q-badge>
+                          </div>
+                          <div class="row">
+                            <q-slider class="q-ma-sm q-mr-sm col-10" v-model="field.value" :step="field.delta"
+                              :min="field.ll" :max="field.ul" snap :markers="1" dense thumb-color="teal"
+                              color="transparent" @change="sliderChange(field)"/>
+
+                            <div class="col q-ml-sm">
+                              <q-btn  dense size="xs" @click="toggleSlider(field)">num</q-btn>
+                          </div>
+                          </div>
+                        </div>
+                      
                       </div>
-                      <div class="row  justify-center">
-                        <q-btn @click="decreaseSliderValue(field)" class="q-ma-sm col" color="grey-10" dense size="xs"
-                          icon="fa-solid fa-chevron-left"></q-btn>
+                    </div>
+                  </div>
 
-                        <q-slider class="q-ma-sm q-mr-sm col-8" v-model="field.slider_value" :step="field.delta"
-                          :min="field.ll" :max="field.ul" snap :markers="1" dense thumb-color="teal"
-                          color="transparent" @change="changeSliderValue(field)" />
-                        
-                          <q-btn @click="increaseSliderValue(field)" class="q-ma-sm col" dense size="xs" color="grey-10"
-                          icon="fa-solid fa-chevron-right"></q-btn>
+                  <div v-if="field.type == 'factor' && factorsEnabled">
+                    <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
+                      <div class="text-white" :style="{ 'font-size': '10px' }">
+                        <!-- <q-input v-model="field.value" :label="field.caption" :max="10000000000" :min="0" :readonly="field.readonly"
+                          :step="0.05" color="blue" hide-hint filled dense
+                          @update:model-value="changePropState(field, arg)" stack-label type="number"
+                          style="font-size: 12px" class="q-mb-sm" squared>
+                        </q-input> -->
+
+                        <div class="row justify-center">
+                          <q-badge class="q-pa-sm" color="grey-10">
+                            <div class="text-secondary" style="font-size: small;">
+                                {{ field.caption }} = {{ field.display_value }} x N
+                            </div>
+                          </q-badge>
+                        </div>
+                        <div class="row  justify-center">
+                          <q-btn @click="decreaseSliderValue(field)" class="q-ma-sm col" color="grey-10" dense size="xs"
+                            icon="fa-solid fa-chevron-left"></q-btn>
+
+                          <q-slider class="q-ma-sm q-mr-sm col-8" v-model="field.slider_value" :step="field.delta"
+                            :min="field.ll" :max="field.ul" snap :markers="1" dense thumb-color="teal"
+                            color="transparent" @change="changeSliderValue(field)" />
+                          
+                            <q-btn @click="increaseSliderValue(field)" class="q-ma-sm col" dense size="xs" color="grey-10"
+                            icon="fa-solid fa-chevron-right"></q-btn>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                <div v-if="field.type == 'boolean'">
-                  <div class="q-ml-lg q-mr-md q-mt-md text-left text-secondary row" :style="{ 'font-size': '12px' }">
-                    <div class="col">
-                      {{ field.caption }}
-                    </div>
-                    <div class="col-2 text-white" :style="{ 'font-size': '10px' }">
-                      <q-toggle v-model="field.value" color="primary" size="sm" hide-hint filled dense :disable="field.readonly"
-                        @update:model-value="changePropState(field, arg)" style="font-size: 12px" class="q-mb-sm">
-                      </q-toggle>
+                  <div v-if="field.type == 'boolean'">
+                    <div class="q-ml-lg q-mr-md q-mt-md text-left text-secondary row" :style="{ 'font-size': '12px' }">
+                      <div class="col">
+                        {{ field.caption }}
+                      </div>
+                      <div class="col-2 text-white" :style="{ 'font-size': '10px' }">
+                        <q-toggle v-model="field.value" color="primary" size="sm" hide-hint filled dense :disable="field.readonly"
+                          @update:model-value="changePropState(field, arg)" style="font-size: 12px" class="q-mb-sm">
+                        </q-toggle>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div v-if="field.type == 'string'">
-                  <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
-                    <div class="text-white" :style="{ 'font-size': '10px' }">
-                      <q-input v-model="field.value" :label="field.caption" color="blue" hide-hint filled dense :readonly="field.readonly"
-                        @update:model-value="changePropState(field, arg)" stack-label style="font-size: 12px"
-                        class="q-mb-sm" squared>
-                      </q-input>
+                  <div v-if="field.type == 'string'">
+                    <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
+                      <div class="text-white" :style="{ 'font-size': '10px' }">
+                        <q-input v-model="field.value" :label="field.caption" color="blue" hide-hint filled dense :readonly="field.readonly"
+                          @update:model-value="changePropState(field, arg)" stack-label style="font-size: 12px"
+                          class="q-mb-sm" squared>
+                        </q-input>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div v-if="field.type == 'list'">
-                  <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
-                    <div class="text-white" :style="{ 'font-size': '10px' }">
-                      <q-select v-model="field.value" :label="field.caption" :options="field.choices" :readonly="field.readonly" color="blue" 
-                        hide-hint filled dense @update:model-value="changePropState(field, arg)" stack-label
-                        style="font-size: 12px" class="q-mb-sm" squared>
-                      </q-select>
+                  <div v-if="field.type == 'list'">
+                    <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
+                      <div class="text-white" :style="{ 'font-size': '10px' }">
+                        <q-select v-model="field.value" :label="field.caption" :options="field.choices" :readonly="field.readonly" color="blue" 
+                          hide-hint filled dense @update:model-value="changePropState(field, arg)" stack-label
+                          style="font-size: 12px" class="q-mb-sm" squared>
+                        </q-select>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div v-if="field.type == 'multiple-list'">
-                  <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
-                    <div class="text-white" :style="{ 'font-size': '10px' }">
-                      <q-select v-model="field.value" :label="field.caption" :options="field.choices" :readonly="field.readonly" multiple
-                        color="blue" hide-hint filled dense @update:model-value="changePropState(field, arg)" stack-label
-                        style="font-size: 12px" class="q-mb-sm" squared>
-                      </q-select>
+                  <div v-if="field.type == 'multiple-list'">
+                    <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
+                      <div class="text-white" :style="{ 'font-size': '10px' }">
+                        <q-select v-model="field.value" :label="field.caption" :options="field.choices" :readonly="field.readonly" multiple
+                          color="blue" hide-hint filled dense @update:model-value="changePropState(field, arg)" stack-label
+                          style="font-size: 12px" class="q-mb-sm" squared>
+                        </q-select>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div v-if="field.type == 'prop-list'">
-                  <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
-                    <div class="text-white" :style="{ 'font-size': '10px' }">
-                      <q-select v-model="field.value_model" :label="field.caption_model" :options="field.choices_model" :readonly="field.readonly" color="blue" 
-                        hide-hint filled dense @update:model-value="changePropState(field, 'model_changed')" stack-label
-                        style="font-size: 12px" class="q-mb-sm" squared>
-                      </q-select>
-                      <q-select v-model="field.value_prop" :label="field.caption_prop" :options="field.choices_props" :readonly="field.readonly" color="blue" 
-                        hide-hint filled dense @update:model-value="changePropState(field, arg)" stack-label
-                        style="font-size: 12px" class="q-mb-sm" squared>
-                      </q-select>
+                  <div v-if="field.type == 'prop-list'">
+                    <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
+                      <div class="text-white" :style="{ 'font-size': '10px' }">
+                        <q-select v-model="field.value_model" :label="field.caption_model" :options="field.choices_model" :readonly="field.readonly" color="blue" 
+                          hide-hint filled dense @update:model-value="changePropState(field, 'model_changed')" stack-label
+                          style="font-size: 12px" class="q-mb-sm" squared>
+                        </q-select>
+                        <q-select v-model="field.value_prop" :label="field.caption_prop" :options="field.choices_props" :readonly="field.readonly" color="blue" 
+                          hide-hint filled dense @update:model-value="changePropState(field, arg)" stack-label
+                          style="font-size: 12px" class="q-mb-sm" squared>
+                        </q-select>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div v-if="field.type == 'function'">
-                  <div class="q-ml-md q-mr-md q-mb-sm text-left text-secondary" :style="{ 'font-size': '12px' }">
-                          {{ field.caption }}
-                  </div>
-                  <div v-for="(arg, index_arg) in field.args" :key="index_arg">
-                    <div v-if="arg.type == 'number' && !arg.hidden">
-                      <q-input v-model.number="arg.value" :label="arg.caption" type="number" :max="arg.ul" :min="arg.ll" :readonly="field.readonly"
-                        :step="arg.delta" color="blue" hide-hint filled dense
-                        @update:model-value="changePropState(field, arg)" stack-label style="font-size: 12px"
-                        class="q-ml-md q-mr-md q-mb-sm" squared>
-                      </q-input>
+                  <div v-if="field.type == 'function'">
+                    <div class="q-ml-md q-mr-md q-mb-sm text-left text-secondary" :style="{ 'font-size': '12px' }">
+                            {{ field.caption }}
                     </div>
-                    <div v-if="arg.type == 'factor' && !arg.hidden">
-                      <q-input v-model.number="arg.value" :label="arg.caption" type="number" :max="10000000000" :min="0" :readonly="field.readonly"
-                        :step="0.1" color="blue" hide-hint filled dense
-                        @update:model-value="changePropState(field, arg)" stack-label style="font-size: 12px"
-                        class="q-ml-md q-mr-md q-mb-sm" squared>
-                      </q-input>
-                    </div>
-                    <div v-if="arg.type == 'boolean' && !arg.hidden" class="q-ml-sm col-1">
-                      <q-toggle v-model="arg.value" :label="arg.caption" color="primary" size="xs" hide-hint filled dense :disable="field.readonly"
-                        @update:model-value="changePropState(field, arg)" style="font-size: 10px"
-                        class="q-ml-md q-mt-xs q-mb-sm">
-                      </q-toggle>
-                    </div>
-                    <div v-if="arg.type == 'string' && !arg.hidden">
-                      <q-input v-model="arg.value" :label="arg.caption" color="blue" hide-hint filled dense :readonly="field.readonly"
-                        @update:model-value="changePropState(field, arg)" stack-label style="font-size: 12px"
-                        class="q-ml-md q-mr-md q-mb-sm" squared>
-                      </q-input>
-                    </div>
-                    <div v-if="arg.type == 'list' && !arg.hidden">
-                      <q-select v-model="arg.value" :label="arg.target" :options="arg.choices" color="blue" hide-hint :readonly="field.readonly"
-                        filled dense @update:model-value="changePropState(field, arg)" stack-label style="font-size: 12px"
-                        class="q-ml-md q-mr-md q-mb-sm" squared>
-                      </q-select>
-                    </div>
-                    <div v-if="arg.type == 'multiple-list' && !arg.hidden">
-                      <q-select v-model="arg.value" :options="arg.choices" :label="arg.target" multiple color="blue" :readonly="field.readonly"
-                        hide-hint filled dense @update:model-value="changePropState(field, arg)" stack-label
-                        style="font-size: 12px" class="q-ml-md q-mr-md q-mb-sm" squared>
-                      </q-select>
-                    </div>
+                    <div v-for="(arg, index_arg) in field.args" :key="index_arg">
+                      <div v-if="arg.type == 'number' && !arg.hidden">
+                        <q-input v-model.number="arg.value" :label="arg.caption" type="number" :max="arg.ul" :min="arg.ll" :readonly="field.readonly"
+                          :step="arg.delta" color="blue" hide-hint filled dense
+                          @update:model-value="changePropState(field, arg)" stack-label style="font-size: 12px"
+                          class="q-ml-md q-mr-md q-mb-sm" squared>
+                        </q-input>
+                      </div>
+                      <div v-if="arg.type == 'factor' && !arg.hidden">
+                        <q-input v-model.number="arg.value" :label="arg.caption" type="number" :max="10000000000" :min="0" :readonly="field.readonly"
+                          :step="0.1" color="blue" hide-hint filled dense
+                          @update:model-value="changePropState(field, arg)" stack-label style="font-size: 12px"
+                          class="q-ml-md q-mr-md q-mb-sm" squared>
+                        </q-input>
+                      </div>
+                      <div v-if="arg.type == 'boolean' && !arg.hidden" class="q-ml-sm col-1">
+                        <q-toggle v-model="arg.value" :label="arg.caption" color="primary" size="xs" hide-hint filled dense :disable="field.readonly"
+                          @update:model-value="changePropState(field, arg)" style="font-size: 10px"
+                          class="q-ml-md q-mt-xs q-mb-sm">
+                        </q-toggle>
+                      </div>
+                      <div v-if="arg.type == 'string' && !arg.hidden">
+                        <q-input v-model="arg.value" :label="arg.caption" color="blue" hide-hint filled dense :readonly="field.readonly"
+                          @update:model-value="changePropState(field, arg)" stack-label style="font-size: 12px"
+                          class="q-ml-md q-mr-md q-mb-sm" squared>
+                        </q-input>
+                      </div>
+                      <div v-if="arg.type == 'list' && !arg.hidden">
+                        <q-select v-model="arg.value" :label="arg.target" :options="arg.choices" color="blue" hide-hint :readonly="field.readonly"
+                          filled dense @update:model-value="changePropState(field, arg)" stack-label style="font-size: 12px"
+                          class="q-ml-md q-mr-md q-mb-sm" squared>
+                        </q-select>
+                      </div>
+                      <div v-if="arg.type == 'multiple-list' && !arg.hidden">
+                        <q-select v-model="arg.value" :options="arg.choices" :label="arg.target" multiple color="blue" :readonly="field.readonly"
+                          hide-hint filled dense @update:model-value="changePropState(field, arg)" stack-label
+                          style="font-size: 12px" class="q-ml-md q-mr-md q-mb-sm" squared>
+                        </q-select>
+                      </div>
 
+                    </div>
                   </div>
                 </div>
               </div>
@@ -237,10 +239,11 @@ export default {
   setup() {
     let selectedModelInterface = []
     let selectedNewModelProps = []
+    let modelInterfaces = []
     const state = useStateStore();
 
     return {
-      selectedModelInterface: selectedModelInterface, selectedNewModelProps, state
+      selectedModelInterface: selectedModelInterface, selectedNewModelProps, state, modelInterfaces
     }
   },
   props: {
@@ -284,6 +287,7 @@ export default {
     sliderChange(param) {
       this.state_changed = true;
       param.state_changed = true;
+      this.updateValue();
       this.redraw += 1;
     },
     toggleSlider(param) {
@@ -338,179 +342,6 @@ export default {
 
       return 0;
     },
-    selectMode() {},
-    cancelAddModel() {
-      this.selectedModelType = ""
-      this.resetNewModel()
-    },
-    addNewModelToEngine() {
-      this.newModelErrorFlag = false
-      this.selectedNewModelProps.forEach(prop => {
-        if (prop.target == "name" && prop.value == "") {
-          this.newModelErrorFlag = true
-          this.newModelErrorClass = this.newModelError
-          this.newModelErrorMessage = "name is missing"
-        }
-        if (prop.target == "name" && this.modelNames.includes(prop.value)) {
-          this.newModelErrorFlag = true
-          this.newModelErrorClass = this.newModelError
-          this.newModelErrorMessage = "this is name is already in use"
-        }
-      })
-
-      if (this.newModelErrorFlag) return
-
-      // convert the properties to a dictionary which the model engine can understand
-      let new_model = {
-        model_type: this.selectedModelType
-      }
-      // add the properties
-      this.selectedNewModelProps.forEach(prop => {
-        if (prop.type !== 'function') {
-          new_model[prop.target] = prop.value
-          if (prop.type == 'number') {
-            new_model[prop.target] = parseFloat(prop.value / prop.factor)
-          }
-        }
-      })
-      // send to the model for processing
-      explain.addNewModel(new_model)
-
-      this.resetNewModel()
-      this.selectedModelType = ""
-    },
-    resetNewModel() {
-      this.selectedNewModelProps = []
-      this.newModelErrorClass = this.noNewModelError
-      this.newModelErrorFlag = false
-      this.redraw += 1
-    },
-    addNewModel() {
-      // reset the new model properties
-      this.resetNewModel()
-
-      // get the model interface of the selected model
-      explain.getModelTypeInterface(this.selectedModelType)
-    },
-    deleteModel() {
-      explain.deleteModel(this.selectedModelName)
-    },
-    processModelTypeInterface(modeltype_interface) {
-      // we have to convert the model properties to a format which the editor can understand, this is an array of objects and store in selectedNewModelProps
-      // clear the current selectedNewModelProps holding the new model properties
-      this.selectedNewModelProps = []
-      // add a new name and description field
-      this.selectedNewModelProps.push({
-        "caption": "name",
-        "target": "name",
-        "type": "string",
-        "value": "",
-      })
-      this.selectedNewModelProps.push({
-        "caption": "description",
-        "target": "description",
-        "type": "string",
-        "value": "",
-      })
-      // process the model interface
-      modeltype_interface.forEach(prop => {
-        if (prop.type == 'number') {
-          prop['value'] = prop['default'] * prop['factor']
-        } else {
-          prop['value'] = prop['default']
-        }
-        //if the property is a list then add the options to the choices
-        if (prop.type == 'list') {
-          prop['choices'] = []
-          if (prop['option_default']) {
-            prop['choices'] = prop['options_default']
-          }
-          if (prop.options) {
-            Object.values(explain.modelState.models).forEach(model => {
-              if (prop.options.includes(model.model_type)) {
-                prop["choices"].push(model.name)
-              }
-            })
-
-          }
-        }
-        if (prop.type == 'multiple-list') {
-          prop['choices'] = []
-          if (prop['option_default']) {
-            prop['choices'] = prop['options_default']
-          }
-          if (prop.options) {
-            Object.values(explain.modelState.models).forEach(model => {
-              if (prop.options.includes(model.model_type)) {
-                prop["choices"].push(model.name)
-              }
-            })
-          }
-        }
-        this.selectedNewModelProps.push(prop)
-      })
-      this.redraw += 1
-    },
-    processModelInterface(model_type, model_props) {
-      console.log("received model interface of ", model_type)
-      console.log(model_props)
-      // we have to convert the model properties to a format which the editor can understand, this is an array of objects and store in selectedNewModelProps
-      // clear the current selectedNewModelProps holding the new model properties
-      this.selectedNewModelProps = []
-      // add a new name and description field
-      this.selectedNewModelProps.push({
-        "caption": "name",
-        "target": "name",
-        "type": "string",
-        "value": "",
-      })
-      this.selectedNewModelProps.push({
-        "caption": "description",
-        "target": "description",
-        "type": "string",
-        "value": "",
-      })
-      // process the model interface
-      model_props.forEach(prop => {
-        if (prop.type == 'number') {
-          prop['value'] = prop['default'] * prop['factor']
-        } else {
-          prop['value'] = prop['default']
-        }
-        // if the property is a list then add the options to the choices
-        if (prop.type == 'list') {
-          prop['choices'] = []
-          if (prop['option_default']) {
-            prop['choices'] = prop['options_default']
-          }
-          if (prop.options) {
-            Object.values(explain.modelState.models).forEach(model => {
-              if (prop.options.includes(model.model_type)) {
-                prop["choices"].push(model.name)
-              }
-            })
-
-          }
-        }
-        if (prop.type == 'multiple-list') {
-          prop['choices'] = []
-          if (prop['option_default']) {
-            prop['choices'] = prop['options_default']
-          }
-          if (prop.options) {
-            Object.values(explain.modelState.models).forEach(model => {
-              if (prop.options.includes(model.model_type)) {
-                prop["choices"].push(model.name)
-              }
-            })
-          }
-        }
-        this.selectedNewModelProps.push(prop)
-      })
-      this.redraw += 1
-
-
-    },
     collapsEditor() {
 
       if (this.isEnabled) {
@@ -520,11 +351,6 @@ export default {
         this.isEnabled = true
         this.collaps_icon = "fa-solid fa-chevron-down"
       }
-    },
-    changeNewPropState(param, arg) {
-      this.state_changed = true
-      param.state_changed = true
-      this.redraw += 1
     },
     changePropState(param, arg) {
       if (param.type == "prop-list" && arg == 'model_changed') {
@@ -606,6 +432,7 @@ export default {
       this.selectedModelName = ""
       this.selectedModelInterface = {}
       this.state_changed = false
+      this.modelInterfaces = []
       explain.getModelState()
     },
     modelChanged() {
@@ -616,11 +443,13 @@ export default {
       if (this.selectedModelName == 'X') {
         this.cancel()
       } else {
+        this.modelInterfaces = []
         this.selectModel()
         explain.getModelState()
       }
     },
     selectModel() {
+      console.log('sdcfjd')
       // get the model interface of the model type of the seleced model
       this.selectedModelInterface = explain.getModelInterface(this.selectedModelName)
 
@@ -667,10 +496,14 @@ export default {
           case 'object-list':
             this.processObjectListType(param)
             break;
+          case 'reference':
+            this.processReferenceType(param)
+            break;
           default:
             console.error("Unknown type: ", param.type)
         }
       })
+      this.modelInterfaces.push(this.selectedModelInterface)
       this.redraw += 1
     },
     processNumberType(param) {
@@ -872,7 +705,6 @@ export default {
       }
     })
     },
-    processObjectType(param) {},
     processObjectListType(param) {
       param.objects.forEach((object)=> {
                 // we have to extend the param with some additional properties
@@ -915,33 +747,76 @@ export default {
       })
       console.log(param)
     },
-    processAvailableModels() {
-      this.modelNames = []
-      try {
-        if (Object.keys(explain.modelState.models)) {
-          this.modelNames = [...Object.keys(explain.modelState.models)].sort();
-          this.selectModel()
+    processReferenceType(param) {
+
+      let temp = this.selectedModelName
+
+      this.selectedModelName = param.target
+      // get the model interface of the model type of the seleced model
+      let model_interface_reference = explain.getModelInterface(param.target)
+
+      // add a flag to the property which can be set when the property needs to be updated
+      model_interface_reference.forEach(param => {
+        // we have to extend the param with some additional properties
+        param['state_changed'] = false
+        if (param.readonly === undefined) {
+          param['readonly'] = false
         }
-      } catch { }
-    },
-    processAvailableModelTypes(data) {
-      this.availableModelTypes = data
+
+        if (!param['edit_mode']) {
+          param['edit_mode'] = 'all'
+        }
+        // process the different types of parameters
+        switch (param.type) {
+          case 'number':
+            this.processNumberType(param)
+            break;
+          case 'factor':
+            this.processFactorType(param)
+            break;
+          case 'string':
+            this.processStringType(param)
+            break;
+          case 'boolean':
+            this.processBooleanType(param)
+            break;
+          case 'list':
+            this.processListType(param)
+            break;
+          case 'multiple-list':
+            this.processMultipleListType(param)
+            break;
+          case 'prop-list':
+            this.processPropListType(param)
+            break;
+          case 'function':
+            this.processFunctionType(param)
+            break;
+          case 'object':
+            // for objects we don't need to do anything here, they will be processed later
+            break;
+          case 'object-list':
+            this.processObjectListType(param)
+            break;
+          case 'reference':
+            this.processReferenceType(param)
+            break;
+          default:
+            console.error("Unknown type: ", param.type)
+        }
+      })
+
+      // return the model interface
+      console.log(model_interface_reference)
+      this.modelInterfaces.push(model_interface_reference)
+      this.selectedModelName = temp
     },
   },
   beforeUnmount() {
     this.state_changed = false
-    this.$bus.off("state", this.processAvailableModels)
-    this.$bus.off("model_interface", this.processModelInterface)
-    this.$bus.off("modeltype_interface",  this.processModelTypeInterface)
-    this.$bus.off("model_types", (e) => this.processAvailableModelTypes(e))
   },
   mounted() {
     // update if state changes
-    this.$bus.on("state", this.processAvailableModels)
-    this.$bus.on("model_interface",  this.processModelInterface)
-    this.$bus.on("modeltype_interface",  (e) => this.processModelTypeInterface(e))
-    this.$bus.on("model_types", (e) => this.processAvailableModelTypes(e))
-    explain.getModelTypes()
 
   },
 };
