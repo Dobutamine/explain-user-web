@@ -1,8 +1,8 @@
 <template>
-  <q-card class="q-pb-xs q-pt-xs q-ma-sm" bordered>
-    <div class="q-mt-es row gutter text-overline justify-center" @click="toggle">
+  <q-card class="q-pb-xs q-pt-xs q-ma-xs" bordered dark flat>
+    <!-- <div class="q-mt-es row gutter text-overline justify-center" @click="toggle">
       {{ title }}
-    </div>
+    </div> -->
     <div v-if="isEnabled">
       <div class="q-ma-sm q-gutter-xs row items-center">
         <div class="q-mr-md">

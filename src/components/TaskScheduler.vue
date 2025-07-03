@@ -1,5 +1,5 @@
 <template>
-    <q-card class="q-pb-xs q-pt-xs q-ma-sm" bordered>
+    <q-card class="q-pb-xs q-pt-xs q-ma-xs" bordered dark flat>
       <div class="q-mt-es row gutter text-overline justify-center" @click="toggle">
         {{ title }}
       </div>
@@ -14,7 +14,7 @@
               label="available stored events" hide-hint :options="storedTaskList" dense dark stack-label
               @update:model-value="loadTask" />
         </div>
-        <q-card v-if="task_list.length > 0" class="q-pb-xs q-pt-xs q-ma-sm" bordered>
+        <q-card v-if="task_list.length > 0" class="q-pb-xs q-pt-xs q-ma-xs" bordered dark flat>
             <q-list bordered separator dense>
             <div v-for="(task, index) in task_list" :key="index">
               <q-item clickable dark dense @click="selectTask">

@@ -1,11 +1,11 @@
 <template>
-  <q-card class="q-pb-xs q-pt-xs q-ma-sm" bordered>
+  <q-card class="q-pb-xs q-pt-xs q-ma-xs" bordered dark flat>
     <div class="row text-overline justify-center" @click="collapsed = !collapsed">
       {{ title }}
     </div>
     <div v-if="!collapsed">
       <!-- edit model part -->
-      <q-card class="q-pb-xs q-pt-xs q-ma-sm" bordered>
+      <q-card class="q-pb-xs q-pt-xs q-ma-xs" dark flat>
         <div class="q-mt-es row gutter text-overline justify-center" @click="isEnabled = !isEnabled">
         </div>
 

@@ -13,6 +13,14 @@ export class AnsAfferent extends BaseModelClass {
       readonly: true,
       caption: "description",
     },
+        {
+      target: "description",
+      type: "string",
+      build_prop: true,
+      edit_mode: "extra",
+      readonly: true,
+      caption: "description",
+    },
     {
       target: "is_enabled",
       type: "boolean",
@@ -26,7 +34,7 @@ export class AnsAfferent extends BaseModelClass {
       type: "prop-list",
       build_prop: true,
       readonly: false,
-      edit_mode: "basic",
+      edit_mode: "extra",
       caption:"input model property",
       caption_model: "input model",
       caption_prop: "input property",
@@ -82,7 +90,7 @@ export class AnsAfferent extends BaseModelClass {
       caption: "efferents",
       target: "efferents",
       type: "multiple-list",
-      edit_mode: "basic",
+      edit_mode: "extra",
       build_prop: true,
       readonly: false,
       options: ["AnsEfferent"]

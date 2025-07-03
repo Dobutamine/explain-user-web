@@ -21,9 +21,12 @@ export class Fluids extends BaseModelClass {
       caption: "enabled",
     },
     {
+      target: "add_volume",
       caption: "Adminster fluid",
       type: "function",
-      target: "add_volume",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
       args: [
         {
           caption: "volume (ml)",
