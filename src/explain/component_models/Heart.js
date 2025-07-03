@@ -78,7 +78,7 @@ export class Heart extends BaseModelClass {
       rounding: 4,
       readonly: false,
       build_prop: true,
-      edit_mode: "advanced",
+      edit_mode: "extra",
       readonly: false,
     },
     {

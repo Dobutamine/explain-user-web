@@ -88,14 +88,14 @@
           <q-tabs v-model="tab_center" dense class="text-white" active-color="primary" indicator-color="primary"
            narrow-indicator outside-arrows @update:model-value="tabCenterChanged">
 
-            <q-tab name="animation">
-              <q-icon name="fa-solid fa-person" size="xs"></q-icon>
-              <q-tooltip>animation</q-tooltip>
-            </q-tab>
-
             <q-tab name="diagram">
               <q-icon name="fa-solid fa-diagram-project" size="xs"></q-icon>
               <q-tooltip>diagram</q-tooltip>
+            </q-tab>
+
+            <q-tab name="animation">
+              <q-icon name="fa-solid fa-person" size="xs"></q-icon>
+              <q-tooltip>animation</q-tooltip>
             </q-tab>
 
             <q-tab name="heart">
@@ -325,7 +325,7 @@ export default defineComponent({
   },
   data() {
     return {
-      tab_left: "model_editor",
+      tab_left: "interventions",
       tab_center: "diagram",
       tab_right: "numerics",
       chart_alive: true,
@@ -426,16 +426,15 @@ export default defineComponent({
     },
     updateWatchlist() {
       // update the watchlist by looking at the enabled monitors
-      Object.keys(this.state.configuration.enabled_monitors).forEach(enabled_monitor_category => {
-        this.state.configuration.enabled_monitors[enabled_monitor_category].forEach((monitor) => {
-          this.state.configuration.monitors[monitor].parameters.forEach((p) => {
-            explain.watchModelPropsSlow([...p.props])
-          })
+        Object.values(this.state.configuration.monitors).forEach((monitor) => {
+          if (monitor.enabled) {
+            monitor.parameters.forEach((p) => {
+              explain.watchModelPropsSlow([...p.props])
+            })
+          }
         })
-      })
     },
     modelReady() {
-      console.log('model ready')
       // make sure the modelengine watches everything which is visible on the main screen.
       this.updateWatchlist()
 

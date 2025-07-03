@@ -9,15 +9,14 @@ export const useStateStore = defineStore("state", {
     protected: false,
     shared: false,
     diagram_definition: {
-      name: "",
-      settings: {}
+      name: ""
     },
     animation_definition: {
-      name: "",
-      settings: {}
+      name: ""
     },
     model_definition: {},
     configuration: {},
+    events: {},
     saved: false,
     default: true,
     prev_diagram_definition: {},
@@ -101,6 +100,7 @@ export const useStateStore = defineStore("state", {
         this.animation_definition = data.animation_definition;
         this.model_definition = data.model_definition;
         this.configuration = data.configuration;
+        this.events= data.events;
         this.tasks = data.tasks;
         this.presets_time = data.presets_time;
         this.presets_xy = data.presets_xy;
@@ -136,6 +136,7 @@ export const useStateStore = defineStore("state", {
         this.animation_definition = data.animation_definition;
         this.model_definition = data.model_definition;
         this.configuration = data.configuration;
+        this.events = data.events;
         return true;
       } else {
         return false;
@@ -167,6 +168,7 @@ export const useStateStore = defineStore("state", {
         this.animation_definition = data.animation_definition;
         this.model_definition = data.model_definition;
         this.configuration = data.configuration;
+        this.events = data.events;
         return true;
       } else {
         return false;
@@ -192,7 +194,8 @@ export const useStateStore = defineStore("state", {
             diagram_definition: this.diagram_definition,
             animation_definition: this.animation_definition,
             model_definition: this.model_definition,
-            configuration: this.configuration
+            configuration: this.configuration,
+            events: this.events
           }),
         });
 

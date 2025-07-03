@@ -189,7 +189,7 @@
       loadTask() {
         // process the saved task
         this.eventName = this.selectedTask
-        this.task_list = [...this.state.tasks[this.selectedTask]]
+        this.task_list = [...this.state.events[this.selectedTask]]
         // process the current values
         this.task_list.forEach(task => {
           task.value = explain.modelState.models[task.model][task.prop]
@@ -208,15 +208,15 @@
         this.statusMessage = ""
       },
       deleteEventFromList() {
-        delete this.state.tasks[this.eventName]
+        delete this.state.events[this.eventName]
         this.task_list = []
         this.statusMessage = "no tasks scheduled"
         this.savedTask = false
         this.eventName = "new_event"
         this.selectedTask = ""
         this.storedTaskList = []
-        if (this.state.tasks) {
-          Object.keys(this.state.tasks).forEach(task_name => {
+        if (this.state.events) {
+          Object.keys(this.state.events).forEach(task_name => {
             this.storedTaskList.push(task_name)
           })
         }
@@ -350,13 +350,13 @@
         this.task_list.forEach(task => {
           new_task_list.push(task)
         })
-        if (!this.state.tasks) {
-          this.state.tasks = {}
+        if (!this.state.events) {
+          this.state.events = {}
         }
         if (this.eventName.endsWith('*')) {
           this.eventName = this.eventName.slice(0, -1);
         }
-        this.state.tasks[this.eventName] = new_task_list
+        this.state.events[this.eventName] = new_task_list
         this.savedTask = true
         explain.getModelState()
       },
@@ -380,8 +380,8 @@
         } catch { }
 
         this.storedTaskList = []
-        if (this.state.tasks) {
-          Object.keys(this.state.tasks).forEach(task_name => {
+        if (this.state.events) {
+          Object.keys(this.state.events).forEach(task_name => {
             this.storedTaskList.push(task_name)
           })
         }

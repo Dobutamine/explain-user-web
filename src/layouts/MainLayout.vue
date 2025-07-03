@@ -204,13 +204,13 @@
           <q-tooltip> save model state to server </q-tooltip></q-btn>
 
 
-        <q-btn flat round dense size="sm" icon="fa-brands fa-js" color="white" class="q-mr-sm"
+        <!-- <q-btn flat round dense size="sm" icon="fa-brands fa-js" color="white" class="q-mr-sm"
           @click="download_json">
           <q-tooltip> export model state to disk (json) </q-tooltip></q-btn>
 
           <q-btn flat round dense size="sm" icon="fa-brands fa-python" color="white" class="q-mr-sm"
           @click="download_py">
-          <q-tooltip> export model state to disk (python) </q-tooltip></q-btn>
+          <q-tooltip> export model state to disk (python) </q-tooltip></q-btn> -->
 
 
         <q-btn flat round dense size="sm" :icon="butIcon" :color="butColor" class="q-mr-sm" @click="togglePlay">
@@ -628,7 +628,6 @@ export default defineComponent({
     // not finished
     uploadStateToServer() {
       this.state.model_definition = { ...explain.savedState }
-      this.state.diagram_definition.settings.name = this.diagram.diagram_definition.settings.name;
       this.state.saveStateToServer(this.general.apiUrl, this.user.name, this.user.token).then((t) => {
         if (t.result) {
           this.popupClass = "text-h6"

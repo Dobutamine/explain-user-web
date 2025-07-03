@@ -15,14 +15,14 @@
             </div>
           </div>
           <q-separator></q-separator>
-          <div v-if="selectedModelInterface.length > 0" class="row text-overline justify-center" @click="collapsed = !collapsed">
+          <!-- <div v-if="selectedModelInterface.length > 0" class="row text-overline justify-center" @click="collapsed = !collapsed">
             properties
-          </div>
+          </div> -->
 
-          <div v-if="selectedModelInterface.length > 0" class="q-pa-sm q-mb-xs q-ml-md q-mr-md text-overline justify-center row">
+          <div v-if="selectedModelInterface.length > 0" class="q-pa-sm q-mt-sm q-mb-xs q-ml-md q-mr-md text-overline justify-center row">
             <q-btn-toggle v-model="edit_mode" color="grey-9" size="sm" text-color="white" toggle-color="primary" :options="[
               { label: 'BASIC', value: 'basic' },
-              { label: 'EXTRA', value: 'advanced' },
+              { label: 'EXTRA', value: 'extra' },
               { label: 'FACTORS', value: 'factors' },
               { label: 'ALL', value: 'all' },
             ]" @update:model-value="selectMode" />
@@ -31,6 +31,7 @@
             <div v-for="(field, index) in selectedModelInterface" :key="index">
               <div v-if="field.edit_mode == edit_mode || edit_mode == 'all'">
                 <div v-if="field.type == 'number'">
+
                   <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
                     <div class="text-white" :style="{ 'font-size': '10px' }">
                       <div v-if="!field.slider" class="row">
@@ -44,6 +45,7 @@
                         </div>
                         
                       </div>
+
                       <div v-if="field.slider">
                         <div class="row justify-left">
                             <q-badge class="q-pa-sm" color="grey-10">
@@ -280,6 +282,7 @@ export default {
   },
   methods: {
     sliderChange(param) {
+      this.state_changed = true;
       param.state_changed = true;
       this.redraw += 1;
     },

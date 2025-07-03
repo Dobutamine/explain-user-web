@@ -46,7 +46,7 @@ export class Breathing extends BaseModelClass {
       delta: 0.001,
       factor: 1000.0,
       rounding: 4,
-      edit_mode: "basic",
+      edit_mode: "advanced",
       build_prop: true,
       readonly: false,
     },
