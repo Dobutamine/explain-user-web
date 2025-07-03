@@ -4,19 +4,11 @@ export class Metabolism extends BaseModelClass {
   // static properties
   static model_type = "Metabolism";
   static model_interface = [
-    {    
-      target: "model_type",  
-      type: "string",
-      build_prop: false,
-      edit_mode: "basic",
-      readonly: true,
-      caption: "model type",
-    },
     {
       target: "description",
       type: "string",
       build_prop: true,
-      edit_mode: "basic",
+      edit_mode: "all",
       readonly: true,
       caption: "description",
     },
@@ -24,14 +16,17 @@ export class Metabolism extends BaseModelClass {
       target: "is_enabled",
       type: "boolean",
       build_prop: true,
-      edit_mode: "basic",
+      edit_mode: "all",
       readonly: false,
       caption: "enabled",
     },
     {
       caption: "metabolism enabled",
       target: "met_active",
-      type: "boolean"
+      type: "boolean",
+      build_prop: true,
+      edit_mode: "advanced",
+      readonly: false,
     },
     {
       caption: "vo2 (ml/kg/min)",
@@ -40,6 +35,9 @@ export class Metabolism extends BaseModelClass {
       delta: 0.1,
       factor: 1.0,
       rounding: 1,
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
     },
     {
       caption: "respiratory quotient",
@@ -48,10 +46,16 @@ export class Metabolism extends BaseModelClass {
       delta: 0.1,
       factor: 1.0,
       rounding: 1,
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
     },
     {
       caption: "set local fractional vo2",
       target: "set_metabolic_active_model",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
       type: "function",
       args:[
         {

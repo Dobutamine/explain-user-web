@@ -20,9 +20,9 @@
           </div>
 
           <div v-if="selectedModelInterface.length > 0" class="q-pa-sm q-mb-xs q-ml-md q-mr-md text-overline justify-center row">
-            <q-btn-toggle v-model="edit_mode" color="grey-9" size="xs" text-color="white" toggle-color="secondary" :options="[
+            <q-btn-toggle v-model="edit_mode" color="grey-9" size="sm" text-color="white" toggle-color="primary" :options="[
               { label: 'BASIC', value: 'basic' },
-              { label: 'ADVANCED', value: 'advanced' },
+              { label: 'EXTRA', value: 'advanced' },
               { label: 'FACTORS', value: 'factors' },
               { label: 'ALL', value: 'all' },
             ]" @update:model-value="selectMode" />
@@ -33,11 +33,36 @@
                 <div v-if="field.type == 'number'">
                   <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
                     <div class="text-white" :style="{ 'font-size': '10px' }">
-                      <q-input v-model="field.value" :label="field.caption" :max="field.ul" :min="field.ll" :readonly="field.readonly"
-                        :step="field.delta" color="blue" hide-hint filled dense
-                        @update:model-value="changePropState(field, arg)" stack-label type="number"
-                        style="font-size: 12px" class="q-mb-sm" squared>
-                      </q-input>
+                      <div v-if="!field.slider" class="row">
+                        <q-input v-if="!field.slider" class="q-mb-sm col-10" v-model="field.value" :label="field.caption" :max="field.ul" :min="field.ll" :readonly="field.readonly"
+                          :step="field.delta" color="blue" hide-hint filled dense
+                          @update:model-value="changePropState(field, arg)" stack-label type="number"
+                          style="font-size: 12px" squared>
+                        </q-input>
+                        <div class="col q-ml-sm">
+                            <q-btn  dense size="xs" @click="toggleSlider(field)">slider</q-btn>
+                        </div>
+                        
+                      </div>
+                      <div v-if="field.slider">
+                        <div class="row justify-left">
+                            <q-badge class="q-pa-sm" color="grey-10">
+                              <div class="text-secondary" style="font-size: small;">
+                                  {{ field.caption }} = {{ field.value }}
+                              </div>
+                            </q-badge>
+                        </div>
+                        <div class="row">
+                          <q-slider class="q-ma-sm q-mr-sm col-10" v-model="field.value" :step="field.delta"
+                            :min="field.ll" :max="field.ul" snap :markers="1" dense thumb-color="teal"
+                            color="transparent" @change="sliderChange(field)"/>
+
+                          <div class="col q-ml-sm">
+                            <q-btn  dense size="xs" @click="toggleSlider(field)">num</q-btn>
+                        </div>
+                        </div>
+                      </div>
+                    
                     </div>
                   </div>
                 </div>
@@ -45,17 +70,36 @@
                 <div v-if="field.type == 'factor' && factorsEnabled">
                   <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
                     <div class="text-white" :style="{ 'font-size': '10px' }">
-                      <q-input v-model="field.value" :label="field.caption" :max="10000000000" :min="0" :readonly="field.readonly"
+                      <!-- <q-input v-model="field.value" :label="field.caption" :max="10000000000" :min="0" :readonly="field.readonly"
                         :step="0.05" color="blue" hide-hint filled dense
                         @update:model-value="changePropState(field, arg)" stack-label type="number"
                         style="font-size: 12px" class="q-mb-sm" squared>
-                      </q-input>
+                      </q-input> -->
+
+                      <div class="row justify-center">
+                        <q-badge class="q-pa-sm" color="grey-10">
+                          <div class="text-secondary" style="font-size: small;">
+                              {{ field.caption }} = {{ field.display_value }} x N
+                          </div>
+                        </q-badge>
+                      </div>
+                      <div class="row  justify-center">
+                        <q-btn @click="decreaseSliderValue(field)" class="q-ma-sm col" color="grey-10" dense size="xs"
+                          icon="fa-solid fa-chevron-left"></q-btn>
+
+                        <q-slider class="q-ma-sm q-mr-sm col-8" v-model="field.slider_value" :step="field.delta"
+                          :min="field.ll" :max="field.ul" snap :markers="1" dense thumb-color="teal"
+                          color="transparent" @change="changeSliderValue(field)" />
+                        
+                          <q-btn @click="increaseSliderValue(field)" class="q-ma-sm col" dense size="xs" color="grey-10"
+                          icon="fa-solid fa-chevron-right"></q-btn>
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 <div v-if="field.type == 'boolean'">
-                  <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary row" :style="{ 'font-size': '12px' }">
+                  <div class="q-ml-lg q-mr-md q-mt-md text-left text-secondary row" :style="{ 'font-size': '12px' }">
                     <div class="col">
                       {{ field.caption }}
                     </div>
@@ -228,13 +272,69 @@ export default {
       relatives_text: "show relative properties",
       modelNames: [],
       timeOptions: [1, 5, 10, 30, 60, 120, 240, 360],
-      changeInTime: 5,
+      changeInTime: 1,
       state_changed: false,
       collaps_icon: "fa-solid fa-chevron-up",
       edit_mode: "basic"
     };
   },
   methods: {
+    sliderChange(param) {
+      param.state_changed = true;
+      this.redraw += 1;
+    },
+    toggleSlider(param) {
+      param.slider = !param.slider
+      param.value = parseFloat(param.value)
+      this.redraw +=1;
+    },
+    changeSliderValue(parameter) {
+      parameter.state_changed = true;
+      parameter.display_value = this.translateSliderToValue(parameter.slider_value).toFixed(parameter.rounding)
+      parameter.value = this.translateSliderToValue(parameter.slider_value)
+      this.updateValue();
+      this.redraw += 1;
+    },
+    increaseSliderValue(parameter) {
+      parameter.slider_value += parameter.delta;
+      if (parameter.slider_value > parameter.ul) {
+        parameter.slider_value = parameter.ul
+      }
+      this.changeSliderValue(parameter)
+    },
+    decreaseSliderValue(parameter) {
+      parameter.slider_value -= parameter.delta;
+      if (parameter.slider_value < parameter.ll) {
+        parameter.slider_value = parameter.ll
+      }
+      this.changeSliderValue(parameter)
+    },
+    translateSliderToValue(v) {
+      if (v == 0) {
+        return 1;
+      }
+
+      if (v < 0) {
+        return -(1 / (v - 1));
+      }
+
+      if (v < 1) {
+        return 1 + v
+      }
+
+      return 1 + v
+    },
+    translateValueToSlider(v) {
+      if (v < 1) {
+        return (-(1 / v) + 1.0)
+      }
+
+      if (v > 1) {
+        return (v - 1)
+      }
+
+      return 0;
+    },
     selectMode() {},
     cancelAddModel() {
       this.selectedModelType = ""
@@ -462,7 +562,7 @@ export default {
           }
           if (prop.type == 'factor') {
             let p = this.selectedModelName + "." + prop.target
-            explain.setPropValue(p, parseFloat(prop.value / prop.factor), parseFloat(this.changeInTime), 0)
+            explain.setPropValue(p, parseFloat(prop.value), parseFloat(this.changeInTime), 0)
           }
           if (prop.type == 'boolean') {
             let p = this.selectedModelName + "." + prop.target
@@ -530,7 +630,7 @@ export default {
         }
 
         if (!param['edit_mode']) {
-          param['edit_mode'] = 'basic'
+          param['edit_mode'] = 'all'
         }
         // process the different types of parameters
         switch (param.type) {
@@ -667,6 +767,7 @@ export default {
           param["choices"].push(model.name)
         }
       })
+      param['slider'] = false
     },
     processFactorType(param) {
       let f_factor = param.target.split('.')
@@ -682,6 +783,8 @@ export default {
           param['value'] = explain.modelState.models[this.selectedModelName][f_factor[0]][f_factor[1]][f_factor[2]]
           break;
       }
+      param['display_value'] = (param.value).toFixed(param.rounding)
+      param['slider_value'] = this.translateValueToSlider(param.value);
       param['value'] = (param['value']).toFixed(2)
     },
     processPropListType(param) {

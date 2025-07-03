@@ -92,28 +92,20 @@ export class Circulation extends BaseModelClass {
     {
       caption: "svr factor",
       target: "svr_factor",
-      type: "number",
-      edit_mode: "basic",
-      build_prop: false,
-      readonly: false,
-      factor: 1.0,
-      delta: 0.01,
+      type: "factor",
+      delta: 0.05,
       rounding: 2,
-      ll: 0.0,
-      ul: 1000000
+      ll: -5.0,
+      ul: 5.0
     },
     {
       caption: "pvr factor",
       target: "pvr_factor",
-      type: "number",
-      edit_mode: "basic",
-      build_prop: false,
-      readonly: false,
-      factor: 1.0,
-      delta: 0.01,
+      type: "factor",
+      delta: 0.05,
       rounding: 2,
-      ll: 0.0,
-      ul: 1000000
+      ll: -5.0,
+      ul: 5
     },
     {
       caption: "add fluid",

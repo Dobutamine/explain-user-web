@@ -1,3 +1,4 @@
+import { readonly } from "vue";
 import { BaseModelClass } from "../base_models/BaseModelClass.js";
 import { calc_blood_composition } from "../component_models/BloodComposition.js"
 import { calc_gas_composition } from "../component_models/GasComposition.js"
@@ -7,19 +8,10 @@ export class Ecls extends BaseModelClass {
   // static properties
   static model_type = "Ecls";
   static model_interface = [
-    {    
-      target: "model_type",  
-      type: "string",
-      build_prop: false,
-      edit_mode: "basic",
-      readonly: true,
-      caption: "model type",
-    },
     {
       target: "description",
       type: "string",
       build_prop: true,
-      edit_mode: "basic",
       readonly: true,
       caption: "description",
     },
@@ -27,24 +19,32 @@ export class Ecls extends BaseModelClass {
       target: "is_enabled",
       type: "boolean",
       build_prop: true,
-      edit_mode: "basic",
       readonly: false,
       caption: "enabled",
     },
     {
       caption: "ecls enabled",
       target: "ecls_running",
-      type: "boolean"
+      type: "boolean",
+      edit_mode: "all",
+      build_prop: true,
+      readonly: false
     },
     {
       caption: "tubing clamped",
       target: "tubing_clamped",
-      type: "boolean"
+      type: "boolean",
+      edit_mode: "basic",
+      build_prop: true,
+      readonly: false
     },
     {
       caption: "pump rotations (rpm)",
       target: "pump_rpm",
       type: "number",
+      edit_mode: "basic",
+      build_prop: true,
+      readonly: false,
       factor: 1.0,
       delta: 50,
       rounding: 0,
@@ -55,6 +55,9 @@ export class Ecls extends BaseModelClass {
       caption: "gas flow (l/min)",
       target: "gas_flow",
       type: "number",
+      edit_mode: "basic",
+      build_prop: true,
+      readonly: false,
       factor: 1.0,
       delta: 0.1,
       rounding: 1,
@@ -65,6 +68,9 @@ export class Ecls extends BaseModelClass {
       caption: "fio2 blender (%)",
       target: "fio2_gas",
       type: "number",
+      edit_mode: "basic",
+      build_prop: true,
+      readonly: false,
       factor: 100,
       delta: 1,
       rounding: 0,
@@ -75,6 +81,9 @@ export class Ecls extends BaseModelClass {
       caption: "co2 flow (ml/min)",
       target: "co2_gas_flow",
       type: "number",
+      edit_mode: "basic",
+      build_prop: true,
+      readonly: false,
       factor: 1,
       delta: 1,
       rounding: 0,
@@ -85,6 +94,9 @@ export class Ecls extends BaseModelClass {
       caption: "drainage site",
       target: "set_drainage_origin",
       type: "function",
+      edit_mode: "advanced",
+      build_prop: true,
+      readonly: false,
       args: [
         {
           caption: "drainage site",
@@ -98,6 +110,9 @@ export class Ecls extends BaseModelClass {
       caption: "return site",
       target: "set_return_target",
       type: "function",
+      edit_mode: "advanced",
+      build_prop: true,
+      readonly: false,
       args: [
         {
           caption: "return site",
