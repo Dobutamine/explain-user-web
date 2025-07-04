@@ -109,8 +109,8 @@ export class Heart extends BaseModelClass {
       factor: 1.0,
       delta: 0.01,
       rounding: 2,
-      ll: -50,
-      ul: 50
+      ll: -20,
+      ul: 20
     },
     {
       caption: "contractility factor right",
@@ -118,10 +118,10 @@ export class Heart extends BaseModelClass {
       type: "factor",
       edit_mode: "factors",
       factor: 1.0,
-      delta: 0.01,
+      delta: 0.1,
       rounding: 2,
-      ll: -50,
-      ul: 50
+      ll: -20,
+      ul: 20
     },
     {
       caption: "stiffness factor left",
@@ -129,10 +129,10 @@ export class Heart extends BaseModelClass {
       type: "factor",
       edit_mode: "factors",
       factor: 1.0,
-      delta: 0.01,
+      delta: 0.1,
       rounding: 2,
-      ll: -50,
-      ul: 50
+      ll: -20,
+      ul: 20
     },
     {
       caption: "stiffness factor right",
@@ -142,8 +142,8 @@ export class Heart extends BaseModelClass {
       factor: 1.0,
       delta: 0.01,
       rounding: 2,
-      ll: -50,
-      ul: 50
+      ll: -20,
+      ul: 20
     },
   ];
 
