@@ -150,6 +150,11 @@ export class TimeVaryingElastance extends BaseModelClass {
         + (this.el_k_factor - 1) * this.el_k
         + (this.el_k_factor_ps - 1) * this.el_k
 
+    // make sure that el_max is not smaller than el_min
+    if (this._el_max < this._el_min) {
+      this._el_max = this._el_min;
+    }
+    
     // reset the non persistent factors
     this.el_min_factor = 1.0;
     this.el_max_factor = 1.0;

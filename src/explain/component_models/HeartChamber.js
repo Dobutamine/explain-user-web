@@ -26,6 +26,10 @@ export class HeartChamber extends TimeVaryingElastance {
     this.so2 = -1.0; // o2 saturation
     this.hco3 = -1.0; // bicarbonate concentration (mmol/l)
     this.be = -1.0; // base excess (mmol/l)
+    this.el = 0.0;
+
+    this.elmin_calc = 0.0
+    this.elmax_calc = 0.9
   }
   // this method overrides the calc_elastances method of the 
   calc_elastances() {    
@@ -36,17 +40,25 @@ export class HeartChamber extends TimeVaryingElastance {
     this._el_min = this.el_min 
         + (this.el_min_factor - 1) * this.el_min
         + (this.el_min_factor_ps - 1) * this.el_min
-        - (this.ans_activity - 1) * this.el_min * this.ans_sens
+        - (this.ans_activity - 1) * this._el_min * this.ans_sens
     
     // ans influences ANS systolic function B1 receptor activation -> positive intropic effect
     this._el_max = this.el_max 
         + (this.el_max_factor - 1) * this.el_max
         + (this.el_max_factor_ps - 1) * this.el_max
-        + (this.ans_activity - 1) * this.el_max * this.ans_sens
+        + (this.ans_activity - 1) * this._el_max * this.ans_sens
 
     this._el_k = this.el_k 
         + (this.el_k_factor - 1) * this.el_k
         + (this.el_k_factor_ps - 1) * this.el_k
+
+    // make sure that el_max is not smaller than el_min
+    if (this._el_max < this._el_min) {
+      this._el_max = this._el_min;
+    }
+
+    this.elmax_calc = this._el_max
+    this.elmin_calc = this._el_min
 
     // reset the non persistent factors
     this.el_min_factor = 1.0;

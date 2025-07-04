@@ -9,7 +9,7 @@ export class Heart extends BaseModelClass {
       target: "description",
       type: "string",
       build_prop: true,
-      edit_mode: "all",
+      edit_mode: "caption",
       readonly: true,
       caption: "description",
     },
@@ -102,43 +102,48 @@ export class Heart extends BaseModelClass {
       ul: 1000000
     },
     {
-      caption: "contractility factor",
-      target: "cont_factor",
-      type: "number",
+      caption: "contractility factor left",
+      target: "cont_factor_left",
+      type: "factor",
+      edit_mode: "factors",
       factor: 1.0,
       delta: 0.01,
       rounding: 2,
-      ll: 0.0,
-      ul: 1000000
+      ll: -50,
+      ul: 50
     },
     {
-      caption: "relaxation factor (inverse)",
-      target: "relax_factor",
-      type: "number",
+      caption: "contractility factor right",
+      target: "cont_factor_right",
+      type: "factor",
+      edit_mode: "factors",
       factor: 1.0,
       delta: 0.01,
       rounding: 2,
-      ll: 0.0,
-      ul: 1000000
+      ll: -50,
+      ul: 50
     },
-    {    
-      target: "components",  
-      type: "component-list",
-      build_prop: true,
-      edit_mode: "advanced",
-      readonly: false,
-      caption: "components",
-      components: [
-        { name: "LA", model_type: "HeartChamber" },
-        { name: "RA", model_type: "HeartChamber" },
-        { name: "LV", model_type: "HeartChamber" },
-        { name: "RV", model_type: "HeartChamber" },
-        { name: "PERICARDIUM", model_type: "Container" },
-        { name: "LA_LV", model_type: "Resistor" },
-        { name: "RA_RV", model_type: "Resistor" },
-        { name: "LV_AA", model_type: "Resistor" },
-        { name: "RV_PA", model_type: "Resistor" }
-      ]
+    {
+      caption: "stiffness factor left",
+      target: "relax_factor_left",
+      type: "factor",
+      edit_mode: "factors",
+      factor: 1.0,
+      delta: 0.01,
+      rounding: 2,
+      ll: -50,
+      ul: 50
+    },
+    {
+      caption: "stiffness factor right",
+      target: "relax_factor_right",
+      type: "factor",
+      edit_mode: "factors",
+      factor: 1.0,
+      delta: 0.01,
+      rounding: 2,
+      ll: -50,
+      ul: 50
     },
   ];
 
@@ -162,10 +167,14 @@ export class Heart extends BaseModelClass {
     this.hr_drug_factor = 1.0; // heart rate factor of the drug model (not implemented yet)
 
     this.cont_factor = 1.0; // contractility factor
+    this.cont_factor_left = 1.0; // left heart contractility factor
+    this.cont_factor_right = 1.0; // right heart contractility factor
     this.cont_mob_factor = 1.0; // contractility factor of myocardial oxygen balance model
     this.cont_drug_factor = 1.0; // contractility factor of drug model (not implemented yet)
 
     this.relax_factor = 1.0; // relaxation factor (higher is less relaxation!)
+    this.relax_factor_left = 1.0; // left heart relaxation factor
+    this.relax_factor_right = 1.0; // right heart relaxation factor
     this.relax_mob_factor = 1.0; // relaxation factor of myocardial oxygen balance model
     this.relax_drug_factor = 1.0; // relaxation factor of drug model (not implemented yet)
   
@@ -242,7 +251,12 @@ export class Heart extends BaseModelClass {
     this._prev_la_lv_flow = 0.0;
     this._prev_lv_aa_flow = 0.0;
     this._prev_cont_factor = 1.0;
+    this._prev_cont_factor_left = 1.0;
+    this._prev_cont_factor_right = 1.0;
+
     this._prev_relax_factor = 1.0;
+    this._prev_relax_factor_left = 1.0;
+    this._prev_relax_factor_right = 1.0;
     
     this._update_counter_factors = 0.0;
     this._update_interval_factors = 0.015;
@@ -312,15 +326,28 @@ export class Heart extends BaseModelClass {
     if (this._update_counter_factors > this._update_interval_factors) {
       this._update_counter_factors = 0.0;
 
-      if (this._prev_cont_factor !== this.cont_factor) {
-        this.set_contractillity(this.cont_factor)
-        this._prev_cont_factor = this.cont_factor;
+      const cont_left = this.cont_factor_left;
+      const cont_right = this.cont_factor_right;
+      if (
+        cont_left !== this._prev_cont_factor_left ||
+        cont_right !== this._prev_cont_factor_right
+      ) {
+        this.set_contractillity(cont_left, cont_right);
       }
+      this._prev_cont_factor_left = cont_left;
+      this._prev_cont_factor_right = cont_right;
 
-      if (this._prev_relax_factor !== this.relax_factor) {
-        this.set_relaxation(this.relax_factor)
-        this._prev_relax_factor = this.relax_factor;
+      const relax_left = this.relax_factor_left;
+      const relax_right = this.relax_factor_right;
+      if (
+        relax_left !== this._prev_relax_factor_left ||
+        relax_right !== this._prev_relax_factor_right
+      ) {
+        this.set_relaxation(relax_left, relax_right);
       }
+      this._prev_relax_factor_left = relax_left;
+      this._prev_relax_factor_right = relax_right;
+
     }
 
     // store the previous cardiac cycle state
@@ -481,6 +508,7 @@ export class Heart extends BaseModelClass {
     // transfer the activation factor to the heart components
     this._la.act_factor = this.aaf;
     this._ra.act_factor = this.aaf;
+
     this._lv.act_factor = this.vaf;
     this._rv.act_factor = this.vaf;
     this._coronaries.act_factor = this.vaf;
@@ -498,20 +526,21 @@ export class Heart extends BaseModelClass {
     }
   }
 
-  set_contractillity(new_cont_factor) {
+  set_contractillity(new_cont_factor_left, new_cont_factor_right) {
     // get the current factors from the model
     let f_ps_la = this._la.el_max_factor_ps;
     let f_ps_lv = this._lv.el_max_factor_ps;
     let f_ps_ra = this._ra.el_max_factor_ps;
     let f_ps_rv = this._rv.el_max_factor_ps;
 
-    let delta = new_cont_factor - this._prev_cont_factor;
+    let delta_left = new_cont_factor_left - this._prev_cont_factor_left;
+    let delta_right = new_cont_factor_right - this._prev_cont_factor_right;
 
     // add the increase/decrease in factor
-    f_ps_la = Math.max(f_ps_la + delta, 0);
-    f_ps_lv = Math.max(f_ps_lv + delta, 0);
-    f_ps_ra = Math.max(f_ps_ra + delta, 0);
-    f_ps_rv = Math.max(f_ps_rv + delta, 0);
+    f_ps_la = Math.max(f_ps_la + delta_left, 0);
+    f_ps_lv = Math.max(f_ps_lv + delta_left, 0);
+    f_ps_ra = Math.max(f_ps_ra + delta_right, 0);
+    f_ps_rv = Math.max(f_ps_rv + delta_right, 0);
 
     // transfer the factors
     this._la.el_max_factor_ps = f_ps_la
@@ -520,23 +549,25 @@ export class Heart extends BaseModelClass {
     this._rv.el_max_factor_ps = f_ps_rv
 
     // store the new factor
-    this.cont_factor = new_cont_factor
+    this.cont_factor_left = new_cont_factor_left;
+    this.cont_factor_right = new_cont_factor_right;
   }
 
-  set_relaxation(new_relax_factor) {
+  set_relaxation(new_relax_factor_left, new_relax_factor_right) {
     // get the current factors from the model
     let f_ps_la = this._la.el_min_factor_ps;
     let f_ps_lv = this._lv.el_min_factor_ps;
     let f_ps_ra = this._ra.el_min_factor_ps;
     let f_ps_rv = this._rv.el_min_factor_ps;
 
-    let delta = new_relax_factor - this._prev_relax_factor;
+    let delta_left = new_relax_factor_left - this._prev_relax_factor_left;
+    let delta_right = new_relax_factor_right - this._prev_relax_factor_right;
 
     // add the increase/decrease in factor
-    f_ps_la = Math.max(f_ps_la + delta, 0);
-    f_ps_lv = Math.max(f_ps_lv + delta, 0);
-    f_ps_ra = Math.max(f_ps_ra + delta, 0);
-    f_ps_rv = Math.max(f_ps_rv + delta, 0);
+    f_ps_la = Math.max(f_ps_la + delta_left, 0);
+    f_ps_lv = Math.max(f_ps_lv + delta_left, 0);
+    f_ps_ra = Math.max(f_ps_ra + delta_right, 0);
+    f_ps_rv = Math.max(f_ps_rv + delta_right, 0);
 
     // transfer the factors
     this._la.el_min_factor_ps = f_ps_la
@@ -545,6 +576,7 @@ export class Heart extends BaseModelClass {
     this._rv.el_min_factor_ps = f_ps_rv
 
     // store the new factor
-    this.relax_factor = new_relax_factor
+    this.relax_factor_left = new_relax_factor_left;
+    this.relax_factor_right = new_relax_factor_right;
   }
 }
