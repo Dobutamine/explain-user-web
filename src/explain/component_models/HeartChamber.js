@@ -57,9 +57,6 @@ export class HeartChamber extends TimeVaryingElastance {
       this._el_max = this._el_min;
     }
 
-    this.elmax_calc = this._el_max
-    this.elmin_calc = this._el_min
-
     // reset the non persistent factors
     this.el_min_factor = 1.0;
     this.el_max_factor = 1.0;
