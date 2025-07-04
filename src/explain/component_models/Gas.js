@@ -9,7 +9,7 @@ export class Gas extends BaseModelClass {
       target: "description",
       type: "string",
       build_prop: true,
-      edit_mode: "all",
+      edit_mode: "caption",
       readonly: true,
       caption: "description",
     },
@@ -17,13 +17,15 @@ export class Gas extends BaseModelClass {
       target: "is_enabled",
       type: "boolean",
       build_prop: true,
-      edit_mode: "all",
+      edit_mode: "extra",
       readonly: false,
       caption: "enabled",
     },
     {
       caption: "atmospheric pressure (mmHg)",
       target: "set_atmospheric_pressure",
+      build_prop: true,
+      edit_mode: "basic",
       type: "function",
       args:[
         {
@@ -41,6 +43,8 @@ export class Gas extends BaseModelClass {
     {
       caption: "temperature (C)",
       target: "set_temperature",
+      build_prop: true,
+      edit_mode: "basic",
       type: "function",
       args:[
         {
@@ -65,6 +69,8 @@ export class Gas extends BaseModelClass {
     {
       caption: "humidity factor",
       target: "set_humidity",
+      build_prop: true,
+      edit_mode: "basic",
       type: "function",
       args:[
         {
@@ -89,6 +95,8 @@ export class Gas extends BaseModelClass {
     {
       caption: "fio2",
       target: "set_fio2",
+      build_prop: true,
+      edit_mode: "basic",
       type: "function",
       args:[
         {
@@ -183,6 +191,9 @@ export class Gas extends BaseModelClass {
   }
 
   set_temperature(new_temp, sites = ["OUT", "MOUTH"]) {
+    // make sure sites is an array
+    sites = Array.isArray(sites) ? sites : [sites];
+    
     // adjust the temperature in components stored in the sites parameter
     sites.forEach((site) => {
       this.temp_settings[site] = parseFloat(new_temp);
@@ -197,6 +208,10 @@ export class Gas extends BaseModelClass {
   }
 
   set_humidity(new_humidity, sites = ["OUT", "MOUTH"]) {
+    
+    // make sure sites is an array
+    sites = Array.isArray(sites) ? sites : [sites];
+
     // adjust the humidity in components stored in the sites parameter
     sites.forEach((site) => {
       this.humidity_settings[site] = parseFloat(new_humidity);
@@ -211,6 +226,9 @@ export class Gas extends BaseModelClass {
 
   set_fio2(new_fio2, sites = ["OUT", "MOUTH"]) {
     this.fio2 = new_fio2;
+
+    // make sure sites is an array
+    sites = Array.isArray(sites) ? sites : [sites];
 
     // calculate the gas composition for the gas containing models
     sites.forEach((site) => {

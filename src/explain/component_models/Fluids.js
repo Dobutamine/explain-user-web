@@ -8,7 +8,7 @@ export class Fluids extends BaseModelClass {
       target: "description",
       type: "string",
       build_prop: true,
-      edit_mode: "all",
+      edit_mode: "caption",
       readonly: true,
       caption: "description",
     },

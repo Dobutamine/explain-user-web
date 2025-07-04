@@ -36,7 +36,13 @@ export class Blood extends BaseModelClass {
           rounding: 1,
           ul: 45.0,
           ll: 25.0,
-        }
+        },
+        {
+          target: "site",
+          caption: "change in site",
+          type: "list",
+          options: ["BloodCapacitance", "BloodTimeVaryingElastance", "BloodVessel", "HeartChamber", "MicroVascularUnit", "BloodPump"],
+        },
       ]
     },
     {
@@ -250,13 +256,18 @@ export class Blood extends BaseModelClass {
     }
   }
 
-  set_temperature(new_temp) {
+  set_temperature(new_temp, bc_site = "") {
     this.temp = new_temp;
-    Object.values(this._model_engine.models).forEach((model) => {
-      if (this.blood_containing_modeltypes.includes(model.model_type)) {
-        model.temp = new_temp;
-      }
-    });
+    if (bc_site) {
+      this._model_engine.models[bc_site].temp = new_temp;
+    } else {
+      Object.values(this._model_engine.models).forEach((model) => {
+            if (this.blood_containing_modeltypes.includes(model.model_type)) {
+              model.temp = new_temp;
+            }
+          });
+    }
+    
   }
 
   set_viscosity(new_viscosity) {
