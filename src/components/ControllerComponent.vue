@@ -31,7 +31,7 @@
             <div v-for="(mi, index_main) in modelInterfaces" :key="index_main">
               <q-card class="bg-grey-10 q-pt-xs q-mt-sm" dark bordered flat>
                 <div v-for="(field, index) in mi" :key="index">
-                  <div v-if="field.edit_mode == edit_mode || edit_mode == 'all'">
+                  <div v-if="field.edit_mode == edit_mode || edit_mode == 'all' || field.edit_mode == 'caption'">
                     <div v-if="field.type == 'number'">
 
                       <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
@@ -81,21 +81,21 @@
                           </q-input> -->
 
                           <div class="row justify-center">
-                            <q-badge class="q-pa-sm" color="grey-10">
-                              <div class="text-secondary" style="font-size: small;">
+                            <q-badge class="q-mt-xs" color="grey-10">
+                              <div class="text-white" style="font-size: small;">
                                   {{ field.caption }} = {{ field.display_value }} x N
                               </div>
                             </q-badge>
                           </div>
                           <div class="row  justify-center">
-                            <q-btn @click="decreaseSliderValue(field)" class="q-ma-sm col" color="grey-10" dense size="xs"
+                            <q-btn @click="decreaseSliderValue(field)" class="q-ma-xs col" color="grey-10" dense size="xs"
                               icon="fa-solid fa-chevron-left"></q-btn>
 
-                            <q-slider class="q-ma-sm q-mr-sm col-8" v-model="field.slider_value" :step="field.delta"
+                            <q-slider class="q-ma-xs col-8" v-model="field.slider_value" :step="field.delta"
                               :min="field.ll" :max="field.ul" snap :markers="1" dense thumb-color="teal"
                               color="transparent" @change="changeSliderValue(field)" />
                             
-                              <q-btn @click="increaseSliderValue(field)" class="q-ma-sm col" dense size="xs" color="grey-10"
+                              <q-btn @click="increaseSliderValue(field)" class="q-ma-xs col" dense size="xs" color="grey-10"
                               icon="fa-solid fa-chevron-right"></q-btn>
                           </div>
                         </div>

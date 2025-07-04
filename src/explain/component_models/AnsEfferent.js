@@ -5,19 +5,11 @@ export class AnsEfferent extends BaseModelClass {
   // static properties
   static model_type = "AnsEfferent";
   static model_interface = [
-    {    
-      target: "model_type",  
-      type: "string",
-      build_prop: false,
-      edit_mode: "basic",
-      readonly: true,
-      caption: "model type",
-    },
     {
       target: "description",
       type: "string",
       build_prop: true,
-      edit_mode: "basic",
+      edit_mode: "caption",
       readonly: true,
       caption: "description",
     },
@@ -25,12 +17,12 @@ export class AnsEfferent extends BaseModelClass {
       target: "is_enabled",
       type: "boolean",
       build_prop: true,
-      edit_mode: "basic",
+      edit_mode: "all",
       readonly: false,
       caption: "enabled",
     },
     {
-      edit_mode: "basic",
+      edit_mode: "extra",
       build_prop: true,
       readonly: false,
       caption: "target model property",

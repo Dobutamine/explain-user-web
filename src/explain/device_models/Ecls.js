@@ -11,6 +11,7 @@ export class Ecls extends BaseModelClass {
     {
       target: "description",
       type: "string",
+      edit_mode: "caption",
       build_prop: true,
       readonly: true,
       caption: "description",
@@ -19,6 +20,7 @@ export class Ecls extends BaseModelClass {
       target: "is_enabled",
       type: "boolean",
       build_prop: true,
+      edit_mode: "all",
       readonly: false,
       caption: "enabled",
     },
@@ -26,7 +28,7 @@ export class Ecls extends BaseModelClass {
       caption: "ecls enabled",
       target: "ecls_running",
       type: "boolean",
-      edit_mode: "all",
+      edit_mode: "basic",
       build_prop: true,
       readonly: false
     },
@@ -91,10 +93,261 @@ export class Ecls extends BaseModelClass {
       ul: 1000.0,
     },
     {
+      caption: "occlusive pump?",
+      target: "set_pump_occlusive",
+      type: "function",
+      edit_mode: "extra",
+      build_prop: true,
+      readonly: false,
+      args: [
+        {
+          caption: "occlusive pump?",
+          target: "pump_occlusive",
+          type: "boolean",
+          edit_mode: "extra",
+          build_prop: true,
+          readonly: false,
+        }
+      ]
+    },
+    {
+      caption: "pump_resistance (mmHg/l*s)",
+      target: "pump_resistance",
+      type: "number",
+      edit_mode: "extra",
+      build_prop: true,
+      readonly: false,
+      factor: 1,
+      delta: 10,
+      rounding: 0,
+      ll: 15,
+      ul: 5000000000,
+    },
+    {
+      caption: "pump volume (l)",
+      target: "set_pump_volume",
+      type: "function",
+      edit_mode: "extra",
+      build_prop: true,
+      readonly: false,
+      args: [
+        {
+          caption: "pump volume (l)",
+          target: "pump_volume", 
+          type: "number",
+          edit_mode: "extra",
+          build_prop: true,
+          readonly: false,
+          factor: 1,
+          delta: 0.01,
+          rounding: 2,
+          ll: 0.01,
+          ul: 5,
+        }
+      ]
+    },
+    {
+      caption: "oxygenator resistance (mmHg/l*s)",
+      target: "oxy_resistance",
+      type: "number",
+      edit_mode: "extra",
+      build_prop: true,
+      readonly: false,
+      factor: 1,
+      delta: 10,
+      rounding: 0,
+      ll: 15,
+      ul: 5000000000,
+    },
+    {
+      caption: "oxygenator volume (l)",
+      target: "set_oxy_volume",
+      type: "function",
+      edit_mode: "extra",
+      build_prop: true,
+      readonly: false,
+      args: [
+        {
+          caption: "oxygenator volume (l)",
+          target: "oxy_volume", 
+          type: "number",
+          edit_mode: "extra",
+          build_prop: true,
+          readonly: false,
+          factor: 1,
+          delta: 0.01,
+          rounding: 2,
+          ll: 0.01,
+          ul: 5,
+        }
+      ]
+    },
+    {
+      caption: "drainage cannule diameter (Fr)",
+      target: "set_drainage_cannula_diameter",
+      type: "function",
+      edit_mode: "extra",
+      build_prop: true,
+      readonly: false,
+      args: [
+        {
+          caption: "drainage cannula diameter (Fr)",
+          target: "drainage_cannula_diameter",
+          type: "number",
+          edit_mode: "extra",
+          build_prop: true,
+          readonly: false,
+          factor: 1,
+          delta: 1,
+          rounding: 0,
+          ll: 5,
+          ul: 50,
+        }
+      ]
+    },
+    {
+      caption: "return cannule diameter (Fr)",
+      target: "set_return_cannula_diameter",
+      type: "function",
+      edit_mode: "extra",
+      build_prop: true,
+      readonly: false,
+      args: [
+        {
+          caption: "return cannula diameter (Fr)",
+          target: "return_cannula_diameter",
+          type: "number",
+          edit_mode: "extra",
+          build_prop: true,
+          readonly: false,
+          factor: 1,
+          delta: 1,
+          rounding: 0,
+          ll: 5,
+          ul: 50,
+        }
+      ]
+    },
+    {
+      caption: "tubing diameter",
+      target: "set_tubing_diameter",
+      type: "function",
+      edit_mode: "extra",
+      build_prop: true,
+      readonly: false,
+      args: [
+        {
+          caption: "tubing diameter (inch)",
+          target: "tubing_diameter",
+          type: "number",
+          edit_mode: "extra",
+          build_prop: true,
+          readonly: false,
+          factor: 1,
+          delta: 0.05,
+          rounding: 2,
+          ll: 0.25,
+          ul: 0.5,
+        }
+      ]
+    },
+    {
+      caption: "tubing in length",
+      target: "set_tubing_in_length",
+      type: "function",
+      edit_mode: "extra",
+      build_prop: true,
+      readonly: false,
+      args: [
+        {
+          caption: "tubing in length (m)",
+          target: "tubing_in_length",
+          type: "number",
+          edit_mode: "extra",
+          build_prop: true,
+          readonly: false,
+          factor: 1,
+          delta: 0.1,
+          rounding: 1,
+          ll: 0.1,
+          ul: 5,
+        }
+      ]
+    },
+    {
+      caption: "tubing out length",
+      target: "set_tubing_out_length",
+      type: "function",
+      edit_mode: "extra",
+      build_prop: true,
+      readonly: false,
+      args: [
+        {
+          caption: "tubing out length (m)",
+          target: "tubing_out_length",
+          type: "number",
+          edit_mode: "extra",
+          build_prop: true,
+          readonly: false,
+          factor: 1,
+          delta: 0.1,
+          rounding: 1,
+          ll: 0.1,
+          ul: 5,
+        }
+      ]
+    },
+    {
+      caption: "drainage cannule length (m)",
+      target: "set_drainage_cannula_length",
+      type: "function",
+      edit_mode: "extra",
+      build_prop: true,
+      readonly: false,
+      args: [
+        {
+          caption: "drainage cannula length (m))",
+          target: "drainage_cannula_length",
+          type: "number",
+          edit_mode: "extra",
+          build_prop: true,
+          readonly: false,
+          factor: 1,
+          delta: 0.01,
+          rounding: 2,
+          ll: 0.01,
+          ul: 50,
+        }
+      ]
+    },
+    {
+      caption: "return cannule length (m)",
+      target: "set_return_cannula_length",
+      type: "function",
+      edit_mode: "extra",
+      build_prop: true,
+      readonly: false,
+      args: [
+        {
+          caption: "return cannula length (m)",
+          target: "return_cannula_length",
+          type: "number",
+          edit_mode: "extra",
+          build_prop: true,
+          readonly: false,
+          factor: 1,
+          delta: 0.01,
+          rounding: 2,
+          ll: 0.01,
+          ul: 50,
+        }
+      ]
+    },
+    {
       caption: "drainage site",
       target: "set_drainage_origin",
       type: "function",
-      edit_mode: "advanced",
+      edit_mode: "extra",
       build_prop: true,
       readonly: false,
       args: [
@@ -110,7 +363,7 @@ export class Ecls extends BaseModelClass {
       caption: "return site",
       target: "set_return_target",
       type: "function",
-      edit_mode: "advanced",
+      edit_mode: "extra",
       build_prop: true,
       readonly: false,
       args: [
@@ -119,6 +372,22 @@ export class Ecls extends BaseModelClass {
           target: "return_target",
           type: "list",
           options: ["BloodCapacitance", "BloodVessel", "MicroVascularUnit", "BloodTimeVaryingElastance"]
+        }
+      ]
+    },
+    {
+      caption: "ecls mode",
+      target: "set_ecls_mode",
+      type: "function",
+      edit_mode: "extra",
+      build_prop: true,
+      readonly: false,
+      args: [
+        {
+          caption: "ecls mode",
+          target: "ecls_mode",
+          type: "list",
+          choices: ["VA-ECMO", "VV-ECMO", "LVAD", "RVAD", "BIVAD", "WHOMB"]
         }
       ]
     },
@@ -593,6 +862,34 @@ export class Ecls extends BaseModelClass {
     this.return_resistance = this._calc_tube_resistance(this.return_cannula_diameter * 0.00033, this.return_cannula_length);
     this._return.r_for = this.return_resistance
     this._return.r_back = this.return_resistance
+  }
+
+  set_drainage_cannula_diameter(new_diameter) {
+    if (new_diameter > 1) {
+      this.drainage_cannula_diameter = new_diameter
+      this.drainage_resistance = this._calc_tube_resistance(this.drainage_cannula_diameter * 0.00033, this.drainage_cannula_length);
+    }
+  }
+  
+  set_return_cannula_diameter(new_diameter) {
+    if (new_diameter > 1) {
+      this.return_cannula_diameter = new_diameter
+      this.return_resistance = this._calc_tube_resistance(this.return_cannula_diameter * 0.00033, this.return_cannula_length);
+    }
+  }
+
+  set_drainage_cannula_length(new_length) {
+    if (new_length > 0.01) {
+      this.drainage_cannula_length = new_length
+      this.drainage_resistance = this._calc_tube_resistance(this.drainage_cannula_diameter * 0.00033, this.drainage_cannula_length);
+    }
+  }
+  
+  set_return_cannula_length(new_length) {
+    if (new_length > 0.01) {
+      this.return_cannula_length = new_length
+      this.return_resistance = this._calc_tube_resistance(this.return_cannula_diameter * 0.00033, this.return_cannula_length);
+    }
   }
 
   calc_tubing_volumes() {

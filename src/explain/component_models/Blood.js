@@ -9,7 +9,7 @@ export class Blood extends BaseModelClass {
       target: "description",
       type: "string",
       build_prop: true,
-      edit_mode: "all",
+      edit_mode: "caption",
       readonly: true,
       caption: "description",
     },
@@ -60,7 +60,7 @@ export class Blood extends BaseModelClass {
     {
       caption: "set total oxygen concentration (mmol/l)",
       target: "set_to2",
-      edit_mode: "advanced",
+      edit_mode: "basic",
       type: "function",
       args:[
         {
@@ -77,14 +77,14 @@ export class Blood extends BaseModelClass {
           target: "site",
           caption: "change in site",
           type: "list",
-          options: ["BloodCapacitance", "BloodTimeVaryingElastance", "BloodVessel", "HeartChamber", "CapillaryBed", "CoronaryVessel", "BloodPump"],
+          options: ["BloodCapacitance", "BloodTimeVaryingElastance", "BloodVessel", "HeartChamber", "MicroVascularUnit", "BloodPump"],
         },
       ]
     },  
     {
       caption: "set total carbon dioxide concentration (mmol/l)",
       target: "set_tco2",
-      edit_mode: "advanced",
+      edit_mode: "basic",
       type: "function",
       args:[
         {
@@ -101,7 +101,7 @@ export class Blood extends BaseModelClass {
           target: "site",
           caption: "change in site",
           type: "list",
-          options: ["BloodCapacitance", "BloodTimeVaryingElastance", "BloodVessel", "HeartChamber", "CapillaryBed", "CoronaryVessel", "BloodPump"],
+          options: ["BloodCapacitance", "BloodTimeVaryingElastance", "BloodVessel", "HeartChamber", "MicroVascularUnit", "BloodPump"],
         },
       ]
     },
@@ -133,7 +133,7 @@ export class Blood extends BaseModelClass {
           target: "site",
           caption: "change in site",
           type: "list",
-          options: ["BloodCapacitance", "BloodTimeVaryingElastance", "BloodVessel", "HeartChamber", "CapillaryBed", "CoronaryVessel", "BloodPump"],
+          options: ["BloodCapacitance", "BloodTimeVaryingElastance", "BloodVessel", "HeartChamber", "MicroVascularUnit", "BloodPump"],
         },
       ]
     },

@@ -10,7 +10,7 @@ export class Ans extends BaseModelClass {
       type: "string",
       caption: "description",
       build_prop: true,
-      edit_mode: "basic",
+      edit_mode: "caption",
       readonly: true
     },
     {
@@ -36,24 +36,73 @@ export class Ans extends BaseModelClass {
       build_prop: true,
       edit_mode: "basic",
       readonly: false,
+    },
+    {
+      target: "CR_PCO2",
+      type: "reference",
+      caption: "Chemoreceptor pCO2",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
+    },
+    {
+      target: "CR_PH",
+      type: "reference",
+      caption: "Chemoreceptor pH",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
+    },
+    {
+      target: "CR_PO2",
+      type: "reference",
+      caption: "Chemoreceptor pO2",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
+    },
+    {
+      target: "EF_HR",
+      type: "reference",
+      caption: "Ans efferent heartrate",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
+    },
+    {
+      target: "EF_SVR",
+      type: "reference",
+      caption: "Ans efferent systemic vascular resistance",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
+    },
+    {
+      target: "EF_HEART",
+      type: "reference",
+      caption: "Ans efferent heart contractility",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
+    },
+    {
+      target: "EF_MV",
+      type: "reference",
+      caption: "Ans efferent minute volume",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
     }
   ];
 
   constructor(model_ref, name = "") {
+    // initialize the parent class
     super(model_ref, name);
 
     // initialize independent properties
     this.ans_active = true; // flag whether the ANS is active
     this.components = {}
     this.blood_composition_models= []; // list of models from which the ANS needs to calculate blood gases
-    this.baroreflex_model = {}
-    this.chemoreflex_ph = {}
-    this.chemoreflex_po2 = {}
-    this.chemoreflex_pco2 = {}
-    this.chemoreflex_hco3 = {}
-    this.chemoreflex_be = {}
-
-    this.br_map = "BR_MAP"
 
     // initialize local properties
     this._update_interval = 0.05; // update interval of the ANS (seconds)
@@ -62,7 +111,6 @@ export class Ans extends BaseModelClass {
   }
 
   calc_model() {
-
     // Increase the update counter
     this._update_counter += this._t;
 
@@ -86,22 +134,5 @@ export class Ans extends BaseModelClass {
         }
       });
     }
-  }
-
-  // Afferents
-  baroreflex() {
-
-  }
-
-  chemoreceptor_pco2() {
-
-  }
-
-  chemoreceptor_po2() {
-
-  }
-
-  chemoreceptor_ph() {
-
   }
 }

@@ -14,7 +14,7 @@ export class Circulation extends BaseModelClass {
       target: "description",
       type: "string",
       build_prop: true,
-      edit_mode: "all",
+      edit_mode: "caption",
       readonly: true,
       caption: "description",
     },
@@ -30,7 +30,7 @@ export class Circulation extends BaseModelClass {
       caption: "heart chambers",
       target: "heart_chambers",
       type: "multiple-list",
-      edit_mode: "advanced",
+      edit_mode: "extra",
       build_prop: true,
       readonly: false,
       options: ["HeartChamber", "BloodTimeVaryingElastance"]
@@ -39,7 +39,7 @@ export class Circulation extends BaseModelClass {
       caption: "systemic arteries",
       target: "systemic_arteries",
       type: "multiple-list",
-      edit_mode: "advanced",
+      edit_mode: "extra",
       build_prop: true,
       readonly: false,
       options: ["BloodVessel", "MicroVascularUnit"]
@@ -48,7 +48,7 @@ export class Circulation extends BaseModelClass {
       caption: "systemic capillaries",
       target: "systemic_capillaries",
       type: "multiple-list",
-      edit_mode: "advanced",
+      edit_mode: "extra",
       build_prop: true,
       readonly: false,
       options: ["BloodVessel", "MicroVascularUnit"]
@@ -57,7 +57,7 @@ export class Circulation extends BaseModelClass {
       caption: "systemic veins",
       target: "systemic_veins",
       type: "multiple-list",
-      edit_mode: "advanced",
+      edit_mode: "extra",
       build_prop: true,
       readonly: false,
       options: ["BloodVessel", "MicroVascularUnit"]
@@ -66,7 +66,7 @@ export class Circulation extends BaseModelClass {
       caption: "pulmonary arteries",
       target: "pulmonary_arteries",
       type: "multiple-list",
-      edit_mode: "advanced",
+      edit_mode: "extra",
       build_prop: true,
       readonly: false,
       options: ["BloodVessel", "MicroVascularUnit"]
@@ -75,7 +75,7 @@ export class Circulation extends BaseModelClass {
       caption: "pulmonary capillaries",
       target: "pulmonary_capillaries",
       type: "multiple-list",
-      edit_mode: "advanced",
+      edit_mode: "extra",
       build_prop: true,
       readonly: false,
       options: ["BloodVessel", "MicroVascularUnit"]
@@ -84,7 +84,7 @@ export class Circulation extends BaseModelClass {
       caption: "pulmonary veins",
       target: "pulmonary_veins",
       type: "multiple-list",
-      edit_mode: "advanced",
+      edit_mode: "extra",
       build_prop: true,
       readonly: false,
       options: ["BloodVessel", "MicroVascularUnit"]
@@ -93,7 +93,7 @@ export class Circulation extends BaseModelClass {
       caption: "svr factor",
       target: "svr_factor",
       type: "factor",
-      delta: 0.05,
+      delta: 0.01,
       rounding: 2,
       ll: -5.0,
       ul: 5.0
@@ -102,7 +102,7 @@ export class Circulation extends BaseModelClass {
       caption: "pvr factor",
       target: "pvr_factor",
       type: "factor",
-      delta: 0.05,
+      delta: 0.01,
       rounding: 2,
       ll: -5.0,
       ul: 5
