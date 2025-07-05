@@ -78,7 +78,7 @@ export class Heart extends BaseModelClass {
       rounding: 4,
       readonly: false,
       build_prop: true,
-      edit_mode: "extra",
+      edit_mode: "basic",
       readonly: false,
     },
     {
@@ -92,17 +92,19 @@ export class Heart extends BaseModelClass {
       ul: 1000000
     },
     {
-      caption: "ans sensitivity factor",
+      caption: "ans sensitivity",
       target: "ans_sens",
       type: "number",
+      edit_mode: "basic",
+      build_prop: "true",
       factor: 1.0,
       delta: 0.01,
       rounding: 2,
       ll: 0.0,
-      ul: 1000000
+      ul: 1.0
     },
     {
-      caption: "contractility factor left",
+      caption: "systolic function factor left",
       target: "cont_factor_left",
       type: "factor",
       edit_mode: "factors",
@@ -113,29 +115,29 @@ export class Heart extends BaseModelClass {
       ul: 20
     },
     {
-      caption: "contractility factor right",
+      caption: "systolic function factor right",
       target: "cont_factor_right",
       type: "factor",
       edit_mode: "factors",
       factor: 1.0,
-      delta: 0.1,
+      delta: 0.01,
       rounding: 2,
       ll: -20,
       ul: 20
     },
     {
-      caption: "stiffness factor left",
+      caption: "diastolic function factor left",
       target: "relax_factor_left",
       type: "factor",
       edit_mode: "factors",
       factor: 1.0,
-      delta: 0.1,
+      delta: 0.01,
       rounding: 2,
       ll: -20,
       ul: 20
     },
     {
-      caption: "stiffness factor right",
+      caption: "diastolic function factor right",
       target: "relax_factor_right",
       type: "factor",
       edit_mode: "factors",
@@ -144,6 +146,28 @@ export class Heart extends BaseModelClass {
       rounding: 2,
       ll: -20,
       ul: 20
+    },
+    {
+      caption: "pericardial elastance factor",
+      target: "pc_el_factor",
+      type: "factor",
+      edit_mode: "factors",
+      factor: 1.0,
+      delta: 0.1,
+      rounding: 2,
+      ll: 0,
+      ul: 200
+    },
+    {
+      caption: "pericardial fluid volume (mL)",
+      target: "pc_extra_volume",
+      type: "number",
+      edit_mode: "basic",
+      factor: 1000,
+      delta: 1,
+      rounding: 0,
+      ll: 0,
+      ul: 1000
     },
   ];
 
@@ -177,6 +201,9 @@ export class Heart extends BaseModelClass {
     this.relax_factor_right = 1.0; // right heart relaxation factor
     this.relax_mob_factor = 1.0; // relaxation factor of myocardial oxygen balance model
     this.relax_drug_factor = 1.0; // relaxation factor of drug model (not implemented yet)
+
+    this.pc_el_factor = 1.0; // elastance factor of the pericardium
+    this.pc_extra_volume = 0.0; // additional volume of the pericardium
   
     // -----------------------------------------------
     // dependent properties
@@ -257,6 +284,8 @@ export class Heart extends BaseModelClass {
     this._prev_relax_factor = 1.0;
     this._prev_relax_factor_left = 1.0;
     this._prev_relax_factor_right = 1.0;
+
+    this._prev_pc_el_factor = 1.0;
     
     this._update_counter_factors = 0.0;
     this._update_interval_factors = 0.015;
@@ -320,6 +349,7 @@ export class Heart extends BaseModelClass {
     this._ra_rv = this._model_engine.models["RA_RV"]
     this._lv_aa = this._model_engine.models["LV_AA"]
     this._coronaries = this._model_engine.models["COR"];
+    this._pc = this._model_engine.models["PERICARDIUM"];
 
     // set the factors
     this._update_counter_factors += this._t
@@ -348,6 +378,17 @@ export class Heart extends BaseModelClass {
       this._prev_relax_factor_left = relax_left;
       this._prev_relax_factor_right = relax_right;
 
+      const pc_el = this.pc_el_factor;
+      if (
+        pc_el !== this._prev_pc_el_factor
+      ) {
+        this.set_pericardium(pc_el, this.pc_extra_volume);
+      }
+      this._prev_pc_el_factor = pc_el;
+
+
+      // set the new volume
+      this._pc.vol_extra = this.pc_extra_volume;
     }
 
     // store the previous cardiac cycle state
@@ -524,6 +565,20 @@ export class Heart extends BaseModelClass {
     } else {
       return this.qt_time * 2.449;
     }
+  }
+
+  set_pericardium(new_el_factor, new_volume) {
+    // get the current factor from the model
+    let f_pc_el = this._pc.el_base_factor_ps;
+
+    // calculate the delta
+    let delta = new_el_factor - this._prev_pc_el_factor;
+
+    // guard the extremes
+    f_pc_el = Math.max(f_pc_el + delta, 0);
+
+    // set the new factor
+    this._pc.el_base_factor_ps = f_pc_el;
   }
 
   set_contractillity(new_cont_factor_left, new_cont_factor_right) {
