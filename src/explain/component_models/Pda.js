@@ -117,19 +117,11 @@ export class Pda extends BaseModelClass {
   // static properties
   static model_type = "Pda";
   static model_interface = [
-    {    
-      target: "model_type",  
-      type: "string",
-      build_prop: false,
-      edit_mode: "basic",
-      readonly: true,
-      caption: "model type",
-    },
     {
       target: "description",
       type: "string",
       build_prop: true,
-      edit_mode: "basic",
+      edit_mode: "caption",
       readonly: true,
       caption: "description",
     },
@@ -137,7 +129,7 @@ export class Pda extends BaseModelClass {
       target: "is_enabled",
       type: "boolean",
       build_prop: true,
-      edit_mode: "basic",
+      edit_mode: "all",
       readonly: false,
       caption: "enabled",
     },
@@ -148,6 +140,9 @@ export class Pda extends BaseModelClass {
       delta: 0.1,
       factor: 1.0,
       rounding: 1,
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
     },
     {
       caption: "ductus diameter pulmonary end (mm)",
@@ -156,6 +151,9 @@ export class Pda extends BaseModelClass {
       delta: 0.1,
       factor: 1.0,
       rounding: 1,
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
     },
     {
       caption: "ductus arteriosus length (mm)",
@@ -164,6 +162,9 @@ export class Pda extends BaseModelClass {
       delta: 0.1,
       factor: 1.0,
       rounding: 1,
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
     },
     {
       caption: "ductus arteriosus elastance min",
@@ -172,6 +173,9 @@ export class Pda extends BaseModelClass {
       delta: 0.1,
       factor: 1.0,
       rounding: 1,
+      build_prop: true,
+      edit_mode: "extra",
+      readonly: false,
     },
     {
       caption: "ductus arteriosus elastance max",
@@ -180,6 +184,9 @@ export class Pda extends BaseModelClass {
       delta: 0.1,
       factor: 1.0,
       rounding: 1,
+      build_prop: true,
+      edit_mode: "extra",
+      readonly: false,
     }
   ];
 

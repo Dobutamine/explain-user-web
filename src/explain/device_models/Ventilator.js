@@ -5,19 +5,11 @@ export class Ventilator extends BaseModelClass {
   // static properties
   static model_type = "Ventilator";
   static model_interface = [
-    {    
-      target: "model_type",  
-      type: "string",
-      build_prop: false,
-      edit_mode: "basic",
-      readonly: true,
-      caption: "model type",
-    },
     {
       target: "description",
       type: "string",
       build_prop: true,
-      edit_mode: "basic",
+      edit_mode: "caption",
       readonly: true,
       caption: "description",
     },
@@ -25,7 +17,7 @@ export class Ventilator extends BaseModelClass {
       target: "is_enabled",
       type: "boolean",
       build_prop: true,
-      edit_mode: "basic",
+      edit_mode: "all",
       readonly: false,
       caption: "enabled",
     },
@@ -33,6 +25,9 @@ export class Ventilator extends BaseModelClass {
       caption: "switch ventilator on/off",
       target: "switch_ventilator",
       type: "function",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
       args: [
         {
           caption: "state",
@@ -45,6 +40,9 @@ export class Ventilator extends BaseModelClass {
       caption: "endotracheal tube diameter (mm)",
       target: "set_ettube_diameter",
       type: "function",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
       args: [
         {
           caption: "new diameter (mm)",
@@ -60,6 +58,9 @@ export class Ventilator extends BaseModelClass {
       caption: "endotracheal tube length (mm)",
       target: "set_ettube_length",
       type: "function",
+      build_prop: true,
+      edit_mode: "extra",
+      readonly: false,
       args: [
         {
           caption: "new length (mm)",
@@ -75,6 +76,9 @@ export class Ventilator extends BaseModelClass {
       caption: "fio2",
       target: "set_fio2",
       type: "function",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
       args: [
         {
           caption: "new fio2",
@@ -83,6 +87,8 @@ export class Ventilator extends BaseModelClass {
           factor: 1,
           delta: 0.01,
           rounding: 2,
+          ll: 0.21,
+          ul: 1.0
         },
       ],
     },
@@ -90,6 +96,9 @@ export class Ventilator extends BaseModelClass {
       caption: "humidity",
       target: "set_humidity",
       type: "function",
+      build_prop: true,
+      edit_mode: "extra",
+      readonly: false,
       args: [
         {
           caption: "new humidity",
@@ -98,6 +107,8 @@ export class Ventilator extends BaseModelClass {
           factor: 1,
           delta: 0.01,
           rounding: 2,
+          ll: 0.0,
+          ul: 1.0
         },
       ],
     },
@@ -105,6 +116,9 @@ export class Ventilator extends BaseModelClass {
       caption: "temperature (C)",
       target: "set_temp",
       type: "function",
+      build_prop: true,
+      edit_mode: "extra",
+      readonly: false,
       args: [
         {
           caption: "new temp (C)",
@@ -113,6 +127,8 @@ export class Ventilator extends BaseModelClass {
           factor: 1,
           delta: 0.1,
           rounding: 1,
+          ll: 0.0,
+          ul: 1.0
         },
       ],
     },
@@ -120,85 +136,138 @@ export class Ventilator extends BaseModelClass {
       caption: "ventilator mode",
       target: "vent_mode",
       type: "list",
-      custom_options: true,
-      options: ["PC", "PRVC", "PS"],
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
+      options: [],
+      choices: ["PC", "PRVC", "PS"],
     },
     {
       caption: "ventilator rate (/min)",
       target: "vent_rate",
       type: "number",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
       delta: 1,
       factor: 1.0,
       rounding: 0,
+      ll: 0.0,
+      ul: 100.0
+      
     },
     {
       caption: "inspiration time (s)",
       target: "insp_time",
       type: "number",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
       delta: 0.1,
       factor: 1,
       rounding: 1,
+      ll: 0.1,
+      ul: 5.0
     },
     {
       caption: "inspiratory flow (l/min)",
       target: "insp_flow",
       type: "number",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
       delta: 0.1,
       factor: 1,
       rounding: 1,
+      ll: 0.0,
+      ul: 20,
     },
     {
       caption: "expiratory flow (l/min)",
       target: "exp_flow",
       type: "number",
+      build_prop: true,
+      edit_mode: "extra",
+      readonly: false,
       delta: 0.1,
       factor: 1,
       rounding: 1,
+      ll: 0.0,
+      ul: 20.0,
     },
     {
       caption: "tidal volume (mL)",
       target: "tidal_volume",
       type: "number",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
       delta: 1,
       factor: 1000,
       rounding: 0,
+      ll: 1,
+      ul: 500
     },
     {
       caption: "peak inspiratory pressure (cmH2O)",
       target: "pip_cmh2o",
       type: "number",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
       delta: 1,
       factor: 1,
       rounding: 0,
+      ll: 5,
+      ul: 50
     },
     {
       caption: "max peak inspiratory pressure (cmH2O)",
       target: "pip_cmh2o_max",
       type: "number",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
       delta: 1,
       factor: 1,
       rounding: 0,
+      ll: 5,
+      ul: 50
     },
     {
       caption: "positive end expiratory pressure (cmH2O)",
       target: "peep_cmh2o",
       type: "number",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
       delta: 1,
       factor: 1,
       rounding: 0,
+      ll: 0.0,
+      ul: 20
     },
     {
       caption: "trigger volume percentage (%)",
       target: "trigger_volume_perc",
       type: "number",
+      build_prop: true,
+      edit_mode: "extra",
+      readonly: false,
       delta: 0.1,
       factor: 1,
       rounding: 1,
+      ll: 5,
+      ul: 20
+
     },
     {
       caption: "synchronized ventilation",
       target: "synchronized",
       type: "boolean",
+      build_prop: true,
+      edit_mode: "extra",
+      readonly: false,
     },
   ];
 

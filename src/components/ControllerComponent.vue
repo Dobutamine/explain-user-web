@@ -571,15 +571,18 @@ export default {
         param['value'] = param['default']
       }
       // file the options list
-      param['choices'] = []
-      if (param['option_default']) {
-        param['choices'] = param['options_default']
-      }
-      Object.values(explain.modelState.models).forEach(model => {
-        if (param.options.includes(model.model_type) || param.options.length == 0) {
-          param["choices"].push(model.name)
+      if (!param['choices']) {
+        param['choices'] = []
+        if (param['option_default']) {
+          param['choices'] = param['options_default']
         }
-      })
+        Object.values(explain.modelState.models).forEach(model => {
+          if (param.options.includes(model.model_type) || param.options.length == 0) {
+            param["choices"].push(model.name)
+          }
+        })
+      }
+     
     },
     processMultipleListType(param) {
       let f_mlist = param.target.split('.')

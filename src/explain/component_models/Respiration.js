@@ -8,19 +8,11 @@ export class Respiration extends BaseModelClass {
   // static properties
   static model_type = "Respiration";
   static model_interface = [
-    {    
-      target: "model_type",  
-      type: "string",
-      build_prop: false,
-      edit_mode: "basic",
-      readonly: true,
-      caption: "model type",
-    },
     {
       target: "description",
       type: "string",
       build_prop: true,
-      edit_mode: "basic",
+      edit_mode: "caption",
       readonly: true,
       caption: "description",
     },
@@ -28,18 +20,24 @@ export class Respiration extends BaseModelClass {
       target: "is_enabled",
       type: "boolean",
       build_prop: true,
-      edit_mode: "basic",
+      edit_mode: "all",
       readonly: false,
       caption: "enabled",
     },
     {
       caption: "lungs",
+      build_prop: true,
+      edit_mode: "extra",
+      readonly: false,
       target: "lungs",
       type: "multiple-list",
       options: ["GasCapacitance"]
     },
     {
       caption: "thorax",
+      build_prop: true,
+      edit_mode: "extra",
+      readonly: false,
       target: "thorax",
       type: "multiple-list",
       options: ["Container"]
@@ -47,52 +45,67 @@ export class Respiration extends BaseModelClass {
     {
       caption: "lung elastance factor",
       target: "el_lungs_factor",
-      type: "number",
+      type: "factor",
+      build_prop: true,
+      edit_mode: "factors",
+      readonly: false,
       factor: 1.0,
       delta: 0.01,
       rounding: 2,
-      ll: 0.0,
-      ul: 1000000
+      ll: -10,
+      ul: 10
     },
     {
       caption: "thorax elastance factor",
       target: "el_thorax_factor",
-      type: "number",
+      type: "factor",
+      build_prop: true,
+      edit_mode: "factors",
+      readonly: false,
       factor: 1.0,
       delta: 0.01,
       rounding: 2,
-      ll: 0.0,
-      ul: 1000000
+      ll: -10,
+      ul: 10
     },
     {
       caption: "upper airway resistance factor",
       target: "res_upper_airways_factor", 
-      type: "number",
+      type: "factor",
+      build_prop: true,
+      edit_mode: "factors",
+      readonly: false,
       factor: 1.0,
       delta: 0.01,
       rounding: 2,
-      ll: 0.0,
-      ul: 1000000
+      ll: -100,
+      ul: 100
     },
     {
       caption: "lower airway resistance factor",
       target: "res_lower_airways_factor", 
-      type: "number",
+      type: "factor",
+      build_prop: true,
+      edit_mode: "factors",
+      readonly: false,
       factor: 1.0,
       delta: 0.01,
       rounding: 2,
-      ll: 0.0,
-      ul: 1000000
+      ll: -100,
+      ul: 100
     },
     {
       caption: "gasexchange factor",
       target: "gex_factor", 
-      type: "number",
+      type: "factor",
+      build_prop: true,
+      edit_mode: "factors",
+      readonly: false,
       factor: 1.0,
       delta: 0.01,
       rounding: 2,
-      ll: 0.0,
-      ul: 1000000
+      ll: -100,
+      ul: 100
     },
 
   ];

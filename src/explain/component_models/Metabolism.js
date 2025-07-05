@@ -25,7 +25,7 @@ export class Metabolism extends BaseModelClass {
       target: "met_active",
       type: "boolean",
       build_prop: true,
-      edit_mode: "advanced",
+      edit_mode: "basic",
       readonly: false,
     },
     {
