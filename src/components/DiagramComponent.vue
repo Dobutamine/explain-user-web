@@ -17,6 +17,15 @@
         <q-btn flat round dense size="sm" icon="fa-solid fa-upload" color="white" class="q-mr-sm q-ml-sm"
           @click="saveDiagram">
           <q-tooltip> save diagram to the server </q-tooltip></q-btn>
+
+        <q-btn v-if="stateDiagram" flat round dense size="sm" icon="fa-solid fa-star" color="white" class="q-ml-sm"
+          @click="setDiagramAsStateDefault">
+          <q-tooltip> current diagram is default state diagram </q-tooltip></q-btn>
+
+        <q-btn v-if="!stateDiagram" flat round dense size="sm" icon="fa-regular fa-star" color="white" class="q-ml-sm"
+          @click="setDiagramAsStateDefault">
+          <q-tooltip> current diagram is not default state diagram </q-tooltip></q-btn>
+
     </div>
 
   </q-card>
@@ -118,11 +127,17 @@ export default {
         models: ['UMB_ART', 'UMB_VEN', 'PLF', 'AD_UMB_ART', 'UMB_ART_PLF','PLF_UMB_VEN','UMB_VEN_IVCI']
       }
       ],
-      shuntOptionsVisible: true
+      shuntOptionsVisible: true,
+      stateDiagram: true
 
     };
   },
   methods: {
+    setDiagramAsStateDefault() {
+      this.state.diagram_definition.name = this.diagram.diagram_definition.settings.name
+      this.stateDiagram = true;
+      this.$bus.emit('upload_state')
+    },
     loadDiagram(){
       this.$bus.emit('load_diagram_dialog');
     },
@@ -663,6 +678,14 @@ export default {
         } catch {}
 
       }
+
+      // check whether diagram is default state diagram
+      if (this.state.diagram_definition.name == this.diagram.diagram_definition.settings.name) {
+        this.stateDiagram = true;
+      } else {
+        this.stateDiagram = false;
+      }
+
     },
     changeEclsMode(mode) {
 

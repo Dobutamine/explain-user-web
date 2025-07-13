@@ -350,7 +350,6 @@ export default defineComponent({
       let result = await this.diagram.getDiagramFromServer(this.general.apiUrl, this.user.name, this.selectedDiagram, this.user.token)
       if (result) {
         this.showLoadDiagramPopUp = false
-        console.log(this.diagram.diagram_definition)
         this.$bus.emit("rebuild_diagram");
       }
       this.showLoadDiagramPopUp = false
@@ -552,6 +551,16 @@ export default defineComponent({
         }
       })
     },
+    upload_no_dialog() {
+      this.state_destination = "server"
+      this.stopRt()
+      if (this.state.protected) {
+        if (this.selectedState !== this.state.name) {
+          this.state.protected = false
+        }
+      }
+      explain.saveModelState()
+    },
     upload() {
       this.state_destination = "server"
       this.stopRt()
@@ -660,6 +669,7 @@ export default defineComponent({
     this.$bus.off('open_diagram_dialog', () => this.saveDiagram())
     this.$bus.off('load_animation_dialog', () => this.getAllUserAnimations())
     this.$bus.off('save_animation_dialog', () => this.saveAnimation())
+    this.$bus.off('upload_state', () => this.upload_no_dialog())
     
   },
   mounted() {
@@ -752,6 +762,8 @@ export default defineComponent({
 
     this.$bus.on('load_animation_dialog', () => this.getAllUserAnimations())
     this.$bus.on('save_animation_dialog', () => this.saveAnimation())
+
+    this.$bus.on('upload_state', () => this.upload_no_dialog())
   }
 })
 </script>

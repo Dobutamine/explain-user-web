@@ -405,16 +405,23 @@ export class Monitor extends BaseModelClass {
     this._beats_time += this._t;
 
     // respiratory rate (rolling average over rr_avg_time seconds)
-    this._rr_avg_counter += this._t;
-    if (this._rr_avg_counter > this.rr_avg_time) {
-      this._rr_list.shift();
+    if (this._breathing.breathing_enabled) {
+      if (this._rr_avg_counter > this.rr_avg_time) {
+        this._rr_list.shift();
+      }
+      if (this._breathing.ncc_insp === 1) {
+        this._rr_list.push(this._breathing.resp_rate);
+        // get the rolling average of the resprate
+        this.resp_rate = this._rr_list.reduce((acc, val) => acc + val, 0) / this._rr_list.length;
+      }
+      this._rr_avg_counter += this._t;
+    } else {
+      this.resp_rate = 0.0
     }
-    if (this._breathing.ncc_insp === 1) {
-      this._rr_list.push(this._breathing.resp_rate);
-      // get the rolling average of the resprate
-      this.resp_rate =
-        this._rr_list.reduce((acc, val) => acc + val, 0) / this._rr_list.length;
-    }
+    
+
+    
+
 
     // saturation
     this.spo2 = this._ad.so2

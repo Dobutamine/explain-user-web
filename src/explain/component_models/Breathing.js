@@ -172,7 +172,6 @@ export class Breathing extends BaseModelClass {
           Math.min(this.rmp_gain, this.rmp_gain_max)
         );
       }
-
       this.minute_volume = this.exp_tidal_volume * this.resp_rate;
     }
 
@@ -212,6 +211,10 @@ export class Breathing extends BaseModelClass {
   }
 
   vt_rr_controller(_weight) {
+    if (!this.breathing_enabled) {
+      this.resp_rate = 0.0;
+      return
+    }
     this.resp_rate = Math.sqrt(this.target_minute_volume / (this.vt_rr_ratio * this.vt_rr_ratio_factor * this.vt_rr_ratio_scaling_factor * _weight));
 
     if (this.resp_rate > 0) {

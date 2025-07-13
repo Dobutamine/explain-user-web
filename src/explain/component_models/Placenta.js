@@ -7,19 +7,11 @@ export class Placenta extends BaseModelClass {
   // static properties
   static model_type = "Placenta";
   static model_interface = [
-    {    
-      target: "model_type",  
-      type: "string",
-      build_prop: false,
-      edit_mode: "basic",
-      readonly: true,
-      caption: "model type",
-    },
     {
       target: "description",
       type: "string",
       build_prop: true,
-      edit_mode: "basic",
+      edit_mode: "caption",
       readonly: true,
       caption: "description",
     },
@@ -27,7 +19,7 @@ export class Placenta extends BaseModelClass {
       target: "is_enabled",
       type: "boolean",
       build_prop: true,
-      edit_mode: "basic",
+      edit_mode: "all",
       readonly: false,
       caption: "enabled",
     },
@@ -35,9 +27,12 @@ export class Placenta extends BaseModelClass {
       caption: "switch placenta on/off",
       target: "switch_placenta",
       type: "function",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
       args:[
         {
-          caption: "state",
+          caption: "",
           target: "is_enabled",
           type: "boolean",
         },
@@ -47,51 +42,27 @@ export class Placenta extends BaseModelClass {
       caption: "umbilical cord clamping",
       target: "clamp_umbilical_cord",
       type: "function",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
       args:[
         {
-          caption: "clamped",
+          caption: "",
           target: "umb_clamped",
           type: "boolean",
         },
       ]
     },
     {
-      caption: "umbilical arteries diameter",
-      target: "set_umb_art_diameter",
-      type: "function",
-      args:[
-        {
-          caption: "new diameter (mm)",
-          target: "umb_art_diameter",
-          type: "number",
-          factor: 1000,
-          delta: 0.1,
-          rounding: 1,
-        },
-      ]
-    },
-    {
-      caption: "umbilical arteries length",
-      target: "set_umb_art_length",
-      type: "function",
-      args:[
-        {
-          caption: "new length (mm)",
-          target: "umb_art_length",
-          type: "number",
-          factor: 1000,
-          delta: 0.1,
-          rounding: 1,
-        },
-      ]
-    },
-    {
       caption: "umbilical arteries resistance",
-      target: "set_umb_art_resistance",
+      target: "set_umbilical_arteries_resistance",
       type: "function",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
       args:[
         {
-          caption: "new resistance (mmHg/L*sec)",
+          caption: "arterial resistance (mmHg/L*sec)",
           target: "umb_art_res",
           type: "number",
           factor: 1,
@@ -101,42 +72,28 @@ export class Placenta extends BaseModelClass {
       ]
     },
     {
-      caption: "umbilical vein diameter",
-      target: "set_umb_ven_diameter",
-      type: "function",
-      args:[
-        {
-          caption: "new diameter (mm)",
-          target: "umb_ven_diameter",
-          type: "number",
-          factor: 1000,
-          delta: 0.1,
-          rounding: 1,
-        },
-      ]
-    },
-    {
-      caption: "umbilical vein length",
-      target: "set_umb_ven_length",
-      type: "function",
-      args:[
-        {
-          caption: "new length (mm)",
-          target: "umb_ven_length",
-          type: "number",
-          factor: 1000,
-          delta: 0.1,
-          rounding: 1,
-        },
-      ]
+      caption: "arterial resistance factor",
+      target: "umb_art_res_factor",
+      type: "factor",
+      delta: 1,
+      factor: 1.0,
+      rounding: 0,
+      build_prop: true,
+      edit_mode: "factors",
+      readonly: false,
+      ll: -10,
+      ul: 10
     },
     {
       caption: "umbilical vein resistance",
-      target: "set_umb_ven_resistance",
+      target: "set_umbilical_vein_resistance",
       type: "function",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
       args:[
         {
-          caption: "new resistance (mmHg/L*sec)",
+          caption: "venous resistance (mmHg/L*sec)",
           target: "umb_ven_res",
           type: "number",
           factor: 1,
@@ -146,13 +103,29 @@ export class Placenta extends BaseModelClass {
       ]
     },
     {
+      caption: "venous resistance factor",
+      target: "umb_ven_res_factor",
+      type: "factor",
+      delta: 1,
+      factor: 1.0,
+      rounding: 0,
+      build_prop: true,
+      edit_mode: "factors",
+      readonly: false,
+      ll: -10,
+      ul: 10
+    },
+    {
       caption: "fetal placenta volume (L)",
       target: "set_fetal_placenta_volume",
       type: "function",
+      build_prop: true,
+      edit_mode: "extra",
+      readonly: false,
       args:[
         {
           caption: "new volume (L)",
-          target: "plf_u_vol",
+          target: "plf_vol",
           type: "number",
           factor: 1,
           delta: 0.001,
@@ -164,6 +137,9 @@ export class Placenta extends BaseModelClass {
       caption: "fetal placenta elastance (L)",
       target: "set_fetal_placenta_elastance",
       type: "function",
+      build_prop: true,
+      edit_mode: "extra",
+      readonly: false,
       args:[
         {
           caption: "new elastance (mmHg/L)",
@@ -179,6 +155,9 @@ export class Placenta extends BaseModelClass {
       caption: "maternal placenta volume (L)",
       target: "set_maternal_placenta_volume",
       type: "function",
+      build_prop: true,
+      edit_mode: "extra",
+      readonly: false,
       args:[
         {
           caption: "new volume (L)",
@@ -194,6 +173,9 @@ export class Placenta extends BaseModelClass {
       caption: "maternal placenta elastance (L)",
       target: "set_maternal_placenta_elastance",
       type: "function",
+      build_prop: true,
+      edit_mode: "extra",
+      readonly: false,
       args:[
         {
           caption: "new elastance (mmHg/L)",
@@ -207,8 +189,11 @@ export class Placenta extends BaseModelClass {
     },
     {
       caption: "maternal to2 (mmol/l)",
-      target: "set_maternal_to2",
+      target: "set_mat_to2",
       type: "function",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
       args:[
         {
           caption: "new to2 (mmol/l)",
@@ -222,8 +207,11 @@ export class Placenta extends BaseModelClass {
     },
     {
       caption: "maternal tco2 (mmol/l)",
-      target: "set_maternal_tco2",
+      target: "set_mat_tco2",
       type: "function",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
       args:[
         {
           caption: "new tco2 (mmol/l)",
@@ -239,6 +227,9 @@ export class Placenta extends BaseModelClass {
       caption: "o2 diffusion constant",
       target: "set_dif_o2",
       type: "function",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
       args:[
         {
           caption: "new diff o2 (mmol/mmHg)",
@@ -254,6 +245,9 @@ export class Placenta extends BaseModelClass {
       caption: "co2 diffusion constant",
       target: "set_dif_co2",
       type: "function",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
       args:[
         {
           caption: "new diff co2 (mmol/mmHg)",
@@ -264,32 +258,7 @@ export class Placenta extends BaseModelClass {
           rounding: 2,
         },
       ]
-    },
-    {
-      caption: "set maternal solute concentration",
-      target: "set_maternal_solute",
-      type: "function",
-      args:[
-        {
-          target: "solute_name",
-          caption: "solute name",
-          type: "list",
-          custom_options: true,
-          options: ["na", "k"]
-        },
-        {
-          target: "solute_value",
-          caption: "solute value",
-          type: "number",
-          default: 0.0,
-          factor: 1,
-          delta: 1,
-          rounding: 0,
-          ul: 1000.0,
-          ll: 0.0,
-        }
-      ]
-    },
+    }
   ];
 
   /*
@@ -316,9 +285,11 @@ export class Placenta extends BaseModelClass {
     this.umb_art_vol = 0.0162; // volume of two umbilical arteries (l)
     this.umb_art_el_base = 20000.0; // elastance of the umbilical arteries (mmHg/L)
     this.umb_art_res = 7200; // resistance of the umbilical arter (mmHg*s/L)
+    this.umb_art_res_factor = 1.0; // umbilical arteries resistance factor
     this.umb_ven_vol = 0.0319; // volume of the umbilical vein (l)
     this.umb_ven_el_base = 1000.0; // elastance of the umbilical vein (mmHg/L)
     this.umb_ven_res = 1000; // resistance of the umbilical vein (mmHg*s/L)
+    this.umb_ven_res_factor = 1.0; // umbilical vein resistance factor
     this.umb_length = 0.55; // umbilical cord length (m)
     this.umb_art_diameter = 0.0043; // diameter of a single umbilical artery (m)
     this.umb_ven_diameter = 0.0086; // diameter of the umbilical vein (m)
@@ -387,17 +358,13 @@ export class Placenta extends BaseModelClass {
       this._model_engine.models["UMB_VEN"].u_vol = this.umb_ven_vol;
       this._model_engine.models["PLF"].u_vol = this.plf_vol;
 
-
       // update the diffusion of oxygen and carbon dioxide
       this._model_engine.models["PL_GASEX"].dif_o2 = this.dif_o2;
       this._model_engine.models["PL_GASEX"].dif_co2 = this.dif_co2;
 
       // update the maternal to2 and tco2
       this._model_engine.models["PLM"].to2 = this.mat_to2;
-      this._model_engine.models["PLM"].tco2 = this.mat_tco2;
-
-
-      
+      this._model_engine.models["PLM"].tco2 = this.mat_tco2;      
     }
   }
 
@@ -462,31 +429,39 @@ export class Placenta extends BaseModelClass {
     this._model_engine.models["UMB_VEN_IVCI"].r_for = 50;
     this._model_engine.models["UMB_VEN_IVCI"].r_back = 50;
   }
+
   clamp_umbilical_cord(state) {
     // determines whether or not the umbilical vessels are clamped by setting the no_flow property
     this.umb_clamped = state;
   }
+
   set_umbilical_arteries_resistance(new_res) {
     // reset the umbilical arteries resistance
     this.umb_art_res = new_res;
   }
+
   set_umbilical_vein_resistance(new_res) {
     // reset the umbilical vein resistance
     this.umb_ven_res = new_res;
   }
+
   set_fetal_placenta_resistance(new_res) {  
     // reset the fetal placenta resistance
     this.plf_res = new_res;
   }
+
   set_dif_o2(new_dif_o2) {
     this.dif_o2 = new_dif_o2;
   }
+
   set_dif_co2(new_dif_co2) {
     this.dif_co2 = new_dif_co2;
   }
+
   set_mat_to2(new_to2) {
     this.mat_to2 = new_to2;
   }
+
   set_mat_tco2(new_tco2) {
     this.mat_tco2 = new_tco2;
   }
