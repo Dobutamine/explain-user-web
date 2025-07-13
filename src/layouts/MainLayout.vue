@@ -367,7 +367,6 @@ export default defineComponent({
       let result = await this.animation.getAnimationFromServer(this.general.apiUrl, this.user.name, this.selectedAnimation, this.user.token)
       if (result) {
         this.showLoadAnimationPopUp = false
-        console.log(this.animation.animation_definition)
         this.$bus.emit("rebuild_animation");
       }
       this.showLoadAnimationPopUp = false

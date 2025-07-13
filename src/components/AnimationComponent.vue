@@ -17,6 +17,14 @@
         <q-btn flat round dense size="sm" icon="fa-solid fa-upload" color="white" class="q-mr-sm q-ml-sm"
           @click="saveAnimation">
           <q-tooltip> save animation to the server </q-tooltip></q-btn>
+
+        <q-btn v-if="stateAnimation" flat round dense size="sm" icon="fa-solid fa-star" color="white" class="q-ml-sm"
+          @click="setAnimationAsStateDefault">
+          <q-tooltip> current animation is default state animation </q-tooltip></q-btn>
+
+        <q-btn v-if="!stateAnimation" flat round dense size="sm" icon="fa-regular fa-star" color="white" class="q-ml-sm"
+          @click="setAnimationAsStateDefault">
+          <q-tooltip> current animation is not default state animation </q-tooltip></q-btn>
     </div>
 
   </q-card>
@@ -118,11 +126,17 @@ export default {
         models: ['UMB_ART', 'UMB_VEN', 'PLF', 'AD_UMB_ART', 'UMB_ART_PLF','PLF_UMB_VEN','UMB_VEN_IVCI']
       }
       ],
-      shuntOptionsVisible: true
+      shuntOptionsVisible: true,
+      stateAnimation: true
 
     };
   },
   methods: {
+    setAnimationAsStateDefault() {
+      this.state.animation_definition.name = this.animation.animation_definition.settings.name
+      this.stateAnimation = true;
+      this.$bus.emit('upload_state')
+    },
     loadAnimation(){
       this.$bus.emit('load_animation_dialog');
     },
@@ -662,6 +676,13 @@ export default {
           }
         } catch {}
 
+      }
+
+      // check whether animation is default state animation
+      if (this.state.animation_definition.name == this.animation.animation_definition.settings.name) {
+        this.stateAnimation = true;
+      } else {
+        this.stateAnimation = false;
       }
     },
     changeEclsMode(mode) {
