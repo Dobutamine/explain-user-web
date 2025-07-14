@@ -29,7 +29,7 @@ export default class BloodCompartment {
 
   volume = 0.1;
   to2 = 6.4;
-  maxto2 = 4.2;
+  maxto2 = 4.55;
 
   edit_comp_event = null;
   editingMode = 1;

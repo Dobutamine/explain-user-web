@@ -477,7 +477,7 @@ export class Shunts {
     this._da = this._model_engine.models[this.da];
     this._da.is_enabled = this.da_enabled;
     this._da.fixed_composition = false;
-    this._da.vol = this.da_vol;
+    //this._da.vol = this.da_vol;
     this._da.u_vol = this.da_u_vol;
     this._da.el_base = this.da_el_base;
     this._da.el_k = this.da_el_k;
@@ -518,7 +518,7 @@ export class Shunts {
     this._fo.no_flow = false;
     this._fo.no_back_flow = false;
     //this._fo.r_for = this.fo_res;
-    this._fo.r_back = this.fo_res * this.fo_res_backflow_factor;
+    //this._fo.r_back = this.fo_res * this.fo_res_backflow_factor;
     this._fo.r_k = this.ips_r_k;
     // add the shunt to the list
     this._shunts.push(this._fo);

@@ -255,11 +255,21 @@ export class Blood {
   descending_aorta = "AD";
   inferior_vena_cava = "IVCI";
   superior_vena_cava = "SVC";
-  //right_atrium = "RA";
   right_atrium_1 = "RA1";
   right_atrium_2 = "RA2";
   right_ventricle = "RV";
   left_ventricle = "LV";
+  pulmonary = "PV";
+  coronaries = "COR";
+  brain = "BR";
+  upper_body = "RUB";
+  liver_spleen = "LS";
+  intestines = "INT";
+  kidneys = "KID";
+  lower_body = "RLB";
+  venous_lower_body = "VLB";
+  venous_upper_body = "VUB";
+  placenta_fetus = "PLF";
   viscosity = 6.0;
   blood_containing_components = [];
   pres_cor_factor = 1.0;
@@ -320,6 +330,18 @@ export class Blood {
   _ra2 = {};
   _rv = {};
   _lv = {};
+  _pv = {};
+  _cor = {};
+  _br = {};
+  _rub = {};
+  _ls = {};
+  _int = {};
+  _kid = {};
+  _rlb = {};
+  _vub = {};
+  _vlb = {};
+  _plf = {};
+
 
   to2 = 0.0;
   tco2 = 0.0;
@@ -366,11 +388,21 @@ export class Blood {
     this._ad = this._model_engine.models[this.descending_aorta];
     this._ivci = this._model_engine.models[this.inferior_vena_cava];
     this._svc = this._model_engine.models[this.superior_vena_cava];
-    //this._ra = this._model_engine.models[this.right_atrium];
     this._ra1 = this._model_engine.models[this.right_atrium_1];
     this._ra2 = this._model_engine.models[this.right_atrium_2];
     this._rv = this._model_engine.models[this.right_ventricle];
     this._lv = this._model_engine.models[this.left_ventricle];
+    this._pv = this._model_engine.models[this.pulmonary];
+    this._cor = this._model_engine.models[this.coronaries];
+    this._br = this._model_engine.models[this.brain];
+    this._rub = this._model_engine.models[this.upper_body];
+    this._ls = this._model_engine.models[this.liver_spleen];
+    this._int = this._model_engine.models[this.intestines];
+    this._kid = this._model_engine.models[this.kidneys];
+    this._rlb = this._model_engine.models[this.lower_body];
+    this._vub = this._model_engine.models[this.venous_upper_body];
+    this._vlb = this._model_engine.models[this.venous_lower_body];
+    this._plf = this._model_engine.models[this.placenta_fetus];
 
     // set the flag to model is initialized
     this._is_initialized = true;
@@ -520,13 +552,23 @@ export class Blood {
 
       set_blood_composition(this._aa);
       set_blood_composition(this._ad);
-      //set_blood_composition(this._ra);
       set_blood_composition(this._ra1);
       set_blood_composition(this._ra2);
       set_blood_composition(this._ivci);
       set_blood_composition(this._svc);
       set_blood_composition(this._rv);
       set_blood_composition(this._lv);
+      set_blood_composition(this._pv);
+      set_blood_composition(this._cor);
+      set_blood_composition(this._br);
+      set_blood_composition(this._rub);
+      set_blood_composition(this._ls);
+      set_blood_composition(this._int);
+      set_blood_composition(this._kid);
+      set_blood_composition(this._rlb);
+      set_blood_composition(this._vub);
+      set_blood_composition(this._vlb);
+      set_blood_composition(this._plf);
 
       this.ph_pre = this._aa.aboxy.ph;
       this.po2_pre = this._aa.aboxy.po2;
@@ -577,7 +619,20 @@ export class Blood {
       this.so2_ra2 = this._ra2.aboxy.so2;
       this.so2_rv = this._rv.aboxy.so2;
       this.so2_lv = this._lv.aboxy.so2;
-      
+      this.so2_pv = this._pv.aboxy.so2;
+      this.so2_cor = this._cor.aboxy.so2;
+      this.so2_br = this._br.aboxy.so2;
+      this.so2_rub = this._rub.aboxy.so2;
+      this.so2_ls = this._ls.aboxy.so2;
+      this.so2_int = this._int.aboxy.so2;
+      this.so2_kid = this._kid.aboxy.so2;
+      this.so2_rlb = this._rlb.aboxy.so2;
+      this.so2_vub = this._vub.aboxy.so2;
+      this.so2_vlb = this._vlb.aboxy.so2;
+      this.so2_plf = this._plf.aboxy.so2;
+
+      this.po2_rv = this._rv.aboxy.po2;
+      this.po2_lv = this._lv.aboxy.po2;
     }
     this._update_counter += this._t;
   }
