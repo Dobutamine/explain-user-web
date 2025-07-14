@@ -126,7 +126,6 @@ export class Shunts extends BaseModelClass {
     // -----------------------------------------------
     this._fo = {};  
     this._vsd = {}; // muscular ventricular septal defect
-
   }
 
   calc_model() {

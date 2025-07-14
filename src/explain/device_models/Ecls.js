@@ -515,6 +515,7 @@ export class Ecls extends BaseModelClass {
 
     // don't do the setup if the modelengine has already run
     if (this._model_engine.model_time_total == 0.0) {
+      console.log("building the ecls circuit")
       // set the correct ecls mode
       this.set_ecls_mode(this.ecls_mode)
 

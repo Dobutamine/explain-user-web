@@ -322,8 +322,13 @@ export class Placenta extends BaseModelClass {
     super.init_model(args);
 
     // build the placenta model
-    this.build_placenta();
 
+    // don't do the setup if the modelengine has already run
+    if (this._model_engine.model_time_total == 0.0) {
+      console.log("building the placenta")
+      this.build_placenta();
+    }
+    
     // switch the placenta state
     this.switch_placenta(this.placenta_running);
   }
@@ -396,7 +401,7 @@ export class Placenta extends BaseModelClass {
     this._model_engine.models["AD_UMB_ART"].r_for = this.umb_art_res;
     this._model_engine.models["AD_UMB_ART"].r_back = this.umb_art_res;
     // bloodvessel model of the umbilical arteries
-    // this._model_engine.models["UMB_ART"].vol = this.umb_art_vol;
+    this._model_engine.models["UMB_ART"].vol = this.umb_art_vol;
     this._model_engine.models["UMB_ART"].u_vol = this.umb_art_vol;
     this._model_engine.models["UMB_ART"].el_base = this.umb_art_el_base;
     // resistor between umbilical arteries and fetal placenta
@@ -405,13 +410,13 @@ export class Placenta extends BaseModelClass {
     this._model_engine.models["UMB_ART_PLF"].r_for = this.plf_res;
     this._model_engine.models["UMB_ART_PLF"].r_back = this.plf_res;
     // fetal placenta
-    // this._model_engine.models["PLF"].vol = this.plf_vol;
+    this._model_engine.models["PLF"].vol = this.plf_vol;
     this._model_engine.models["PLF"].u_vol = this.plf_vol;
     this._model_engine.models["PLF"].el_base = this.plf_el_base;
     this._model_engine.models["PL_GASEX"].dif_o2 = this.dif_o2;
     this._model_engine.models["PL_GASEX"].dif_co2 = this.dif_co2;
     // maternal placenta
-    //this._model_engine.models["PLM"].vol = this.plm_vol;
+    this._model_engine.models["PLM"].vol = this.plm_vol;
     this._model_engine.models["PLM"].u_vol = this.plm_vol;
     this._model_engine.models["PLM"].el_base = this.plm_el_base;
     // resistor between fetal placenta and umbilical vein
@@ -420,7 +425,7 @@ export class Placenta extends BaseModelClass {
     this._model_engine.models["PLF_UMB_VEN"].r_for = this.umb_ven_res;
     this._model_engine.models["PLF_UMB_VEN"].r_back = this.umb_ven_res;
     // bloodvessel model of the umbilical vein
-    //this._model_engine.models["UMB_VEN"].vol = this.umb_ven_vol;
+    this._model_engine.models["UMB_VEN"].vol = this.umb_ven_vol;
     this._model_engine.models["UMB_VEN"].u_vol = this.umb_ven_vol;
     this._model_engine.models["UMB_VEN"].el_base = this.umb_ven_el_base;
     // resistor between umbilical vein and inferior vena cava
