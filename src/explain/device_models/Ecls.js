@@ -513,32 +513,37 @@ export class Ecls extends BaseModelClass {
     this._gasout = this._model_engine.models["ECLS_GASOUT"]
     this._gasex = this._model_engine.models["ECLS_GASEX"]
 
-    // set the correct ecls mode
-    this.set_ecls_mode(this.ecls_mode)
+    // don't do the setup if the modelengine has already run
+    if (this._model_engine.model_time_total == 0.0) {
+      // set the correct ecls mode
+      this.set_ecls_mode(this.ecls_mode)
 
-    // setup blood containing system
-    this._drainage.comp_from = this.drainage_origin
-    this._return.comp_to = this.return_target
-    this._pump_oxy.no_back_flow = this.pump_occlusive
-    this.calc_resistances()
-    this.calc_tubing_volumes()
-    this.set_pump_volume()
-    this.set_oxygenator_volume()
+      // setup blood containing system
+      this._drainage.comp_from = this.drainage_origin
+      this._return.comp_to = this.return_target
+      this._pump_oxy.no_back_flow = this.pump_occlusive
 
-    // setup gas containing system
-    this.set_gas_volumes()
-    this.set_gas_compositions()
-    this.set_gas_flow()
-    this.set_gas_exchanger()
+      this.calc_resistances()
+      this.calc_tubing_volumes()
+      this.set_pump_volume()
+      this.set_oxygenator_volume()
 
-    // clamp the circuit
-    this.tubing_clamped = true;
+      // setup gas containing system
+      this.set_gas_volumes()
+      this.set_gas_compositions()
+      this.set_gas_flow()
+      this.set_gas_exchanger()
 
-    // turn on the blood circuit
-    this.switch_blood_components(this.ecls_running)
+      // clamp the circuit
+      this.tubing_clamped = true;
 
-    // turn on the gas circuit
-    this.switch_gas_components(this.ecls_running)
+      // turn on the blood circuit
+      this.switch_blood_components(this.ecls_running)
+
+      // turn on the gas circuit
+      this.switch_gas_components(this.ecls_running)
+    }
+
 
     this._flowAverage = new RealTimeMovingAverage(3000);
     this._pVenAverage = new RealTimeMovingAverage(300);
