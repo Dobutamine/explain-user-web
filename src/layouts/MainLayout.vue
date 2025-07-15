@@ -491,12 +491,12 @@ export default defineComponent({
     },
     saveDiagram() {
       this.stopRt()
-      this.selectedDiagram = this.state.name
+      this.selectedDiagram = this.diagram.diagram_definition.settings.name
       this.showSaveDiagramPopUp = true
     },
     saveAnimation() {
       this.stopRt()
-      this.selectedAnimation = this.state.name
+      this.selectedAnimation = this.animation.animation_definition.settings.name
       this.showSaveAnimationPopUp = true
     },
     submitInput() {

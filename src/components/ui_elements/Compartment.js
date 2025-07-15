@@ -219,11 +219,11 @@ export default class Compartment {
       to2 = this.max_to2;
     }
     //let remap = this.remap(to2, 0, this.max_to2, -10, 1);
-    let remap = this._remap(to2, 0, this.max_to2, -1.25, 1);
+    let remap = this._remap(to2, 0, this.max_to2, -5, 1);
     if (remap < 0) remap = 0;
-    const red = (remap * 210).toFixed(0);
-    const green = (remap * 80).toFixed(0);
-    const blue = (80 + remap * 75).toFixed(0);
+    const red = (remap * 250).toFixed(0);
+    const green = (remap * 50).toFixed(0);
+    const blue = (70 + remap * 75).toFixed(0);
     const color = "0x" + this.fullColorHex(red, green, blue);
     return color;
   }
