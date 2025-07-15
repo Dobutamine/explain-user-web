@@ -16,7 +16,7 @@ export default class Device {
   angle = 0;
   rotation = 0;
   global_scaling = 1.0;
-  max_to2 = 7.1
+  max_to2 = 9
   sprite = {};
   text = {};
   textStyle = {};
@@ -25,7 +25,7 @@ export default class Device {
   to2 = 7.4;
   animation = "none";
 
-  constructor(pixiApp, key, label, models, layout, xCenter, yCenter, xOffset, yOffset, radius, picto, scaling) {
+  constructor(pixiApp, key, label, models, layout, xCenter, yCenter, xOffset, yOffset, radius, picto, scaling, max_to2 = 9) {
     // store the parameters
     this.pixiApp = pixiApp;
     this.key = key;
@@ -40,6 +40,7 @@ export default class Device {
     this.picto = picto;
     this.global_scaling = scaling;
     this.animation = layout.general.animatedBy;
+    this.max_to2 = max_to2;
 
     // define a PIXI sprite
     this.sprite = PIXI.Sprite.from(this.picto);

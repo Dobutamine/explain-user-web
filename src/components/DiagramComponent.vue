@@ -327,6 +327,8 @@ export default {
       const yOffset = this.diagram.diagram_definition.settings.yOffset
       const radius = this.diagram.diagram_definition.settings.radius;
       let global_scaling = this.diagram.diagram_definition.settings.scaling * this.global_scale
+      const max_to2 = this.diagram.diagram_definition.settings.max_to2;
+
       // first render all compartments and then the connectors and other types
       if (component_list == undefined) {
         return
@@ -347,7 +349,8 @@ export default {
                 yOffset,
                 radius,
                 component.picto,
-                global_scaling
+                global_scaling, 
+                max_to2
               );
               let watched_models_comp = []
               component.models.forEach(m => {
@@ -371,7 +374,8 @@ export default {
                 yOffset,
                 radius,
                 component.picto,
-                global_scaling
+                global_scaling,
+                max_to2
               );
               let watched_models_pump = []
               component.models.forEach(m => {
@@ -395,7 +399,8 @@ export default {
                 yOffset,
                 radius,
                 component.compPicto,
-                global_scaling
+                global_scaling,
+                max_to2
               );
               let watched_models_bc = []
               component.models.forEach(m => {
@@ -418,7 +423,8 @@ export default {
                 yOffset,
                 radius,
                 component.picto,
-                global_scaling
+                global_scaling,
+                max_to2
               );
               break;
           }
@@ -442,7 +448,8 @@ export default {
                 yOffset,
                 radius,
                 component.picto,
-                global_scaling
+                global_scaling,
+                max_to2
               );
               let watched_models_cont = []
               component.models.forEach(m => {
@@ -504,7 +511,8 @@ export default {
                 yOffset,
                 radius,
                 component.picto,
-                global_scaling
+                global_scaling,
+                max_to2
               );
               let watched_models_gasex = []
               component.models.forEach(m => {

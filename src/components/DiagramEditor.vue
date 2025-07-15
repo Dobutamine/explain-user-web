@@ -29,6 +29,8 @@
             type="number" :min="0.1" :max="1000" :step="0.1" @update:model-value="updateDiagram" />
           <q-input class="q-ml-sm col" v-model.number="diagram.diagram_definition.settings.speed" label="speed" dense dark
             type="number" :min="0.1" :max="1000" :step="0.1" @update:model-value="updateDiagram" />
+          <q-input class="q-ml-sm  col" v-model.number="diagram.diagram_definition.settings.max_to2" label="to2 color" dense dark
+            type="number" :min="0.1" :max="100" :step="0.1" @update:model-value="updateDiagram" />
         </div>
 
         <div v-if="!generalSettingsCollapsed" class="q-ma-sm row">
