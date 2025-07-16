@@ -241,6 +241,10 @@
               <q-icon name="fa-solid fa-desktop" size="xs"></q-icon>
               <q-tooltip>monitoring</q-tooltip>
             </q-tab>
+            <q-tab name="numerics_editor">
+              <q-icon name="fa-solid fa-wrench" size="xs"></q-icon>
+              <q-tooltip>numerics editor</q-tooltip>
+            </q-tab>
 
           </q-tabs>
           <q-tab-panels v-model="tab_right" keep-alive style="background-color: black">
@@ -262,6 +266,17 @@
                 </div>
               </q-scroll-area>
             </q-tab-panel>
+            <q-tab-panel name="numerics_editor">
+              <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
+                right: '5px',
+                borderRadius: '5px',
+                background: 'black',
+                width: '5px',
+                opacity: 0.5
+              }">
+              <NumericsEditor title="MONITOR EDITOR"></NumericsEditor>
+              </q-scroll-area>
+            </q-tab-panel>
           </q-tab-panels>
         </div>
       </div>
@@ -271,6 +286,7 @@
 </template>
 
 <script>
+import { explain } from 'src/boot/explain';
 import { defineComponent } from 'vue'
 import { useUserStore } from 'src/stores/user';
 import { useStateStore } from 'src/stores/state';
@@ -289,9 +305,8 @@ import EclsComponent from 'src/components/EclsComponent.vue';
 import AnimationComponent from 'src/components/AnimationComponent.vue';
 import AnimationEditor from 'src/components/AnimationEditor.vue';
 import ModelBuilderComponent from 'src/components/ModelBuilderComponent.vue';
-
-import { explain } from 'src/boot/explain';
 import ControllerComponent from 'src/components/ControllerComponent.vue';
+import NumericsEditor from 'src/components/NumericsEditor.vue';
 
 
 export default defineComponent({
@@ -321,7 +336,8 @@ export default defineComponent({
     EclsComponent,
     AnimationComponent,
     AnimationEditor,
-    ControllerComponent
+    ControllerComponent,
+    NumericsEditor
   },
   data() {
     return {
