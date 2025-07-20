@@ -70,7 +70,8 @@
 
                 <div class="q-ma-md text-left text-secondary" :style="{ 'font-size': '12px' }">
                 <div v-for="(parameter, index) in selectedMonitor.parameters" :key="index">
-                    <div class="q-ma-sm text-center text-white">PARAMETER {{ index + 1 }}</div>
+                    <q-separator></q-separator>
+                    <div class="q-ma-sm text-center text-white text-overline">PARAMETER {{ index + 1 }}: {{ parameter.label }}</div>
                         <q-separator></q-separator>
                         <div v-if="parameter.props_processed.length > 0" class="q-ma-sm">SETTINGS</div>
                         <div class="text-white" :style="{ 'font-size': '10px' }">
@@ -287,6 +288,7 @@ export default {
                     }
                     }
                 })
+                av_props.sort()
                 parameter.props_processed.push({ model: p[0], prop: p[1], availableProperties: [...av_props]})
             })
         })
