@@ -167,7 +167,7 @@
                                 <q-select 
                                     v-model="prop.prop" 
                                     label="model" 
-                                    :options="prop.avalaibleProperties" 
+                                    :options="prop.availableProperties" 
                                     color="blue"
                                     hide-hint 
                                     filled 
@@ -225,22 +225,21 @@ export default {
         selectedMonitorName: "",
         availableMonitorNames: [],
         availableModels: [],
-        avalaibleProperties: [],
+        availableProperties: [],
     };
   },
   methods: {
     selectPropModel(prop_current, prop_model) {
-        prop_current['avalaibleProperties'] = []
+        prop_current['availableProperties'] = []
         prop_current.prop = ""
         Object.keys(explain.modelState.models[prop_model]).forEach(prop => {
           if (typeof (explain.modelState.models[prop_model][prop]) === 'number') {
             if (prop[0] !== "_") {
-              prop_current['avalaibleProperties'].push(prop)
+              prop_current['availableProperties'].push(prop)
             }
           }
         })
-        prop_current['avalaibleProperties'].sort()
-        console.log(prop_current['avalaibleProperties'])
+        prop_current['availableProperties'].sort()
     },
     addProperty(parameter) {
         let new_prop = {
@@ -280,7 +279,15 @@ export default {
             parameter.props_processed = []
             parameter.props.forEach(prop => {
                 let p = prop.split(".")
-                parameter.props_processed.push({ model: p[0], prop: p[1]})
+                let av_props = []
+                Object.keys(explain.modelState.models[p[0]]).forEach(pos_p => {
+                    if (typeof (explain.modelState.models[p[0]][pos_p]) === 'number') {
+                        if (pos_p[0] !== "_") {
+                            av_props.push(pos_p)
+                    }
+                    }
+                })
+                parameter.props_processed.push({ model: p[0], prop: p[1], availableProperties: [...av_props]})
             })
         })
     },
