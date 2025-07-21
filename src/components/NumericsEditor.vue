@@ -22,8 +22,25 @@
                 <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
                     <div class="text-white" :style="{ 'font-size': '10px' }">
                         <q-input 
+                            v-model="selectedMonitor.name" 
+                            label="name" 
+                            color="blue" 
+                            hide-hint 
+                            filled 
+                            dense 
+                            stack-label 
+                            style="font-size: 12px" 
+                            class="q-mb-sm" 
+                            squared>
+                        </q-input>
+                    </div>
+                </div>
+
+                <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
+                    <div class="text-white" :style="{ 'font-size': '10px' }">
+                        <q-input 
                             v-model="selectedMonitor.title" 
-                            label="title" 
+                            label="caption" 
                             color="blue" 
                             hide-hint 
                             filled 
@@ -39,7 +56,7 @@
                 <div class="q-ml-lg q-mr-md q-mt-md text-left text-secondary row" :style="{ 'font-size': '12px' }">
                     <div class="col"> enabled </div>
                     <div class="col-2 text-white" :style="{ 'font-size': '10px' }">
-                      <q-toggle 
+                    <q-toggle 
                         v-model="selectedMonitor.enabled" 
                         color="primary" 
                         size="sm" 
@@ -48,14 +65,14 @@
                         dense 
                         style="font-size: 12px" 
                         class="q-mb-sm">
-                      </q-toggle>
+                    </q-toggle>
                     </div>
                 </div>
 
                 <div class="q-ml-lg q-mr-md q-mt-md text-left text-secondary row" :style="{ 'font-size': '12px' }">
                     <div class="col"> collapsed </div>
                     <div class="col-2 text-white" :style="{ 'font-size': '10px' }">
-                      <q-toggle 
+                    <q-toggle 
                         v-model="selectedMonitor.collapsed" 
                         color="primary" 
                         size="sm" 
@@ -64,151 +81,163 @@
                         dense 
                         style="font-size: 12px" 
                         class="q-mb-sm">
-                      </q-toggle>
+                    </q-toggle>
                     </div>
                 </div>
 
                 <div class="q-ma-md text-left text-secondary" :style="{ 'font-size': '12px' }">
                 <div v-for="(parameter, index) in selectedMonitor.parameters" :key="index">
-                    <q-separator></q-separator>
-                    <div class="q-ma-sm text-center text-white text-overline">PARAMETER {{ index + 1 }}: {{ parameter.label }}</div>
-                    <q-separator></q-separator>
-                    <div v-if="parameter.props_processed.length > 0" class="q-ma-sm">SETTINGS</div>
-                    <div class="text-white" :style="{ 'font-size': '10px' }">
-                        <q-input 
-                            v-model="parameter.label" 
-                            label="label" 
-                            color="blue" 
-                            hide-hint 
-                            filled 
-                            dense 
-                            stack-label 
-                            style="font-size: 12px" 
-                            class="q-mb-sm" 
-                            squared>
-                        </q-input>
-                    </div>
-                    <div class="text-white" :style="{ 'font-size': '10px' }">
-                        <q-input 
-                            v-model="parameter.unit" 
-                            label="unit" 
-                            color="blue" 
-                            hide-hint 
-                            filled 
-                            dense 
-                            stack-label 
-                            style="font-size: 12px" 
-                            class="q-mb-sm" 
-                            squared>
-                        </q-input>
-                    </div>
-                    <div class="text-white" :style="{ 'font-size': '10px' }">
-                        <q-input 
-                            v-model.number="parameter.factor" 
-                            label="factor" 
-                            color="blue" 
-                            hide-hint 
-                            filled 
-                            dense 
-                            stack-label 
-                            style="font-size: 12px" 
-                            class="q-mb-sm" 
-                            squared>
-                        </q-input>
-                    </div>
-                    <div class="text-white" :style="{ 'font-size': '10px' }">
-                        <q-input 
-                            v-model.number="parameter.rounding" 
-                            label="rounding" 
-                            color="blue" 
-                            hide-hint 
-                            filled 
-                            dense 
-                            stack-label 
-                            style="font-size: 12px" 
-                            class="q-mb-sm" 
-                            squared>
-                        </q-input>
-                    </div>
-                    <div class="q-ma-sm text-left text-white row" :style="{ 'font-size': '12px' }">
-                        <div class="col"> weight based </div>
-                        <div class="col-2 text-white" :style="{ 'font-size': '10px' }">
-                            <q-toggle 
-                                    v-model="parameter.weight_based" 
-                                    color="primary" 
-                                    size="sm" 
-                                    hide-hint 
-                                    filled 
-                                    dense 
-                                    style="font-size: 12px" 
-                                    class="q-mb-sm">
-                            </q-toggle>
-                        </div>
-                    </div> 
-                    
-                    <q-card class="q-pb-xs q-pt-xs q-ma-xs" bordered dark flat>
-                        <div v-if="parameter.props_processed.length > 0" class="q-ma-sm">PROPERTIES</div>
-                        <div v-for="(prop, index_prop) in parameter.props_processed" :key="index_prop">
-                            <div class="q-mt-sm text-white" :style="{ 'font-size': '10px' }">
-                                <q-select 
-                                    v-model="prop.model" 
-                                    label="model" 
-                                    :options="availableModels" 
-                                    color="blue"
-                                    hide-hint 
-                                    filled 
-                                    dense  
-                                    stack-label
-                                    style="font-size: 12px" 
-                                    class="q-mb-sm"
-                                    @update:model-value="selectPropModel(prop, prop.model)"
-                                    squared>
-                                </q-select>
-
-                            </div>
-                            <div class="text-white" :style="{ 'font-size': '10px' }">
-                                <q-select 
-                                    v-model="prop.prop" 
-                                    label="model" 
-                                    :options="prop.availableProperties" 
-                                    color="blue"
-                                    hide-hint 
-                                    filled 
-                                    dense  
-                                    stack-label
-                                    style="font-size: 12px" 
-                                    class="q-mb-sm"
-                                    squared>
-                                </q-select>
-                            </div>
-                            <div class="row q-ma-md">
-                                <q-btn class="col q-ml-xl q-mr-xl" color="negative" size="sm" dense @click="removeProperty(parameter, index_prop)"
-                                style="font-size: 10px">REMOVE MODEL PROPERTY<q-tooltip>remove this model property</q-tooltip></q-btn>
-                            </div>
-                            <q-separator dark></q-separator>
-                            <div class="row q-ma-md">
-                                <q-btn class="col q-ml-xl q-mr-xl" color="primary" size="sm" dense @click="addProperty(parameter)"
-                                style="font-size: 10px">ADD MODEL PROPERTY<q-tooltip>add a model property</q-tooltip></q-btn>
-                            </div>
-                        </div>
-                        <div v-if="parameter.props_processed.length == 0" class="q-ma-sm">
-                            <q-btn class="col q-ml-xl q-mr-xl" color="primary" size="sm" @click="addProperty(parameter)"
-                                style="font-size: 10px">ADD MODEL PROPERTY<q-tooltip>add a model property</q-tooltip></q-btn>
+                    <q-card class="q-pb-xs q-pt-xs q-ma-xs" flat bordered dark @click="parameter.visible = !parameter.visible">
+                        <div class="q-mt-xs q-mb-xs q-ml-md q-mr-md text-overline justify-center row">
+                            <div class="col">{{ parameter.label }}</div>
+                            <q-btn v-if="selectedMonitorName" class="col-1 q-ma-xs q-mt-xs" color="red-10" size="xs" dense
+                                icon="fa-solid fa-trash-can" @click="removeParameter(index)" style="font-size: 8px"><q-tooltip>remove parameter</q-tooltip></q-btn>
                         </div>
                     </q-card>
-                    <div class="row q-ma-md">
-                    <q-btn class="col q-ml-xl q-mr-xl" color="negative" size="sm" @click="removeParameter(index)"
-                    style="font-size: 10px">REMOVE {{ parameter.label }}<q-tooltip>remove parameter</q-tooltip></q-btn>
+                    <div v-if="parameter.visible">
+                        <div v-if="parameter.props_processed.length > 0" class="q-ma-sm">SETTINGS</div>
+                        <div class="text-white" :style="{ 'font-size': '10px' }">
+                            <q-input 
+                                v-model="parameter.label" 
+                                label="label" 
+                                color="blue" 
+                                hide-hint 
+                                filled 
+                                dense 
+                                stack-label 
+                                style="font-size: 12px" 
+                                class="q-mb-sm" 
+                                squared>
+                            </q-input>
+                        </div>
+                        <div class="text-white" :style="{ 'font-size': '10px' }">
+                            <q-input 
+                                v-model="parameter.unit" 
+                                label="unit" 
+                                color="blue" 
+                                hide-hint 
+                                filled 
+                                dense 
+                                stack-label 
+                                style="font-size: 12px" 
+                                class="q-mb-sm" 
+                                squared>
+                            </q-input>
+                        </div>
+                        <div class="text-white" :style="{ 'font-size': '10px' }">
+                            <q-input 
+                                v-model.number="parameter.factor" 
+                                label="factor" 
+                                color="blue" 
+                                hide-hint 
+                                filled 
+                                dense 
+                                stack-label 
+                                style="font-size: 12px" 
+                                class="q-mb-sm" 
+                                squared>
+                            </q-input>
+                        </div>
+                        <div class="text-white" :style="{ 'font-size': '10px' }">
+                            <q-input 
+                                v-model.number="parameter.rounding" 
+                                label="rounding" 
+                                color="blue" 
+                                hide-hint 
+                                filled 
+                                dense 
+                                stack-label 
+                                style="font-size: 12px" 
+                                class="q-mb-sm" 
+                                squared>
+                            </q-input>
+                        </div>
+                        <div class="q-ma-sm text-left text-white row" :style="{ 'font-size': '12px' }">
+                            <div class="col"> weight based </div>
+                            <div class="col-2 text-white" :style="{ 'font-size': '10px' }">
+                                <q-toggle 
+                                        v-model="parameter.weight_based" 
+                                        color="primary" 
+                                        size="sm" 
+                                        hide-hint 
+                                        filled 
+                                        dense 
+                                        style="font-size: 12px" 
+                                        class="q-mb-sm">
+                                </q-toggle>
+                            </div>
+                        </div> 
+                        
+                        <q-card class="q-pb-xs q-pt-xs q-ma-xs" bordered dark flat>
+                            <div v-if="parameter.props_processed.length > 0" class="q-ma-sm">PROPERTIES</div>
+                            <div v-for="(prop, index_prop) in parameter.props_processed" :key="index_prop">
+                                <div class="q-mt-sm text-white" :style="{ 'font-size': '10px' }">
+                                    <q-select 
+                                        v-model="prop.model" 
+                                        label="model" 
+                                        :options="availableModels" 
+                                        color="blue"
+                                        hide-hint 
+                                        filled 
+                                        dense  
+                                        stack-label
+                                        style="font-size: 12px" 
+                                        class="q-mb-sm"
+                                        @update:model-value="selectPropModel(prop, prop.model)"
+                                        squared>
+                                    </q-select>
+
+                                </div>
+                                <div class="text-white" :style="{ 'font-size': '10px' }">
+                                    <q-select 
+                                        v-model="prop.prop" 
+                                        label="model" 
+                                        :options="prop.availableProperties" 
+                                        color="blue"
+                                        hide-hint 
+                                        filled 
+                                        dense  
+                                        stack-label
+                                        style="font-size: 12px" 
+                                        class="q-mb-sm"
+                                        squared>
+                                    </q-select>
+                                </div>
+                                <div class="row q-ma-md">
+                                    <q-btn class="col q-ml-xl q-mr-xl" color="negative" size="sm" dense @click="removeProperty(parameter, index_prop)"
+                                    style="font-size: 10px">REMOVE MODEL PROPERTY<q-tooltip>remove this model property</q-tooltip></q-btn>
+                                </div>
+                                <q-separator dark></q-separator>
+                                <div class="row q-ma-md">
+                                    <q-btn class="col q-ml-xl q-mr-xl" color="primary" size="sm" dense @click="addProperty(parameter)"
+                                    style="font-size: 10px">ADD MODEL PROPERTY<q-tooltip>add a model property</q-tooltip></q-btn>
+                                </div>
+                            </div>
+                            <div v-if="parameter.props_processed.length == 0" class="q-ma-sm">
+                                <q-btn class="col q-ml-xl q-mr-xl" color="primary" size="sm" @click="addProperty(parameter)"
+                                    style="font-size: 10px">ADD MODEL PROPERTY<q-tooltip>add a model property</q-tooltip></q-btn>
+                            </div>
+                        </q-card>
                     </div>
                 </div>
-                 <q-separator></q-separator>
-                <div class="row q-ma-md">
-                    <q-btn class="col q-ml-xl q-mr-xl" color="secondary" size="sm" dense
+
+                 <q-separator inset></q-separator>
+                
+                 <div class="row q-ma-md">
+                    <q-btn class="col q-ml-xl q-mr-xl" color="secondary" size="sm" dense @click="addParameter"
                     style="font-size: 10px"><q-icon class="fa-solid fa-plus"></q-icon><q-tooltip>add a parameter</q-tooltip></q-btn>
                 </div>
+
+                <q-separator></q-separator>
                 
+                 <div class="row q-ma-md">
+                    <q-btn class="col q-ml-md" color="secondary" size="sm" dense @click="saveMonitor"
+                    style="font-size: 10px"><q-icon class="fa-solid fa-save"></q-icon><q-tooltip>save monitor</q-tooltip></q-btn>
+                    <q-btn class="col q-ml-md" color="black" size="sm" dense @click="cancelMonitor"
+                    style="font-size: 10px"><q-icon class="fa-solid fa-cancel"></q-icon><q-tooltip>cancel monitor</q-tooltip></q-btn>
                 </div>
             </div>
+        </div>
 
         </div>
       </q-card>
@@ -245,10 +274,35 @@ export default {
     };
   },
   methods: {
+    saveMonitor() {
+        // rebuild this monitor (selectedMon itor is a proxy to the state object so no copying is needed)
+        this.selectedMonitor.parameters.forEach(param => {
+            param.props = []
+            param.props_processed.forEach(p_prop => {
+                let str_prop = p_prop.model + "." + p_prop.prop
+                param.props.push(str_prop)
+            })
+            param.props_processed = []
+        })
+        this.cancelMonitor()
+        this.$bus.emit('redraw_monitors')
+    },
     removeParameter(param_index) {
         this.selectedMonitor.parameters.splice(param_index, 1)
     },
-    addParameter() {},
+    addParameter() {
+        let new_parameter = {
+            label: "new_param",
+            unit: "",
+            factor: 1.0,
+            rounding: 0,
+            weight_based: false,
+            props_processed: [
+                { model: "", prop: "", availableProperties: [] }
+            ]
+        }
+        this.selectedMonitor.parameters.push(new_parameter)
+    },
     selectPropModel(prop_current, prop_model) {
         prop_current['availableProperties'] = []
         prop_current.prop = ""
@@ -273,12 +327,15 @@ export default {
         parameter.props_processed.splice(prop_index, 1);
     },
     buildMonitor() {
+        this.selectedMonitorName = "new_monitor"
         this.selectedMonitor = {
-            title: "",
+            name: "new_mon",
+            title: "new explain monitor",
             enabled: false,
             collapsed: false,
             parameters: [
                 {
+                    visible: true,
                     label: "new_param",
                     unit: "",
                     factor: 1.0,
@@ -297,7 +354,9 @@ export default {
     },
     monitorSelected() {
         this.selectedMonitor = {...this.state.configuration.monitors[this.selectedMonitorName]}
+        this.selectedMonitor['name'] = this.selectedMonitorName
         this.selectedMonitor.parameters.forEach(parameter => {
+            parameter['visible'] = false
             parameter.props_processed = []
             parameter.props.forEach(prop => {
                 let p = prop.split(".")

@@ -257,11 +257,13 @@
                 opacity: 0.5
               }">
                 <BigNumbersComponent></BigNumbersComponent>
-                <div v-for="monitor in state.configuration.monitors">
-                  <div>
-                    <NumericsComponent v-if="monitor.enabled" :title="monitor.title"
-                      :collapsed="monitor.collapsed"
-                      :parameters="monitor.parameters"></NumericsComponent>
+                <div :key="monitor_redraw" >
+                  <div v-for="monitor in state.configuration.monitors">
+                    <div>
+                      <NumericsComponent v-if="monitor.enabled" :title="monitor.title"
+                        :collapsed="monitor.collapsed"
+                        :parameters="monitor.parameters"></NumericsComponent>
+                    </div>
                   </div>
                 </div>
               </q-scroll-area>
@@ -314,10 +316,12 @@ export default defineComponent({
   setup() {
     const state = useStateStore();
     const user = useUserStore();
+    let monitor_redraw = 1;
 
     return {
       state,
-      user
+      user,
+      monitor_redraw
     }
   },
   components: {
@@ -351,7 +355,7 @@ export default defineComponent({
       xy_alive: true,
       diagram_alive: true,
       screen_offset: 135.0,
-      screen_height: 100.0,
+      screen_height: 100.0
     }
   },
   methods: {
@@ -456,11 +460,15 @@ export default defineComponent({
 
       // get the model state
       explain.getModelState()
+    },
+    redrawMonitors() {
+      this.monitor_redraw += 1
     }
   },
   beforeUnmount() {
     this.$bus.off("reset", this.updateWatchlist)
     this.$bus.off("model_ready", this.modelReady)
+    this.$bus.off("redraw_monitors", this.redrawMonitors)
     document.removeEventListener("model_ready", () => this.$bus.emit("model_ready"));
   },
   mounted() {
@@ -481,6 +489,9 @@ export default defineComponent({
 
     // if the models resets make sure the watchlist is up to date
     this.$bus.on("reset", this.modelReady)
+
+    // redraw monitors event
+    this.$bus.on("redraw_monitors", this.redrawMonitors)
 
   }
 })
