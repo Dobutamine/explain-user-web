@@ -242,7 +242,6 @@
 
 <script>
 
-import { checkMaxIfStatementsInShader } from "pixi.js";
 import { explain } from "../boot/explain";
 import { useStateStore } from "src/stores/state";
 
@@ -345,12 +344,29 @@ export default {
         }
     },
     deleteMonitor() {
-        delete this.state.configuration.monitors[this.selectedMonitorName]
-        this.availableMonitorNames = []
-        Object.keys(this.state.configuration.monitors).forEach(monitor_name => {
-            this.availableMonitorNames.push(monitor_name)
+        this.$q.dialog({
+            title: 'Warning!',
+            message: 'Are you sure you want to delete this monitor?',
+            cancel: true,
+            persistent: true
         })
-        this.cancelMonitor()
+        .onOk(() => {
+            // user clicked “OK”
+            delete this.state.configuration.monitors[this.selectedMonitorName]
+            this.availableMonitorNames = []
+            Object.keys(this.state.configuration.monitors).forEach(monitor_name => {
+                this.availableMonitorNames.push(monitor_name)
+            })
+             this.cancelMonitor()
+        })
+        .onCancel(() => {
+            // user clicked “Cancel” or outside
+            console.log('Deletion aborted')
+        })
+        .onDismiss(() => {
+            // dialog dismissed by ESC or backdrop
+            console.log('Dialog closed')
+        })
     },
     cancelMonitor() {
         this.selectedMonitorName = ""
