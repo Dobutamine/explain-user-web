@@ -14,7 +14,11 @@
                     :options="availableMonitorNames" dense dark stack-label @update:model-value="monitorSelected" />
                 <q-btn v-if="!selectedMonitorName" class="col-1 q-ma-xs q-mt-md" color="primary" size="xs" dense
                     icon="fa-solid fa-plus" @click="buildMonitor" style="font-size: 8px"><q-tooltip>add new monitor</q-tooltip></q-btn>
-                <q-btn v-if="selectedMonitorName" class="col-1 q-ma-xs q-mt-md" color="grey-9" size="xs" dense
+                <q-btn v-if="selectedMonitorName" class="col-1 q-ma-xs q-mt-md" color="primary" size="xs" dense
+                    icon="fa-solid fa-save" @click="saveMonitor" style="font-size: 8px"><q-tooltip>save monitor</q-tooltip></q-btn>
+                <q-btn v-if="selectedMonitorName" class="col-1 q-ma-xs q-mt-md" color="red-10" size="xs" dense
+                    icon="fa-solid fa-trash-can" @click="deleteMonitor" style="font-size: 8px"><q-tooltip>delete monitor</q-tooltip></q-btn>     
+                <q-btn v-if="selectedMonitorName" class="col-1 q-ma-xs q-mt-md" color="black" size="xs" dense
                     icon="fa-solid fa-xmark" @click="cancelMonitor" style="font-size: 8px"><q-tooltip>clear new monitor</q-tooltip></q-btn>
             </div>
 
@@ -227,15 +231,6 @@
                     <q-btn class="col q-ml-xl q-mr-xl" color="secondary" size="sm" dense @click="addParameter"
                     style="font-size: 10px"><q-icon class="fa-solid fa-plus"></q-icon><q-tooltip>add a parameter</q-tooltip></q-btn>
                 </div>
-
-                <q-separator></q-separator>
-                
-                 <div class="row q-ma-md">
-                    <q-btn class="col q-ml-md" color="secondary" size="sm" dense @click="saveMonitor"
-                    style="font-size: 10px"><q-icon class="fa-solid fa-save"></q-icon><q-tooltip>save monitor</q-tooltip></q-btn>
-                    <q-btn class="col q-ml-md" color="black" size="sm" dense @click="cancelMonitor"
-                    style="font-size: 10px"><q-icon class="fa-solid fa-cancel"></q-icon><q-tooltip>cancel monitor</q-tooltip></q-btn>
-                </div>
             </div>
         </div>
 
@@ -284,6 +279,7 @@ export default {
             })
             param.props_processed = []
         })
+        this.state.configuration.monitors[this.selectedMonitor.name] = this.selectedMonitor
         this.cancelMonitor()
         this.$bus.emit('redraw_monitors')
     },
@@ -347,6 +343,14 @@ export default {
                 }
             ]
         }
+    },
+    deleteMonitor() {
+        delete this.state.configuration.monitors[this.selectedMonitorName]
+        this.availableMonitorNames = []
+        Object.keys(this.state.configuration.monitors).forEach(monitor_name => {
+            this.availableMonitorNames.push(monitor_name)
+        })
+        this.cancelMonitor()
     },
     cancelMonitor() {
         this.selectedMonitorName = ""

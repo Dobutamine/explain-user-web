@@ -247,7 +247,7 @@
             </q-tab>
 
           </q-tabs>
-          <q-tab-panels v-model="tab_right" keep-alive style="background-color: black">
+          <q-tab-panels v-model="tab_right" style="background-color: black">
             <q-tab-panel name="numerics">
               <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
                 right: '5px',
