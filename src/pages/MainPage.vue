@@ -463,13 +463,23 @@ export default defineComponent({
     },
     redrawMonitors() {
       this.monitor_redraw += 1
+    },
+    onDiagramTap(e) {
+      switch (this.tab_left) {
+        case "diagram_editor":
+          this.$bus.emit("select_diagram", e.diagram)
+          break;
+        case "model_editor":
+          this.$bus.emit("select_model", e.model)
+          break;
+      }
     }
   },
   beforeUnmount() {
     this.$bus.off("reset", this.updateWatchlist)
     this.$bus.off("model_ready", this.modelReady)
     this.$bus.off("redraw_monitors", this.redrawMonitors)
-    document.removeEventListener("model_ready", () => this.$bus.emit("model_ready"));
+    this.$bus.off("sprite_tapped", (e) => this.onDiagramTap(e))
   },
   mounted() {
     // return if the user is not logged in
@@ -492,6 +502,9 @@ export default defineComponent({
 
     // redraw monitors event
     this.$bus.on("redraw_monitors", this.redrawMonitors)
+
+    // listen for sprite tap
+    this.$bus.on("sprite_tapped", (e) => this.onDiagramTap(e))
 
   }
 })

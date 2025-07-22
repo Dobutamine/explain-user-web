@@ -826,6 +826,10 @@ export default {
     this.$bus.off("model_interface", this.processModelInterface)
     this.$bus.off("modeltype_interface",  this.processModelTypeInterface)
     this.$bus.off("model_types", (e) => this.processAvailableModelTypes(e))
+    this.$bus.off('select_model', (e) => {
+      this.selectedModelName = e
+      this.modelChanged()
+    })
   },
   mounted() {
     // update if state changes
@@ -833,6 +837,10 @@ export default {
     this.$bus.on("model_interface",  this.processModelInterface)
     this.$bus.on("modeltype_interface",  (e) => this.processModelTypeInterface(e))
     this.$bus.on("model_types", (e) => this.processAvailableModelTypes(e))
+    this.$bus.on('select_model', (e) => {
+      this.selectedModelName = e
+      this.modelChanged()
+    })
     explain.getModelTypes()
 
   },

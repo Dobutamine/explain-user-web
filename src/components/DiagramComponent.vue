@@ -190,12 +190,12 @@ export default {
         antialias: true,
         backgroundColor: 0x111111,
         view: canvas,
-        eventMode: 'none',
+        eventMode: 'static',
         eventFeatures: {
           move: false,
           /** disables the global move events which can be very expensive in large scenes */
           globalMove: false,
-          click: false,
+          click: true,
           wheel: false,
         }
       });
@@ -628,7 +628,7 @@ export default {
 
       // remove the event listeners
       pixiApp.stage.children.forEach((child) => {
-        child.eventMode = "none";
+        child.eventMode = "static";
       })
 
       // first remove the old ticker
@@ -802,6 +802,7 @@ export default {
     })
     
     this.$bus.on("ecls_mode_change", (mode) => this.changeEclsMode(mode))
+
   },
 };
 

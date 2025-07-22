@@ -664,6 +664,7 @@ export default defineComponent({
     document.removeEventListener("model_types", (e) => this.$bus.emit("model_types", e.detail));
     document.removeEventListener("modeltype_interface", (e) => this.$bus.emit("modeltype_interface", e.detail));
     document.removeEventListener("state_saved", this.stateSaved);
+    document.removeEventListener("sprite_tapped", (e) => this.$bus.emit("sprite_tapped", e.detail));
     this.$bus.off('open_diagram_dialog', () => this.getAllUserDiagrams())
     this.$bus.off('open_diagram_dialog', () => this.saveDiagram())
     this.$bus.off('load_animation_dialog', () => this.getAllUserAnimations())
@@ -755,6 +756,11 @@ export default defineComponent({
       document.removeEventListener("state_saved", this.stateSaved);
     } catch { }
     document.addEventListener("state_saved", this.stateSaved);
+
+    try {
+      document.removeEventListener("sprite_tapped", (e) => this.$bus.emit("sprite_tapped", e.detail));
+    } catch {}
+    document.addEventListener("sprite_tapped", (e) => this.$bus.emit("sprite_tapped", e.detail));
 
     this.$bus.on('load_diagram_dialog', () => this.getAllUserDiagrams())
     this.$bus.on('save_diagram_dialog', () => this.saveDiagram())

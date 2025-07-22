@@ -90,6 +90,12 @@ export default class Text {
         break;
     }
 
+    // enable interactivity
+    this.sprite.eventMode = 'static';
+    this.sprite.on('pointertap', (event) => {
+      this.tapped(event)
+    });
+
     this.pixiApp.stage.addChild(this.sprite);
 
     //define the caption style and text object and add it to the stage
@@ -109,6 +115,12 @@ export default class Text {
     this.text.rotation = this.layout.label.rotation;
     this.text.zIndex = this.layout.general.z_index + 1;
 
+    // enable interactivity
+    this.text.eventMode = 'static';
+    this.text.on('pointertap', (event) => {
+      this.tapped(event)
+    });
+
     this.pixiApp.stage.addChild(this.text);
   }
 
@@ -116,6 +128,15 @@ export default class Text {
 
   redrawConnectors() {
     Object.values(this.connectors).forEach((connector) => connector.drawPath());
+  }
+
+  tapped(event) {
+    let selection = { model: "", diagram: this.key}
+    if (this.models.length > 0) {
+      selection.model = this.models[0]
+    }
+    const _tap_event = new CustomEvent("sprite_tapped", { detail: selection, bubbles: true, cancelable: true, composed: false });
+    document.dispatchEvent(_tap_event)
   }
 
   calculateOnCircle(x, y) {

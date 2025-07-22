@@ -103,9 +103,13 @@ export default class Valve {
     this.sprite.zIndex = this.layout.general.z_index + 1;
     this.sprite.alpha = this.layout.general.alpha;
 
-    this.pixiApp.stage.addChild(this.sprite);
-    this.sprite.eventMode = "none";
+    // enable interactivity
+    this.sprite.eventMode = 'static';
+    this.sprite.on('pointertap', (event) => {
+      this.tapped(event)
+    });
 
+    this.pixiApp.stage.addChild(this.sprite);
     this.registerConnectorWithDbc();
   }
   registerConnectorWithDbc() {
@@ -249,6 +253,15 @@ export default class Valve {
     this.path.lineTo(this.line.x2, this.line.y2);
   }
   
+  tapped(event) {
+    let selection = { model: "", diagram: this.key}
+    if (this.models.length > 0) {
+      selection.model = this.models[0]
+    }
+    const _tap_event = new CustomEvent("sprite_tapped", { detail: selection, bubbles: true, cancelable: true, composed: false });
+    document.dispatchEvent(_tap_event)
+  }
+
   update(data) {
     let noData = false;
     this.xCenter = this.dbcFrom.xCenter + this.dbcFrom.xOffset;

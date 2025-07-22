@@ -90,6 +90,12 @@ export default class Device {
         break;
     }
 
+    // enable interactivity
+    this.sprite.eventMode = 'static';
+    this.sprite.on('pointertap', (event) => {
+      this.tapped(event)
+    });
+
     this.pixiApp.stage.addChild(this.sprite);
 
     //define the caption style and text object and add it to the stage
@@ -109,7 +115,22 @@ export default class Device {
     this.text.rotation = this.layout.label.rotation;
     this.text.zIndex = this.layout.general.z_index + 1;
 
+    // enable interactivity
+    this.text.eventMode = 'static';
+    this.text.on('pointertap', (event) => {
+      this.tapped(event)
+    });
+
     this.pixiApp.stage.addChild(this.text);
+  }
+
+  tapped(event) {
+    let selection = { model: "", diagram: this.key}
+    if (this.models.length > 0) {
+      selection.model = this.models[0]
+    }
+    const _tap_event = new CustomEvent("sprite_tapped", { detail: selection, bubbles: true, cancelable: true, composed: false });
+    document.dispatchEvent(_tap_event)
   }
 
   update(data) {}

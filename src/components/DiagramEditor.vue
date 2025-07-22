@@ -725,6 +725,10 @@ export default {
       this.$bus.emit("rebuild_diagram");
       this.cancelDiagramBuild();
     },
+    onDiagramSelection(e) {
+      this.selectedDiagramComponentName = e
+      this.editComponent()
+    },
     addComponent(compType) {
       // set the editor mode to adding
       this.editorMode = 1;
@@ -995,6 +999,7 @@ export default {
       },
       false
     );
+    this.$bus.off("select_diagram", (e) => this.onDiagramSelection(e))
   },
   mounted() {
     this.rebuild_event = new CustomEvent("rebuild_diagram");
@@ -1028,6 +1033,8 @@ export default {
     this.$bus.on("addNewModelToDiagram", (new_element) => {
       this.addToDiagramFromOutside(new_element);
     });
+
+    this.$bus.on("select_diagram", (e) => this.onDiagramSelection(e))
   },
 };
 </script>

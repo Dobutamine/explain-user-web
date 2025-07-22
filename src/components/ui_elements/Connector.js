@@ -103,6 +103,12 @@ export default class Connector {
     this.sprite.zIndex = this.layout.general.z_index + 1;
     this.sprite.alpha = 1.0
 
+    // enable interactivity
+    this.sprite.eventMode = 'static';
+    this.sprite.on('pointertap', (event) => {
+      this.tapped(event)
+    });
+
     this.pixiApp.stage.addChild(this.sprite);
     this.sprite.eventMode = "none";
 
@@ -143,8 +149,25 @@ export default class Connector {
       angle -= angle - Math.PI * 2;
     }
     this.text.rotation = angle + this.layout.label.rotation;
+
+    // enable interactivity
+    this.text.eventMode = 'static';
+    this.text.on('pointertap', (event) => {
+      this.tapped(event)
+    });
+
     this.pixiApp.stage.addChild(this.text);
   }
+  
+  tapped(event) {
+    let selection = { model: "", diagram: this.key}
+    if (this.models.length > 0) {
+      selection.model = this.models[0]
+    }
+    const _tap_event = new CustomEvent("sprite_tapped", { detail: selection, bubbles: true, cancelable: true, composed: false });
+    document.dispatchEvent(_tap_event)
+  }
+
   registerConnectorWithDbc() {
     // register with the dbc
     this.dbcFrom.connectors[this.key] = this;

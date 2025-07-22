@@ -67,6 +67,13 @@ export default class Compartment {
 
     this.sprite.rotation = this.layout.sprite.rotation;
     this.sprite.zIndex = this.layout.general.z_index;
+
+    // enable interactivity
+    this.sprite.eventMode = 'static';
+    this.sprite.on('pointertap', (event) => {
+      this.tapped(event)
+    });
+
       
     // place the sprite on the stage
     switch (this.layout.sprite.pos.type) {
@@ -115,7 +122,22 @@ export default class Compartment {
     this.text.rotation = this.layout.label.rotation;
     this.text.zIndex = this.layout.general.z_index + 1;
 
+    // enable interactivity
+    this.text.eventMode = 'static';
+    this.text.on('pointertap', (event) => {
+      this.tapped(event)
+    });
+
     this.pixiApp.stage.addChild(this.text);
+  }
+
+  tapped(event) {
+    let selection = { model: "", diagram: this.key}
+    if (this.models.length > 0) {
+      selection.model = this.models[0]
+    }
+    const _tap_event = new CustomEvent("sprite_tapped", { detail: selection, bubbles: true, cancelable: true, composed: false });
+    document.dispatchEvent(_tap_event)
   }
 
   update(data) {
