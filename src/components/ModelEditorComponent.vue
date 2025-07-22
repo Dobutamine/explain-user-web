@@ -292,7 +292,17 @@ export default {
       explain.getModelTypeInterface(this.selectedModelType)
     },
     deleteModel() {
-      explain.deleteModel(this.selectedModelName)
+        this.$q.dialog({
+            title: 'Warning!',
+            message: 'Are you sure you want to delete this model?',
+            cancel: true,
+            persistent: true
+        })
+        .onOk(() => {
+            explain.deleteModel(this.selectedModelName)
+        })
+        .onCancel(() => {})
+        .onDismiss(() => {})
     },
     processModelTypeInterface(modeltype_interface) {
       // we have to convert the model properties to a format which the editor can understand, this is an array of objects and store in selectedNewModelProps
