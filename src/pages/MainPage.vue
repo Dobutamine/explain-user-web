@@ -13,8 +13,8 @@
             </q-tab>
            <q-tab name="diagram_editor"><q-icon name="fa-solid fa-diagram-project" size="xs"></q-icon><q-tooltip>diagram editor</q-tooltip>
             </q-tab>
-            <q-tab name="animation_editor"><q-icon name="fa-solid fa-person" size="xs"></q-icon><q-tooltip>animation editor</q-tooltip>
-            </q-tab>
+            <!-- <q-tab name="animation_editor"><q-icon name="fa-solid fa-person" size="xs"></q-icon><q-tooltip>animation editor</q-tooltip>
+            </q-tab> -->
           </q-tabs>
           <q-tab-panels v-model="tab_left" keep-alive style="background-color: black">
             <q-tab-panel name="model_editor">
@@ -93,10 +93,10 @@
               <q-tooltip>diagram</q-tooltip>
             </q-tab>
 
-            <q-tab name="animation">
+            <!-- <q-tab name="animation">
               <q-icon name="fa-solid fa-person" size="xs"></q-icon>
               <q-tooltip>animation</q-tooltip>
-            </q-tab>
+            </q-tab> -->
 
             <q-tab name="heart">
               <q-icon name="fa-solid fa-heart" size="xs"></q-icon>
@@ -243,7 +243,7 @@
             </q-tab>
             <q-tab name="numerics_editor">
               <q-icon name="fa-solid fa-wrench" size="xs"></q-icon>
-              <q-tooltip>numerics editor</q-tooltip>
+              <q-tooltip>monitoring editor</q-tooltip>
             </q-tab>
 
           </q-tabs>
