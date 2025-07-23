@@ -5,10 +5,6 @@
       </canvas>
     </div>
 
-    <div v-if="shuntOptionsVisible" class="row justify-center">
-      <q-option-group v-model="selected_shunts" :options="shunt_options" color="primary" inline size="xs" dense
-        class="text-overline" type="checkbox" @update:model-value="toggleShunts"></q-option-group>
-    </div>
     <div class="row justify-center">
           <q-btn flat round dense size="sm" icon="fa-solid fa-download" color="white" class="q-ml-sm"
           @click="loadDiagram">
@@ -83,51 +79,6 @@ export default {
       skeletonGraphics: null,
       shortTimer: null,
       rt_running: false,
-      selected_shunts: [],
-      shunt_options: [{
-        label: 'PDA',
-        value: 'DA',
-        description: 'ductus arteriosus',
-        models: ['DA']
-      },
-      {
-        label: 'FO',
-        value: 'FO',
-        description: 'foramen ovale',
-        models: ['FO']
-      },
-      {
-        label: 'VSD',
-        value: 'VSD',
-        description: 'ventricular septal defect',
-        models: ['VSD']
-      },
-      {
-        label: 'IPS',
-        value: 'IPS',
-        description: 'intra-pulmonary shunt',
-        models: ['IPS']
-      },
-      {
-        label: 'LUNGS',
-        value: 'LUNGS',
-        description: 'lungs',
-        models: ['LUNG', 'LUNGS', 'ALL', 'ALR', 'GASEX_LL', 'GASEX_RL']
-      },
-      {
-        label: 'ECLS',
-        value: 'ECLS',
-        description: 'ecls',
-        models: ['ECLS_TUBIN', 'ECLS_OXY', 'ECLS_PUMP', 'ECLS_TUBOUT', 'ECLS_DR', 'ECLS_TUBIN_PUMP', 'ECLS_PUMP_OXY', 'ECLS_OXY_TUBOUT', 'ECLS_RE']
-      },
-      {
-        label: 'PLACENTA',
-        value: 'PLACENTA',
-        description: 'placenta',
-        models: ['UMB_ART', 'UMB_VEN', 'PLF', 'AD_UMB_ART', 'UMB_ART_PLF','PLF_UMB_VEN','UMB_VEN_IVCI']
-      }
-      ],
-      shuntOptionsVisible: true,
       stateDiagram: true
 
     };
@@ -143,33 +94,6 @@ export default {
     },
     saveDiagram() {
       this.$bus.emit('save_diagram_dialog');
-    },
-    toggleShunts() {
-      this.shunt_options.forEach((shunt_option) => {
-        this.showOrHideShunt(this.selected_shunts.includes(shunt_option.value), shunt_option.models)
-      })
-    },
-    showOrHideShunt(state, shunts) {
-      if (state) {
-        // show the shunt if not already shown
-        shunts.forEach(shunt => {
-          const index_sprite = pixiApp.stage.children.findIndex((obj) => obj.name_sprite == shunt);
-          if (index_sprite < 0) {
-            // not shown already so add it
-            this.addDiagramComponent(shunt)
-          }
-        })
-      } else {
-        // hide the shunt
-        shunts.forEach(shunt => {
-          const index_sprite = pixiApp.stage.children.findIndex((obj) => obj.name_sprite == shunt);
-          if (index_sprite > 0) {
-            // it is present so hide it
-            this.removeDiagramComponent(shunt)
-          }
-        })
-      }
-
     },
     async initDiagram() {
       // first clear all children from the stage
@@ -638,64 +562,12 @@ export default {
       // add the new ticker function and start it
       this.ticker = pixiApp.ticker.add(this.tickerFunction);
 
-      // get the shunt options state of the diagram
-      this.shuntOptionsVisible = this.diagram.diagram_definition.settings.shuntOptionsVisible
-
-      // get the current shunts state
-      this.selected_shunts = []
-      if (this.shuntOptionsVisible) {
-        try {
-          if (this.diagram.diagram_definition.components['DA'].enabled) {
-            this.selected_shunts.push('DA')
-          }
-        } catch {}
-        try {
-          if (this.diagram.diagram_definition.components['FO'].enabled) {
-            this.selected_shunts.push('FO')
-          }
-        } catch {}
-        
-        try {
-          if (this.diagram.diagram_definition.components['IPS'].enabled) {
-            this.selected_shunts.push('IPS')
-          }
-        } catch {}
-
-        try {
-          if (this.diagram.diagram_definition.components['VSD'].enabled) {
-            this.selected_shunts.push('VSD')
-          }
-        } catch {}
-
-        try {
-          if (this.diagram.diagram_definition.components['ECLS'].enabled) {
-            this.selected_shunts.push('ECLS')
-          }
-        } catch {}
-
-        try {
-          if (this.diagram.diagram_definition.components['LUNG'].enabled) {
-            this.selected_shunts.push('LUNGS')
-          }
-        } catch {}
-
-        try {
-          if (this.diagram.diagram_definition.components['PLF'].enabled) {
-            this.selected_shunts.push('PLACENTA')
-          }
-        } catch {}
-
-      }
-
       // check whether diagram is default state diagram
       if (this.state.diagram_definition.name == this.diagram.diagram_definition.settings.name) {
         this.stateDiagram = true;
       } else {
         this.stateDiagram = false;
       }
-
-    },
-    changeEclsMode(mode) {
 
     },
     async loadModelDefinition() {
@@ -721,27 +593,6 @@ export default {
         this.update_component('ECLS_RE')
       } catch { }
     })
-    this.$bus.off("ecls_state_changed", (state) => { 
-      if (state) {
-        this.selected_shunts.push('ECLS')
-        this.selected_shunts = [...new Set(this.selected_shunts)];
-        this.toggleShunts()
-      } else {
-        this.selected_shunts.filter(item => item !== 'ECLS');
-        this.toggleShunts()
-      }
-    })
-    this.$bus.off("placenta_state_changed", (state) => { 
-      if (state) {
-        this.selected_shunts.push('PLACENTA')
-        this.selected_shunts = [...new Set(this.selected_shunts)];
-        this.toggleShunts()
-      } else {
-        this.selected_shunts = this.selected_shunts.filter(item => item !== 'PLACENTA');
-        this.toggleShunts()
-      }
-    })
-    this.$bus.off("ecls_mode_change", (mode) => this.changeEclsMode(mode))
   },
   mounted() {
     // initialize and build the diagram
@@ -778,31 +629,7 @@ export default {
         this.update_component('ECLS_RE')
       } catch { }
     })
-
-    this.$bus.on("ecls_state_changed", (state) => { 
-      if (state) {
-        this.selected_shunts.push('ECLS')
-        this.selected_shunts = [...new Set(this.selected_shunts)];
-        this.toggleShunts()
-      } else {
-        this.selected_shunts = this.selected_shunts.filter(item => item !== 'ECLS');
-        this.toggleShunts()
-      }
-    })
-
-    this.$bus.on("placenta_state_changed", (state) => { 
-      if (state) {
-        this.selected_shunts.push('PLACENTA')
-        this.selected_shunts = [...new Set(this.selected_shunts)];
-        this.toggleShunts()
-      } else {
-        this.selected_shunts = this.selected_shunts.filter(item => item !== 'PLACENTA');
-        this.toggleShunts()
-      }
-    })
     
-    this.$bus.on("ecls_mode_change", (mode) => this.changeEclsMode(mode))
-
   },
 };
 

@@ -33,11 +33,6 @@
             type="number" :min="0.1" :max="100" :step="0.1" @update:model-value="updateDiagram" />
         </div>
 
-        <div v-if="!generalSettingsCollapsed" class="q-ma-sm row">
-          <q-toggle v-model="diagram.diagram_definition.settings.shuntOptionsVisible" label="shunt and ecls options" dense
-            dark size="sm" @update:model-value="updateDiagram" />
-        </div>
-
         <div v-if="!generalSettingsCollapsed" class="q-ma-sm row justify-center">
           <q-btn class="col q-ma-sm" color="negative" size="sm" @click="clearDiagram">CLEAR DIAGRAM</q-btn>
           <q-btn v-if="this.state.prev_diagram_definition" class="col q-ma-sm" color="secondary" size="sm"

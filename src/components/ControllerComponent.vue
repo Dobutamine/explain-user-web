@@ -10,7 +10,16 @@
           <div class="q-pa-sm q-mt-xs q-mb-sm q-ml-md q-mr-md text-overline justify-center row">
             <div class="q-gutter-xs row items-center">
               <div v-for="(field, index) in state.configuration.controllers" :key="index">
-                <q-btn-toggle v-model="selectedModelName" color="grey-9" size="sm" spread text-color="white" toggle-color="primary" :options="field" @update:model-value="modelChanged"/>
+                <q-btn-toggle v-model="selectedModelName" color="grey-9" size="sm" spread text-color="white" toggle-color="secondary" :options="field" @update:model-value="modelChanged"/>
+              </div>
+
+              <div class="q-gutter-xs q-mt-md row text-overline">
+                  <q-btn color="primary" dense size="sm" style="width: 50px" icon="fa-solid fa-plus"
+                  @click="cancel"><q-tooltip>add intervention class</q-tooltip></q-btn>
+                  <q-btn v-if="selectedModelName" color="grey-9" dense size="sm" style="width: 50px" icon="fa-solid fa-eraser"
+                  @click="cancel"><q-tooltip>clear current selection</q-tooltip></q-btn>
+                  <q-btn v-if="selectedModelName" color="negative" dense size="sm" style="width: 50px" icon="fa-solid fa-trash-can"
+                  @click="deleteIntervention"><q-tooltip>delete current intervention from list</q-tooltip></q-btn>
               </div>
             </div>
           </div>
@@ -214,8 +223,6 @@
                </q-card>
             </div>
           </div>
-
-
           <div v-if="selectedModelName && state_changed" class="row q-ma-md">
             <q-select label-color="white" class="col q-ma-sm" v-model="changeInTime" :options="timeOptions"
               label="apply changes in (sec)" style="font-size: 12px" hide-hint dense dark stack-label />
@@ -282,10 +289,27 @@ export default {
       changeInTime: 1,
       state_changed: false,
       collaps_icon: "fa-solid fa-chevron-up",
-      edit_mode: "basic"
+      edit_mode: "basic",
+      availableModelNames: [],
     };
   },
   methods: {
+    deleteIntervention() {
+      let found_index = -1
+      // find the correct controller list with list items with object in it
+      let counter = 0
+      this.state.configuration.controllers.forEach(controller => {
+        controller.forEach(item => {
+          if (item.value == this.selectedModelName) {
+            found_index = counter
+          }
+        })
+        counter += 1;
+      })
+      if (found_index > -1) {
+        this.state.configuration.controllers.splice(found_index, 1)
+      }
+    },
     sliderChange(param) {
       this.state_changed = true;
       param.state_changed = true;
@@ -444,13 +468,9 @@ export default {
       this.isEnabled = true
       this.collaps_icon = "fa-solid fa-chevron-down"
       this.state_changed = false
-      if (this.selectedModelName == 'X') {
-        this.cancel()
-      } else {
-        this.modelInterfaces = []
-        this.selectModel()
-        explain.getModelState()
-      }
+      this.modelInterfaces = []
+      this.selectModel()
+      explain.getModelState()
     },
     selectModel() {
       // get the model interface of the model type of the seleced model
@@ -818,13 +838,22 @@ export default {
       this.modelInterfaces.push(model_interface_reference)
       this.selectedModelName = temp
     },
+    processAvailableModels() {
+      this.availableModelNames = []
+      try {
+          if (Object.keys(explain.modelState.models)) {
+          this.availableModelNames = [...Object.keys(explain.modelState.models)].sort();
+          }
+      } catch { }
+    }
   },
   beforeUnmount() {
     this.state_changed = false
+    this.$bus.off("state", this.this.$bus.on("state", this.processAvailableModels))
   },
   mounted() {
     // update if state changes
-
+    this.$bus.on("state", this.processAvailableModels)
   },
 };
 </script>
