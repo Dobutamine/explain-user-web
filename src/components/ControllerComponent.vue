@@ -12,7 +12,7 @@
               <div v-for="(field, index) in state.configuration.controllers" :key="index">
                 <q-btn-toggle v-model="selectedModelName" color="grey-9" size="sm" spread text-color="white" toggle-color="secondary" :options="field" @update:model-value="modelChanged"/>
               </div>
-
+              </div>
               <div class="q-gutter-xs q-mt-md row text-overline">
                   <q-btn color="primary" dense size="sm" style="width: 50px" icon="fa-solid fa-plus"
                   @click="cancel"><q-tooltip>add intervention class</q-tooltip></q-btn>
@@ -21,7 +21,6 @@
                   <q-btn v-if="selectedModelName" color="negative" dense size="sm" style="width: 50px" icon="fa-solid fa-trash-can"
                   @click="deleteIntervention"><q-tooltip>delete current intervention from list</q-tooltip></q-btn>
               </div>
-            </div>
           </div>
           <q-separator></q-separator>
           <!-- <div v-if="selectedModelInterface.length > 0" class="row text-overline justify-center" @click="collapsed = !collapsed">
