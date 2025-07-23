@@ -13,14 +13,27 @@
                 <q-btn-toggle v-model="selectedModelName" color="grey-9" size="sm" spread text-color="white" toggle-color="secondary" :options="field" @update:model-value="modelChanged"/>
               </div>
               </div>
-              <div class="q-gutter-xs q-mt-md row text-overline">
-                  <q-btn color="primary" dense size="sm" style="width: 50px" icon="fa-solid fa-plus"
-                  @click="cancel"><q-tooltip>add intervention class</q-tooltip></q-btn>
+              <div v-if="!newControllerMode" class="q-gutter-xs q-mt-md row text-overline">
+                  <q-btn v-if="!selectedModelName" color="primary" dense size="sm" style="width: 50px" icon="fa-solid fa-plus"
+                  @click="newControllerMode = !newControllerMode"><q-tooltip>add intervention class</q-tooltip></q-btn>
                   <q-btn v-if="selectedModelName" color="grey-9" dense size="sm" style="width: 50px" icon="fa-solid fa-eraser"
                   @click="cancel"><q-tooltip>clear current selection</q-tooltip></q-btn>
                   <q-btn v-if="selectedModelName" color="negative" dense size="sm" style="width: 50px" icon="fa-solid fa-trash-can"
                   @click="deleteIntervention"><q-tooltip>delete current intervention from list</q-tooltip></q-btn>
               </div>
+          </div>
+          <div v-if="newControllerMode" class="q-pa-sm q-mt-xs q-ml-md q-mr-md text-overline justify-center row">
+            <q-select class="q-pa-xs col" v-model="newControllerModelName" square label="select model" hide-hint
+                  :options="availableModelNames" dense dark stack-label/>
+            <q-btn class="col-1 q-ma-xs q-mt-md" color="primary" size="xs" dense @click="addNewController"
+              icon="fa-solid fa-plus" style="font-size: 8px"><q-tooltip>add new controller
+                editor</q-tooltip></q-btn>     
+            <q-btn class="col-1 q-ma-xs q-mt-md" color="grey-9" size="xs" dense @click="cancel"
+              icon="fa-solid fa-eraser" style="font-size: 8px"><q-tooltip>cancel</q-tooltip></q-btn>
+          </div>
+          <div v-if="newControllerMode" class="q-pa-sm q-mb-xs q-ml-md q-mr-md text-overline justify-center row">
+            <q-input class="q-pa-xs col" v-model="newControllerCaption" square label="controller name (optional)" hide-hint
+                dense dark stack-label/>
           </div>
           <q-separator></q-separator>
           <!-- <div v-if="selectedModelInterface.length > 0" class="row text-overline justify-center" @click="collapsed = !collapsed">
@@ -259,6 +272,9 @@ export default {
   },
   data() {
     return {
+      newControllerMode: false,
+      newControllerCaption: "",
+      newControllerModelName: "",
       collapsed: false,
       isEnabled: true,
       addEnabled: false,
@@ -293,21 +309,44 @@ export default {
     };
   },
   methods: {
-    deleteIntervention() {
-      let found_index = -1
-      // find the correct controller list with list items with object in it
-      let counter = 0
-      this.state.configuration.controllers.forEach(controller => {
-        controller.forEach(item => {
-          if (item.value == this.selectedModelName) {
-            found_index = counter
-          }
-        })
-        counter += 1;
-      })
-      if (found_index > -1) {
-        this.state.configuration.controllers.splice(found_index, 1)
+    addNewController() {
+      if (this.newControllerCaption == "") {
+        this.newControllerCaption = this.newControllerModelName
       }
+      let controller_object = [
+        { label: this.newControllerCaption, value: this.newControllerModelName}
+      ]
+      this.state.configuration.controllers.push(controller_object)
+      this.cancel();
+    },
+    deleteIntervention() {
+      this.$q.dialog({
+            title: 'Warning!',
+            message: 'Are you sure you want to delete this controller?',
+            cancel: true,
+            persistent: true
+        })
+        .onOk(() => {
+          let found_index = -1
+          // find the correct controller list with list items with object in it
+          let counter = 0
+          this.state.configuration.controllers.forEach(controller => {
+            controller.forEach(item => {
+              if (item.value == this.selectedModelName) {
+                found_index = counter
+              }
+            })
+            counter += 1;
+          })
+          if (found_index > -1) {
+            this.state.configuration.controllers.splice(found_index, 1)
+          }
+          this.cancel();
+        })
+        .onCancel(() => {})
+        .onDismiss(() => {})
+
+      
     },
     sliderChange(param) {
       this.state_changed = true;
@@ -456,6 +495,9 @@ export default {
 
     },
     cancel() {
+      this.newControllerMode = false;
+      this.newControllerCaption = "";
+      this.newControllerModelName = "";
       this.selectedModelName = ""
       this.selectedModelInterface = {}
       this.state_changed = false

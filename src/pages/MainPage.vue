@@ -5,7 +5,7 @@
         <div class="col-3">
           <q-tabs v-model="tab_left" dense class="text-white" active-color="primary" indicator-color="primary"
             narrow-indicator outside-arrows @update:model-value="tabLeftChanged">
-            <q-tab name="interventions"><q-icon name="fa-solid fa-sliders" size="xs"></q-icon><q-tooltip>interventions</q-tooltip>
+            <q-tab name="controllers"><q-icon name="fa-solid fa-sliders" size="xs"></q-icon><q-tooltip>controllers</q-tooltip>
             </q-tab>
             <q-tab name="model_editor"><q-icon name="fa-solid fa-wrench" size="xs"></q-icon><q-tooltip>model editor</q-tooltip>
             </q-tab>
@@ -70,7 +70,7 @@
 
               </q-scroll-area>
             </q-tab-panel>
-            <q-tab-panel name="interventions">
+            <q-tab-panel name="controllers">
               <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
                 right: '5px',
                 borderRadius: '5px',
@@ -78,7 +78,7 @@
                 width: '5px',
                 opacity: 0.5
               }">
-              <ControllerComponent title="INTERVENTIONS"></ControllerComponent>
+              <ControllerComponent title="CONTROLLERS"></ControllerComponent>
               </q-scroll-area>
             </q-tab-panel>
           </q-tab-panels>
@@ -345,7 +345,7 @@ export default defineComponent({
   },
   data() {
     return {
-      tab_left: "interventions",
+      tab_left: "controllers",
       tab_center: "diagram",
       tab_right: "numerics",
       chart_alive: true,
