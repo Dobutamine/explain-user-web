@@ -4,7 +4,7 @@ import createModule from "../wasm/bc_ems";
 // -----------------------------------------------------------------------------
 // Constants
 // -----------------------------------------------------------------------------
-const use_wasm        = false; // use wasm module for calculations
+const use_wasm        = true; // use wasm module for calculations
 const kw              = 2.5119e-11; // water dissociation constant
 const kc              = 7.94328235e-4; // carbonic acid dissociation constant
 const kd              = 6.0255959e-8; // bicarbonate dissociation constant
@@ -222,6 +222,7 @@ function _calc_blood_composition_js(bc) {
       }
     }
 }
+
 function _net_charge_plasma(hp_estimate) {
     ph = -Math.log10(hp_estimate / 1000.0);
     let cco2p = tco2 / (1.0 + kc/hp_estimate + (kc*kd)/(hp_estimate * hp_estimate));
@@ -264,7 +265,8 @@ function _do2_content(po2_estimate) {
   return dto2;
 }
 
-// this function is not functioning well in extreme po2's
+/*
+// this function is not functioning well in extreme po2's (don;t )
 function _do2_content_error(po2_estimate) {
     // calculate the O2 saturation
     so2 = _calc_so2_sev(po2_estimate);
@@ -285,6 +287,7 @@ function _calc_so2_sev(po2_estimate) {
   // return the o2 saturation in fraction so 0.98
   return 1.0 / (Math.exp(-y) + 1.0);
 }
+*/
 
 function _brent_root_finding(f, x0, x1, max_iter, tolerance) {
   let fx0 = f(x0);
