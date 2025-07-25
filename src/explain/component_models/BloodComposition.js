@@ -85,7 +85,7 @@ let wasm_parameters = {
 
 let wasm = null;
 if (use_wasm) {
-    wasm= await createModule({locateFile: p => new URL('../wasm/bc_ems.wasm', import.meta.url).pathname})
+    wasm = await createModule({locateFile: p => new URL('../wasm/bc_ems.wasm', import.meta.url).pathname})
 }
 
 
