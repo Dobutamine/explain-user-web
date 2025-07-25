@@ -209,7 +209,7 @@ export class Breathing extends BaseModelClass {
       this.resp_muscle_pressure = 0.0;
     }
 
-    // measure the resp rate (ventricular contraction)
+    // measure the resp rate (start inspiration as starting point)
     if (this.ncc_insp == 1) {
       this.resp_rate_measured = 60 / this._rr_counter;
       this._rr_counter = 0.0;
