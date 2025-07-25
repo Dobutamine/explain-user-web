@@ -160,6 +160,7 @@ function _calc_blood_composition_js(bc) {
         bc.hco3 = hco3;
         bc.be = be;
     } else {
+        //console.log('small limit ab root finding failed in:', bc.name)
         // If the root finding failed, we will use the wide limits
         left_hp = left_hp_wide; // wide lower bound for H⁺ concentration
         if (left_hp < 0) left_hp = 0; // ensure lower bound is not negative
@@ -172,7 +173,7 @@ function _calc_blood_composition_js(bc) {
             bc.hco3 = hco3;
             bc.be = be;
         } else {
-          console.log('ab root finding failed in:', bc.name)
+          console.log('definitive ab root finding failed in:', bc.name)
         }
     }
 
