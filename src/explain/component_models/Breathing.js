@@ -93,6 +93,7 @@ export class Breathing extends BaseModelClass {
     // initialize dependent properties
     this.target_minute_volume = 0.0; // target minute volume
     this.resp_rate = 36.0; // respiratory rate (breaths/min)
+    this.resp_rate_measured = 36.0; // measured respiratory rate (breaths/min)
     this.target_tidal_volume = 0.0; // target tidal volume (L)
     this.minute_volume = 0.0; // minute volume (L/min)
     this.exp_tidal_volume = 0.0; // expiratory tidal volume (L)
@@ -114,6 +115,8 @@ export class Breathing extends BaseModelClass {
     this._exp_running = false; // flag for expiration
     this._exp_timer = 0.0; // expiration timer (s)
     this._temp_exp_volume = 0.0; // expiratory volume counter (L)
+    this._rr_counter = 0.0; // counter for measured resp rate
+    this._rr_factor = 0.0; // factor for resp rate counting
 
     // debug factor
     this.debug_factor1 = 0.0
@@ -205,6 +208,20 @@ export class Breathing extends BaseModelClass {
       this.target_tidal_volume = 0.0;
       this.resp_muscle_pressure = 0.0;
     }
+
+    // measure the resp rate (ventricular contraction)
+    if (this.ncc_insp == 1) {
+      this.resp_rate_measured = 60 / this._rr_counter;
+      this._rr_counter = 0.0;
+      this._rr_factor = 1.0
+    }
+    // update the resp frequency even when there's no respiration
+    if (this._rr_counter > 2 * this._rr_factor) {
+      this.resp_rate_measured = 60 / this._rr_counter;
+      this._rr_factor += 1;
+    }
+    this._rr_counter += this._t
+
 
     //this._model_engine.models["THORAX"].pres_ext += -this.resp_muscle_pressure
     this._model_engine.models["THORAX"].el_base_factor += this.resp_muscle_pressure
