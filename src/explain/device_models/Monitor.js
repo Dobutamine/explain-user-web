@@ -254,7 +254,7 @@ export class Monitor extends BaseModelClass {
     // determine the begin of the cardiac cycle
     if (this._heart.ncc_ventricular === 1) {
       // heart rate determination
-      this._hr_list.push(this._heart.heart_rate);
+      this._hr_list.push(this._heart.heart_rate_measured);
       // get the rolling average of the heartrate
       this.heart_rate = this._hr_list.reduce((acc, val) => acc + val, 0) / this._hr_list.length;
       if (this._hr_list.length > this.hr_avg_beats) {

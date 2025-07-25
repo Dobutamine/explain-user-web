@@ -219,6 +219,7 @@ export class Heart extends BaseModelClass {
     // dependent properties
     // -----------------------------------------------
     this.heart_rate = 120.0; // calculated heart rate (beats/minute)
+    this.heart_rate_measured = 120; // measured heart rate
     this.cardiac_cycle_state = 0;
 
     this.ecg_signal = 0.0; // ecg signal (mV)
@@ -296,6 +297,8 @@ export class Heart extends BaseModelClass {
     this._prev_relax_factor_right = 1.0;
 
     this._prev_pc_el_factor = 1.0;
+    this._hr_counter = 0;
+    this._hr_factor = 1;
     
     this._update_counter_factors = 0.0;
     this._update_interval_factors = 0.015;
@@ -514,6 +517,22 @@ export class Heart extends BaseModelClass {
     if (this._qt_running) {
       this._qt_timer += this._t;
     }
+
+    // measure the heart rate (ventricular contraction)
+    if (this.ncc_ventricular == -1) {
+      this.heart_rate_measured = 60 / this._hr_counter;
+      this._hr_counter = 0.0;
+      this._hr_factor = 1.0
+    }
+
+    // update the heart frequency even when there's no contraction
+    if (this._hr_counter > 1 * this._hr_factor) {
+      this.heart_rate_measured = 60 / this._hr_counter;
+      this._hr_factor += 1;
+    }
+
+    // increase the heartrate counter
+    this._hr_counter += this._t
 
     // increase heart activation function counters
     this.ncc_atrial += 1;
