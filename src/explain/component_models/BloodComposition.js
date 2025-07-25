@@ -220,41 +220,6 @@ function _calc_blood_composition_js(bc) {
         }
       }
     }
-
-    // let limits_used_oxy = false;
-    // // set the wide limits as the previous limits were not successful
-    // left_o2 = left_o2_wide; // lower bound po2
-    // right_o2 = right_o2_wide; // upper bound po2
-    // // set the limits based on the previous calculations if available
-    // if (prev_po2 > 0) {
-    //     left_o2 = prev_po2 - delta_o2_limits;
-    //     if (left_o2 < 0) left_o2 = 0; // ensure lower bound is not negative
-    //     right_o2 = prev_po2 + delta_o2_limits;
-    //     limits_used_oxy = true;
-    // }
-
-    // if (po2 > -1) {
-    //     bc.po2 = po2;
-    //     bc.so2 = so2 * 100.0;
-    //     bc.prev_po2 = po2;
-    // } else { 
-    //     if (limits_used_oxy) {
-    //         // If the root finding failed, we will use the wide limits
-    //         left_o2 = left_o2_wide; // lower bound po2
-    //         right_o2 = right_o2_wide; // upper bound po2
-    //         po2 = _brent_root_finding(_do2_content, left_o2, right_o2, max_iterations, brent_accuracy);
-    //         if (po2 > -1) {
-    //             bc.po2 = po2;
-    //             bc.so2 = so2 * 100.0;
-    //             bc.prev_po2 = po2;
-    //         } else {
-    //           // no solution found
-    //           console.log('no solution for oxy in:', bc.name)
-    //           // set the previous value to prevent crashing
-    //           bc.po2 = prev_po2;
-    //         }
-    //     }
-    // }
 }
 function _net_charge_plasma(hp_estimate) {
     ph = -Math.log10(hp_estimate / 1000.0);
@@ -299,15 +264,15 @@ function _do2_content(po2_estimate) {
 }
 
 // this function is not functioning well in extreme po2's
-function _do2_content_exp(po2_estimate) {
+function _do2_content_error(po2_estimate) {
     // calculate the O2 saturation
-    so2 = _calc_so2_exp(po2_estimate);
+    so2 = _calc_so2_sev(po2_estimate);
     // calculate the difference between the TO2 and the calculated TO2
     return hemoglobin * so2 + alpha_o2 * po2_estimate - to2;
 }
 
-// high overhead to calculate the so2
-function _calc_so2_exp(po2_estimate) {
+// high overhead to calculate the so2 using the severing house method
+function _calc_so2_sev(po2_estimate) {
   // calculate the saturation from the po2 depending on the ph,be, temperature and dpg level.
   let a = 1.04 * (7.4 - ph) + 0.005 * be + 0.07 * (dpg - 5.0);
   let b = 0.055 * (temp + 273.15 - 310.15);
