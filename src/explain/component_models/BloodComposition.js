@@ -4,7 +4,7 @@ import createModule from "../wasm/bc_ems";
 // -----------------------------------------------------------------------------
 // Constants
 // -----------------------------------------------------------------------------
-const use_wasm        = true; // use wasm module for calculations
+const use_wasm        = false; // use wasm module for calculations
 const kw              = 2.5119e-11; // water dissociation constant
 const kc              = 7.94328235e-4; // carbonic acid dissociation constant
 const kd              = 6.0255959e-8; // bicarbonate dissociation constant
@@ -19,6 +19,7 @@ const right_o2_wide   = 800.0; // upper bound for pO2
 const delta_o2_limits = 10.0; // delta for pO2 limits
 const brent_accuracy  = 1e-8;
 const max_iterations  = 100;
+const gas_constant    = 62.36367;
 
 // -----------------------------------------------------------------------------
 // Independent variables
@@ -59,7 +60,7 @@ let dT = 0;          // ↑T → right shift → ↑P₅₀
 let dDPG = 0;          // ↑DPG → right shift → ↑P₅₀
 
 // -----------------------------------------------------------------------------
-// Wasm parmaters
+// Wasm parameters
 // -----------------------------------------------------------------------------
 
 let wasm_parameters = {
@@ -141,7 +142,6 @@ function _calc_blood_composition_js(bc) {
     prev_ph = bc.prev_ph || 7.37; // previous pH value, used to set the limits for H⁺ concentration
     prev_po2 = bc.prev_po2 || 18.7; // previous pO2 value, used to set the limits for pO2
 
-    let limits_used_ab = false;
     // set the wide limits based
     left_hp = left_hp_wide; // lower bound for H⁺ concentration
     right_hp = right_hp_wide; // upper bound for H⁺ concentration
@@ -150,7 +150,6 @@ function _calc_blood_composition_js(bc) {
     if (prev_ph > 0) {
         left_hp = Math.pow(10.0, -(prev_ph + delta_ph_limits)) * 1000.0;
         right_hp = Math.pow(10.0, -(prev_ph - delta_ph_limits)) * 1000.0;
-        limits_used_ab = true;
     }
 
     let hp = _brent_root_finding(_net_charge_plasma, left_hp, right_hp, max_iterations, brent_accuracy);
@@ -172,9 +171,10 @@ function _calc_blood_composition_js(bc) {
             bc.pco2 = pco2;
             bc.hco3 = hco3;
             bc.be = be;
+        } else {
+          console.log('ab root finding failed in:', bc.name)
         }
     }
-
 
     dpH = ph - 7.40;             //Bohr effect: ↓pH → right shift → ↑P₅₀)
     dpCO2 = pco2 - 40.0;         // Haldane effect: ↑pCO2 → right shift → ↑P₅₀
@@ -185,34 +185,76 @@ function _calc_blood_composition_js(bc) {
     P50 = Math.pow(10.0, log10_p50);
     P50_n = Math.pow(P50, n);
 
-    let limits_used_oxy = false;
-    // set the wide limits as the previous limits were not successful
+    // set dynamic limits off
+    let dyn_limits_used_oxy = false;
+    // set the wide o2 intervals
     left_o2 = left_o2_wide; // lower bound po2
     right_o2 = right_o2_wide; // upper bound po2
-        // set the limits based on the previous calculations if available
+    // if we have a previous po2 we can use this for dynamic limiting
     if (prev_po2 > 0) {
         left_o2 = prev_po2 - delta_o2_limits;
         if (left_o2 < 0) left_o2 = 0; // ensure lower bound is not negative
         right_o2 = prev_po2 + delta_o2_limits;
-        limits_used_oxy = true;
+        dyn_limits_used_oxy = true;
     }
 
+    // calculate the po2 and so2 using the brent root finding procedure
     let po2 = _brent_root_finding(_do2_content, left_o2, right_o2, max_iterations, brent_accuracy);
     if (po2 > -1) {
         bc.po2 = po2;
         bc.so2 = so2 * 100.0;
-    } else { 
-        if (limits_used_oxy) {
-            // If the root finding failed, we will use the wide limits
-            left_o2 = left_o2_wide; // lower bound po2
-            right_o2 = right_o2_wide; // upper bound po2
-            po2 = _brent_root_finding(_do2_content, left_o2, right_o2, max_iterations, brent_accuracy);
-            if (po2 > -1) {
-                bc.po2 = po2;
-                bc.so2 = so2 * 100.0;
-            }
+        bc.prev_po2 = po2;
+    } else {
+      // console.log('small limit oxy root finding failed in:', bc.name)
+      if (dyn_limits_used_oxy) {
+        // now try again with the wide limits
+        left_o2 = left_o2_wide; // lower bound po2
+        right_o2 = right_o2_wide; // upper bound po2
+        po2 = _brent_root_finding(_do2_content, left_o2, right_o2, max_iterations, brent_accuracy);
+        if (po2 > -1) {
+          bc.po2 = po2;
+          bc.so2 = so2 * 100.0;
+          bc.prev_po2 = po2;
+        } else {
+          console.log('definitive oxy root finding failed in:', bc.name)
         }
+      }
     }
+
+    // let limits_used_oxy = false;
+    // // set the wide limits as the previous limits were not successful
+    // left_o2 = left_o2_wide; // lower bound po2
+    // right_o2 = right_o2_wide; // upper bound po2
+    // // set the limits based on the previous calculations if available
+    // if (prev_po2 > 0) {
+    //     left_o2 = prev_po2 - delta_o2_limits;
+    //     if (left_o2 < 0) left_o2 = 0; // ensure lower bound is not negative
+    //     right_o2 = prev_po2 + delta_o2_limits;
+    //     limits_used_oxy = true;
+    // }
+
+    // if (po2 > -1) {
+    //     bc.po2 = po2;
+    //     bc.so2 = so2 * 100.0;
+    //     bc.prev_po2 = po2;
+    // } else { 
+    //     if (limits_used_oxy) {
+    //         // If the root finding failed, we will use the wide limits
+    //         left_o2 = left_o2_wide; // lower bound po2
+    //         right_o2 = right_o2_wide; // upper bound po2
+    //         po2 = _brent_root_finding(_do2_content, left_o2, right_o2, max_iterations, brent_accuracy);
+    //         if (po2 > -1) {
+    //             bc.po2 = po2;
+    //             bc.so2 = so2 * 100.0;
+    //             bc.prev_po2 = po2;
+    //         } else {
+    //           // no solution found
+    //           console.log('no solution for oxy in:', bc.name)
+    //           // set the previous value to prevent crashing
+    //           bc.po2 = prev_po2;
+    //         }
+    //     }
+    // }
 }
 function _net_charge_plasma(hp_estimate) {
     ph = -Math.log10(hp_estimate / 1000.0);
@@ -227,17 +269,57 @@ function _net_charge_plasma(hp_estimate) {
 
     return hp_estimate + sid - hco3 - 2.0*co3p - ohp - a_base - uma;
 }
-function _do2_content(po2_estimate) {
-    // calculate the O2 saturation
-    so2 = _calc_so2(po2_estimate);
-    // calculate the difference between the TO2 and the calculated TO2
-    return hemoglobin * so2 + alpha_o2 * po2_estimate - to2;
-}
+
 function _calc_so2(po2_estimate) {
     let po2_n = Math.pow(po2_estimate, n);
     let denom = po2_n + P50_n;
     return po2_n / denom;
 }
+
+function _do2_content(po2_estimate) {
+  // calculate the saturation from the current po2 from the current po2 estimate
+  so2 = _calc_so2(po2_estimate);
+
+  // calculate the to2 from the current po2 estimate
+  // INPUTS: po2 in mmHg, so2 in fraction, hemoglobin in mmol/l
+  // convert the hemoglobin unit from mmol/l to g/dL  (/ 0.6206)
+  // convert to output from ml O2/dL blood to ml O2/l blood (* 10.0)
+  let to2_new_estimate = (0.0031 * po2_estimate + 1.36 * (hemoglobin / 0.6206) * so2) * 10.0;
+
+  // conversion factor for converting ml O2/l to mmol/l
+  let mmol_to_ml = (gas_constant * (273.15 + temp)) / 760.0;
+
+  // convert the ml O2/l to mmol/l
+  to2_new_estimate = to2_new_estimate / mmol_to_ml;
+
+  // calculate the difference between the real to2 and the to2 based on the new po2 estimate and return it to the brent root finding function
+  let dto2 = to2 - to2_new_estimate;
+
+  return dto2;
+}
+
+// this function is not functioning well in extreme po2's
+function _do2_content_exp(po2_estimate) {
+    // calculate the O2 saturation
+    so2 = _calc_so2_exp(po2_estimate);
+    // calculate the difference between the TO2 and the calculated TO2
+    return hemoglobin * so2 + alpha_o2 * po2_estimate - to2;
+}
+
+// high overhead to calculate the so2
+function _calc_so2_exp(po2_estimate) {
+  // calculate the saturation from the po2 depending on the ph,be, temperature and dpg level.
+  let a = 1.04 * (7.4 - ph) + 0.005 * be + 0.07 * (dpg - 5.0);
+  let b = 0.055 * (temp + 273.15 - 310.15);
+  let x0 = 1.875 + a + b;
+  let h0 = 3.5 + a;
+  let x = Math.log(po2_estimate * 0.1333); // po2 in kPa
+  let y = x - x0 + h0 * Math.tanh(0.5343 * (x - x0)) + 1.875;
+
+  // return the o2 saturation in fraction so 0.98
+  return 1.0 / (Math.exp(-y) + 1.0);
+}
+
 function _brent_root_finding(f, x0, x1, max_iter, tolerance) {
   let fx0 = f(x0);
   let fx1 = f(x1);

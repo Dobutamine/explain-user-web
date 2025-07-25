@@ -95,15 +95,12 @@ export const useStateStore = defineStore("state", {
         this.name = "default_state";
         this.protected = true;
         this.shared = data.shared;
-        this.animation_definition = data.animation_definition;
         this.diagram_definition = data.diagram_definition;
         this.animation_definition = data.animation_definition;
         this.model_definition = data.model_definition;
         this.configuration = data.configuration;
         this.events= data.events;
         this.tasks = data.tasks;
-        this.presets_time = data.presets_time;
-        this.presets_xy = data.presets_xy;
         return true;
       } else {
         return false;
@@ -131,7 +128,6 @@ export const useStateStore = defineStore("state", {
         this.description = data.description;
         this.protected = data.protected;
         this.shared = data.shared;
-        this.animation_definition = data.animation_definition;
         this.diagram_definition = data.diagram_definition;
         this.animation_definition = data.animation_definition;
         this.model_definition = data.model_definition;
@@ -163,7 +159,6 @@ export const useStateStore = defineStore("state", {
         this.description = data.description;
         this.protected = true;
         this.shared = data.shared;
-        this.animation_definition = data.animation_definition;
         this.diagram_definition = data.diagram_definition;
         this.animation_definition = data.animation_definition;
         this.model_definition = data.model_definition;
@@ -190,7 +185,6 @@ export const useStateStore = defineStore("state", {
             description: this.description,
             protected: this.protected,
             shared: this.shared,
-            animation_definition: this.animation_definition,
             diagram_definition: this.diagram_definition,
             animation_definition: this.animation_definition,
             model_definition: this.model_definition,

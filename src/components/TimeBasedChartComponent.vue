@@ -295,20 +295,7 @@ export default {
       presetEditMode: false,
       selectedPresetName: "",
       presetNames: [],
-      newPresetName: "",
-      presets: {
-        "PDA Doppler": {
-          props: ["Pda.velocity_pa"],
-          autoscale: false,
-          y_min: -2,
-          y_max: 5,
-          factors: false,
-          fill: true,
-          chart1_factor: 1.0,
-          chart2_factor: 1.0,
-          chart3_factor: 1.0
-        }
-      }
+      newPresetName: ""
     };
   },
   methods: {
@@ -340,8 +327,8 @@ export default {
           chart2_factor: this.chart2_factor,
           chart3_factor: this.chart3_factor,
         }
+        this.state.configuration.presets[this.newPresetName] = {...preset}
         this.presetNames.push(this.newPresetName)
-        this.presets[this.newPresetName] = { ...preset }
         this.newPresetName = ""
       }
 
@@ -360,7 +347,7 @@ export default {
     },
     selectPreset(preset_name) {
       if (preset_name) {
-        this.processDefault(this.presets[preset_name])
+        this.processDefault(this.state.configuration.presets[preset_name])
       }
     },
     processDefault(settings) {
@@ -915,7 +902,7 @@ export default {
     this.$bus.on("data", () => this.dataUpdate())
 
     // fill the presets selector
-    this.presetNames = Object.keys(this.presets)
+    this.presetNames = Object.keys(this.state.configuration.presets)
 
     // check whether hires is enabled
     this.toggleHires()
