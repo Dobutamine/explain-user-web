@@ -65,7 +65,10 @@ export class Monitor extends BaseModelClass {
 
     // Dependent properties
     this.heart_rate = 0.0; // heartrate (bpm)
+    this.heart_rate_btb = 0.0; // measured heartrate (bpm)
     this.resp_rate = 0.0; // respiratory rate in (/min)
+    this.resp_rate_btb = 0.0; // measured respiratory rate (/min)
+    this.test = 0.0;
     this.abp_syst = 0.0; // arterial blood pressure systole (mmHg)
     this.abp_diast = 0.0; // arterial blood pressure diastole (mmHg)
     this.abp_mean = 0.0; // arterial blood pressure mean (mmHg)
@@ -197,6 +200,8 @@ export class Monitor extends BaseModelClass {
     this._sat_sampling_counter = 0.0;
     this._beats_counter = 0;
     this._beats_time = 0.0;
+    this._qrs_interval_counter = 0.0;
+    this._qrs_interval_counter_factor = 1.0;
   }
 
   init_model(args = {}) {
@@ -230,9 +235,27 @@ export class Monitor extends BaseModelClass {
     this._ips = this._model_engine.models[this.ips] ?? null;
     this._ad_umb_art = this._model_engine.models[this.ua] ?? null;
     this._umb_ven_ivci = this._model_engine.models[this.uv] ?? null;
+    this._rr_update_counter = 0.0;
 
     // flag that the model is initialized
     this._is_initialized = true;
+  }
+
+  calc_avg_heartrate(hr) {
+    // average heart rate determination
+    this._hr_list.push(hr);
+
+    // dynamic avg heartrate (Philips Intellivue doc state)
+    if (hr < 80) {
+      this.hr_avg_beats = 4.0
+    } else {
+      this.hr_avg_beats = 12.0
+    }
+    // get the rolling average of the heartrate
+    this.heart_rate = this._hr_list.reduce((acc, val) => acc + val, 0) / this._hr_list.length;
+    if (this._hr_list.length > this.hr_avg_beats) {
+      this._hr_list.shift();
+      }
   }
 
   calc_model() {
@@ -251,15 +274,33 @@ export class Monitor extends BaseModelClass {
     // collect end tidal pco2
     this.etco2 = this._ventilator.etco2;
 
+    // measure the R-R interval of the heartrate
+    if (this._heart.ncc_ventricular == 1) {
+      this.heart_rate_btb = 60.0 / this._qrs_interval_counter;
+      this._qrs_interval_counter = 0.0;
+      this._qrs_interval_counter_factor = 1.0;
+      this.calc_avg_heartrate(this.heart_rate_btb)
+    }
+
+    // update the heart frequency even when there's no contraction
+    if (this._qrs_interval_counter > 1 * this._qrs_interval_counter_factor) {
+      this.heart_rate_btb = 60 / this._qrs_interval_counter;
+      this._qrs_interval_counter_factor += 1;
+      this.calc_avg_heartrate(this.heart_rate_btb)
+    }
+
+    // measure the interval between breaths
+    if (this._rr_update_counter > 0.015) {
+      this._rr_update_counter = 0.0;
+      // get the spontaneous respiratory rate from the breathing model
+      this.resp_rate = this._breathing.resp_rate_measured
+    }
+    this._rr_update_counter += this._t
+    
+
+
     // determine the begin of the cardiac cycle
     if (this._heart.ncc_ventricular === 1) {
-      // heart rate determination
-      this._hr_list.push(this._heart.heart_rate_measured);
-      // get the rolling average of the heartrate
-      this.heart_rate = this._hr_list.reduce((acc, val) => acc + val, 0) / this._hr_list.length;
-      if (this._hr_list.length > this.hr_avg_beats) {
-        this._hr_list.shift();
-      }
       // add 1 beat
       this._beats_counter += 1;
 
@@ -402,14 +443,16 @@ export class Monitor extends BaseModelClass {
       this._beats_counter = 0;
       this._beats_time = 0.0;
     }
+
+    // increase the timers
+    this._qrs_interval_counter += this._t;
     this._beats_time += this._t;
 
-
-    this.resp_rate = this._breathing.resp_rate_measured
-    
-    // saturation
+    // get the pre- and postdutcal arterial o2-saturation levels from the ascending and descending aorta 
     this.spo2 = this._ad.so2
     this.spo2_pre = this._aa.so2
+
+    // get the venous o2 saturation from the right atrium
     this.spo2_ven = this._ra.so2
 
 
@@ -467,3 +510,4 @@ export class Monitor extends BaseModelClass {
     this._uv_flow_counter += this._umb_ven_ivci ? this._umb_ven_ivci.flow * this._t : 0.0;
   }
 }
+

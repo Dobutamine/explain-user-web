@@ -504,6 +504,10 @@ export class Heart extends BaseModelClass {
 
     if (this._pq_running) {
       this._pq_timer += this._t;
+      // build ecg signal
+      // Wave parameters: [amplitude, position (s), width (s)]
+      // this.pWave = [0.25, 0.1, 0.025]
+      this.ecg_signal += this.gaussian(this._pq_timer, 0.05, this.pq_time / 2.0, this.pq_time)
     }
 
     if (this._av_delay_running) {
@@ -516,6 +520,10 @@ export class Heart extends BaseModelClass {
 
     if (this._qt_running) {
       this._qt_timer += this._t;
+    }
+
+    if (!this._pq_running && !this._av_delay_running && !this._qrs_running && !this._qt_running) {
+      this.ecg_signal = 0.0;
     }
 
     // measure the heart rate (ventricular contraction)
@@ -663,4 +671,9 @@ export class Heart extends BaseModelClass {
     this.relax_factor_left = new_relax_factor_left;
     this.relax_factor_right = new_relax_factor_right;
   }
+
+  gaussian(t, amp, center, width) {
+    return amp * Math.exp(-Math.pow(t - center, 2) / (2 * width * width));
+  }
+
 }
