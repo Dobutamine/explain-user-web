@@ -648,6 +648,11 @@ export default defineComponent({
     },
   },
   beforeUnmount() {
+    this.$bus.off('open_diagram_dialog', () => this.getAllUserDiagrams())
+    this.$bus.off('open_diagram_dialog', () => this.saveDiagram())
+    this.$bus.off('load_animation_dialog', () => this.getAllUserAnimations())
+    this.$bus.off('save_animation_dialog', () => this.saveAnimation())
+    this.$bus.off('upload_state', () => this.upload_no_dialog())
     document.removeEventListener("status", this.statusUpdate);
     document.removeEventListener("model_ready", () => this.$bus.emit("model_ready"));
     document.removeEventListener("error", () => this.$bus.emit("model_failed"));
@@ -665,12 +670,6 @@ export default defineComponent({
     document.removeEventListener("modeltype_interface", (e) => this.$bus.emit("modeltype_interface", e.detail));
     document.removeEventListener("state_saved", this.stateSaved);
     document.removeEventListener("sprite_tapped", (e) => this.$bus.emit("sprite_tapped", e.detail));
-    this.$bus.off('open_diagram_dialog', () => this.getAllUserDiagrams())
-    this.$bus.off('open_diagram_dialog', () => this.saveDiagram())
-    this.$bus.off('load_animation_dialog', () => this.getAllUserAnimations())
-    this.$bus.off('save_animation_dialog', () => this.saveAnimation())
-    this.$bus.off('upload_state', () => this.upload_no_dialog())
-    
   },
   mounted() {
     try {

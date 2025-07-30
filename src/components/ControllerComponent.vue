@@ -27,7 +27,7 @@
                   :options="availableModelNames" dense dark stack-label/>
             <q-btn class="col-1 q-ma-xs q-mt-md" color="primary" size="xs" dense @click="addNewController"
               icon="fa-solid fa-plus" style="font-size: 8px"><q-tooltip>add new controller
-                editor</q-tooltip></q-btn>     
+                editor</q-tooltip></q-btn>
             <q-btn class="col-1 q-ma-xs q-mt-md" color="grey-9" size="xs" dense @click="cancel"
               icon="fa-solid fa-eraser" style="font-size: 8px"><q-tooltip>cancel</q-tooltip></q-btn>
           </div>
@@ -66,7 +66,7 @@
                             <div class="col q-ml-sm">
                                 <q-btn  dense size="xs" @click="toggleSlider(field)">slider</q-btn>
                             </div>
-                            
+
                           </div>
 
                           <div v-if="field.slider">
@@ -87,7 +87,7 @@
                             </div>
                             </div>
                           </div>
-                        
+
                         </div>
                       </div>
                     </div>
@@ -115,7 +115,7 @@
                             <q-slider class="q-ma-xs col-8" v-model="field.slider_value" :step="field.delta"
                               :min="field.ll" :max="field.ul" snap :markers="1" dense thumb-color="teal"
                               color="transparent" @change="changeSliderValue(field)" />
-                            
+
                               <q-btn @click="increaseSliderValue(field)" class="q-ma-xs col" dense size="xs" color="grey-10"
                               icon="fa-solid fa-chevron-right"></q-btn>
                           </div>
@@ -150,7 +150,7 @@
                     <div v-if="field.type == 'list'">
                       <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
                         <div class="text-white" :style="{ 'font-size': '10px' }">
-                          <q-select v-model="field.value" :label="field.caption" :options="field.choices" :readonly="field.readonly" color="blue" 
+                          <q-select v-model="field.value" :label="field.caption" :options="field.choices" :readonly="field.readonly" color="blue"
                             hide-hint filled dense @update:model-value="changePropState(field, arg)" stack-label
                             style="font-size: 12px" class="q-mb-sm" squared>
                           </q-select>
@@ -172,11 +172,11 @@
                     <div v-if="field.type == 'prop-list'">
                       <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
                         <div class="text-white" :style="{ 'font-size': '10px' }">
-                          <q-select v-model="field.value_model" :label="field.caption_model" :options="field.choices_model" :readonly="field.readonly" color="blue" 
+                          <q-select v-model="field.value_model" :label="field.caption_model" :options="field.choices_model" :readonly="field.readonly" color="blue"
                             hide-hint filled dense @update:model-value="changePropState(field, 'model_changed')" stack-label
                             style="font-size: 12px" class="q-mb-sm" squared>
                           </q-select>
-                          <q-select v-model="field.value_prop" :label="field.caption_prop" :options="field.choices_props" :readonly="field.readonly" color="blue" 
+                          <q-select v-model="field.value_prop" :label="field.caption_prop" :options="field.choices_props" :readonly="field.readonly" color="blue"
                             hide-hint filled dense @update:model-value="changePropState(field, arg)" stack-label
                             style="font-size: 12px" class="q-mb-sm" squared>
                           </q-select>
@@ -346,7 +346,7 @@ export default {
         .onCancel(() => {})
         .onDismiss(() => {})
 
-      
+
     },
     sliderChange(param) {
       this.state_changed = true;
@@ -643,7 +643,7 @@ export default {
           }
         })
       }
-     
+
     },
     processMultipleListType(param) {
       let f_mlist = param.target.split('.')
@@ -702,7 +702,7 @@ export default {
       Object.values(explain.modelState.models).forEach(model => {
         if (param.options.includes(model.model_type) || param.options.length == 0) {
           param["choices_model"].push(model.name)
-  
+
         }
       })
       Object.keys(explain.modelState.models[param.value_model]).forEach(prop => {
@@ -890,7 +890,7 @@ export default {
   },
   beforeUnmount() {
     this.state_changed = false
-    this.$bus.off("state", this.this.$bus.on("state", this.processAvailableModels))
+    this.$bus.off("state", this.$bus.on("state", this.processAvailableModels))
   },
   mounted() {
     // update if state changes

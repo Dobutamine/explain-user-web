@@ -98,9 +98,9 @@ export default {
     async initDiagram() {
       // first clear all children from the stage
       if (pixiApp) {
-        this.destroyPixiApp(pixiApp)
+        pixiApp.destroy();
       }
-      
+
       // get the reference to the canvas
       canvas = document.getElementById("stage");
 
@@ -273,7 +273,7 @@ export default {
                 yOffset,
                 radius,
                 component.picto,
-                global_scaling, 
+                global_scaling,
                 max_to2
               );
               let watched_models_comp = []
@@ -309,7 +309,7 @@ export default {
               })
               explain.watchModelProps(watched_models_pump)
               break;
-            
+
 
               diagram_components[key] = new BloodCompartment(
                 pixiApp,
@@ -333,7 +333,7 @@ export default {
               })
               explain.watchModelProps(watched_models_bc)
               break;
-            
+
             case "Device":
               diagram_components[key] = new Device(
                 pixiApp,
@@ -401,7 +401,7 @@ export default {
               })
               explain.watchModelProps(watched_models_con)
               break;
-          
+
             case "Valve":
               diagram_components[key] = new Valve(
                 pixiApp,
@@ -444,7 +444,7 @@ export default {
               })
               explain.watchModelProps(watched_models_gasex)
               break;
-            }    
+            }
         }
       });
     },
@@ -574,7 +574,7 @@ export default {
       let result = await this.diagram.getDiagramFromServer(this.general.apiUrl, this.user.name, this.state.diagram_definition.name, this.user.token)
     }
   },
-  beforeUnmount() { 
+  beforeUnmount() {
     this.$bus.off("state", this.processStateChanged)
     this.$bus.off('rt_start', () => this.rt_running = true)
     this.$bus.off('rt_stop', () => this.rt_running = false)
@@ -629,7 +629,7 @@ export default {
         this.update_component('ECLS_RE')
       } catch { }
     })
-    
+
   },
 };
 
