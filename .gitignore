@@ -31,3 +31,6 @@ yarn-error.log*
 
 # local .env files
 .env.local*
+
+# ignore the yarn config file as it is local
+.yarn/install-state.gz
