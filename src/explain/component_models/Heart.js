@@ -215,6 +215,22 @@ export class Heart extends BaseModelClass {
     this.pc_el_factor = 1.0; // elastance factor of the pericardium
     this.pc_extra_volume = 0.0; // additional volume of the pericardium
   
+    this.amp_p = 0.5;
+    this.skew_p = 2.5;
+    this.width_p = 20;
+    this.amp_q = -0.5;
+    this.width_q = 20;
+    this.skew_q = 2;
+    this.amp_r = 10;
+    this.width_r = 20;
+    this.skew_r = 2.5;
+    this.amp_s = -1.5;
+    this.width_s = 20;
+    this.skew_s = 10;
+    this.amp_t = 1.0;
+    this.skew_t = 2;
+    this.width_t = 30;
+
     // -----------------------------------------------
     // dependent properties
     // -----------------------------------------------
@@ -299,6 +315,10 @@ export class Heart extends BaseModelClass {
     this._prev_pc_el_factor = 1.0;
     this._hr_counter = 0;
     this._hr_factor = 1;
+
+    this._prev_p_signal = 0;
+    this._prev_qrs_signal = 0;
+    this._prev_t_signal = 0;
     
     this._update_counter_factors = 0.0;
     this._update_interval_factors = 0.015;
@@ -504,10 +524,7 @@ export class Heart extends BaseModelClass {
 
     if (this._pq_running) {
       this._pq_timer += this._t;
-      // build ecg signal
-      // Wave parameters: [amplitude, position (s), width (s)]
-      // this.pWave = [0.25, 0.1, 0.025]
-      this.ecg_signal += this.gaussian(this._pq_timer, 0.05, this.pq_time / 2.0, this.pq_time)
+      this.buildDynamicPWave();
     }
 
     if (this._av_delay_running) {
@@ -516,14 +533,19 @@ export class Heart extends BaseModelClass {
 
     if (this._qrs_running) {
       this._qrs_timer += this._t;
+      this.buidlDynamicQRSWave();
     }
 
     if (this._qt_running) {
       this._qt_timer += this._t;
+      this.buildDynamicTWave();
     }
 
     if (!this._pq_running && !this._av_delay_running && !this._qrs_running && !this._qt_running) {
-      this.ecg_signal = 0.0;
+      this.ecg_signal -= 0.01
+      if (this.ecg_signal < 0) {
+        this.ecg_signal = 0
+      }
     }
 
     // measure the heart rate (ventricular contraction)
@@ -672,8 +694,56 @@ export class Heart extends BaseModelClass {
     this.relax_factor_right = new_relax_factor_right;
   }
 
-  gaussian(t, amp, center, width) {
-    return amp * Math.exp(-Math.pow(t - center, 2) / (2 * width * width));
+  buildDynamicPWave() {
+    let duration = this.pq_time;
+    let amp_p = this.amp_p;
+    let width_p = this.width_p;
+    let skew_p = this.skew_p;
+
+    let new_p_signal = amp_p * Math.exp(-width_p * (Math.pow(this._pq_timer - duration / skew_p, 2) / Math.pow(duration, 2)));
+    let delta_p = new_p_signal - this._prev_p_signal;
+    
+    this.ecg_signal += delta_p;
+
+    this._prev_p_signal = new_p_signal;
   }
+  buidlDynamicQRSWave() {
+    let new_qrs_signal = 0;
+    this.q_interval = this.qrs_time / 3;
+    this.r_interval = this.qrs_time / 3;
+    this.s_interval = this.qrs_time / 3;
+
+    // do the q wave
+    if (this._qrs_timer < this.q_interval) {
+      new_qrs_signal = this.amp_q * Math.exp(-this.width_q * (Math.pow(this._qrs_timer - this.q_interval / this.skew_q, 2) / Math.pow(this.q_interval, 2)));
+    }
+
+    // do the r wave
+    if (this._qrs_timer > this.q_interval && this._qrs_timer < this.q_interval + this.r_interval) {
+      new_qrs_signal = this.amp_r * Math.exp(-this.width_r * (Math.pow(this._qrs_timer - this.q_interval - this.r_interval / this.skew_r, 2) / Math.pow(this.r_interval, 2)));
+    }
+
+    // do the s wave
+    if (this._qrs_timer > this.q_interval + this.r_interval && this._qrs_timer < this.q_interval + this.r_interval + this.s_interval) {
+      new_qrs_signal = this.amp_s *
+        Math.exp(-this.width_s * (Math.pow(this._qrs_timer - this.q_interval - this.r_interval - this.s_interval / this.skew_s, 2) / Math.pow(this.s_interval, 2)));
+    }
+
+    let delta_qrs = new_qrs_signal - this._prev_qrs_signal;
+    this.ecg_signal += delta_qrs;
+    this._prev_qrs_signal = new_qrs_signal;
+  }
+  buildDynamicTWave() {
+    let duration = this.cqt_time;
+    let amp_t = this.amp_t;
+    let width_t = this.width_t;
+    let skew_t = this.skew_t;
+
+    let new_t_signal = amp_t * Math.exp(-width_t * (Math.pow(this._qt_timer - duration / skew_t, 2) / Math.pow(duration, 2)));
+    let delta_t = new_t_signal - this._prev_t_signal;
+    this.ecg_signal += delta_t;
+    this._prev_t_signal = new_t_signal;
+  }
+
 
 }
