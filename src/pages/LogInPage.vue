@@ -318,7 +318,7 @@ export default {
         });
       }
     });
-    
+
     this.$bus.on("registered", () => {
       this.newUserEntry = false;
     });
@@ -326,7 +326,7 @@ export default {
     if (process.env.DEV) {
       //override login for developement development
       this.password = "y5qkqjed";
-      this.name = "timothy_exp";
+      this.name = "explain_chd";
       this.user.logIn(this.general.apiUrl, this.name, this.password);
     }
   },
