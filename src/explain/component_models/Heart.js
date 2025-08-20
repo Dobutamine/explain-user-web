@@ -179,6 +179,72 @@ export class Heart extends BaseModelClass {
       ll: 0,
       ul: 1000
     },
+    {
+      caption: "s-wave amplitude (mV)",
+      target: "amp_s",
+      type: "number",
+      edit_mode: "basic",
+      factor: 1,
+      delta: 0.01,
+      rounding: 2,
+      ll: -1000,
+      ul: 1000
+    },
+    {
+      caption: "s-wave width (s)",
+      target: "width_s",
+      type: "number",
+      edit_mode: "basic",
+      factor: 1,
+      delta: 0.01,
+      rounding: 2,
+      ll: 0,
+      ul: 1000
+    },
+    {
+      caption: "s-wave skewness",
+      target: "skew_s",
+      type: "number",
+      edit_mode: "basic",
+      factor: 1,
+      delta: 0.01,
+      rounding: 2,
+      ll: 0,
+      ul: 1000
+    },
+    {
+      caption: "t-wave amplitude (mV)",
+      target: "amp_t",
+      type: "number",
+      edit_mode: "basic",
+      factor: 1,
+      delta: 0.01,
+      rounding: 2,
+      ll: -1000,
+      ul: 1000
+    },
+    {
+      caption: "t-wave width (s)",
+      target: "width_t",
+      type: "number",
+      edit_mode: "basic",
+      factor: 1,
+      delta: 0.01,
+      rounding: 2,
+      ll: 0,
+      ul: 1000
+    },
+    {
+      caption: "t-wave skewness",
+      target: "skew_t",
+      type: "number",
+      edit_mode: "basic",
+      factor: 1,
+      delta: 0.01,
+      rounding: 2,
+      ll: 0,
+      ul: 1000
+    },
   ];
 
   constructor(model_ref, name = "") {
@@ -542,10 +608,10 @@ export class Heart extends BaseModelClass {
     }
 
     if (!this._pq_running && !this._av_delay_running && !this._qrs_running && !this._qt_running) {
-      this.ecg_signal -= 0.01
-      if (this.ecg_signal < 0) {
-        this.ecg_signal = 0
-      }
+      // this.ecg_signal -= 0.01
+      // if (this.ecg_signal < 0) {
+      //   this.ecg_signal = 0
+      // }
     }
 
     // measure the heart rate (ventricular contraction)
