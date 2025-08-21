@@ -6,8 +6,8 @@ export class Ans extends BaseModelClass {
   static model_type = "Ans";
   static model_interface = [
     {
-      target: "description",
       type: "string",
+      target: "description",
       caption: "description",
       build_prop: true,
       edit_mode: "caption",

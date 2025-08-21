@@ -54,7 +54,6 @@
                 <div v-for="(field, index) in mi" :key="index">
                   <div v-if="field.edit_mode == edit_mode || edit_mode == 'all' || field.edit_mode == 'caption'">
                     <div v-if="field.type == 'number'">
-
                       <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
                         <div class="text-white" :style="{ 'font-size': '10px' }">
                           <div v-if="!field.slider" class="row">
@@ -230,6 +229,7 @@
 
                       </div>
                     </div>
+
                   </div>
                 </div>
                </q-card>
@@ -521,11 +521,13 @@ export default {
       this.selectedModelInterface.forEach(param => {
         // we have to extend the param with some additional properties
         param['model_name'] = this.selectedModelName
+        // define a flag to signal state change
         param['state_changed'] = false
+        // define a property to signal if the parameter is readonly
         if (param.readonly === undefined) {
           param['readonly'] = false
         }
-
+        // define a property to signal if the parameter is editable and which mode
         if (!param['edit_mode']) {
           param['edit_mode'] = 'all'
         }
