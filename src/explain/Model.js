@@ -132,6 +132,7 @@ export default class Model {
 
   // build the model from the model definition object
   build(explain_definition) {
+    this.message_log = [];
     console.log("Model: Injecting the model definition into the ModelEngine.")
     this.modelDefinition = { ...explain_definition };
     this.send({
@@ -143,6 +144,7 @@ export default class Model {
 
   // restart the model engine
   restart() {
+    this.message_log = [];
     this.send({
       type: "POST",
       message: "build",
