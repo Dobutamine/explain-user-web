@@ -61,6 +61,10 @@ export default class Model {
           break;
         case "status":
           this.statusMessage = e.data.message
+          this.message_log.push({ time: new Date(), message: e.data.message });
+          if (this.message_log.length > this.no_logs) {
+            this.message_log.shift();
+          }
           document.dispatchEvent(this._status_event)
           break;
         case "model_ready":
