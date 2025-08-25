@@ -21,16 +21,8 @@ export class Fluids extends BaseModelClass {
       caption: "enabled",
     },
     {
-      target: "test",
-      type: "list",
-      build_prop: true,
-      edit_mode: "all",
-      readonly: false,
-      caption: "test"
-    },
-    {
       target: "add_volume",
-      caption: "Adminster fluid",
+      caption: "Adminster/remove fluids",
       type: "function",
       build_prop: true,
       edit_mode: "basic",
@@ -57,7 +49,7 @@ export class Fluids extends BaseModelClass {
           target: "fluid type",
           type: "list",
           default: "normal_saline",
-          choices: ['normal_saline', 'ringers_lactate','packed_cells', 'albumin_20%']
+          choices: ['normal_saline', 'ringers_lactate','packed_cells', 'albumin_20%', 'neutral']
         },
 
       ]
@@ -94,18 +86,32 @@ export class Fluids extends BaseModelClass {
     }
   }
 
-   add_volume(volume, in_time = 10, fluid_in = "normal_saline", site = "VLB") {
+  add_volume(volume, in_time = 10, fluid_in = "normal_saline", site = "VLB") {
+
     // build a fluid object which can be fed to a BloodVessel, BloodCapacitance or BloodTimeVaryingElastance
+    let solutes = {}
+    let to2 = 0.0
+    let tco2 = 0.0
+
+    switch (fluid_in) {
+      case "neutral":
+        solutes = {...this._model_engine.models[site].solutes}
+        break;
+      default:
+        solutes = {...this.fluids[fluid_in]}
+        break;
+    }
+
     let fluid = {
       vol: volume / 1000.0,
       time_left: in_time,
       delta: (volume / 1000.0) / (in_time / this._update_interval),
       site: site,
-      to2 : 0.0,
-      tco2 : 0.0,
+      to2 : to2,
+      tco2 : tco2,
       temp: this.fluids_temp,
       viscosity: 1,
-      solutes: {...this.fluids[fluid_in]},
+      solutes: solutes,
       drugs: {}
     }
     this._running_fluid_list.push(fluid)

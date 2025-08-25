@@ -1,6 +1,7 @@
 import * as Models from "../ModelIndex.js"
 
-// This base model class is the blueprint for all the model objects (classes). It incorporates the properties and methods which all model objects must implement 
+// This base model class is the blueprint for all the model objects (classes). It incorporates the properties and methods which all model objects must implement
+
 export class BaseModelClass {
   // model interface list as described above
   static model_interface = [

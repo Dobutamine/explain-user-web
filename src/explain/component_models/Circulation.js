@@ -108,20 +108,20 @@ export class Circulation extends BaseModelClass {
       ul: 5
     },
     {
-      caption: "add fluid",
+      caption: "blood volume",
       type: "function",
-      target: "add_volume",
+      target: "set_blood_volume",
       edit_mode: "basic",
       build_prop: false,
       readonly: false,
       args: [
         {
-          caption: "volume (ml)",
-          target: "default_volume",
+          caption: "new blood volume (ml)",
+          target: "total_blood_volume",
           type: "number",
-          factor: 1.0,
-          delta: 0.1,
-          rounding: 1
+          factor: 1000,
+          delta: 1,
+          rounding: 0
         }
       ]
     }
@@ -323,5 +323,43 @@ export class Circulation extends BaseModelClass {
     this.pulm_blood_volume_perc = this.pulm_blood_volume / this.total_blood_volume * 100.0
     this.heart_blood_volume_perc = this.heart_blood_volume / this.total_blood_volume * 100.0
 
+  }
+
+  set_blood_volume(new_volume) {
+    // first calculate the current blood volume
+    this.calc_blood_volumes()
+    // calculate the scaling factor
+    const scaling_factor = new_volume / this.total_blood_volume;
+
+    // scale the blood volumes
+     this._syst_models.forEach(model => {
+      if (this._model_engine.models[model].is_enabled) {
+        this._model_engine.models[model].vol = this._model_engine.models[model].vol * scaling_factor
+        this._model_engine.models[model].u_vol = this._model_engine.models[model].u_vol * scaling_factor
+      }
+    })
+
+    this.heart_chambers.forEach(model => {
+      if (this._model_engine.models[model].is_enabled) {
+        this._model_engine.models[model].vol = this._model_engine.models[model].vol * scaling_factor
+        this._model_engine.models[model].u_vol = this._model_engine.models[model].u_vol * scaling_factor
+      }
+    })
+
+    this.coronaries.forEach(model => {
+      if (this._model_engine.models[model].is_enabled) {
+        this._model_engine.models[model].vol = this._model_engine.models[model].vol * scaling_factor
+        this._model_engine.models[model].u_vol = this._model_engine.models[model].u_vol * scaling_factor
+      }
+    })
+
+    this._pulm_models.forEach(model => {
+      if (this._model_engine.models[model].is_enabled) {
+        this._model_engine.models[model].vol = this._model_engine.models[model].vol * scaling_factor
+        this._model_engine.models[model].u_vol = this._model_engine.models[model].u_vol * scaling_factor
+      }
+    })
+    // first calculate the new blood volume
+    this.calc_blood_volumes()
   }
 }

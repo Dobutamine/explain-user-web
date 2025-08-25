@@ -1,3 +1,5 @@
+// The ModelIndex.js file serves as a central hub for importing and exporting all model classes in the application.
+
 // import the base models
 export { BloodDiffusor } from "./base_models/BloodDiffusor";
 export { Capacitance }  from "./base_models/Capacitance";
@@ -7,7 +9,6 @@ export { GasDiffusor } from "./base_models/GasDiffusor"
 export { GasExchanger } from "./base_models/GasExchanger";
 export { Resistor } from "./base_models/Resistor";
 export { TimeVaryingElastance } from "./base_models/TimeVaryingElastance";
-export { Scaler } from "./base_models/Scaler";
 
 // import the component models
 export { Blood } from "./component_models/Blood";

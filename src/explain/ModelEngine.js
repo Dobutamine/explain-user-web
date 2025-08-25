@@ -1,4 +1,4 @@
-// This is a dedicated web worker instance for the physiological model engine
+// This is a dedicated web worker instance for the physiological model engine API
 // Web workers run in a separate thread for performance reasons and have no access to the DOM nor the window object
 // The scope is defined by self and communication with the main thread by a message channel
 // https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers#web_workers_api
@@ -14,17 +14,14 @@
 }
 */
 
-
-
 // import all models present in the model_index module
 import * as models from "./ModelIndex";
 import DataCollector from "./helpers/DataCollector";
 import TaskScheduler from "./helpers/TaskScheduler";
 
-// import the wasm modules
+// import the wasm modules (now commented out for testing)
 //import createModule from "./wasm/bc_ems.js";
 //const bc = await createModule({locateFile: p => new URL('./wasm/bc_ems.wasm', import.meta.url).pathname})
-
 
 // store all imported models in a list to be able to instantiate them dynamically
 let available_models = [];
@@ -50,7 +47,7 @@ let rtSlowInterval = 1.0;
 let rtSlowCounter = 0.0;
 let rtClock = null;
 
-// set up the endpoints for reuqests from the main thread
+// set up the API endpoints for requests from the main thread (Model Object)
 self.onmessage = (e) => {
   switch (e.data.type) {
     case "GET": // retrieve a resource
@@ -153,7 +150,11 @@ self.onmessage = (e) => {
   }
 };
 
+// ------------------------------------------------------------------------------------
 // define the model functions
+// ------------------------------------------------------------------------------------
+
+// build the models from the model definition object
 const build = function (model_definition) {
   console.log("ModelEngine: building model from model definition.")
   // set the error counter
@@ -285,6 +286,7 @@ const build = function (model_definition) {
   }
 };
 
+// remove a model instance from the model list
 const remove_model_from_engine = function (model_name) {
   try {
     delete model.models[model_name]
@@ -306,6 +308,7 @@ const remove_model_from_engine = function (model_name) {
 
 }
 
+// add a model instance from the model list
 const add_model_to_engine = function (new_model) {
 
   const base_model = available_models.find(item => item.model_type === new_model.model_type );
@@ -337,6 +340,7 @@ const add_model_to_engine = function (new_model) {
 
 }
 
+// start the realtime model
 const start = function () {
   // start the model in realtime
   if (model_initialized) {
@@ -363,6 +367,7 @@ const start = function () {
   }
 };
 
+// stop the realtime model
 const stop = function () {
   // stop the realtime model
   if (model_initialized) {
@@ -382,6 +387,7 @@ const stop = function () {
   }
 };
 
+// calculate a number of seconds of the model
 const calculate = function (time_to_calculate) {
   // calculate a number of seconds of the model
   if (model_initialized) {
@@ -422,10 +428,12 @@ const calculate = function (time_to_calculate) {
   model.DataCollector.clean_up_slow();
 };
 
+// set a property value of a model instance
 const set_property = function (new_prop_value) {
   model["TaskScheduler"].add_task(new_prop_value);
 };
 
+// get a property value of a model instance
 const get_property = function (prop) {
   let p = prop.split(".");
   let v = {};
@@ -444,6 +452,7 @@ const get_property = function (prop) {
   });
 };
 
+// get all model instance properties
 const get_model_props = function (model_name) {
   let modelStateCopy = { ...models };
   delete modelStateCopy["DataCollector"];
@@ -463,6 +472,8 @@ const get_model_props = function (model_name) {
   });
 
 }
+
+// get all model type properties
 const get_modeltype_interface = function (model_type) {
   const result = available_models.find(item => item.model_type === model_type );
   let new_sub_model = new result(model, "", model_type);
@@ -473,6 +484,7 @@ const get_modeltype_interface = function (model_type) {
   });
 }
 
+// get the model interface of a model instance
 const get_model_interface = function (model_name) {
   _send({
     type: "model_interface",
@@ -481,6 +493,7 @@ const get_model_interface = function (model_name) {
   });
 }
 
+// get all available model types
 const get_model_types = function () {
   let types = []
   Object.values(available_models).forEach(mt => {
@@ -496,30 +509,36 @@ const get_model_types = function () {
 
 }
 
+// call a function of a model instance
 const call_function = function (new_function_call) {
   model["TaskScheduler"].add_function_call(new_function_call);
 };
 
+// clear the watchlist of the DataCollector (fast update list)
 const clear_watchlist = function () {
   model.DataCollector.clear_watchlist();
 };
 
+// clear the watchlist of the DataCollector (slow update list)
 const clear_watchlist_slow = function () {
   model.DataCollector.clear_watchlist_slow();
 };
 
+// add a property to the watchlist (fast update list)
 const watch_props = function (args) {
   args.forEach((prop) => {
     model.DataCollector.add_to_watchlist(prop);
   });
 };
 
+// add a property to the watchlist (slow update list)
 const watch_props_slow = function (args) {
   args.forEach((prop) => {
     model.DataCollector.add_to_watchlist_slow(prop);
   });
 };
 
+// get the current model state (all model instances)
 const get_model_state = function () {
   // get the current whole model state
   postMessage({
@@ -529,6 +548,7 @@ const get_model_state = function () {
   });
 };
 
+// get the data from the DataCollector (fast update data)
 const get_model_data = function () {
   // get the realtime model data from the datacollector
   model_data = model.DataCollector.get_model_data();
@@ -541,6 +561,7 @@ const get_model_data = function () {
   });
 };
 
+// get the data from the DataCollector (slow update data)
 const get_model_data_slow = function () {
   // get the slow update model data from the datacollector
   model_data_slow = model.DataCollector.get_model_data_slow();
@@ -553,6 +574,7 @@ const get_model_data_slow = function () {
   });
 };
 
+// get the blood composition of a model instance which contains blood
 const get_blood_composition = function (model_name) {
   console.log("ModelEngine: calculating blood composition.")
   let m = model.models[model_name];
@@ -580,6 +602,21 @@ const get_blood_composition = function (model_name) {
   console.log(m.po2)
 }
 
+// save the current model state
+const save_state = function() {
+  postMessage({
+    type: "state_saved",
+    message: "",
+    payload: model,
+  });
+  
+}
+
+// ------------------------------------------------------------------------------------
+// define the local model functions
+// ------------------------------------------------------------------------------------
+
+// do one model step
 const _model_step = function () {
   // iterate over all models
   Object.values(model.models).forEach((model_component) => {
@@ -603,16 +640,7 @@ const _model_step = function () {
   model.model_time_total += model.modeling_stepsize;
 };
 
-const save_state = function() {
-  postMessage({
-    type: "state_saved",
-    message: "",
-    payload: model,
-  });
-  
-}
-
-// define the local model functions
+// do one model step in realtime mode
 const _model_step_rt = function () {
   // so the rt_interval determines how often the model is calculated
   const noOfSteps = rtInterval / model.modeling_stepsize;
@@ -631,6 +659,7 @@ const _model_step_rt = function () {
   rtSlowCounter += rtInterval;
 };
 
+// get the realtime model data from the DataCollector (fast update data)
 const _get_model_data_rt = function () {
   // get the realtime model data from the datacollector
   model_data = model.DataCollector.get_model_data();
@@ -643,6 +672,7 @@ const _get_model_data_rt = function () {
   });
 };
 
+// get the realtime model data from the DataCollector (slow update data)
 const _get_model_data_rt_slow = function () {
   // get the realtime slow model data from the datacollector
   model_data = model.DataCollector.get_model_data_slow();
@@ -655,6 +685,7 @@ const _get_model_data_rt_slow = function () {
   });
 };
 
+// send a message to back to the main thread Model Object
 const _send = function (message) {
   postMessage(message);
 };

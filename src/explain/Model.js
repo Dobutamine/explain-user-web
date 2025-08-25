@@ -1,7 +1,7 @@
 import * as models from "./ModelIndex";
 
 export default class Model {
-  // declare an object holding the worker thread which does the heavy llifting
+  // declare an object holding the model engine API worker thread
   modelEngine = {};
 
   // declare an object holding the model definition as loaded from the server
@@ -17,19 +17,14 @@ export default class Model {
   // declare an object holding a saved model state
   savedState = {}
 
-  // declare object holding the generated messages
-  info_message = "";
-  error_message = "";
+  // declare object holding the status message
   statusMessage = "";
-  script_message = "";
 
   // declare a message log
   message_log = [];
   no_logs = 25;
 
   // declare the events
-  _model_ready_event = new CustomEvent("model_ready")
-  _error_event = new CustomEvent("error");
   _rt_start_event = new CustomEvent("rt_start");
   _rt_stop_event = new CustomEvent("rt_stop");
   _rts_event = new CustomEvent("rts");
@@ -41,41 +36,21 @@ export default class Model {
   _state_saved_event = new CustomEvent("state_saved")
 
   constructor() {
-    // spin up a new model engine worker thread
+    // spin up a new model engine API worker thread
     this.modelEngine = new Worker(new URL("./ModelEngine.js", import.meta.url), { type: "module" });
 
-    // set up a listener for messages from the model engine
+    // set up a listener for messages from the model engine API
     this.receive();
   }
 
-  load(definition_name) {
-    console.log(`Model: Loading modeling definition: '${definition_name}'.`)
-    const path = "/model_definitions/" + definition_name + ".json";
-    const absoluteUrl = new URL(path, import.meta.url);
-
-    fetch(absoluteUrl)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(
-            "Uh oh! could not get the baseline_neonate from the server!"
-          );
-        }
-        return response.json();
-      })
-      .then((jsonData) => {
-        this.build(jsonData);
-      })
-      .catch((error) => {
-        console.error("Error: ", error);
-      });
-  }
-
+  // send a message to the model engine API
   send(message) {
     if (this.modelEngine) {
       this.modelEngine.postMessage(message);
     }
   }
 
+  // recieve messages from the model engine API
   receive() {
     // set up a listener for messages from the model engine
     this.modelEngine.onmessage = (e) => {
@@ -147,7 +122,11 @@ export default class Model {
     };
   }
 
+  // ---------------------------------------------------------
   // API CALLS
+  // ---------------------------------------------------------
+
+  // build the model from the model definition object
   build(explain_definition) {
     console.log("Model: Injecting the model definition into the ModelEngine.")
     this.modelDefinition = { ...explain_definition };
@@ -158,6 +137,7 @@ export default class Model {
     });
   }
 
+  // restart the model engine
   restart() {
     this.send({
       type: "POST",
@@ -166,6 +146,7 @@ export default class Model {
     });
   }
 
+  // calculate the model output for a specific time period
   calculate(time_to_calculate) {
     this.send({
       type: "POST",
@@ -174,6 +155,7 @@ export default class Model {
     });
   }
 
+  // start the realtime model
   start() {
     this.send({
       type: "POST",
@@ -182,6 +164,7 @@ export default class Model {
     });
   }
 
+  // stop the realtime model
   stop() {
     this.send({
       type: "POST",
@@ -190,6 +173,7 @@ export default class Model {
     });
   }
 
+  // clear the model property watch list (fast update)
   clearWatchList() {
     this.send({
       type: "DELETE",
@@ -198,6 +182,7 @@ export default class Model {
     });
   }
 
+  // clear the model property watch list (slow update)
   clearWatchListSlow() {
     this.send({
       type: "DELETE",
@@ -206,6 +191,7 @@ export default class Model {
     });
   }
 
+  // add properties to the watch list (fast update)
   watchModelProps(args) {
     // args is an array of strings with format model.prop1.prop2
     if (typeof args === "string") {
@@ -218,6 +204,7 @@ export default class Model {
     });
   }
 
+  // add properties to the watch list (slow update)
   watchModelPropsSlow(args) {
     // args is an array of strings with format model.prop1.prop2
     if (typeof args === "string") {
@@ -230,6 +217,7 @@ export default class Model {
     });
   }
 
+  // get the data from the DataCollector (fast update data)
   getModelData() {
     this.send({
       type: "GET",
@@ -238,6 +226,7 @@ export default class Model {
     });
   }
 
+  // get the data from the DataCollector (fast update data)
   getModelDataSlow() {
     this.send({
       type: "GET",
@@ -246,6 +235,7 @@ export default class Model {
     });
   }
 
+  // set the fast update sample interval in seconds of the model engine DataCollector
   setSampleInterval(new_interval) {
     this.send({
       type: "PUT",
@@ -254,6 +244,7 @@ export default class Model {
     });
   }
 
+  // set the slow update sample interval in seconds of the model engine DataCollector
   setSampleIntervalSlow(new_interval) {
     this.send({
       type: "PUT",
@@ -262,6 +253,7 @@ export default class Model {
     });
   }
 
+  // get the current model state
   getModelState() {
     this.send({
       type: "GET",
@@ -270,6 +262,7 @@ export default class Model {
     });
   }
 
+  // save the current model state
   saveModelState() {
     this.send({
       type: "POST",
@@ -278,6 +271,7 @@ export default class Model {
     });
   }
 
+  // get the properties of a specific model instance
   getModelProps(model_name) {
     // get the properties of a specific model
     this.send({
@@ -287,6 +281,7 @@ export default class Model {
     });
   }
 
+  // get all the model types
   getModelTypes() {
     // get all the model types
     this.send({
@@ -296,11 +291,13 @@ export default class Model {
     });
   }
 
+  // get the interface of a model type
   getModelTypeInterface(model_type) {
     // get the interface of a specific modeltype
     return models[model_type].model_interface || [];
   }
 
+  // get the interface of a specific model instance
   getModelInterface(model_name) {
     // get the model type of a specific model
     let model_type = this.modelState.models[model_name].model_type;
@@ -308,6 +305,7 @@ export default class Model {
     return models[model_type].model_interface || [];
   }
 
+  // get the blood composition of a blood containing model instance
   getBloodComposition(model_name) {
     // get the interface of a specific model
     this.send({
@@ -317,7 +315,7 @@ export default class Model {
     });
   }
 
-
+  // add a new model instance
   addNewModel(model_args) {
     // get the interface of a specific model
     this.send({
@@ -327,6 +325,7 @@ export default class Model {
     });
   }
 
+  // delete a model instance
   deleteModel(model_name) {
     // get the interface of a specific model
     this.send({
@@ -336,6 +335,7 @@ export default class Model {
     });
   }
 
+  // get the value of a property of a model instance
   getPropValue(property) {
     // get the value of a specific property with string format model.prop1.prop2
     this.send({
@@ -345,6 +345,7 @@ export default class Model {
     });
   }
 
+  // set the value of a property of a model instance
   setPropValue(prop, new_value, it = 1, at = 0) {
     // make sure the it is not zero
     if (it < 0) {
@@ -373,6 +374,7 @@ export default class Model {
     });
   }
 
+  // call a function of a specific model instance
   callModelFunction(model_function, args, at = 0) {
     this.send({
       type: "POST",
@@ -387,6 +389,11 @@ export default class Model {
     });
   }
 
+  // ------------------------------------------------------------------------------------
+  // define the local model functions
+  // ------------------------------------------------------------------------------------
+
+  // process the model state before sending it
   _processModelState(model_state) {
     // transfrom the modelstate object to a serializable object by removing the helper objects
     delete model_state["DataCollector"];
