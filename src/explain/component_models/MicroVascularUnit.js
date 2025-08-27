@@ -523,4 +523,5 @@ export class MicroVascularUnit extends BaseModelClass {
     // reset the non persistent factors
     this.u_vol_factor = 1.0;
   }
+  
 }
