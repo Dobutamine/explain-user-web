@@ -524,4 +524,4 @@ export class MicroVascularUnit extends BaseModelClass {
     this.u_vol_factor = 1.0;
   }
   
-}
+} 

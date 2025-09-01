@@ -1,6 +1,6 @@
 import { BloodCapacitance } from "./BloodCapacitance";
 import { Resistor } from "../base_models/Resistor";
-import { readonly } from "vue";
+
 
 /*
 The BloodVessel class extends the BloodCapacitance class and adds a Resistor to represent a blood vessel in the model.

@@ -129,6 +129,11 @@
               <q-icon name="fa-solid fa-list-check" size="xs"></q-icon>
               <q-tooltip>event scheduler</q-tooltip>
             </q-tab>
+
+            <q-tab name="documentation">
+              <q-icon name="fa-solid fa-book" size="xs"></q-icon>
+              <q-tooltip>documentation</q-tooltip>
+            </q-tab>
           </q-tabs>
 
 
@@ -231,6 +236,18 @@
                 <TaskScheduler></TaskScheduler>
               </q-scroll-area>
             </q-tab-panel>
+
+            <q-tab-panel name="documentation">
+              <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
+                right: '5px',
+                borderRadius: '5px',
+                background: 'black',
+                width: '5px',
+                opacity: 0.5
+              }">
+              <DocumentationComponent></DocumentationComponent>
+              </q-scroll-area>
+            </q-tab-panel>
           </q-tab-panels>
         </div>
 
@@ -309,7 +326,7 @@ import AnimationEditor from 'src/components/AnimationEditor.vue';
 import ModelBuilderComponent from 'src/components/ModelBuilderComponent.vue';
 import ControllerComponent from 'src/components/ControllerComponent.vue';
 import NumericsEditor from 'src/components/NumericsEditor.vue';
-
+import DocumentationComponent from 'src/components/DocumentationComponent.vue';
 
 export default defineComponent({
   name: 'MainPage',
@@ -341,7 +358,8 @@ export default defineComponent({
     AnimationComponent,
     AnimationEditor,
     ControllerComponent,
-    NumericsEditor
+    NumericsEditor,
+    DocumentationComponent
   },
   data() {
     return {

@@ -1,4 +1,3 @@
-import { readonly } from "vue";
 import { BaseModelClass } from "./BaseModelClass";
 
 export class Capacitance extends BaseModelClass {
