@@ -1,8 +1,9 @@
+// import the wasm module
 
 // -----------------------------------------------------------------------------
 // Constants
 // -----------------------------------------------------------------------------
-const use_wasm        = true; // use wasm module for calculations
+const use_wasm        = false; // use wasm module for calculations
 const kw              = 2.5119e-11; // water dissociation constant
 const kc              = 7.94328235e-4; // carbonic acid dissociation constant
 const kd              = 6.0255959e-8; // bicarbonate dissociation constant
