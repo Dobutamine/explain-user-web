@@ -59,12 +59,7 @@ module.exports = configure(function (/* ctx */) {
       // polyfillModulePreload: true,
       // distDir
 
-      extendViteConf (viteConf) {
-        // merge in worker option
-        return {
-          worker: { format: 'es' }
-        }
-      },
+      // extendViteConf (viteConf) {},
       // viteVuePluginOptions: {},
 
       // vitePlugins: [

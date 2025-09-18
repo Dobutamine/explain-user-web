@@ -1,5 +1,3 @@
-// import the wasm module
-import createModule from "../wasm/bc_ems";
 
 // -----------------------------------------------------------------------------
 // Constants
@@ -84,10 +82,6 @@ let wasm_parameters = {
 }
 
 let wasm = null;
-if (use_wasm) {
-    wasm = await createModule({locateFile: p => new URL('../wasm/bc_ems.wasm', import.meta.url).pathname})
-}
-
 
 export function calc_blood_composition(bc) {
     if (use_wasm) {
