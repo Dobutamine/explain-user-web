@@ -43,7 +43,6 @@ module.exports = configure(function (/* ctx */) {
         browser: ["es2020", "edge88", "firefox78", "chrome87", "safari13.1"],
         node: "node20",
       },
-
       vueRouterMode: "hash", // available values: 'hash', 'history'
       // vueRouterBase,
       // vueDevtools,
@@ -60,7 +59,12 @@ module.exports = configure(function (/* ctx */) {
       // polyfillModulePreload: true,
       // distDir
 
-      // extendViteConf (viteConf) {},
+      extendViteConf (viteConf) {
+        // merge in worker option
+        return {
+          worker: { format: 'es' }
+        }
+      },
       // viteVuePluginOptions: {},
 
       // vitePlugins: [

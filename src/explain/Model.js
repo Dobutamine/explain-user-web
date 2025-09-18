@@ -37,7 +37,7 @@ export default class Model {
 
   constructor() {
     // spin up a new model engine API worker thread
-    this.modelEngine = new Worker(new URL("./ModelEngine.js", import.meta.url), { type: "module" });
+    this.modelEngine = new Worker(new URL("./ModelEngine.js?worker", import.meta.url), { type: "module" });
 
     // set up a listener for messages from the model engine API
     this.receive();
