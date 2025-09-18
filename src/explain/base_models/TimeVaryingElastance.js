@@ -116,6 +116,7 @@ export class TimeVaryingElastance extends BaseModelClass {
 
     // initialize dependent properties
     this.vol = 0.0; // volume v(t) (L)
+    this.el = 0.0; // elastance e(t) (mmHg/L)
     this.pres = 0.0; // pressure p1(t) (mmHg)
     this.pres_in = 0.0; // recoil pressure of the elastance (mmHg)
     this.pres_tm = 0.0; // transmural pressure (mmHg)
@@ -178,6 +179,9 @@ export class TimeVaryingElastance extends BaseModelClass {
 
     // calculate the current recoil pressure
     this.pres_in = (p_ms - p_ed) * this.act_factor + p_ed;
+
+    // calculate the current elastance
+    this.el = this.pres_in / (this.vol - this._u_vol);
 
     // calculate the total pressure by incorporating the external pressures
     this.pres = this.pres_in + this.pres_ext

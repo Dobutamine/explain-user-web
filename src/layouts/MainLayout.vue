@@ -636,6 +636,9 @@ export default defineComponent({
     // not finished
     uploadStateToServer() {
       this.state.model_definition = { ...explain.savedState }
+      console.log(this.user.name, this.user.token)
+      console.log(this.state.explain_version)
+      console.log(this.state.user)
       this.state.saveStateToServer(this.general.apiUrl, this.user.name, this.user.token).then((t) => {
         if (t.result) {
           this.popupClass = "text-h6"

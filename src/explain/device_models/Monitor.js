@@ -102,6 +102,7 @@ export class Monitor extends BaseModelClass {
     this.svc_flow = 0.0; // superior vena cava flow (l/min)
     this.cor_flow = 0.0; // coronary flow (l/min)
     this.brain_flow = 0.0; // brain flow (l/min)
+    this.lower_body_flow = 0.0; // lower body flow (l/min)
     this.kid_flow = 0.0; // kidney flow (l/min)
     this.da_flow = 0.0; // ductus arteriosus flow (l/min)
     this.fo_flow = 0.0; // foramen ovale flow (l/min)
@@ -118,6 +119,11 @@ export class Monitor extends BaseModelClass {
     this.hco3 = 0.0; // arterial bicarbonate concentration (mmol/l)
     this.be = 0.0; // arterial base excess concentration (mmol/l)
     this.dps = 0.0; //
+    this.do2_ub = 0.0; // delivery of oxygen to the upper body(ml/min)
+    this.do2_lb = 0.0; // delivery of oxygen to the lower body (ml/min)
+    this.so2_exp = 0
+    this.hb_exp = 0
+    this.po2_exp = 0
 
     // signals
     this.ecg_signal = 0.0; // ecg signal
@@ -154,6 +160,8 @@ export class Monitor extends BaseModelClass {
     this._da = null; // reference to the ductus arteriosus
     this._vsd = null; // reference to the ventricular septal defect
     this._ips = null; // reference to the intrapulmonary shunt
+    this._aar_ad = null; // reference to the lower body flow
+    this._aar_br = null; // reference to the brain flow
 
     this._temp_aa_pres_max = -1000.0;
     this._temp_aa_pres_min = 1000.0;
@@ -184,6 +192,8 @@ export class Monitor extends BaseModelClass {
     this._ips_flow_counter = 0.0;
     this._ua_flow_counter = 0.0;
     this._uv_flow_counter = 0.0;
+    this._lb_flow_counter = 0.0;
+
     this._hr_list = [];
     this._edv_lv_list = [];
     this._edv_rv_list = [];
@@ -235,6 +245,7 @@ export class Monitor extends BaseModelClass {
     this._ips = this._model_engine.models[this.ips] ?? null;
     this._ad_umb_art = this._model_engine.models[this.ua] ?? null;
     this._umb_ven_ivci = this._model_engine.models[this.uv] ?? null;
+    this._aar_ad = this._model_engine.models["AAR_AD"] ?? null;
     this._rr_update_counter = 0.0;
 
     // flag that the model is initialized
@@ -257,7 +268,24 @@ export class Monitor extends BaseModelClass {
       this._hr_list.shift();
       }
   }
+  calc_oxgen_delivery() {
+    // get the hemoglobin level and convert to g/dL
+    let hb = this._model_engine.models["AA"].solutes.hemoglobin / 0.6206; // conversion to g/dL:
 
+    // get the po2 and so2 in the ascending aorta and descending aorta
+    let po2_aa = this._model_engine.models["AA"].po2;
+    let so2_aa = this._model_engine.models["AA"].so2 * 0.01; // conversion to fraction
+
+    let po2_aar = this._model_engine.models["AAR"].po2;
+    let so2_aar = this._model_engine.models["AAR"].so2 * 0.01; // conversion to fraction
+    
+    let co2_br = (0.0031 * po2_aa + 1.36 * hb * so2_aa) * 10.0; // in ml O2/L blood
+    this.do2_br = this.brain_flow * co2_br; // in ml O2/min
+
+    let co2_lb = (0.0031 * po2_aar + 1.36 * hb * so2_aar) * 10.0; // in ml O2/L blood
+    this.do2_lb = this.lower_body_flow * co2_lb; // in ml O2/min
+    
+  }
   calc_model() {
     // collect the pressure
     this.collect_pressures();
@@ -270,6 +298,9 @@ export class Monitor extends BaseModelClass {
 
     // collect temperature
     this.temp = this._aa.temp;
+
+    // collect oxygen delivery
+    this.calc_oxgen_delivery();
 
     // collect end tidal pco2
     this.etco2 = this._ventilator.etco2;
@@ -297,7 +328,6 @@ export class Monitor extends BaseModelClass {
     }
     this._rr_update_counter += this._t
     
-
 
     // determine the begin of the cardiac cycle
     if (this._heart.ncc_ventricular === 1) {
@@ -439,6 +469,11 @@ export class Monitor extends BaseModelClass {
         this._uv_flow_counter = 0.0;
       }
 
+      if (this._aar_ad) {
+        this.lower_body_flow = (this._lb_flow_counter / this._beats_time) * 60.0;
+        this._lb_flow_counter = 0.0;
+      }
+
       // reset the counters
       this._beats_counter = 0;
       this._beats_time = 0.0;
@@ -508,6 +543,7 @@ export class Monitor extends BaseModelClass {
     this._ips_flow_counter += this._ips ? this._ips.flow * this._t : 0.0;
     this._ua_flow_counter += this._ad_umb_art ? this._ad_umb_art.flow * this._t : 0.0;
     this._uv_flow_counter += this._umb_ven_ivci ? this._umb_ven_ivci.flow * this._t : 0.0;
+    this._lb_flow_counter += this._aar_ad ? this._aar_ad.flow * this._t : 0.0;
   }
 }
 

@@ -84,23 +84,24 @@ export const useStateStore = defineStore("state", {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          user: "timothy",
-          name: "baseline neonate",
+          user: "default",
+          name: "default_neonate",
         }),
       });
 
       if (response.status === 200) {
         let data = await response.json();
-        this.user = userName.toLowerCase();
-        this.name = "default_state";
-        this.protected = true;
+        this.explain_version = data.explain_version;
+        this.user = data.user.toLowerCase();
+        this.name = data.name;
+        this.description = data.description;
+        this.protected = data.protected;
         this.shared = data.shared;
         this.diagram_definition = data.diagram_definition;
         this.animation_definition = data.animation_definition;
         this.model_definition = data.model_definition;
         this.configuration = data.configuration;
-        this.events= data.events;
-        this.tasks = data.tasks;
+        this.events = data.events;
         return true;
       } else {
         return false;

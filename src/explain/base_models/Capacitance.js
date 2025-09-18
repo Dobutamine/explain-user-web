@@ -113,6 +113,7 @@ export class Capacitance extends BaseModelClass {
 
     // initialize dependent properties
     this.vol = 0.0; // volume v(t) (L)
+    this.el = 0.0; // elastance e(t) (mmHg/L)
     this.pres = 0.0; // pressure p1(t) (mmHg)
     this.pres_in = 0.0; // recoil pressure of the elastance (mmHg)
     this.pres_tm = 0.0; // transmural pressure (mmHg)
@@ -142,6 +143,9 @@ export class Capacitance extends BaseModelClass {
         + (this.el_k_factor - 1) * this.el_k
         + (this.el_k_factor_ps - 1) * this.el_k
 
+    // set the elastance property
+    this.el = this._el;
+    
     // reset the non persistent factors
     this.el_base_factor = 1.0;
     this.el_k_factor = 1.0;

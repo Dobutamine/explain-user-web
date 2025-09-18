@@ -78,8 +78,8 @@ export class Respiration extends BaseModelClass {
       factor: 1.0,
       delta: 0.01,
       rounding: 2,
-      ll: -100,
-      ul: 100
+      ll: -10,
+      ul: 10
     },
     {
       caption: "lower airway resistance factor",
@@ -91,8 +91,8 @@ export class Respiration extends BaseModelClass {
       factor: 1.0,
       delta: 0.01,
       rounding: 2,
-      ll: -100,
-      ul: 100
+      ll: -10,
+      ul: 10
     },
     {
       caption: "gasexchange factor",
@@ -105,7 +105,7 @@ export class Respiration extends BaseModelClass {
       delta: 0.01,
       rounding: 2,
       ll: -100,
-      ul: 100
+      ul: 1
     },
 
   ];
@@ -151,7 +151,15 @@ export class Respiration extends BaseModelClass {
     // -----------------------------------------------
     // dependent properties
     // -----------------------------------------------
+    this.pres_atm = 760.0; // atmospheric pressure (mmHg)
+    this.pres_pl_left = 0
+    this.pres_pl_right = 0
 
+    this.pres_alv_left = 0
+    this.pres_alv_right = 0
+
+    this.pres_tp_left = 0
+    this.pres_tp_right = 0
 
     // local properties
     this._update_interval = 0.015; // update interval (s)
@@ -167,6 +175,17 @@ export class Respiration extends BaseModelClass {
     this._update_counter += this._t;
     if (this._update_counter > this._update_interval) {
       this._update_counter = 0.0;
+
+      this.pres_atm = this._model_engine.models["Gas"].pres_atm
+      this.pres_pl_left = this._model_engine.models[this.thorax].pres + this.pres_atm
+      this.pres_pl_right = this._model_engine.models[this.thorax].pres + this.pres_atm
+
+      this.pres_alv_left = this._model_engine.models[this.left_lung].pres
+      this.pres_alv_right = this._model_engine.models[this.right_lung].pres
+
+      this.pres_tp_left = this.pres_alv_left - this.pres_pl_left
+      this.pres_tp_right = this.pres_alv_right - this.pres_pl_right
+
 
       if (this._prev_el_lungs_factor !== this.el_lungs_factor) {
         // update the model

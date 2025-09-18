@@ -226,6 +226,9 @@ export class Blood extends BaseModelClass {
         so2: this._ascending_aorta.so2,
       };
 
+      // calculate the blood gas in the aortic arch
+      calc_blood_composition(this._model_engine.models["AAR"]);
+
       // postductal arterial bloodgas
       calc_blood_composition(this._descending_aorta);
       this.art_bloodgas = {
