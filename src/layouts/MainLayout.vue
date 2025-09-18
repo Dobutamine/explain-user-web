@@ -520,7 +520,7 @@ export default defineComponent({
     },
     upload_diagram() {
       // update the name of the diagram definition
-      this.diagram.diagram_definition.settings.name = this.selectedDiagram;
+      this.diagram.diagram_definition.settings.name = this.selectedDiagram; 
       // save the diagram definition
       this.diagram.saveDiagramToServer(this.general.apiUrl, this.user.name, this.selectedDiagram, this.user.token).then((t) => {
         if (t.result) {

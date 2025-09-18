@@ -250,10 +250,10 @@ export class Mob extends BaseModelClass {
     this._d_ans = 0.0;
     this._ml_to_mmol = 22.414;
     this._cc_time = 0.0;
-    this._prev_lv_vol = 0.0;
-    this._prev_lv_pres = 0.0;
-    this._prev_rv_vol = 0.0;
-    this._prev_rv_pres = 0.0;
+    this.prev_lv_vol = 0.0;
+    this.prev_lv_pres = 0.0;
+    this.prev_rv_vol = 0.0;
+    this.prev_rv_pres = 0.0;
     this._pv_area_lv = 0.0;
     this._pv_area_rv = 0.0;
     this._pv_area_lv_inc = 0.0;
@@ -388,32 +388,32 @@ export class Mob extends BaseModelClass {
       this._pv_area_rv_dec = 0.0;
     }
 
-    const _dV_lv = this._lv.vol - this._prev_lv_vol;
+    const _dV_lv = this._lv.vol - this.prev_lv_vol;
     if (_dV_lv > 0) {
       this._pv_area_lv_inc +=
-        _dV_lv * this._prev_lv_pres +
-        (_dV_lv * (this._lv.pres - this._prev_lv_pres)) / 2.0;
+        _dV_lv * this.prev_lv_pres +
+        (_dV_lv * (this._lv.pres - this.prev_lv_pres)) / 2.0;
     } else {
       this._pv_area_lv_dec +=
-        -_dV_lv * this._prev_lv_pres +
-        (-_dV_lv * (this._lv.pres - this._prev_lv_pres)) / 2.0;
+        -_dV_lv * this.prev_lv_pres +
+        (-_dV_lv * (this._lv.pres - this.prev_lv_pres)) / 2.0;
     }
 
-    const _dV_rv = this._rv.vol - this._prev_rv_vol;
+    const _dV_rv = this._rv.vol - this.prev_rv_vol;
     if (_dV_rv > 0) {
       this._pv_area_rv_inc +=
-        _dV_rv * this._prev_rv_pres +
-        (_dV_rv * (this._rv.pres - this._prev_rv_pres)) / 2.0;
+        _dV_rv * this.prev_rv_pres +
+        (_dV_rv * (this._rv.pres - this.prev_rv_pres)) / 2.0;
     } else {
       this._pv_area_rv_dec +=
-        -_dV_rv * this._prev_rv_pres +
-        (-_dV_rv * (this._rv.pres - this._prev_rv_pres)) / 2.0;
+        -_dV_rv * this.prev_rv_pres +
+        (-_dV_rv * (this._rv.pres - this.prev_rv_pres)) / 2.0;
     }
 
-    this._prev_lv_vol = this._lv.vol;
-    this._prev_lv_pres = this._lv.pres;
-    this._prev_rv_vol = this._rv.vol;
-    this._prev_rv_pres = this._rv.pres;
+    this.prev_lv_vol = this._lv.vol;
+    this.prev_lv_pres = this._lv.pres;
+    this.prev_rv_vol = this._rv.vol;
+    this.prev_rv_pres = this._rv.pres;
 
     this.pva = this.stroke_work_lv + this.stroke_work_rv;
     return (this.pva * this.pva_ref * this.hw) / this._ml_to_mmol;

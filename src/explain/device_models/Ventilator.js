@@ -340,7 +340,7 @@ export class Ventilator extends BaseModelClass {
     this._trigger_start = false;
     this._breathing_model = null;
     this._peak_flow = 0.0;
-    this._prev_et_tube_flow = 0.0;
+    this.prev_et_tube_flow = 0.0;
     this._et_tube_resistance = 40.0;
   }
 
@@ -430,7 +430,7 @@ export class Ventilator extends BaseModelClass {
 
   flow_cycling() {
     if (this._vent_ettube.flow > 0.0 && this.triggered_breath) {
-      if (this._vent_ettube.flow > this._prev_et_tube_flow) {
+      if (this._vent_ettube.flow > this.prev_et_tube_flow) {
         this._inspiration = true;
         this._expiration = false;
         this.ncc_insp = -1;
@@ -448,12 +448,12 @@ export class Ventilator extends BaseModelClass {
         this.triggered_breath = false;
       }
 
-      this._prev_et_tube_flow = this._vent_ettube.flow;
+      this.prev_et_tube_flow = this._vent_ettube.flow;
     }
 
     if (this._vent_ettube.flow < 0.0 && !this.triggered_breath) {
       this._peak_flow = 0.0;
-      this._prev_et_tube_flow = 0.0;
+      this.prev_et_tube_flow = 0.0;
       this._inspiration = false;
       this._expiration = true;
       this.ncc_exp = -1;

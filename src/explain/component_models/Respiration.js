@@ -164,11 +164,11 @@ export class Respiration extends BaseModelClass {
     // local properties
     this._update_interval = 0.015; // update interval (s)
     this._update_counter = 0.0; // update interval counter (s)
-    this._prev_el_lungs_factor = 1.0;
-    this._prev_el_thorax_factor = 1.0;
-    this._prev_gex_factor = 1.0;
-    this._prev_res_upper_airways_factor = 1.0;
-    this._prev_res_lower_airways_factor = 1.0;
+    this.prev_el_lungs_factor = 1.0;
+    this.prev_el_thorax_factor = 1.0;
+    this.prev_gex_factor = 1.0;
+    this.prev_res_upper_airways_factor = 1.0;
+    this.prev_res_lower_airways_factor = 1.0;
   }
 
   calc_model() {
@@ -187,33 +187,33 @@ export class Respiration extends BaseModelClass {
       this.pres_tp_right = this.pres_alv_right - this.pres_pl_right
 
 
-      if (this._prev_el_lungs_factor !== this.el_lungs_factor) {
+      if (this.prev_el_lungs_factor !== this.el_lungs_factor) {
         // update the model
         this.set_el_lung_factor(this.el_lungs_factor)
         // store the current value
-        this._prev_el_lungs_factor = this.el_lungs_factor
+        this.prev_el_lungs_factor = this.el_lungs_factor
       }
 
-      if (this._prev_el_thorax_factor !== this.el_thorax_factor) {
+      if (this.prev_el_thorax_factor !== this.el_thorax_factor) {
         // update the model
         this.set_el_thorax_factor(this.el_thorax_factor)
         // store the current value
-        this._prev_el_thorax_factor = this.el_thorax_factor
+        this.prev_el_thorax_factor = this.el_thorax_factor
       }
 
-      if (this._prev_res_upper_airways_factor !== this.res_upper_airways_factor) {
+      if (this.prev_res_upper_airways_factor !== this.res_upper_airways_factor) {
         this.set_upper_airway_resistance(this.res_upper_airways_factor)
-        this._prev_res_upper_airways_factor = this.res_upper_airways_factor
+        this.prev_res_upper_airways_factor = this.res_upper_airways_factor
       }
 
-      if (this._prev_res_lower_airways_factor !== this.res_lower_airways_factor) {
+      if (this.prev_res_lower_airways_factor !== this.res_lower_airways_factor) {
         this.set_lower_airway_resistance(this.res_lower_airways_factor)
-        this._prev_res_lower_airways_factor = this.res_lower_airways_factor
+        this.prev_res_lower_airways_factor = this.res_lower_airways_factor
       }
 
-      if (this._prev_gex_factor !== this.gex_factor) {
+      if (this.prev_gex_factor !== this.gex_factor) {
         this.set_gasexchange(this.gex_factor);
-        this._prev_gex_factor = this.gex_factor;
+        this.prev_gex_factor = this.gex_factor;
       }
     }
   }
@@ -226,7 +226,7 @@ export class Respiration extends BaseModelClass {
       let f_ps = m.el_base_factor_ps;
       // as this is a presistent factor which cumulates all effects from different models we can't just add the new factor
       // we have to add the difference 
-      let delta = new_factor - this._prev_el_lungs_factor;
+      let delta = new_factor - this.prev_el_lungs_factor;
       // add the increase/decrease in factor
       f_ps += delta;
       // guard against negative values
@@ -249,7 +249,7 @@ export class Respiration extends BaseModelClass {
         let f_ps = m.el_base_factor_ps;
         // as this is a presistent factor which cumulates all effects from different models we can't just add the new factor
         // we have to add the difference 
-        let delta = new_factor - this._prev_el_thorax_factor;
+        let delta = new_factor - this.prev_el_thorax_factor;
         // add the increase/decrease in factor
         f_ps += delta;
         // guard against negative values
@@ -272,7 +272,7 @@ export class Respiration extends BaseModelClass {
       let f_ps = m.r_factor_ps;
       // as this is a presistent factor which cumulates all effects from different models we can't just add the new factor
       // we have to add the difference 
-      let delta = new_factor - this._prev_res_upper_airways_factor;
+      let delta = new_factor - this.prev_res_upper_airways_factor;
       // add the increase/decrease in factor
       f_ps += delta;
       // guard against negative values
@@ -295,7 +295,7 @@ export class Respiration extends BaseModelClass {
       let f_ps = m.r_factor_ps;
       // as this is a presistent factor which cumulates all effects from different models we can't just add the new factor
       // we have to add the difference 
-      let delta = new_factor - this._prev_res_lower_airways_factor;
+      let delta = new_factor - this.prev_res_lower_airways_factor;
       // add the increase/decrease in factor
       f_ps += delta;
       // guard against negative values
@@ -320,7 +320,7 @@ export class Respiration extends BaseModelClass {
       let f_ps_co2 = m.dif_co2_factor_ps;
       // as this is a presistent factor which cumulates all effects from different models we can't just add the new factor
       // we have to add the difference 
-      let delta = new_factor - this._prev_gex_factor;
+      let delta = new_factor - this.prev_gex_factor;
       // add the increase/decrease in factor
       f_ps_o2 += delta;
       f_ps_co2 += delta;

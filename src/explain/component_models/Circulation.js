@@ -166,9 +166,9 @@ export class Circulation extends BaseModelClass {
     this._combined_list = [];
     this._syst_models = []
     this._pulm_models = []
-    this._prev_ans_activity = 0.0;
-    this._prev_svr_factor = 1.0;
-    this._prev_pvr_factor = 1.0;
+    this.prev_ans_activity = 0.0;
+    this.prev_svr_factor = 1.0;
+    this.prev_pvr_factor = 1.0;
     this._update_interval = 0.015;      // update interval (s)
     this._update_counter = 0.0;         // update interval counter (s)
     this._update_interval_slow = 1.0;      // update interval (s)
@@ -213,23 +213,23 @@ export class Circulation extends BaseModelClass {
       // set on all BloodVessels and MicroVascular units of the circulation.
 
       // update the ans influence on the circulation if the influence has changed
-      if (this._prev_ans_activity != this.ans_activity) {
+      if (this.prev_ans_activity != this.ans_activity) {
         this._combined_list.forEach(model => {
           // update the models
           this._model_engine.models[model].ans_activity = this.ans_activity;
           // store current value
-          this._prev_ans_activity = this.ans_activity
+          this.prev_ans_activity = this.ans_activity
         })
       }
 
-      if (this._prev_svr_factor !== this.svr_factor) {
+      if (this.prev_svr_factor !== this.svr_factor) {
         this.set_svr_factor(this.svr_factor)
-        this._prev_svr_factor = this.svr_factor
+        this.prev_svr_factor = this.svr_factor
       }
 
-      if (this._prev_pvr_factor !== this.pvr_factor) {
+      if (this.prev_pvr_factor !== this.pvr_factor) {
         this.set_pvr_factor(this.pvr_factor)
-        this._prev_pvr_factor = this.pvr_factor
+        this.prev_pvr_factor = this.pvr_factor
       }
     }
 
@@ -249,7 +249,7 @@ export class Circulation extends BaseModelClass {
       let f_ps = m.r_factor_ps;
       // as this is a presistent resistance factor which cumulates all effects from different models we can't just add the new factor
       // we have to add the difference 
-      let delta_svr = new_svr_factor - this._prev_svr_factor
+      let delta_svr = new_svr_factor - this.prev_svr_factor
       // add the increase/decrease in factor
       f_ps += delta_svr;
       // guard against negative values
@@ -272,7 +272,7 @@ export class Circulation extends BaseModelClass {
       let f_ps = m.r_factor_ps;
       // as this is a presistent resistance factor which cumulates all effects from different models we can't just add the new factor
       // we have to add the difference 
-      let delta_pvr = new_pvr_factor - this._prev_pvr_factor
+      let delta_pvr = new_pvr_factor - this.prev_pvr_factor
       // add the increase/decrease in factor
       f_ps += delta_pvr;
       // guard against negative values

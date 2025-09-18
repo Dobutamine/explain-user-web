@@ -342,8 +342,8 @@ export class Heart extends BaseModelClass {
     // local properties
     // -----------------------------------------------
     this._kn = 0.579; // constant of the activation curve
-    this._prev_cardiac_cycle_running = 0;
-    this._prev_cardiac_cycle_state = 0;
+    this.prev_cardiac_cycle_running = 0;
+    this.prev_cardiac_cycle_state = 0;
     this._temp_cardiac_cycle_time = 0.0;
     this._sa_node_interval = 1.0;
     this._sa_node_timer = 0.0;
@@ -368,23 +368,23 @@ export class Heart extends BaseModelClass {
     this._systole_running = false
     this._diastole_running = false
 
-    this._prev_la_lv_flow = 0.0;
-    this._prev_lv_aa_flow = 0.0;
-    this._prev_cont_factor = 1.0;
-    this._prev_cont_factor_left = 1.0;
-    this._prev_cont_factor_right = 1.0;
+    this.prev_la_lv_flow = 0.0;
+    this.prev_lv_aa_flow = 0.0;
+    this.prev_cont_factor = 1.0;
+    this.prev_cont_factor_left = 1.0;
+    this.prev_cont_factor_right = 1.0;
 
-    this._prev_relax_factor = 1.0;
-    this._prev_relax_factor_left = 1.0;
-    this._prev_relax_factor_right = 1.0;
+    this.prev_relax_factor = 1.0;
+    this.prev_relax_factor_left = 1.0;
+    this.prev_relax_factor_right = 1.0;
 
-    this._prev_pc_el_factor = 1.0;
+    this.prev_pc_el_factor = 1.0;
     this._hr_counter = 0;
     this._hr_factor = 1;
 
-    this._prev_p_signal = 0;
-    this._prev_qrs_signal = 0;
-    this._prev_t_signal = 0;
+    this.prev_p_signal = 0;
+    this.prev_qrs_signal = 0;
+    this.prev_t_signal = 0;
     
     this._update_counter_factors = 0.0;
     this._update_interval_factors = 0.015;
@@ -392,7 +392,7 @@ export class Heart extends BaseModelClass {
 
   analyze() {
     // state going from diastole to systole (end_diastolic)
-    if (this._prev_cardiac_cycle_state === 0 && this.cardiac_cycle_state === 1) {
+    if (this.prev_cardiac_cycle_state === 0 && this.cardiac_cycle_state === 1) {
       this.lv_edv = this._lv.vol
       this.lv_edp = this._lv.pres_in
       
@@ -402,7 +402,7 @@ export class Heart extends BaseModelClass {
     }
 
     // state going from systole to diastole (end systolic)
-    if (this._prev_cardiac_cycle_state === 1 && this.cardiac_cycle_state === 0) {
+    if (this.prev_cardiac_cycle_state === 1 && this.cardiac_cycle_state === 0) {
       this.lv_esv = this._lv.vol
       this.lv_esp = this._lv.pres_in
 
@@ -417,7 +417,7 @@ export class Heart extends BaseModelClass {
     }
 
     // state going from diastole to systole (end diastolic)
-    if (this._prev_cardiac_cycle_state === 0 && this.cardiac_cycle_state === 1) {
+    if (this.prev_cardiac_cycle_state === 0 && this.cardiac_cycle_state === 1) {
       this.lv_edv = this._lv.vol
       this.lv_esp = this._lv.pres_in
 
@@ -458,32 +458,32 @@ export class Heart extends BaseModelClass {
       const cont_left = this.cont_factor_left;
       const cont_right = this.cont_factor_right;
       if (
-        cont_left !== this._prev_cont_factor_left ||
-        cont_right !== this._prev_cont_factor_right
+        cont_left !== this.prev_cont_factor_left ||
+        cont_right !== this.prev_cont_factor_right
       ) {
         this.set_contractillity(cont_left, cont_right);
       }
-      this._prev_cont_factor_left = cont_left;
-      this._prev_cont_factor_right = cont_right;
+      this.prev_cont_factor_left = cont_left;
+      this.prev_cont_factor_right = cont_right;
 
       const relax_left = this.relax_factor_left;
       const relax_right = this.relax_factor_right;
       if (
-        relax_left !== this._prev_relax_factor_left ||
-        relax_right !== this._prev_relax_factor_right
+        relax_left !== this.prev_relax_factor_left ||
+        relax_right !== this.prev_relax_factor_right
       ) {
         this.set_relaxation(relax_left, relax_right);
       }
-      this._prev_relax_factor_left = relax_left;
-      this._prev_relax_factor_right = relax_right;
+      this.prev_relax_factor_left = relax_left;
+      this.prev_relax_factor_right = relax_right;
 
       const pc_el = this.pc_el_factor;
       if (
-        pc_el !== this._prev_pc_el_factor
+        pc_el !== this.prev_pc_el_factor
       ) {
         this.set_pericardium(pc_el, this.pc_extra_volume);
       }
-      this._prev_pc_el_factor = pc_el;
+      this.prev_pc_el_factor = pc_el;
 
 
       // set the new volume
@@ -491,28 +491,28 @@ export class Heart extends BaseModelClass {
     }
 
     // store the previous cardiac cycle state
-    this._prev_cardiac_cycle_running = this.cardiac_cycle_running;
+    this.prev_cardiac_cycle_running = this.cardiac_cycle_running;
 
     // store the previous state
-    this._prev_cardiac_cycle_state = this.cardiac_cycle_state
+    this.prev_cardiac_cycle_state = this.cardiac_cycle_state
 
     // when then mitral valve closes the systole starts
-    if (this._prev_la_lv_flow > 0.0 && this._la_lv.flow <= 0.0) {
+    if (this.prev_la_lv_flow > 0.0 && this._la_lv.flow <= 0.0) {
       // mitral valve closes so the systole starts
       this._systole_running = true
     }
     // store the previous flow
-    this._prev_la_lv_flow = this._la_lv.flow
+    this.prev_la_lv_flow = this._la_lv.flow
 
     if (this._systole_running) {
       // check whether the aortic valve closes
-      if (this._prev_lv_aa_flow > 0.0 && this._lv_aa.flow <= 0.0) {
+      if (this.prev_lv_aa_flow > 0.0 && this._lv_aa.flow <= 0.0) {
         // aortic valve closes so the systole ends
         this._systole_running = false
       }
     }
     // store the previous flow
-    this._prev_lv_aa_flow = this._lv_aa.flow
+    this.prev_lv_aa_flow = this._lv_aa.flow
 
     // set the cardiac cycle
     if (this._systole_running) {
@@ -697,7 +697,7 @@ export class Heart extends BaseModelClass {
     let f_pc_el = this._pc.el_base_factor_ps;
 
     // calculate the delta
-    let delta = new_el_factor - this._prev_pc_el_factor;
+    let delta = new_el_factor - this.prev_pc_el_factor;
 
     // guard the extremes
     f_pc_el = Math.max(f_pc_el + delta, 0);
@@ -713,8 +713,8 @@ export class Heart extends BaseModelClass {
     let f_ps_ra = this._ra.el_max_factor_ps;
     let f_ps_rv = this._rv.el_max_factor_ps;
 
-    let delta_left = new_cont_factor_left - this._prev_cont_factor_left;
-    let delta_right = new_cont_factor_right - this._prev_cont_factor_right;
+    let delta_left = new_cont_factor_left - this.prev_cont_factor_left;
+    let delta_right = new_cont_factor_right - this.prev_cont_factor_right;
 
     // add the increase/decrease in factor
     f_ps_la = Math.max(f_ps_la + delta_left, 0);
@@ -740,8 +740,8 @@ export class Heart extends BaseModelClass {
     let f_ps_ra = this._ra.el_min_factor_ps;
     let f_ps_rv = this._rv.el_min_factor_ps;
 
-    let delta_left = new_relax_factor_left - this._prev_relax_factor_left;
-    let delta_right = new_relax_factor_right - this._prev_relax_factor_right;
+    let delta_left = new_relax_factor_left - this.prev_relax_factor_left;
+    let delta_right = new_relax_factor_right - this.prev_relax_factor_right;
 
     // add the increase/decrease in factor
     f_ps_la = Math.max(f_ps_la + delta_left, 0);
@@ -767,11 +767,11 @@ export class Heart extends BaseModelClass {
     let skew_p = this.skew_p;
 
     let new_p_signal = amp_p * Math.exp(-width_p * (Math.pow(this._pq_timer - duration / skew_p, 2) / Math.pow(duration, 2)));
-    let delta_p = new_p_signal - this._prev_p_signal;
+    let delta_p = new_p_signal - this.prev_p_signal;
     
     this.ecg_signal += delta_p;
 
-    this._prev_p_signal = new_p_signal;
+    this.prev_p_signal = new_p_signal;
   }
   buidlDynamicQRSWave() {
     let new_qrs_signal = 0;
@@ -795,9 +795,9 @@ export class Heart extends BaseModelClass {
         Math.exp(-this.width_s * (Math.pow(this._qrs_timer - this.q_interval - this.r_interval - this.s_interval / this.skew_s, 2) / Math.pow(this.s_interval, 2)));
     }
 
-    let delta_qrs = new_qrs_signal - this._prev_qrs_signal;
+    let delta_qrs = new_qrs_signal - this.prev_qrs_signal;
     this.ecg_signal += delta_qrs;
-    this._prev_qrs_signal = new_qrs_signal;
+    this.prev_qrs_signal = new_qrs_signal;
   }
   buildDynamicTWave() {
     let duration = this.cqt_time;
@@ -806,9 +806,9 @@ export class Heart extends BaseModelClass {
     let skew_t = this.skew_t;
 
     let new_t_signal = amp_t * Math.exp(-width_t * (Math.pow(this._qt_timer - duration / skew_t, 2) / Math.pow(duration, 2)));
-    let delta_t = new_t_signal - this._prev_t_signal;
+    let delta_t = new_t_signal - this.prev_t_signal;
     this.ecg_signal += delta_t;
-    this._prev_t_signal = new_t_signal;
+    this.prev_t_signal = new_t_signal;
   }
 
 

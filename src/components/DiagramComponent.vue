@@ -93,6 +93,7 @@ export default {
       this.$bus.emit('load_diagram_dialog');
     },
     saveDiagram() {
+      this.stateDiagram = false;
       this.$bus.emit('save_diagram_dialog');
     },
     async initDiagram() {

@@ -482,7 +482,7 @@ export class Ecls extends BaseModelClass {
     this._blood_flow_avg_time = 1.0    
     this._blood_flow_avg_counter = 0.0     
     this._blood_flow_list = []
-    this._prev_ecls_state = false;
+    this.prev_ecls_state = false;
 
     this._flowAverage = null
     this._pVenAverage = null
@@ -564,9 +564,9 @@ export class Ecls extends BaseModelClass {
     if (this._update_counter > this._update_interval) {
       this._update_counter = 0;
 
-      if (this.ecls_running != this._prev_ecls_state) {
+      if (this.ecls_running != this.prev_ecls_state) {
         this.switch_ecls(this.ecls_running)
-        this._prev_ecls_state = this.ecls_running
+        this.prev_ecls_state = this.ecls_running
       }
 
       // get the pressures
