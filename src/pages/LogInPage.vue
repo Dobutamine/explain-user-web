@@ -323,12 +323,18 @@ export default {
       this.newUserEntry = false;
     });
 
-    if (process.env.DEV) {
-      //override login for developement development
-      this.password = "y5qkqjed";
-      this.name = "timothy_exp";
+    // autologin
+    const raw = window.location.search
+    const params = new URLSearchParams(raw.startsWith('?') ? raw.slice(1) : raw);
+
+    // // convert to plain object (note: repeated keys => last value kept)
+    const obj = Object.fromEntries(params.entries());
+    if (obj['user'] && obj['pw']) {
+      this.name = obj['user']
+      this.password = obj['pw']
       this.user.logIn(this.general.apiUrl, this.name, this.password);
     }
+
   },
 };
 </script>

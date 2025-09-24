@@ -14,55 +14,8 @@ export class Shunts extends BaseModelClass {
       caption: "description",
     },
     {
-      target: "is_enabled",
-      type: "boolean",
-      build_prop: true,
-      edit_mode: "all",
-      readonly: false,
-      caption: "enabled",
-    },
-    {
       caption: "foramen ovale diameter (mm)",
       target: "diameter_fo",
-      type: "number",
-      build_prop: true,
-      edit_mode: "basic",
-      readonly: false,
-      delta: 0.1,
-      factor: 1.0,
-      rounding: 1,
-      ll: 0.0,
-      ul: 10,
-    },
-    {
-      caption: "ventricular septal defect diameter (mm)",
-      target: "diameter_vsd",
-      type: "number",
-      build_prop: true,
-      edit_mode: "basic",
-      readonly: false,
-      delta: 0.1,
-      factor: 1.0,
-      rounding: 1,
-      ll: 0.0,
-      ul: 50,
-    },
-    {
-      caption: "atrial septum width (mm)",
-      target: "atrial_septal_width",
-      type: "number",
-      build_prop: true,
-      edit_mode: "basic",
-      readonly: false,
-      delta: 0.1,
-      factor: 1.0,
-      rounding: 1,
-      ll: 0.0,
-      ul: 10,
-    },
-    {
-      caption: "ventricular septum width (mm)",
-      target: "ventricular_septal_width",
       type: "number",
       build_prop: true,
       edit_mode: "basic",
@@ -86,7 +39,32 @@ export class Shunts extends BaseModelClass {
       ll: 0.0,
       ul: 100,
     },
-
+    {
+      caption: "ventricular septal defect diameter (mm)",
+      target: "diameter_vsd",
+      type: "number",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
+      delta: 0.1,
+      factor: 1.0,
+      rounding: 1,
+      ll: 0.0,
+      ul: 50,
+    },
+    {
+      caption: "ventricular septum width (mm)",
+      target: "ventricular_septal_width",
+      type: "number",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
+      delta: 0.1,
+      factor: 1.0,
+      rounding: 1,
+      ll: 0.0,
+      ul: 10,
+    }
   ];
 
   /*
@@ -103,8 +81,6 @@ export class Shunts extends BaseModelClass {
     this.diameter_fo_max = 10.0; 
     this.diameter_vsd = 2.0;
     this.diameter_vsd_max = 10.0;
-
-    this.atrial_septal_width = 3.0; // width of the atrial septum in mm
     this.ventricular_septal_width = 5.0; // width of the ventricular septum in mm
     this.fo_lr_factor = 10.0;
     this.viscosity = 6.0; 

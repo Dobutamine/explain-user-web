@@ -19,14 +19,6 @@ export class Circulation extends BaseModelClass {
       caption: "description",
     },
     {
-      target: "is_enabled",
-      type: "boolean",
-      build_prop: true,
-      edit_mode: "all",
-      readonly: false,
-      caption: "enabled",
-    },
-    {
       caption: "heart chambers",
       target: "heart_chambers",
       type: "multiple-list",
@@ -93,19 +85,19 @@ export class Circulation extends BaseModelClass {
       caption: "svr factor",
       target: "svr_factor",
       type: "factor",
-      delta: 0.01,
-      rounding: 2,
-      ll: -5.0,
-      ul: 5.0
+      delta: 0.1,
+      rounding: 1,
+      ll: -4.0,
+      ul: 4.0
     },
     {
       caption: "pvr factor",
       target: "pvr_factor",
       type: "factor",
-      delta: 0.01,
-      rounding: 2,
-      ll: -5.0,
-      ul: 5
+      delta: 0.1,
+      rounding: 1,
+      ll: -4.0,
+      ul: 4
     },
     {
       caption: "blood volume",
