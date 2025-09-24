@@ -186,13 +186,13 @@ function _calc_blood_composition_js(bc) {
     // set the wide o2 intervals
     left_o2 = left_o2_wide; // lower bound po2
     right_o2 = right_o2_wide; // upper bound po2
-    // if we have a previous po2 we can use this for dynamic limiting
-    if (prev_po2 > 0) {
-        left_o2 = prev_po2 - delta_o2_limits;
-        if (left_o2 < 0) left_o2 = 0; // ensure lower bound is not negative
-        right_o2 = prev_po2 + delta_o2_limits;
-        dyn_limits_used_oxy = true;
-    }
+    // // if we have a previous po2 we can use this for dynamic limiting
+    // if (prev_po2 > 0) {
+    //     left_o2 = prev_po2 - delta_o2_limits;
+    //     if (left_o2 < 0) left_o2 = 0; // ensure lower bound is not negative
+    //     right_o2 = prev_po2 + delta_o2_limits;
+    //     dyn_limits_used_oxy = true;
+    // }
 
     // calculate the po2 and so2 using the brent root finding procedure
     let po2 = _brent_root_finding(_do2_content, left_o2, right_o2, max_iterations, brent_accuracy);
@@ -201,21 +201,24 @@ function _calc_blood_composition_js(bc) {
         bc.so2 = so2 * 100.0;
         bc.prev_po2 = po2;
     } else {
-      // console.log('small limit oxy root finding failed in:', bc.name)
-      if (dyn_limits_used_oxy) {
-        // now try again with the wide limits
-        left_o2 = left_o2_wide; // lower bound po2
-        right_o2 = right_o2_wide; // upper bound po2
-        po2 = _brent_root_finding(_do2_content, left_o2, right_o2, max_iterations, brent_accuracy);
-        if (po2 > -1) {
-          bc.po2 = po2;
-          bc.so2 = so2 * 100.0;
-          bc.prev_po2 = po2;
-        } else {
-          console.log('definitive oxy root finding failed in:', bc.name)
-        }
-      }
+      console.log('definitive oxy root finding failed in:', bc.name)
     }
+    // else {
+    //   // console.log('small limit oxy root finding failed in:', bc.name)
+    //   if (dyn_limits_used_oxy) {
+    //     // now try again with the wide limits
+    //     left_o2 = left_o2_wide; // lower bound po2
+    //     right_o2 = right_o2_wide; // upper bound po2
+    //     po2 = _brent_root_finding(_do2_content, left_o2, right_o2, max_iterations, brent_accuracy);
+    //     if (po2 > -1) {
+    //       bc.po2 = po2;
+    //       bc.so2 = so2 * 100.0;
+    //       bc.prev_po2 = po2;
+    //     } else {
+    //       console.log('definitive oxy root finding failed in:', bc.name)
+    //     }
+    //   }
+    // }
 }
 
 function _net_charge_plasma(hp_estimate) {
@@ -240,7 +243,7 @@ function _calc_so2(po2_estimate) {
 
 function _do2_content(po2_estimate) {
   // calculate the saturation from the current po2 from the current po2 estimate
-  so2 = _calc_so2(po2_estimate);
+  so2 = _calc_so2_sev(po2_estimate);
 
   // calculate the to2 from the current po2 estimate
   // INPUTS: po2 in mmHg, so2 in fraction, hemoglobin in mmol/l
@@ -268,6 +271,7 @@ function _do2_content_error(po2_estimate) {
     // calculate the difference between the TO2 and the calculated TO2
     return hemoglobin * so2 + alpha_o2 * po2_estimate - to2;
 }
+*/
 
 // high overhead to calculate the so2 using the severing house method
 function _calc_so2_sev(po2_estimate) {
@@ -282,7 +286,7 @@ function _calc_so2_sev(po2_estimate) {
   // return the o2 saturation in fraction so 0.98
   return 1.0 / (Math.exp(-y) + 1.0);
 }
-*/
+
 
 function _brent_root_finding(f, x0, x1, max_iter, tolerance) {
   let fx0 = f(x0);
