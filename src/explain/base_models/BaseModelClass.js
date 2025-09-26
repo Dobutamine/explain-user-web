@@ -1,3 +1,4 @@
+// import all models to be able to instantiate them dynamically
 import * as Models from "../ModelIndex.js"
 
 // This base model class is the blueprint for all the model objects (classes). It incorporates the properties and methods which all model objects must implement
@@ -33,16 +34,16 @@ export class BaseModelClass {
 
   constructor(model_ref, name = "") {
     // initialize independent properties which all models implement
-    this.name = name; // name of the model object
-    this.description = ""; // description for documentation purposes
-    this.is_enabled = false; // flag whether the model is enabled or not
-    this.model_type = ""; // holds the model type e.g. BloodCapacitance
-    this.components = {}; // holds a dictionary 
+    this.name = name;                       // name of the model object
+    this.description = "";                  // description for documentation purposes
+    this.is_enabled = false;                // flag whether the model is enabled or not
+    this.model_type = "";                   // holds the model type e.g. BloodCapacitance
+    this.components = {};                   // holds a dictionary with associated components and their model types
 
     // initialize local properties
-    this._model_engine = model_ref; // object holding a reference to the model engine
-    this._t = model_ref.modeling_stepsize; // setting the modeling stepsize
-    this._is_initialized = false; // flag whether the model is initialized or not
+    this._model_engine = model_ref;         // object holding a reference to the model engine
+    this._t = model_ref.modeling_stepsize;  // setting the modeling stepsize
+    this._is_initialized = false;           // flag whether the model is initialized or not
   }
 
   init_model(args = {}) {
@@ -51,7 +52,7 @@ export class BaseModelClass {
       this[arg["key"]] = arg["value"];
     });
 
-
+    // now instantiate all model sub models which are part of this model and which are defined in the components dictionary
     Object.keys(this.components).forEach(component_name => {
       // do not overwrite existing models
       if (!this._model_engine.models.hasOwnProperty(component_name)) {
@@ -59,7 +60,7 @@ export class BaseModelClass {
       }
     })
   
-    // initialize all model sub models with the arguments
+    // now initialize all model sub models which are part of this model and which are defined in the components dictionary
     Object.keys(this.components).forEach(component_name => {
       let args = [];
       for (const [key, value] of Object.entries(this.components[component_name])) {
@@ -80,7 +81,6 @@ export class BaseModelClass {
   }
 
   calc_model() {
-    // this method is overridden by almost all model classes as this is the place where model calculations take place
-    // Override this method in subclasses
+    // this method is overridden by all model classes as this is the place where model calculations take place
   }
 }

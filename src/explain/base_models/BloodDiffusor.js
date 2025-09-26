@@ -1,9 +1,11 @@
+// import the base model class as we are extending it
 import { BaseModelClass } from "./BaseModelClass";
+
+// import the function to calculate the blood composition
 import { calc_blood_composition } from "../component_models/BloodComposition"
-import { readonly } from "vue";
 
 export class BloodDiffusor extends BaseModelClass {
-  // static properties
+  // static properties and model interface
   static model_type = "BloodDiffusor";
   static model_interface = [
     {    
@@ -123,29 +125,29 @@ export class BloodDiffusor extends BaseModelClass {
   ];
 
   constructor(model_ref, name = "") {
-    // call the parent constructor
+    // call the parent constructor (base model class)
     super(model_ref, name);
 
     // initialize independent properties
-    this.comp_blood1 = "PLF"; // name of the first blood-containing model
-    this.comp_blood2 = "PLM"; // name of the second blood-containing model
-    this.dif_o2 = 0.01; // diffusion constant for o2 (mmol/mmHg * s)
-    this.dif_co2 = 0.01; // diffusion constant for co2 (mmol/mmHg * s)
-    this.dif_solutes = {}; // diffusion constant for the different solutes (mmol/mmol * s)
+    this.comp_blood1 = "";                      // name of the first blood-containing model
+    this.comp_blood2 = "";                      // name of the second blood-containing model
+    this.dif_o2 = 0.01;                         // diffusion constant for o2 (mmol/mmHg * s)
+    this.dif_co2 = 0.01;                        // diffusion constant for co2 (mmol/mmHg * s)
+    this.dif_solutes = {};                      // diffusion constant for the different solutes (mmol/mmol * s)
 
-     // non-persistent property factors. These factors reset to 1.0 after each model step
-    this.dif_o2_factor = 1.0; // non-persistent diffusion factor for o2 (unitless)
-    this.dif_co2_factor = 1.0; // non-persistent diffusion factor for co2 (unitless)
-    this.dif_solutes_factor = 1.0; // non-persistent diffusion factor for solutes (unitless)
+    // non-persistent property factors. These factors reset to 1.0 after each model step
+    this.dif_o2_factor = 1.0;                   // non-persistent diffusion factor for o2 (unitless)
+    this.dif_co2_factor = 1.0;                  // non-persistent diffusion factor for co2 (unitless)
+    this.dif_solutes_factor = 1.0;              // non-persistent diffusion factor for solutes (unitless)
 
     // persistent property factors. These factors are persistent and do not reset
-    this.dif_o2_factor_ps = 1.0; // persistent diffusion factor for o2 (unitless)
-    this.dif_co2_factor_ps = 1.0; // persistent diffusion factor for co2 (unitless)
-    this.dif_solutes_factor_ps = 1.0; // persistent diffusion factor for solutes (unitless)
+    this.dif_o2_factor_ps = 1.0;                // persistent diffusion factor for o2 (unitless)
+    this.dif_co2_factor_ps = 1.0;               // persistent diffusion factor for co2 (unitless)
+    this.dif_solutes_factor_ps = 1.0;           // persistent diffusion factor for solutes (unitless)
 
     // local variables
-    this._comp_blood1 = null; // reference to the first blood-containing model
-    this._comp_blood2 = null; // reference to the second blood-containing model
+    this._comp_blood1 = null;                   // reference to the first blood-containing model
+    this._comp_blood2 = null;                   // reference to the second blood-containing model
   }
 
   calc_model() {
@@ -153,7 +155,7 @@ export class BloodDiffusor extends BaseModelClass {
     this._comp_blood1 = this._model_engine.models[this.comp_blood1];
     this._comp_blood2 = this._model_engine.models[this.comp_blood2];
 
-    // calculate the blood composition of the blood components in this diffusor as we need the partial pressures for the gas diffusion
+    // calculate the blood composition of the blood components in this diffusor as we need the partial pressures which drive gas diffusion
     calc_blood_composition(this._comp_blood1);
     calc_blood_composition(this._comp_blood2);
 
@@ -194,7 +196,7 @@ export class BloodDiffusor extends BaseModelClass {
     Object.keys(this.dif_solutes).forEach((sol) => {
       let dif = this.dif_solutes[sol] * _dif_solutes_factor;
       let dsol = (this._comp_blood1.solutes[sol] - this._comp_blood2.solutes[sol]) * dif * this._t;
-      // update the concentration
+      // update the concentrations
       if (!this._comp_blood1.fixed_composition) {
         this._comp_blood1.solutes[sol] = (this._comp_blood1.solutes[sol] * this._comp_blood1.vol - dsol) / this._comp_blood1.vol;
       }

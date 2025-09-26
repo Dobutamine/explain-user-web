@@ -124,7 +124,7 @@ export class Capacitance extends BaseModelClass {
     this._el_k = 0.0; // calculated elastance non-linear k (unitless)
   }
 
-  // this routine is called in every model step by the ModelEngine Class
+  // this routine is called in every model step by the ModelEngine
   calc_model() {
     // first calculate the current elastances and volumes
     this.calc_elastances();
@@ -192,7 +192,7 @@ export class Capacitance extends BaseModelClass {
     }
 
     // if the volume is zero or lower, handle it
-    if (this.vol < 0.0 && this.vol < this.u_vol) {
+    if (this.vol < 0.0) {
       let _vol_not_removed = -this.vol;
       // reset the volume to zero.
       this.vol = 0.0;

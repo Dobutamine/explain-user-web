@@ -90,9 +90,6 @@ export class Container extends BaseModelClass {
       ]
     }
   ];
-  static model_docs = {
-
-  }
 
   constructor(model_ref, name = "") {
     // call the constructor of the parent class
