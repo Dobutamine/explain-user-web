@@ -395,6 +395,112 @@ export default class Model {
     });
   }
 
+  // build a json file of the current model state
+  exportModelState() {
+    let model_state = this._processModelState({ ...this.modelState });
+    // extract all components from the models and put them in the root of the models object
+    Object.values(model_state.models).forEach((m) => {
+      if (m.components) {
+        if (Object.keys(m.components).length > 0) {
+          // build name array of keys
+          let key_names = [] 
+          Object.keys(m.components).forEach(k => {
+            key_names.push(k)
+          })
+          // replace
+          key_names.forEach( key_name => {
+            model_state.models[key_name] = m['components'][key_name]
+          })
+        }
+        // remove components object
+        delete m['components']
+      }
+    });
+    // do this again for nested components
+    Object.values(model_state.models).forEach((m) => {
+      if (m.components) {
+        if (Object.keys(m.components).length > 0) {
+          // build name array of keys
+          let key_names = [] 
+          Object.keys(m.components).forEach(k => {
+            key_names.push(k)
+          })
+          // replace
+          key_names.forEach( key_name => {
+            model_state.models[key_name] = m['components'][key_name]
+          })
+        }
+        // remove components object
+        delete m['components']
+      }
+    });
+
+    // prepare the models object for export by removing all references to other models
+    Object.values(model_state.models).forEach((m) => {
+      // process depending on model type
+      if (m) {
+        switch (m.model_type) {
+          case "Resistor":
+            delete m["components"]
+            delete m["l"]
+            delete m["r_k_factor"]
+            delete m["r_k_factor_ps"]
+            delete m["l_factor"]
+            delete m["l_factor_ps"]
+            delete m["fixed_composition"]
+            delete m["p1_ext"]
+            delete m["p2_ext"]
+            break;
+          case "Container":
+            delete m["pres_in"]
+            delete m["pres_tm"]
+            delete m["el_k_factor"]
+            delete m["el_k_factor_ps"]
+            break;
+          case "BloodVessel":
+            delete m["flow_backward"]
+            delete m["flow_forward"]
+            delete m["el_k_factor"]
+            delete m["el_k_factor_ps"]
+            delete m["inputs"]
+            delete m["drugs"]
+            delete m["alpha"]
+            delete m["ans_sens"]
+            delete m["el"]
+            delete m["el_current"]
+            delete m["l"]
+            delete m["l_factor"]
+            delete m["l_factor_ps"]
+            delete m["pres_in"]
+            delete m["pres_tm"]
+            delete m["el_k_factor"]
+            delete m["el_k_factor_ps"]
+            delete m["components"]
+            delete m["l"]
+            delete m["r_k_factor"]
+            delete m["r_k_factor_ps"]
+            delete m["l_factor"]
+            delete m["l_factor_ps"]
+            delete m["fixed_composition"]
+            delete m["p1_ext"]
+            delete m["p2_ext"]
+            delete m["no_flow"]
+            delete m["no_back_flow"]
+            delete m["r_current"]
+            delete m["r_factor"]
+            delete m["r_factor_ps"]
+            delete m["r_for"]
+            delete m["r_back"]
+            delete m["r_k"]
+            break;
+        }
+      }
+    });
+
+    console.log("Exporting model state:");
+    console.log(model_state.models["KID_CAP"]);
+    return JSON.stringify(model_state, null, 2);
+  }
   // ------------------------------------------------------------------------------------
   // define the local model functions
   // ------------------------------------------------------------------------------------

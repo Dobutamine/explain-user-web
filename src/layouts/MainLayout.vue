@@ -206,11 +206,11 @@
 
         <!-- <q-btn flat round dense size="sm" icon="fa-brands fa-js" color="white" class="q-mr-sm"
           @click="download_json">
-          <q-tooltip> export model state to disk (json) </q-tooltip></q-btn>
+          <q-tooltip> export model state to disk (json) </q-tooltip></q-btn> -->
 
           <q-btn flat round dense size="sm" icon="fa-brands fa-python" color="white" class="q-mr-sm"
           @click="download_py">
-          <q-tooltip> export model state to disk (python) </q-tooltip></q-btn> -->
+          <q-tooltip> export model state to disk (python) </q-tooltip></q-btn>
 
 
         <q-btn flat round dense size="sm" :icon="butIcon" :color="butColor" class="q-mr-sm" @click="togglePlay">
@@ -507,10 +507,11 @@ export default defineComponent({
       this.showInputPopup = false
     },
     download_py() {
-      this.state_destination = "local"
-      this.state_format = "python"
-      this.stopRt()
-      explain.saveModelState()
+      explain.exportModelState()
+      // this.state_destination = "local"
+      // this.state_format = "python"
+      // this.stopRt()
+      // explain.saveModelState()
     },
     download_json() {
       this.state_destination = "local"
