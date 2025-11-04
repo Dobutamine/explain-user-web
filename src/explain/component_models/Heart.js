@@ -280,7 +280,7 @@ export class Heart extends BaseModelClass {
 
     this.pc_el_factor = 1.0; // elastance factor of the pericardium
     this.pc_extra_volume = 0.0; // additional volume of the pericardium
-  
+
     this.amp_p = 0.5;
     this.skew_p = 2.5;
     this.width_p = 20;
@@ -385,7 +385,7 @@ export class Heart extends BaseModelClass {
     this.prev_p_signal = 0;
     this.prev_qrs_signal = 0;
     this.prev_t_signal = 0;
-    
+
     this._update_counter_factors = 0.0;
     this._update_interval_factors = 0.015;
   }
@@ -395,7 +395,7 @@ export class Heart extends BaseModelClass {
     if (this.prev_cardiac_cycle_state === 0 && this.cardiac_cycle_state === 1) {
       this.lv_edv = this._lv.vol
       this.lv_edp = this._lv.pres_in
-      
+
       this.rv_edv = this._rv.vol
       this.rv_edp = this._rv.pres_in
 
@@ -408,10 +408,10 @@ export class Heart extends BaseModelClass {
 
       this.la_esv = this._la.vol
       this.la_esp = this._la.pres_in
-      
+
       this.rv_esv = this._rv.vol
       this.rv_esp = this._rv.pres_in
-      
+
       this.ra_esv = this._ra.vol
       this.ra_esp = this._ra.pres_in
     }
@@ -423,10 +423,10 @@ export class Heart extends BaseModelClass {
 
       this.la_edv = this._la.vol
       this.la_esp = this._la.pres_in
-      
+
       this.rv_edv = this._rv.vol
       this.rv_esp = this._rv.pres_in
-      
+
       this.ra_edv = this._ra.vol
       this.ra_esp = this._ra.pres_in
 
@@ -526,7 +526,6 @@ export class Heart extends BaseModelClass {
     // calculate heart rate from the reference value and influencing factors
     this.heart_rate = this.heart_rate_ref +
       (this.ans_activity_hr - 1.0) * this.heart_rate_ref * this.ans_sens +
-      (this.hr_factor - 1.0) * this.heart_rate_ref +
       (this.hr_mob_factor - 1.0) * this.heart_rate_ref +
       (this.hr_temp_factor - 1.0) * this.heart_rate_ref +
       (this.hr_drug_factor - 1.0) * this.heart_rate_ref;
@@ -768,7 +767,7 @@ export class Heart extends BaseModelClass {
 
     let new_p_signal = amp_p * Math.exp(-width_p * (Math.pow(this._pq_timer - duration / skew_p, 2) / Math.pow(duration, 2)));
     let delta_p = new_p_signal - this.prev_p_signal;
-    
+
     this.ecg_signal += delta_p;
 
     this.prev_p_signal = new_p_signal;

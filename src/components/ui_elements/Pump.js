@@ -53,7 +53,7 @@ export default class Pump {
     this.picto = picto;
     this.global_scaling = scaling;
     this.animation = layout.general.animatedBy;
-    
+
     // this is a blood compartment sprite which uses
     this.sprite = PIXI.Sprite.from(this.picto);
     this.sprite["name_sprite"] = key;
@@ -72,9 +72,9 @@ export default class Pump {
       this.volume * this.layout.sprite.scale.y * this.global_scaling
     )
 
-    this.sprite.anchor = { 
+    this.sprite.anchor = {
       x: this.layout.sprite.anchor.x,
-      y: this.layout.sprite.anchor.y 
+      y: this.layout.sprite.anchor.y
     }
 
     this.sprite.rotation = this.layout.sprite.rotation;
@@ -138,7 +138,7 @@ export default class Pump {
     this.text.on('pointertap', (event) => {
       this.tapped(event)
     });
-    
+
     this.pixiApp.stage.addChild(this.text);
   }
 
@@ -250,6 +250,7 @@ export default class Pump {
     return _radius;
   }
   calculateColor(to2) {
+    return 0x666666;
     if (isNaN(to2)) {
       return 0x666666;
     }
@@ -278,9 +279,9 @@ export default class Pump {
   }
 
   fullColorHex(r, g, b) {
-    const red = this.rgbToHex(r);
-    const green = this.rgbToHex(g);
-    const blue = this.rgbToHex(b);
+    const red = this._rgbToHex(r);
+    const green = this._rgbToHex(g);
+    const blue = this._rgbToHex(b);
     return red + green + blue;
   }
 }
