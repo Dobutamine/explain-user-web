@@ -4,8 +4,8 @@ export class Monitor extends BaseModelClass {
   // static properties
   static model_type = "Monitor";
   static model_interface = [
-    {    
-      target: "model_type",  
+    {
+      target: "model_type",
       type: "string",
       build_prop: false,
       edit_mode: "basic",
@@ -118,6 +118,8 @@ export class Monitor extends BaseModelClass {
     this.hco3 = 0.0; // arterial bicarbonate concentration (mmol/l)
     this.be = 0.0; // arterial base excess concentration (mmol/l)
     this.dps = 0.0; //
+    this.do2_br = 0.0
+    this.do2_lb = 0.0
 
     // signals
     this.ecg_signal = 0.0; // ecg signal
@@ -296,7 +298,7 @@ export class Monitor extends BaseModelClass {
       this.resp_rate = this._breathing.resp_rate_measured
     }
     this._rr_update_counter += this._t
-    
+
 
 
     // determine the begin of the cardiac cycle
@@ -403,6 +405,7 @@ export class Monitor extends BaseModelClass {
       if (this._aa_br) {
         this.brain_flow = (this._brain_flow_counter / this._beats_time) * 60.0;
         this._brain_flow_counter = 0.0;
+        this.do2_br = this.brain_flow * this._aa.to2
       }
       if (this._ad_kid) {
         this.kid_flow = (this._kid_flow_counter / this._beats_time) * 60.0;
@@ -448,7 +451,7 @@ export class Monitor extends BaseModelClass {
     this._qrs_interval_counter += this._t;
     this._beats_time += this._t;
 
-    // get the pre- and postdutcal arterial o2-saturation levels from the ascending and descending aorta 
+    // get the pre- and postdutcal arterial o2-saturation levels from the ascending and descending aorta
     this.spo2 = this._ad.so2
     this.spo2_pre = this._aa.so2
 
