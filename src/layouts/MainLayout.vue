@@ -3,7 +3,7 @@
     <q-header class="bg-indigo-10 text-white headerCustomStyle" height-hint="68">
       <q-toolbar>
         <q-toolbar-title class="text-overline">
-          Explanatory models in neonatology (EXPLAIN)
+
         </q-toolbar-title>
 
         <div v-if="user.loggedIn" class="text-overline q-ml-sm">
