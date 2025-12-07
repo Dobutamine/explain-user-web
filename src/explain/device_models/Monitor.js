@@ -405,11 +405,12 @@ export class Monitor extends BaseModelClass {
       if (this._aa_br) {
         this.brain_flow = (this._brain_flow_counter / this._beats_time) * 60.0;
         this._brain_flow_counter = 0.0;
-        this.do2_br = this.brain_flow * this._aa.to2
+        this.do2_br = this.brain_flow * this._aa.to2 * 22.4;
       }
       if (this._ad_kid) {
         this.kid_flow = (this._kid_flow_counter / this._beats_time) * 60.0;
         this._kid_flow_counter = 0.0;
+        this.do2_lb = this.kid_flow * 4 * this._ad.to2 * 22.4;
       }
 
       if (this._da) {

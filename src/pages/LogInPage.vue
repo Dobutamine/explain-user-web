@@ -1,99 +1,62 @@
 <template>
   <q-page padding class="bg-black">
-    <div v-if="login" class="row justify-center items-start" style="font-size: 58px;">
-      EXPLAIN
-    </div>
-    <div v-if="login" class="row justify-center" style="font-size: 18px;">
-      EXPLANATORY MODELS IN NEONATOLOGY
-    </div>
-    <div v-if="login" class="row justify-center items-start q-ma-lg">
-      <div class="col text-center"></div>
-      <div class="col text-center">
-        <q-input v-model="name" :value="name" stack-label autofocus label="USER NAME">
-        </q-input>
-      </div>
-      <div class="col text-center"></div>
-    </div>
 
-    <div v-if="newUserEntry" class="row justify-center items-start q-ma-lg">
-      <div class="col text-center"></div>
-      <div class="col text-center">
-        <q-input v-model="email" type="email" :value="email" stack-label autofocus label="EMAIL">
-        </q-input>
-      </div>
-      <div class="col text-center"></div>
+    <div v-if="login" class="row justify-center">
+      <q-img
+        src="LogoSVG(4).svg"
+        class="row justify-center"
+        style="width: 40%"
+      />
     </div>
+    <div class="row">
+      <div class="col-4"></div>
 
-    <div v-if="newUserEntry" class="row justify-center items-start q-ma-lg">
-      <div class="col text-center"></div>
-      <div class="col text-center">
-        <q-input v-model="institution" :value="institution" stack-label autofocus label="INSTITUTION">
-        </q-input>
-      </div>
-      <div class="col text-center"></div>
-    </div>
 
-    <div v-if="newUserEntry" class="row justify-center items-start q-ma-lg">
-      <div class="col text-center"></div>
-      <div class="col text-center">
-        <q-select v-model="subscriptionType" :options="subscriptionTypes" readonly stack-label autofocus
-          label="SUBSCRIPTION PLAN">
-        </q-select>
-      </div>
-      <div class="col text-center"></div>
-    </div>
+      <q-card class="col" dark bordered>
 
-    <div v-if="login" class="row justify-center items-start q-ma-lg">
-      <div class="col text-center"></div>
-      <div class="col text-center">
-        <q-form @submit="pressedEnter">
-          <q-input v-model="password" type="password" :value="id" stack-label label="PASSWORD">
-          </q-input>
-        </q-form>
-      </div>
-      <div class="col text-center"></div>
-    </div>
+        <div v-if="login" class="row justify-center items-start q-mt-lg">
+            <div class="col-1"></div>
+              <div class="col text-center">
+                <q-input class="row" v-model="name" :value="name" stack-label autofocus label="USER NAME">
+                </q-input>
+                <q-input v-if="newUserEntry" class="row" v-model="email" type="email" :value="email" stack-label autofocus label="EMAIL">
+                </q-input>
+                <q-input v-if="newUserEntry" class="row" v-model="institution" :value="institution" stack-label autofocus label="INSTITUTION">
+                </q-input>
+                <q-select v-if="newUserEntry" class="row" v-model="subscriptionType" :options="subscriptionTypes" readonly stack-label autofocus
+                  label="SUBSCRIPTION PLAN">
+                </q-select>
+                <q-input v-if="login" class="row" v-model="password" type="password" :value="id" stack-label label="PASSWORD">
+                </q-input>
+                <q-card v-if="errorText != ''" class="row dark bordered flat q-pa-sm q-ma-md">
+                  {{ errorText }}
+                </q-card>
+                <div class="q-mt-lg col text-center">
+                  <q-btn v-if="!newUserEntry" class="q-pl-lg q-pr-lg bg-blue-grey-10" @click="LogIn"
+                    style="width: 150px;font-size: 16px;" size="sm">LOG IN</q-btn>
+                  <q-btn class="q-ml-lg q-pl-lg q-pr-lg bg-blue-grey-10" @click="showRegistration"
+                    style="width: 150px;font-size: 16px;" size="sm">REGISTER</q-btn>
+                  <q-btn v-if="newUserEntry" class="q-ml-lg q-pl-lg q-pr-lg bg-blue-grey-10" @click="cancelRegistration"
+                    style="width: 150px;font-size: 16px;" size="sm">CANCEL</q-btn>
+                </div>
 
-    <div v-if="login" class="row justify-center items-start q-ma-lg">
-      <div class="col text-center"></div>
-      <div class="col2 text-center">
-        <q-btn v-if="!newUserEntry" class="q-pl-lg q-pr-lg bg-blue-grey-10" @click="LogIn"
-          style="width: 150px;font-size: 16px;" size="sm">LOG IN</q-btn>
-        <q-btn class="q-ml-lg q-pl-lg q-pr-lg bg-blue-grey-10" @click="showRegistration"
-          style="width: 150px;font-size: 16px;" size="sm">REGISTER</q-btn>
-        <q-btn v-if="newUserEntry" class="q-ml-lg q-pl-lg q-pr-lg bg-blue-grey-10" @click="cancelRegistration"
-          style="width: 150px;font-size: 16px;" size="sm">CANCEL</q-btn>
-      </div>
-      <div class="col text-center"></div>
-    </div>
-    <div v-if="login" class="row justify-center items-start q-ma-lg">
-      <div class="col text-center"></div>
-      <div class="col text-center">
-        <br />
-        <p>
-          This Explain webapplication is developed and maintained by Tim Antonius.<br>
-        </p>
+              </div>
 
-        <br />
-        <a href="mailto: tajantonius@gmail.com">Report comments or bugs here!</a>
-      </div>
-      <div class="col text-center">
 
-      </div>
-    </div>
+            <div class="col-1"></div>
+        </div>
 
-    <div class="row justify-center items-start q-ma-lg">
-      <div class="col text-center"></div>
-      <div class="col text-center">
-        <q-card v-if="errorText != ''" class="q-pa-sm">
-          {{ errorText }}
-        </q-card>
-      </div>
-      <div class="col text-center"></div>
-    </div>
-    <div class="row justify-center items-start q-ma-lg">
-      <div class="col text-center"></div>
-      <div class="col text-center"></div>
+
+        <div class="row justify-center items-start q-ma-lg">
+          <div class="col text-center"></div>
+          <div class="col text-center">
+
+          </div>
+          <div class="col text-center"></div>
+        </div>
+
+      </q-card>
+      <div class="col-4"></div>
     </div>
   </q-page>
 </template>
@@ -318,17 +281,17 @@ export default {
         });
       }
     });
-    
+
     this.$bus.on("registered", () => {
       this.newUserEntry = false;
     });
 
-    if (process.env.DEV) {
-      //override login for developement development
-      this.password = "y5qkqjed";
-      this.name = "timothy_exp";
-      this.user.logIn(this.general.apiUrl, this.name, this.password);
-    }
+    // if (process.env.DEV) {
+    //   //override login for developement development
+    //   this.password = "y5qkqjed";
+    //   this.name = "timothy_exp";
+    //   this.user.logIn(this.general.apiUrl, this.name, this.password);
+    // }
   },
 };
 </script>
