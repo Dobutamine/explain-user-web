@@ -1,10 +1,7 @@
-// import the wasm module
-import createModule from "../wasm/bc_ems";
 
 // -----------------------------------------------------------------------------
 // Constants
 // -----------------------------------------------------------------------------
-const use_wasm        = true; // use wasm module for calculations
 const kw              = 2.5119e-11; // water dissociation constant
 const kc              = 7.94328235e-4; // carbonic acid dissociation constant
 const kd              = 6.0255959e-8; // bicarbonate dissociation constant
@@ -59,73 +56,11 @@ let dpCO2 = 0;       // Haldane effect: ↑pCO2 → right shift → ↑P₅₀
 let dT = 0;          // ↑T → right shift → ↑P₅₀
 let dDPG = 0;          // ↑DPG → right shift → ↑P₅₀
 
-// -----------------------------------------------------------------------------
-// Wasm parameters
-// -----------------------------------------------------------------------------
 
-let wasm_parameters = {
-    tco2: 23.5,
-    to2: 4.02,
-    temp: 37.0,
-    hemoglobin: 8.0,
-    na: 138.0,
-    k: 3.5,
-    ca: 1.0,
-    mg: 0.75,
-    cl: 108.0,
-    lact: 1.0,
-    albumin: 25.0,
-    phosphates: 1.64,
-    dpg: 5.0,
-    uma: 3.8,
-    prev_po2: 18.7,
-    prev_ph: 7.37,
-    p50_0: 18.8,
-}
-
-let wasm = null;
-if (use_wasm) {
-    wasm = await createModule({locateFile: p => new URL('../wasm/bc_ems.wasm', import.meta.url).pathname})
-}
 
 
 export function calc_blood_composition(bc) {
-    if (use_wasm) {
-        _calc_blood_composition_wasm(bc);
-    } else {
-       _calc_blood_composition_js(bc);
-    }
-}
-// This function calculates the blood composition using the WASM module
-function _calc_blood_composition_wasm(bc) {
-    //console.log("WASM Blood Composition Calculation Input:", bc);
-    wasm_parameters.tco2 = bc.tco2;
-    wasm_parameters.to2 = bc.to2;
-    wasm_parameters.temp = bc.temp || 37.0;
-    wasm_parameters.hemoglobin = bc.solutes["hemoglobin"] || 8.0;
-    wasm_parameters.na = bc.solutes["na"] || 138.0;
-    wasm_parameters.k = bc.solutes["k"] || 3.5;
-    wasm_parameters.ca = bc.solutes["ca"] || 1.0;
-    wasm_parameters.cl = bc.solutes["cl"] || 108.0;
-    wasm_parameters.lact = bc.solutes["lact"] || 1.0;
-    wasm_parameters.mg = bc.solutes["mg"] || 0.75;
-    wasm_parameters.albumin = bc.solutes["albumin"] || 25.0;
-    wasm_parameters.phosphates = bc.solutes["phosphates"] || 1.64;
-    wasm_parameters.uma = bc.solutes["uma"] || 3.8;
-    wasm_parameters.prev_ph = bc.ph || 7.37;
-    wasm_parameters.prev_po2 = bc.po2 || 18.7;
-
-    const result = wasm.calc_blood_composition(wasm_parameters);
-
-    if (!result.error && !isNaN(result.so2)) {
-        bc.ph = result.ph;
-        bc.pco2 = result.pco2;
-        bc.hco3 = result.hco3;
-        bc.be = result.be;
-        bc.po2 = result.po2;
-        bc.so2 = result.so2;
-    }
-    //console.log("WASM Blood Composition Calculation Result:", result);
+    _calc_blood_composition_js(bc);
 }
 
 // These functions are the same as in the wasm module, but implemented in JavaScript
@@ -264,30 +199,6 @@ function _do2_content(po2_estimate) {
 
   return dto2;
 }
-
-/*
-// this function is not functioning well in extreme po2's (don;t )
-function _do2_content_error(po2_estimate) {
-    // calculate the O2 saturation
-    so2 = _calc_so2_sev(po2_estimate);
-    // calculate the difference between the TO2 and the calculated TO2
-    return hemoglobin * so2 + alpha_o2 * po2_estimate - to2;
-}
-
-// high overhead to calculate the so2 using the severing house method
-function _calc_so2_sev(po2_estimate) {
-  // calculate the saturation from the po2 depending on the ph,be, temperature and dpg level.
-  let a = 1.04 * (7.4 - ph) + 0.005 * be + 0.07 * (dpg - 5.0);
-  let b = 0.055 * (temp + 273.15 - 310.15);
-  let x0 = 1.875 + a + b;
-  let h0 = 3.5 + a;
-  let x = Math.log(po2_estimate * 0.1333); // po2 in kPa
-  let y = x - x0 + h0 * Math.tanh(0.5343 * (x - x0)) + 1.875;
-
-  // return the o2 saturation in fraction so 0.98
-  return 1.0 / (Math.exp(-y) + 1.0);
-}
-*/
 
 function _brent_root_finding(f, x0, x1, max_iter, tolerance) {
   let fx0 = f(x0);
