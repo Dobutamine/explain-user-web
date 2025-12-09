@@ -3,7 +3,7 @@
 
     <div v-if="login" class="row justify-center">
       <q-img
-        src="LogoSVG(4).svg"
+        src="explain-labs-logo.svg"
         class="row justify-center"
         style="width: 40%"
       />

@@ -2,6 +2,7 @@
   <q-layout view="hHh lpR fFf">
     <q-header class="bg-indigo-10 text-white headerCustomStyle" height-hint="68">
       <q-toolbar>
+        <q-img v-if="user.loggedIn" src="explain-labs-logo.svg" style="width: 100px"/>
         <q-toolbar-title class="text-overline">
 
         </q-toolbar-title>
