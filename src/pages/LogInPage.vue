@@ -286,12 +286,12 @@ export default {
       this.newUserEntry = false;
     });
 
-    // if (process.env.DEV) {
-    //   //override login for developement development
-    //   this.password = "y5qkqjed";
-    //   this.name = "timothy_exp";
-    //   this.user.logIn(this.general.apiUrl, this.name, this.password);
-    // }
+    if (process.env.DEV) {
+      //override login for developement development
+      this.password = "y5qkqjed";
+      this.name = "timothy_exp";
+      this.user.logIn(this.general.apiUrl, this.name, this.password);
+    }
   },
 };
 </script>
