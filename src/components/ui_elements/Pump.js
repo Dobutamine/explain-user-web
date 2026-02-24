@@ -164,13 +164,16 @@ export default class Pump {
     });
     // calculate factors
     this.to2 = 0;
-    for (let i = 0; i < volumes.length; i++) {
-      let factor = volumes[i] / volume;
-      this.to2 += factor * to2s[i];
+    if (volume > 0) {
+      for (let i = 0; i < volumes.length; i++) {
+        let factor = volumes[i] / volume;
+        this.to2 += factor * to2s[i];
+      }
     }
     // calculate factors
     if (rot) {
-      this.rotationFlow += rot / this.models.length / 45000.0;
+      const modelCount = this.models.length > 0 ? this.models.length : 1;
+      this.rotationFlow += rot / modelCount / 45000.0;
       if (this.rotationFlow > 2 * Math.PI) {
         this.rotationFlow = 0;
       }
@@ -278,9 +281,9 @@ export default class Pump {
   }
 
   fullColorHex(r, g, b) {
-    const red = this.rgbToHex(r);
-    const green = this.rgbToHex(g);
-    const blue = this.rgbToHex(b);
+    const red = this._rgbToHex(r);
+    const green = this._rgbToHex(g);
+    const blue = this._rgbToHex(b);
     return red + green + blue;
   }
 }

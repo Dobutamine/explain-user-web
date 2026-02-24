@@ -312,16 +312,25 @@ export default defineComponent({
     }
   },
   methods: {
+    showValidationPopup(message) {
+      this.popupClass = "text-h6 text-negative"
+      this.popupTitle = "Validation"
+      this.popupMessage = message
+      this.showPopup = true
+    },
     async loadSelectedState() {
+      const selectedState = typeof this.selectedState === "string" ? this.selectedState.trim() : ""
+      if (!selectedState) {
+        this.showValidationPopup("Please select a state first.")
+        return
+      }
+
       let result = false
-      if (this.selectedState.includes("shared")) {
-        let stateName = this.selectedState.split(" (shared)")[0]
+      if (selectedState.includes("shared")) {
+        let stateName = selectedState.split(" (shared)")[0]
         result = await this.state.getSharedStateFromServer(this.general.apiUrl, stateName, this.user.token)
-        if (result) {
-          explain.build(this.state.model_definition);
-        }
       } else {
-        result = await this.state.getStateFromServer(this.general.apiUrl, this.user.name, this.selectedState, this.user.token)
+        result = await this.state.getStateFromServer(this.general.apiUrl, this.user.name, selectedState, this.user.token)
       }
       if (result) {
         explain.build(this.state.model_definition);
@@ -348,6 +357,12 @@ export default defineComponent({
       this.showLoadStatePopUp = true
     },
     async loadSelectedDiagram() {
+      const selectedDiagram = typeof this.selectedDiagram === "string" ? this.selectedDiagram.trim() : ""
+      if (!selectedDiagram) {
+        this.showValidationPopup("Please select a diagram first.")
+        return
+      }
+
       let result = await this.diagram.getDiagramFromServer(this.general.apiUrl, this.user.name, this.selectedDiagram, this.user.token)
       if (result) {
         this.showLoadDiagramPopUp = false
@@ -365,6 +380,12 @@ export default defineComponent({
       this.showLoadDiagramPopUp = true
     },
     async loadSelectedAnimation() {
+      const selectedAnimation = typeof this.selectedAnimation === "string" ? this.selectedAnimation.trim() : ""
+      if (!selectedAnimation) {
+        this.showValidationPopup("Please select an animation first.")
+        return
+      }
+
       let result = await this.animation.getAnimationFromServer(this.general.apiUrl, this.user.name, this.selectedAnimation, this.user.token)
       if (result) {
         this.showLoadAnimationPopUp = false
@@ -520,10 +541,16 @@ export default defineComponent({
       explain.saveModelState()
     },
     upload_diagram() {
+      const selectedDiagram = typeof this.selectedDiagram === "string" ? this.selectedDiagram.trim() : ""
+      if (!selectedDiagram) {
+        this.showValidationPopup("Please enter a diagram name.")
+        return
+      }
+
       // update the name of the diagram definition
-      this.diagram.diagram_definition.settings.name = this.selectedDiagram;
+      this.diagram.diagram_definition.settings.name = selectedDiagram;
       // save the diagram definition
-      this.diagram.saveDiagramToServer(this.general.apiUrl, this.user.name, this.selectedDiagram, this.user.token).then((t) => {
+      this.diagram.saveDiagramToServer(this.general.apiUrl, this.user.name, selectedDiagram, this.user.token).then((t) => {
         if (t.result) {
           this.popupClass = "text-h6"
           this.$bus.emit('show_popup', { title: "Success!", message: t.message })
@@ -536,10 +563,16 @@ export default defineComponent({
       })
     },
     upload_animation() {
+      const selectedAnimation = typeof this.selectedAnimation === "string" ? this.selectedAnimation.trim() : ""
+      if (!selectedAnimation) {
+        this.showValidationPopup("Please enter an animation name.")
+        return
+      }
+
       // update the name of the diagram definition
-      this.animation.animation_definition.settings.name = this.selectedAnimation;
+      this.animation.animation_definition.settings.name = selectedAnimation;
       // save the diagram definition
-      this.animation.saveAnimationToServer(this.general.apiUrl, this.user.name, this.selectedAnimation, this.user.token).then((t) => {
+      this.animation.saveAnimationToServer(this.general.apiUrl, this.user.name, selectedAnimation, this.user.token).then((t) => {
         if (t.result) {
           this.popupClass = "text-h6"
           this.$bus.emit('show_popup', { title: "Success!", message: t.message })
@@ -552,6 +585,11 @@ export default defineComponent({
       })
     },
     upload_no_dialog() {
+      if (!this.state.name || !String(this.state.name).trim()) {
+        this.showValidationPopup("State name is empty. Please rename the state before uploading.")
+        return
+      }
+
       this.state_destination = "server"
       this.stopRt()
       if (this.state.protected) {
@@ -562,17 +600,23 @@ export default defineComponent({
       explain.saveModelState()
     },
     upload() {
+      const selectedState = typeof this.selectedState === "string" ? this.selectedState.trim() : ""
+      if (!selectedState) {
+        this.showValidationPopup("Please enter a state name.")
+        return
+      }
+
       this.state_destination = "server"
       this.stopRt()
       if (this.state.protected) {
-        if (this.selectedState !== this.state.name) {
+        if (selectedState !== this.state.name) {
           this.state.protected = false
         }
       }
-      if (this.state.name !== this.selectedState) {
+      if (this.state.name !== selectedState) {
         this.state.default = false
       }
-      this.state.name = this.selectedState
+      this.state.name = selectedState
       this.showSaveStatePopUp = false
       explain.saveModelState()
     },
@@ -647,30 +691,92 @@ export default defineComponent({
         }
       })
     },
+    onModelReady() {
+      this.first_run = true;
+      explain.calculate(1)
+      this.$bus.emit("model_ready")
+    },
+    onModelFailed() {
+      this.$bus.emit("model_failed")
+    },
+    onRtStartEvent() {
+      this.$bus.emit("rt_start")
+    },
+    onRtStopEvent() {
+      this.$bus.emit("rt_stop")
+    },
+    onRtsEvent() {
+      this.$bus.emit("rts")
+    },
+    onRtfEvent() {
+      this.$bus.emit("rtf")
+    },
+    onStateEvent() {
+      this.$bus.emit("state")
+    },
+    onDataEvent() {
+      this.$bus.emit("data")
+    },
+    onDataSlowEvent() {
+      this.$bus.emit("data_slow")
+    },
+    onPropValueEvent(e) {
+      this.$bus.emit("prop_value", e.detail)
+    },
+    onModelPropsEvent(e) {
+      this.$bus.emit("model_props", e.detail)
+    },
+    onModelInterfaceEvent(e) {
+      this.$bus.emit("model_interface", e.detail)
+    },
+    onModelTypesEvent(e) {
+      this.$bus.emit("model_types", e.detail)
+    },
+    onModelTypeInterfaceEvent(e) {
+      this.$bus.emit("modeltype_interface", e.detail)
+    },
+    onSpriteTappedEvent(e) {
+      this.$bus.emit("sprite_tapped", e.detail)
+    },
+    onLoadDiagramDialog() {
+      this.getAllUserDiagrams()
+    },
+    onSaveDiagramDialog() {
+      this.saveDiagram()
+    },
+    onLoadAnimationDialog() {
+      this.getAllUserAnimations()
+    },
+    onSaveAnimationDialog() {
+      this.saveAnimation()
+    },
+    onUploadState() {
+      this.upload_no_dialog()
+    }
   },
   beforeUnmount() {
-    this.$bus.off('open_diagram_dialog', () => this.getAllUserDiagrams())
-    this.$bus.off('open_diagram_dialog', () => this.saveDiagram())
-    this.$bus.off('load_animation_dialog', () => this.getAllUserAnimations())
-    this.$bus.off('save_animation_dialog', () => this.saveAnimation())
-    this.$bus.off('upload_state', () => this.upload_no_dialog())
+    this.$bus.off('load_diagram_dialog', this.onLoadDiagramDialog)
+    this.$bus.off('save_diagram_dialog', this.onSaveDiagramDialog)
+    this.$bus.off('load_animation_dialog', this.onLoadAnimationDialog)
+    this.$bus.off('save_animation_dialog', this.onSaveAnimationDialog)
+    this.$bus.off('upload_state', this.onUploadState)
     document.removeEventListener("status", this.statusUpdate);
-    document.removeEventListener("model_ready", () => this.$bus.emit("model_ready"));
-    document.removeEventListener("error", () => this.$bus.emit("model_failed"));
-    document.removeEventListener("rt_start", () => this.$bus.emit("rt_start"));
-    document.removeEventListener("rt_stop", () => this.$bus.emit("rt_stop"));
-    document.removeEventListener("rts", () => this.$bus.emit("rts"));
-    document.removeEventListener("rtf", () => this.$bus.emit("rtf"));
-    document.removeEventListener("state", () => this.$bus.emit("state"));
-    document.removeEventListener("data", () => this.$bus.emit("data"));
-    document.removeEventListener("data_slow", () => this.$bus.emit("data_slow"));
-    document.removeEventListener("prop_value", (e) => this.$bus.emit("prop_value", e.detail));
-    document.removeEventListener("model_props", (e) => this.$bus.emit("model_props", e.detail));
-    document.removeEventListener("model_interface", (e) => this.$bus.emit("model_interface", e.detail));
-    document.removeEventListener("model_types", (e) => this.$bus.emit("model_types", e.detail));
-    document.removeEventListener("modeltype_interface", (e) => this.$bus.emit("modeltype_interface", e.detail));
+    document.removeEventListener("model_ready", this.onModelReady);
+    document.removeEventListener("error", this.onModelFailed);
+    document.removeEventListener("rt_start", this.onRtStartEvent);
+    document.removeEventListener("rt_stop", this.onRtStopEvent);
+    document.removeEventListener("rts", this.onRtsEvent);
+    document.removeEventListener("rtf", this.onRtfEvent);
+    document.removeEventListener("state", this.onStateEvent);
+    document.removeEventListener("data", this.onDataEvent);
+    document.removeEventListener("data_slow", this.onDataSlowEvent);
+    document.removeEventListener("prop_value", this.onPropValueEvent);
+    document.removeEventListener("model_props", this.onModelPropsEvent);
+    document.removeEventListener("model_interface", this.onModelInterfaceEvent);
+    document.removeEventListener("model_types", this.onModelTypesEvent);
+    document.removeEventListener("modeltype_interface", this.onModelTypeInterfaceEvent);
     document.removeEventListener("state_saved", this.stateSaved);
-    document.removeEventListener("sprite_tapped", (e) => this.$bus.emit("sprite_tapped", e.detail));
+    document.removeEventListener("sprite_tapped", this.onSpriteTappedEvent);
   },
   mounted() {
     try {
@@ -679,78 +785,74 @@ export default defineComponent({
     document.addEventListener("status", this.statusUpdate);
 
     try {
-      document.removeEventListener("model_ready", () => this.$bus.emit("model_ready"));
+      document.removeEventListener("model_ready", this.onModelReady);
     } catch {}
-    document.addEventListener("model_ready", () => {
-      this.first_run = true;
-      explain.calculate(1)
-      this.$bus.emit("model_ready")
-    });
+    document.addEventListener("model_ready", this.onModelReady);
 
     try {
-      document.removeEventListener("error", () => this.$bus.emit("model_failed"));
+      document.removeEventListener("error", this.onModelFailed);
     } catch {}
-    document.addEventListener("error", () => this.$bus.emit("model_failed"));
+    document.addEventListener("error", this.onModelFailed);
 
     try {
-      document.removeEventListener("rt_start", () => this.$bus.emit("rt_start"));
+      document.removeEventListener("rt_start", this.onRtStartEvent);
     } catch {}
-    document.addEventListener("rt_start", () => this.$bus.emit("rt_start"));
+    document.addEventListener("rt_start", this.onRtStartEvent);
 
     try {
-      document.removeEventListener("rt_stop", () => this.$bus.emit("rt_stop"));
+      document.removeEventListener("rt_stop", this.onRtStopEvent);
     } catch {}
-    document.addEventListener("rt_stop", () => this.$bus.emit("rt_stop"));
+    document.addEventListener("rt_stop", this.onRtStopEvent);
 
     try {
-      document.removeEventListener("rts", () => this.$bus.emit("rts"));
+      document.removeEventListener("rts", this.onRtsEvent);
     } catch {}
-    document.addEventListener("rts", () => this.$bus.emit("rts"));
+    document.addEventListener("rts", this.onRtsEvent);
 
     try {
-      document.removeEventListener("rtf", () => this.$bus.emit("rtf"));
+      document.removeEventListener("rtf", this.onRtfEvent);
     } catch {}
-    document.addEventListener("rtf", () => this.$bus.emit("rtf"));
+    document.addEventListener("rtf", this.onRtfEvent);
 
     try {
-      document.removeEventListener("state", () => this.$bus.emit("state"));
+      document.removeEventListener("state", this.onStateEvent);
     } catch {}
-    document.addEventListener("state", () => this.$bus.emit("state"));
+    document.addEventListener("state", this.onStateEvent);
 
     try {
-      document.removeEventListener("data", () => this.$bus.emit("data"));
+      document.removeEventListener("data", this.onDataEvent);
     } catch {}
-    document.addEventListener("data", () => this.$bus.emit("data"));
+    document.addEventListener("data", this.onDataEvent);
 
     try {
-      document.removeEventListener("data_slow", () => this.$bus.emit("data_slow"));
+      document.removeEventListener("data_slow", this.onDataSlowEvent);
     } catch {}
-    document.addEventListener("data_slow", () => this.$bus.emit("data_slow"));
+    document.addEventListener("data_slow", this.onDataSlowEvent);
 
     try {
-      document.removeEventListener("prop_value", (e) => this.$bus.emit("prop_value", e.detail));
+      document.removeEventListener("prop_value", this.onPropValueEvent);
     } catch {}
-    document.addEventListener("prop_value", (e) => this.$bus.emit("prop_value", e.detail));
+    document.addEventListener("prop_value", this.onPropValueEvent);
 
     try {
-      document.removeEventListener("model_props", (e) => this.$bus.emit("model_props", e.detail));
+      document.removeEventListener("model_props", this.onModelPropsEvent);
     } catch {}
-    document.addEventListener("model_props", (e) => this.$bus.emit("model_props", e.detail));
+    document.addEventListener("model_props", this.onModelPropsEvent);
 
     try {
-      document.removeEventListener("model_interface", (e) => this.$bus.emit("model_interface", e.detail));
+      document.removeEventListener("model_interface", this.onModelInterfaceEvent);
     } catch {}
-    document.addEventListener("model_interface", (e) => this.$bus.emit("model_interface", e.detail));
+    document.addEventListener("model_interface", this.onModelInterfaceEvent);
 
     try {
-      document.removeEventListener("modeltype_interface", (e) => this.$bus.emit("modeltype_interface", e.detail));
+      document.removeEventListener("modeltype_interface", this.onModelTypeInterfaceEvent);
     } catch {}
-    document.addEventListener("modeltype_interface", (e) => this.$bus.emit("modeltype_interface", e.detail));
+    document.addEventListener("modeltype_interface", this.onModelTypeInterfaceEvent);
 
     try {
-      document.removeEventListener("model_types", (e) => this.$bus.emit("model_types", e.detail));
+      document.removeEventListener("model_types", this.onModelTypesEvent);
     } catch {}
-    document.addEventListener("model_types", (e) => this.$bus.emit("model_types", e.detail));
+    document.addEventListener("model_types", this.onModelTypesEvent);
 
     try {
       document.removeEventListener("state_saved", this.stateSaved);
@@ -758,17 +860,17 @@ export default defineComponent({
     document.addEventListener("state_saved", this.stateSaved);
 
     try {
-      document.removeEventListener("sprite_tapped", (e) => this.$bus.emit("sprite_tapped", e.detail));
+      document.removeEventListener("sprite_tapped", this.onSpriteTappedEvent);
     } catch {}
-    document.addEventListener("sprite_tapped", (e) => this.$bus.emit("sprite_tapped", e.detail));
+    document.addEventListener("sprite_tapped", this.onSpriteTappedEvent);
 
-    this.$bus.on('load_diagram_dialog', () => this.getAllUserDiagrams())
-    this.$bus.on('save_diagram_dialog', () => this.saveDiagram())
+    this.$bus.on('load_diagram_dialog', this.onLoadDiagramDialog)
+    this.$bus.on('save_diagram_dialog', this.onSaveDiagramDialog)
 
-    this.$bus.on('load_animation_dialog', () => this.getAllUserAnimations())
-    this.$bus.on('save_animation_dialog', () => this.saveAnimation())
+    this.$bus.on('load_animation_dialog', this.onLoadAnimationDialog)
+    this.$bus.on('save_animation_dialog', this.onSaveAnimationDialog)
 
-    this.$bus.on('upload_state', () => this.upload_no_dialog())
+    this.$bus.on('upload_state', this.onUploadState)
   }
 })
 </script>

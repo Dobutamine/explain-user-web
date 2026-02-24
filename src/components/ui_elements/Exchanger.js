@@ -153,7 +153,8 @@ export default class Exchanger {
     }
 
     // calculate factors
-    this.rotation += (difO2 / this.models.length) * 10000;
+    const modelCount = this.models.length > 0 ? this.models.length : 1;
+    this.rotation += (difO2 / modelCount) * 10000;
     if (this.rotation > 2 * Math.PI) {
       this.rotation = 0;
     }

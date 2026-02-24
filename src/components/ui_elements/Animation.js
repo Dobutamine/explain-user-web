@@ -64,14 +64,14 @@ export default class Animation {
     
 
     try {
-        this.ani_pos_x_prop = "." + this.layout.animation.scale_x_prop;
+      this.ani_pos_x_prop = "." + this.layout.animation.pos_x_prop;
     } catch {
         this.ani_pos_x_prop = undefined;
     }
     
 
     try {
-        this.ani_pos_y_prop = "." + this.layout.animation.scale_y_prop;
+      this.ani_pos_y_prop = "." + this.layout.animation.pos_y_prop;
     } catch {
         this.ani_pos_y_prop = undefined;
     }
@@ -181,8 +181,8 @@ export default class Animation {
 
     // update the scale
     this.sprite.scale.set(
-      this.scale_x * this.layout.sprite.scale.x  * this.global_scaling,
-      this.scale_y * this.layout.sprite.scale.y  * this.global_scaling
+      scale_x * this.layout.sprite.scale.x  * this.global_scaling,
+      scale_y * this.layout.sprite.scale.y  * this.global_scaling
     )
 
     // update the positions

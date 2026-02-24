@@ -281,12 +281,14 @@ export default class Valve {
     }
 
   
+    const modelCount = this.models.length > 0 ? this.models.length : 1;
+
     if (this.pathType == 'arc_r') {
       this.direction_correction = Math.PI;
-      this.spritePosition -= (flow / this.models.length) * this.global_speed;
+      this.spritePosition -= (flow / modelCount) * this.global_speed;
     } else {
       this.direction_correction = 0;
-      this.spritePosition += (flow / this.models.length) * this.global_speed;
+      this.spritePosition += (flow / modelCount) * this.global_speed;
     }
     
 

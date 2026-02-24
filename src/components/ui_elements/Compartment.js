@@ -153,9 +153,11 @@ export default class Compartment {
     });
     // calculate factors
     this.to2 = 0;
-    for (let i = 0; i < volumes.length; i++) {
-      let factor = volumes[i] / volume;
-      this.to2 += factor * to2s[i];
+    if (volume > 0) {
+      for (let i = 0; i < volumes.length; i++) {
+        let factor = volumes[i] / volume;
+        this.to2 += factor * to2s[i];
+      }
     }
   
     if (!isNaN(volume) && this.animation == 'vol') {
