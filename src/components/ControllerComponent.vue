@@ -309,10 +309,39 @@ export default {
     };
   },
   methods: {
+    getModelValue(modelName, path) {
+      const model = explain.modelState?.models?.[modelName]
+      if (!model || !path) {
+        return undefined
+      }
+
+      const parts = String(path).split('.')
+      let value = model
+      for (const part of parts) {
+        if (value == null || typeof value !== 'object' || !(part in value)) {
+          return undefined
+        }
+        value = value[part]
+      }
+      return value
+    },
     addNewController() {
+      if (!this.newControllerModelName) {
+        return
+      }
+
       if (this.newControllerCaption == "") {
         this.newControllerCaption = this.newControllerModelName
       }
+
+      const exists = this.state.configuration.controllers.some(controller =>
+        controller.some(item => item.value === this.newControllerModelName)
+      )
+      if (exists) {
+        this.cancel();
+        return
+      }
+
       let controller_object = [
         { label: this.newControllerCaption, value: this.newControllerModelName}
       ]
@@ -421,8 +450,12 @@ export default {
         // reset the prop list choices
         param['choices_props'] = []
         param['value_prop'] = ""
-        Object.keys(explain.modelState.models[param.value_model]).forEach(prop => {
-          if (typeof (explain.modelState.models[param.value_model][prop]) === 'number') {
+        const selectedModel = explain.modelState?.models?.[param.value_model]
+        if (!selectedModel) {
+          return
+        }
+        Object.keys(selectedModel).forEach(prop => {
+          if (typeof (selectedModel[prop]) === 'number') {
             if (prop[0] !== "_") {
               param["choices_props"].push(prop)
             }
@@ -514,8 +547,16 @@ export default {
       explain.getModelState()
     },
     selectModel() {
+      if (!this.selectedModelName) {
+        return
+      }
+
       // get the model interface of the model type of the seleced model
       this.selectedModelInterface = explain.getModelInterface(this.selectedModelName)
+      if (!Array.isArray(this.selectedModelInterface)) {
+        this.selectedModelInterface = []
+        return
+      }
 
       // add a flag to the property which can be set when the property needs to be updated
       this.selectedModelInterface.forEach(param => {
@@ -572,61 +613,24 @@ export default {
       this.redraw += 1
     },
     processNumberType(param) {
-      let f_number = param.target.split('.')
-      switch (f_number.length) {
-        case 1:
-          param['value'] = explain.modelState.models[this.selectedModelName][f_number[0]]
-          break;
-        case 2:
-          param['value'] = explain.modelState.models[this.selectedModelName][f_number[0]][f_number[1]]
-          break;
-        case 3:
-          param['value'] = explain.modelState.models[this.selectedModelName][f_number[0]][f_number[1]][f_number[2]]
-          break;
+      const currentValue = this.getModelValue(this.selectedModelName, param.target)
+      const numericValue = Number(currentValue)
+      if (Number.isFinite(numericValue)) {
+        param['value'] = (numericValue * param.factor).toFixed(param.rounding)
+      } else {
+        param['value'] = Number(0).toFixed(param.rounding)
       }
-      param['value'] = (param['value'] * param.factor).toFixed(param.rounding)
     },
     processStringType(param) {
-      let f_string = param.target.split('.')
-      switch (f_string.length) {
-        case 1:
-          param['value'] = explain.modelState.models[this.selectedModelName][f_string[0]]
-          break;
-        case 2:
-          param['value'] = explain.modelState.models[this.selectedModelName][f_string[0]][f_string[1]]
-          break;
-        case 3:
-          param['value'] = explain.modelState.models[this.selectedModelName][f_string[0]][f_string[1]][f_string[2]]
-          break;
-      }
+      const currentValue = this.getModelValue(this.selectedModelName, param.target)
+      param['value'] = currentValue ?? ""
     },
     processBooleanType(param) {
-      let f_bool = param.target.split('.')
-      switch (f_bool.length) {
-        case 1:
-          param['value'] = explain.modelState.models[this.selectedModelName][f_bool[0]]
-          break;
-        case 2:
-          param['value'] = explain.modelState.models[this.selectedModelName][f_bool[0]][f_bool[1]]
-          break;
-        case 3:
-          param['value'] = explain.modelState.models[this.selectedModelName][f_bool[0]][f_bool[1]][f_bool[2]]
-          break;
-      }
+      const currentValue = this.getModelValue(this.selectedModelName, param.target)
+      param['value'] = Boolean(currentValue)
     },
     processListType(param) {
-      let f_list = param.target.split('.')
-      switch (f_list.length) {
-        case 1:
-          param['value'] = explain.modelState.models[this.selectedModelName][f_list[0]]
-          break;
-        case 2:
-          param['value'] = explain.modelState.models[this.selectedModelName][f_list[0]][f_list[1]]
-          break;
-        case 3:
-          param['value'] = explain.modelState.models[this.selectedModelName][f_list[0]][f_list[1]][f_list[2]]
-          break;
-      }
+      param['value'] = this.getModelValue(this.selectedModelName, param.target)
       // if there's a default number then use it
       if (param['default']) {
         param['value'] = param['default']
@@ -646,18 +650,7 @@ export default {
 
     },
     processMultipleListType(param) {
-      let f_mlist = param.target.split('.')
-      switch (f_mlist.length) {
-        case 1:
-          param['value'] = explain.modelState.models[this.selectedModelName][f_mlist[0]]
-          break;
-        case 2:
-          param['value'] = explain.modelState.models[this.selectedModelName][f_mlist[0]][f_mlist[1]]
-          break;
-        case 3:
-          param['value'] = explain.modelState.models[this.selectedModelName][f_mlist[0]][f_mlist[1]][f_mlist[2]]
-          break;
-      }
+      param['value'] = this.getModelValue(this.selectedModelName, param.target)
       if (param['default']) {
         param['value'] = param['default']
       }
@@ -674,28 +667,17 @@ export default {
       param['slider'] = false
     },
     processFactorType(param) {
-      let f_factor = param.target.split('.')
+      const currentValue = this.getModelValue(this.selectedModelName, param.target)
+      const numericValue = Number(currentValue)
       param['edit_mode'] = 'factors'
-      switch (f_factor.length) {
-        case 1:
-          param['value'] = explain.modelState.models[this.selectedModelName][f_factor[0]]
-          break;
-        case 2:
-          param['value'] = explain.modelState.models[this.selectedModelName][f_factor[0]][f_factor[1]]
-          break;
-        case 3:
-          param['value'] = explain.modelState.models[this.selectedModelName][f_factor[0]][f_factor[1]][f_factor[2]]
-          break;
-      }
+      param['value'] = Number.isFinite(numericValue) ? numericValue : 1
       param['display_value'] = (param.value).toFixed(param.rounding)
       param['slider_value'] = this.translateValueToSlider(param.value);
       param['value'] = (param['value']).toFixed(2)
     },
     processPropListType(param) {
-      let f_model = param.target_model.split('.')
-      param['value_model'] = explain.modelState.models[this.selectedModelName][f_model[0]]
-      let f_prop = param.target_prop.split('.')
-      param['value_prop'] = explain.modelState.models[this.selectedModelName][f_prop[0]]
+      param['value_model'] = this.getModelValue(this.selectedModelName, param.target_model)
+      param['value_prop'] = this.getModelValue(this.selectedModelName, param.target_prop)
       // file the options list
       param['choices_model'] = []
       param["choices_props"] = []
@@ -705,8 +687,12 @@ export default {
 
         }
       })
-      Object.keys(explain.modelState.models[param.value_model]).forEach(prop => {
-          if (typeof (explain.modelState.models[param.value_model][prop]) === 'number') {
+      const selectedModel = explain.modelState?.models?.[param.value_model]
+      if (!selectedModel) {
+        return
+      }
+      Object.keys(selectedModel).forEach(prop => {
+          if (typeof (selectedModel[prop]) === 'number') {
             if (prop[0] !== "_") {
               param["choices_props"].push(prop)
             }
@@ -720,16 +706,7 @@ export default {
         arg['hidden'] = false
       }
       // get the current value
-      let f = arg.target.split('.')
-      if (f.length == 1) {
-        arg['value'] = explain.modelState.models[this.selectedModelName][f[0]]
-      }
-      if (f.length == 2) {
-        arg['value'] = explain.modelState.models[this.selectedModelName][f[0]][f[1]]
-      }
-      if (f.length == 3) {
-        arg['value'] = explain.modelState.models[this.selectedModelName][f[0]][f[1]][f[2]]
-      }
+      arg['value'] = this.getModelValue(this.selectedModelName, arg.target)
 
       if (arg.target) {
         if (arg.type == 'number') {
@@ -744,7 +721,7 @@ export default {
             if (arg['options_default']) {
               arg['choices'] = arg['options_default']
             }
-            arg['value'] = explain.modelState.models[this.selectedModelName][arg.target]
+            arg['value'] = this.getModelValue(this.selectedModelName, arg.target)
             if (arg['default']) {
               arg['value'] = arg['default']
             }
@@ -759,7 +736,7 @@ export default {
             if (arg['options_default']) {
               arg['choices'] = arg['options_default']
             }
-            arg['value'] = explain.modelState.models[this.selectedModelName][arg.target]
+            arg['value'] = this.getModelValue(this.selectedModelName, arg.target)
             if (arg['default']) {
               arg['value'] = arg['default']
             }
@@ -813,15 +790,22 @@ export default {
             console.error("Unknown type: ", param.type)
         }
       })
-      console.log(param)
     },
     processReferenceType(param) {
+
+      if (!param?.target) {
+        return
+      }
 
       let temp = this.selectedModelName
 
       this.selectedModelName = param.target
       // get the model interface of the model type of the seleced model
       let model_interface_reference = explain.getModelInterface(param.target)
+      if (!Array.isArray(model_interface_reference)) {
+        this.selectedModelName = temp
+        return
+      }
 
       // add a flag to the property which can be set when the property needs to be updated
       model_interface_reference.forEach(param => {
@@ -882,19 +866,23 @@ export default {
     processAvailableModels() {
       this.availableModelNames = []
       try {
-          if (Object.keys(explain.modelState.models)) {
-          this.availableModelNames = [...Object.keys(explain.modelState.models)].sort();
+          const models = explain.modelState?.models
+          if (models && Object.keys(models)) {
+          this.availableModelNames = [...Object.keys(models)].sort();
           }
       } catch { }
+    },
+    handleState() {
+      this.processAvailableModels()
     }
   },
   beforeUnmount() {
     this.state_changed = false
-    this.$bus.off("state", this.$bus.on("state", this.processAvailableModels))
+    this.$bus.off("state", this.handleState)
   },
   mounted() {
     // update if state changes
-    this.$bus.on("state", this.processAvailableModels)
+    this.$bus.on("state", this.handleState)
   },
 };
 </script>
