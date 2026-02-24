@@ -14,10 +14,8 @@ export function calc_gas_composition(
   // calculate the dry gas composition depending on the supplied fio2
   let new_fo2_dry = fio2;
   let new_fco2_dry = fico2;
-  let new_fn2_dry =
-    (_fn2_dry * (1.0 - (fio2 + fico2))) / (1.0 - (_fo2_dry + _fco2_dry));
-  let new_fother_dry =
-    (_fother_dry * (1.0 - (fio2 + fico2))) / (1.0 - (_fo2_dry + _fco2_dry));
+  let new_fn2_dry = (_fn2_dry * (1.0 - (fio2 + fico2))) / (1.0 - (_fo2_dry + _fco2_dry));
+  let new_fother_dry = (_fother_dry * (1.0 - (fio2 + fico2))) / (1.0 - (_fo2_dry + _fco2_dry));
 
   // make sure the latest pressure is available
   gc.calc_model();

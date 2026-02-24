@@ -14,8 +14,8 @@ const alpha_o2        = 1.38e-5; // O2 solubility coefficient
 const left_o2_wide    = 0; // lower bound for pO2
 const right_o2_wide   = 800.0; // upper bound for pO2
 const delta_o2_limits = 10.0; // delta for pO2 limits
-const brent_accuracy  = 1e-8;
-const max_iterations  = 100;
+const brent_accuracy  = 1e-6;
+const max_iterations  = 60;
 const gas_constant    = 62.36367;
 
 // -----------------------------------------------------------------------------
@@ -55,12 +55,57 @@ let dpH = 0;             //Bohr effect: ↓pH → right shift → ↑P₅₀)
 let dpCO2 = 0;       // Haldane effect: ↑pCO2 → right shift → ↑P₅₀
 let dT = 0;          // ↑T → right shift → ↑P₅₀
 let dDPG = 0;          // ↑DPG → right shift → ↑P₅₀
+let hemoglobin_gdl = 0.0;
+let inv_mmol_to_ml = 0.0;
 
 
 
 
 export function calc_blood_composition(bc) {
+    const sol = bc.solutes || {};
+    const step_stamp = bc?._model_engine?.model_time_total;
+
+    if (
+      bc._bc_cache_initialized &&
+      bc._bc_prev_tco2 === bc.tco2 &&
+      bc._bc_prev_to2 === bc.to2 &&
+      bc._bc_prev_temp === bc.temp &&
+      bc._bc_prev_prev_ph === (bc.prev_ph || 7.37) &&
+      bc._bc_prev_prev_po2 === (bc.prev_po2 || 18.7) &&
+      bc._bc_prev_na === sol["na"] &&
+      bc._bc_prev_k === sol["k"] &&
+      bc._bc_prev_ca === sol["ca"] &&
+      bc._bc_prev_mg === sol["mg"] &&
+      bc._bc_prev_cl === sol["cl"] &&
+      bc._bc_prev_lact === sol["lact"] &&
+      bc._bc_prev_albumin === sol["albumin"] &&
+      bc._bc_prev_phosphates === sol["phosphates"] &&
+      bc._bc_prev_uma === sol["uma"] &&
+      bc._bc_prev_hemoglobin === sol["hemoglobin"] &&
+      (step_stamp === undefined || bc._bc_prev_step_stamp === step_stamp)
+    ) {
+      return;
+    }
+
     _calc_blood_composition_js(bc);
+
+    bc._bc_prev_step_stamp = step_stamp;
+    bc._bc_prev_tco2 = bc.tco2;
+    bc._bc_prev_to2 = bc.to2;
+    bc._bc_prev_temp = bc.temp;
+    bc._bc_prev_prev_ph = bc.prev_ph || 7.37;
+    bc._bc_prev_prev_po2 = bc.prev_po2 || 18.7;
+    bc._bc_prev_na = sol["na"];
+    bc._bc_prev_k = sol["k"];
+    bc._bc_prev_ca = sol["ca"];
+    bc._bc_prev_mg = sol["mg"];
+    bc._bc_prev_cl = sol["cl"];
+    bc._bc_prev_lact = sol["lact"];
+    bc._bc_prev_albumin = sol["albumin"];
+    bc._bc_prev_phosphates = sol["phosphates"];
+    bc._bc_prev_uma = sol["uma"];
+    bc._bc_prev_hemoglobin = sol["hemoglobin"];
+    bc._bc_cache_initialized = true;
 }
 
 // These functions are the same as in the wasm module, but implemented in JavaScript
@@ -76,6 +121,8 @@ function _calc_blood_composition_js(bc) {
     temp = bc.temp;
     prev_ph = bc.prev_ph || 7.37; // previous pH value, used to set the limits for H⁺ concentration
     prev_po2 = bc.prev_po2 || 18.7; // previous pO2 value, used to set the limits for pO2
+    hemoglobin_gdl = hemoglobin / 0.6206;
+    inv_mmol_to_ml = 760.0 / (gas_constant * (273.15 + temp));
 
     // set the wide limits based
     left_hp = left_hp_wide; // lower bound for H⁺ concentration
@@ -186,13 +233,8 @@ function _do2_content(po2_estimate) {
   // INPUTS: po2 in mmHg, so2 in fraction, hemoglobin in mmol/l
   // convert the hemoglobin unit from mmol/l to g/dL  (/ 0.6206)
   // convert to output from ml O2/dL blood to ml O2/l blood (* 10.0)
-  let to2_new_estimate = (0.0031 * po2_estimate + 1.36 * (hemoglobin / 0.6206) * so2) * 10.0;
-
-  // conversion factor for converting ml O2/l to mmol/l
-  let mmol_to_ml = (gas_constant * (273.15 + temp)) / 760.0;
-
-  // convert the ml O2/l to mmol/l
-  to2_new_estimate = to2_new_estimate / mmol_to_ml;
+  let to2_new_estimate = (0.0031 * po2_estimate + 1.36 * hemoglobin_gdl * so2) * 10.0;
+  to2_new_estimate = to2_new_estimate * inv_mmol_to_ml;
 
   // calculate the difference between the real to2 and the to2 based on the new po2 estimate and return it to the brent root finding function
   let dto2 = to2 - to2_new_estimate;
@@ -209,8 +251,12 @@ function _brent_root_finding(f, x0, x1, max_iter, tolerance) {
   }
 
   if (Math.abs(fx0) < Math.abs(fx1)) {
-    [x0, x1] = [x1, x0];
-    [fx0, fx1] = [fx1, fx0];
+    const tx = x0;
+    x0 = x1;
+    x1 = tx;
+    const tfx = fx0;
+    fx0 = fx1;
+    fx1 = tfx;
   }
 
   let x2 = x0,
@@ -219,57 +265,57 @@ function _brent_root_finding(f, x0, x1, max_iter, tolerance) {
     mflag = true,
     steps_taken = 0;
 
-  try {
-    while (steps_taken < max_iter) {
-      if (Math.abs(fx0) < Math.abs(fx1)) {
-        [x0, x1] = [x1, x0];
-        [fx0, fx1] = [fx1, fx0];
-      }
-
-      let new_point;
-      if (fx0 !== fx2 && fx1 !== fx2) {
-        let L0 = (x0 * fx1 * fx2) / ((fx0 - fx1) * (fx0 - fx2));
-        let L1 = (x1 * fx0 * fx2) / ((fx1 - fx0) * (fx1 - fx2));
-        let L2 = (x2 * fx1 * fx0) / ((fx2 - fx0) * (fx2 - fx1));
-        new_point = L0 + L1 + L2;
-      } else {
-        new_point = x1 - (fx1 * (x1 - x0)) / (fx1 - fx0);
-      }
-
-      if (
-        new_point < (3 * x0 + x1) / 4 ||
-        new_point > x1 ||
-        (mflag && Math.abs(new_point - x1) >= Math.abs(x1 - x2) / 2) ||
-        (!mflag && Math.abs(new_point - x1) >= Math.abs(x2 - d) / 2) ||
-        (mflag && Math.abs(x1 - x2) < tolerance) ||
-        (!mflag && Math.abs(x2 - d) < tolerance)
-      ) {
-        new_point = (x0 + x1) / 2;
-        mflag = true;
-      } else {
-        mflag = false;
-      }
-
-      let fnew = f(new_point);
-      d = x2;
-      x2 = x1;
-
-      if (fx0 * fnew < 0) {
-        x1 = new_point;
-        fx1 = fnew;
-      } else {
-        x0 = new_point;
-        fx0 = fnew;
-      }
-
-      steps_taken += 1;
-
-      if (Math.abs(fnew) < tolerance) {
-        return new_point;
-      }
+  while (steps_taken < max_iter) {
+    if (Math.abs(fx0) < Math.abs(fx1)) {
+      const tx = x0;
+      x0 = x1;
+      x1 = tx;
+      const tfx = fx0;
+      fx0 = fx1;
+      fx1 = tfx;
     }
-  } catch {
-    return -1;
+
+    let new_point;
+    if (fx0 !== fx2 && fx1 !== fx2) {
+      let L0 = (x0 * fx1 * fx2) / ((fx0 - fx1) * (fx0 - fx2));
+      let L1 = (x1 * fx0 * fx2) / ((fx1 - fx0) * (fx1 - fx2));
+      let L2 = (x2 * fx1 * fx0) / ((fx2 - fx0) * (fx2 - fx1));
+      new_point = L0 + L1 + L2;
+    } else {
+      new_point = x1 - (fx1 * (x1 - x0)) / (fx1 - fx0);
+    }
+
+    if (
+      new_point < (3 * x0 + x1) / 4 ||
+      new_point > x1 ||
+      (mflag && Math.abs(new_point - x1) >= Math.abs(x1 - x2) / 2) ||
+      (!mflag && Math.abs(new_point - x1) >= Math.abs(x2 - d) / 2) ||
+      (mflag && Math.abs(x1 - x2) < tolerance) ||
+      (!mflag && Math.abs(x2 - d) < tolerance)
+    ) {
+      new_point = (x0 + x1) / 2;
+      mflag = true;
+    } else {
+      mflag = false;
+    }
+
+    let fnew = f(new_point);
+    d = x2;
+    x2 = x1;
+
+    if (fx0 * fnew < 0) {
+      x1 = new_point;
+      fx1 = fnew;
+    } else {
+      x0 = new_point;
+      fx0 = fnew;
+    }
+
+    steps_taken += 1;
+
+    if (Math.abs(fnew) < tolerance) {
+      return new_point;
+    }
   }
 
   return -1;

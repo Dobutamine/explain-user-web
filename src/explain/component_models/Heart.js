@@ -304,6 +304,20 @@ export class Heart extends BaseModelClass {
     this._update_interval_factors = 0.015;
   }
 
+  init_model(args = {}) {
+    super.init_model(args);
+
+    this._la = this._model_engine.models["LA"];
+    this._lv = this._model_engine.models["LV"];
+    this._ra = this._model_engine.models["RA"];
+    this._rv = this._model_engine.models["RV"];
+    this._la_lv = this._model_engine.models["LA_LV"];
+    this._ra_rv = this._model_engine.models["RA_RV"];
+    this._lv_aa = this._model_engine.models["LV_AA"];
+    this._coronaries = this._model_engine.models["COR"] || this._model_engine.models["CORONARIES"] || null;
+    this._pc = this._model_engine.models["PERICARDIUM"];
+  }
+
   analyze() {
     // state going from diastole to systole (end_diastolic)
     if (this._prev_cardiac_cycle_state === 0 && this.cardiac_cycle_state === 1) {
@@ -353,17 +367,6 @@ export class Heart extends BaseModelClass {
   }
 
   calc_model() {
-    // get a reference to the heart component models
-    this._la = this._model_engine.models["LA"];
-    this._lv = this._model_engine.models["LV"];
-    this._ra = this._model_engine.models["RA"];
-    this._rv = this._model_engine.models["RV"];
-    this._la_lv = this._model_engine.models["LA_LV"]
-    this._ra_rv = this._model_engine.models["RA_RV"]
-    this._lv_aa = this._model_engine.models["LV_AA"]
-    this._coronaries = this._model_engine.models["COR"];
-    this._pc = this._model_engine.models["PERICARDIUM"];
-
     // set the factors
     this._update_counter_factors += this._t
     if (this._update_counter_factors > this._update_interval_factors) {
@@ -589,7 +592,9 @@ export class Heart extends BaseModelClass {
 
     this._lv.act_factor = this.vaf;
     this._rv.act_factor = this.vaf;
-    this._coronaries.act_factor = this.vaf;
+    if (this._coronaries) {
+      this._coronaries.act_factor = this.vaf;
+    }
 
     // analyze current state
     this.analyze()

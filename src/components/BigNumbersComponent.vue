@@ -115,10 +115,16 @@ export default {
 
       }
     },
+    handleRts() {
+      this.dataUpdate()
+    },
+    handleData() {
+      this.dataUpdate()
+    },
   },
   beforeUnmount() {
-    this.$bus.off("rts", () => this.dataUpdate());
-    this.$bus.off("data", () => this.dataUpdate());
+    this.$bus.off("rts", this.handleRts);
+    this.$bus.off("data", this.handleData);
     this.$bus.off("model_ready", this.updateWatchList)
     this.$bus.off("reset", this.updateWatchList)
   },
@@ -126,8 +132,8 @@ export default {
     this.isEnabled = !this.collapsed;
 
     // get the realtime slow data
-    this.$bus.on("rts", () => this.dataUpdate());
-    this.$bus.on("data", () => this.dataUpdate());
+  this.$bus.on("rts", this.handleRts);
+  this.$bus.on("data", this.handleData);
     this.$bus.on("model_ready", this.updateWatchList)
     this.$bus.on("reset", this.updateWatchList)
 

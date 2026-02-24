@@ -176,6 +176,7 @@ export class Blood extends BaseModelClass {
     this._ascending_aorta = null; // reference to ascending aorta model
     this._descending_aorta = null; // reference to descending aorta model
     this._right_atrium = null; // reference to right atrium
+    this._blood_components = [];
   }
 
   async init_model(args = {}) {
@@ -184,9 +185,11 @@ export class Blood extends BaseModelClass {
       this[arg["key"]] = arg["value"];
     });
 
-    // set the solutes and temperature of the blood containing components
-    Object.values(this._model_engine.models).forEach((model) => {
+    this._blood_components = [];
+    for (const model_name in this._model_engine.models) {
+      const model = this._model_engine.models[model_name];
       if (this.blood_containing_modeltypes.includes(model.model_type)) {
+        this._blood_components.push(model);
         if (model.to2 == 0.0 && model.tco2 == 0.0) {
           model.to2 = this.to2;
           model.tco2 = this.tco2;
@@ -195,7 +198,7 @@ export class Blood extends BaseModelClass {
           model.viscosity = this.viscosity;
         }
       }
-    });
+    }
 
     // get the components where we measure the bloodgases
     this._ascending_aorta = this._model_engine.models["AA"];
@@ -261,21 +264,17 @@ export class Blood extends BaseModelClass {
     if (bc_site) {
       this._model_engine.models[bc_site].temp = new_temp;
     } else {
-      Object.values(this._model_engine.models).forEach((model) => {
-            if (this.blood_containing_modeltypes.includes(model.model_type)) {
-              model.temp = new_temp;
-            }
-          });
+      this._blood_components.forEach((model) => {
+        model.temp = new_temp;
+      });
     }
     
   }
 
   set_viscosity(new_viscosity) {
     this.viscosity = new_viscosity;
-    Object.values(this._model_engine.models).forEach((model) => {
-      if (this.blood_containing_modeltypes.includes(model.model_type)) {
-        model.viscosity = new_viscosity;
-      }
+    this._blood_components.forEach((model) => {
+      model.viscosity = new_viscosity;
     });
   }
 
@@ -283,10 +282,8 @@ export class Blood extends BaseModelClass {
     if (bc_site) {
       this._model_engine.models[bc_site].to2 = new_to2;
     } else {
-      Object.values(this._model_engine.models).forEach((model) => {
-        if (this.blood_containing_modeltypes.includes(model.model_type)) {
-          model.to2 = new_to2;
-        }
+      this._blood_components.forEach((model) => {
+        model.to2 = new_to2;
       });
     }
   }
@@ -295,10 +292,8 @@ export class Blood extends BaseModelClass {
     if (bc_site) {
       this._model_engine.models[bc_site].tco2 = new_tco2;
     } else {
-      Object.values(this._model_engine.models).forEach((model) => {
-        if (this.blood_containing_modeltypes.includes(model.model_type)) {
-          model.tco2 = new_tco2;
-        }
+      this._blood_components.forEach((model) => {
+        model.tco2 = new_tco2;
       });
     }
   }
@@ -307,10 +302,8 @@ export class Blood extends BaseModelClass {
     if (bc_site) {
       this._model_engine.models[bc_site].solutes[solute] = solute_value;
     } else {
-      Object.values(this._model_engine.models).forEach((model) => {
-        if (this.blood_containing_modeltypes.includes(model.model_type)) {
-          model.solutes = { ...this.solutes };
-        }
+      this._blood_components.forEach((model) => {
+        model.solutes = { ...this.solutes };
       });
     }
   }

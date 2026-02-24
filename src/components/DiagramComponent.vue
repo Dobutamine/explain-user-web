@@ -85,6 +85,9 @@ export default {
   },
   methods: {
     setDiagramAsStateDefault() {
+      if (!this.diagram?.diagram_definition?.settings?.name) {
+        return;
+      }
       this.state.diagram_definition.name = this.diagram.diagram_definition.settings.name
       this.stateDiagram = true;
       this.$bus.emit('upload_state')
@@ -527,6 +530,9 @@ export default {
       }
     },
     buildDiagram() {
+      if (!this.diagram?.diagram_definition?.settings || !this.diagram?.diagram_definition?.components) {
+        return;
+      }
       // read the general diagram settings
       if (isNaN(this.diagram.diagram_definition.settings.speed) || this.diagram.diagram_definition.settings.speed <= 0.01) {
         this.diagram.diagram_definition.settings.speed = 1
@@ -571,7 +577,22 @@ export default {
 
     },
     async loadModelDefinition() {
-      let result = await this.diagram.getDiagramFromServer(this.general.apiUrl, this.user.name, this.state.diagram_definition.name, this.user.token)
+      const result = await this.diagram.getDiagramFromServer(this.general.apiUrl, this.user.name, this.state.diagram_definition.name, this.user.token)
+      if (!result) {
+        return false;
+      }
+
+      if (!this.diagram.diagram_definition) {
+        this.diagram.diagram_definition = {};
+      }
+      if (!this.diagram.diagram_definition.settings) {
+        this.diagram.diagram_definition.settings = {};
+      }
+      if (!this.diagram.diagram_definition.components) {
+        this.diagram.diagram_definition.components = {};
+      }
+
+      return true;
     }
   },
   beforeUnmount() {
@@ -599,8 +620,12 @@ export default {
     this.initDiagram().then(() => {
       // load the diagram from the server
       this.loadModelDefinition().then (() => {
-        console.log(`Diagram ${this.diagram.diagram_definition.settings.name} loaded.`)
-        this.buildDiagram()
+        if (this.diagram?.diagram_definition?.settings?.name) {
+          console.log(`Diagram ${this.diagram.diagram_definition.settings.name} loaded.`)
+          this.buildDiagram()
+        } else {
+          console.log("Diagram load failed or unauthorized.")
+        }
       })
     })
 

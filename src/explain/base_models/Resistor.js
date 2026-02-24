@@ -258,7 +258,7 @@ export class Resistor extends BaseModelClass {
     // calculate the backward flow between two components
     if (_p1_t < _p2_t && !this.no_back_flow) {
       // calculate the backward flow
-      this.flow = (_p1_t - _p2_t + this._r_k * Math.pow(this.flow, 2) + this.l * (this.flow - this._prev_flow)) / this._r_back;
+      this.flow = (_p1_t - _p2_t + this._r_k * Math.pow(this.flow, 2) + this._l * (this.flow - this._prev_flow)) / this._r_back;
 
       // update the volumes of the connected components but do not remove the volume which could not be removed from the upstream component (to prevent volume loss)
       let vol_not_removed = this._comp_to.volume_out(-this.flow * this._t);

@@ -133,6 +133,7 @@ export class Gas extends BaseModelClass {
 
     // local properties
     this.gas_containing_modeltypes = ["GasCapacitance"];
+    this._gas_components = [];
   }
 
   init_model(args = {}) {
@@ -141,15 +142,16 @@ export class Gas extends BaseModelClass {
       this[arg["key"]] = arg["value"];
     });
 
-    // set the atmospheric pressure and global gas temperature in all gas containing models
-    Object.values(this._model_engine.models).forEach((model) => {
+    this._gas_components = [];
+    for (const model_name in this._model_engine.models) {
+      const model = this._model_engine.models[model_name];
       if (this.gas_containing_modeltypes.includes(model.model_type)) {
-        //console.log('Setting gas properties on: ', model.name)
+        this._gas_components.push(model);
         model.pres_atm = this.pres_atm;
         model.temp = this.temp;
         model.target_temp = this.temp;
       }
-    });
+    }
 
     // set the temperatures of the different gas containing components
     Object.keys(this.temp_settings).forEach((model_name) => {
@@ -165,10 +167,8 @@ export class Gas extends BaseModelClass {
     });
 
     // calculate the gas composition of the gas containing model types
-    Object.values(this._model_engine.models).forEach((model) => {
-      if (this.gas_containing_modeltypes.includes(model.model_type)) {
-        calc_gas_composition(model, this.fio2, model.temp, model.humidity);
-      }
+    this._gas_components.forEach((model) => {
+      calc_gas_composition(model, this.fio2, model.temp, model.humidity);
     });
 
     // flag that the model is initialized
@@ -183,10 +183,8 @@ export class Gas extends BaseModelClass {
     this.pres_atm = new_pres_atm;
 
     // set the atmospheric pressure in all gas containing models
-    Object.values(this._model_engine.models).forEach((model) => {
-      if (this.gas_containing_modeltypes.includes(model.model_type)) {
-        model.pres_atm = this.pres_atm;
-      }
+    this._gas_components.forEach((model) => {
+      model.pres_atm = this.pres_atm;
     });
   }
 

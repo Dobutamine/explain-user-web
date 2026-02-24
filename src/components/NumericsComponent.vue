@@ -20,7 +20,6 @@
 <script>
 import { explain } from "../boot/explain";
 
-
 export default {
   props: {
     title: String,
@@ -60,7 +59,6 @@ export default {
           weight_factor = 1.0 / explain.modelState.weight
         }
         if (param.props.length > 1) {
-          // two values
           for (let i = 0; i < param.props.length; i++) {
             try {
               if (this.currentData[param.props[i]] !== undefined) {
@@ -71,7 +69,6 @@ export default {
               }
             } catch { }
           }
-          // slice off the last value, removing the /
           param.value = param.value.slice(0, -1);
         } else {
           try {
@@ -85,22 +82,37 @@ export default {
         }
       });
     },
+    handleModelReady() {
+      this.updateWatchList()
+    },
+    handleReset() {
+      this.updateWatchList()
+    },
+    handleRts() {
+      this.dataUpdate()
+    },
+    handleData() {
+      this.dataUpdate()
+    },
+    handleState() {
+      this.dataUpdate()
+    },
   },
   beforeUnmount() {
-    this.$bus.off("model_ready", () => this.updateWatchList())
-    this.$bus.off("reset", () => this.updateWatchList())
-    this.$bus.off("rts", () => { this.dataUpdate()});
-    this.$bus.off("data", () => { this.dataUpdate()});
-    this.$bus.off("state", () => { this.dataUpdate()});
+    this.$bus.off("model_ready", this.handleModelReady)
+    this.$bus.off("reset", this.handleReset)
+    this.$bus.off("rts", this.handleRts);
+    this.$bus.off("data", this.handleData);
+    this.$bus.off("state", this.handleState);
   },
   mounted() {
     this.isEnabled = !this.collapsed;
     this.mutableParameters = [...this.parameters];
-    this.$bus.on("model_ready", () => this.updateWatchList())
-    this.$bus.on("reset", () => this.updateWatchList())
-    this.$bus.on("rts", () => { this.dataUpdate()});
-    this.$bus.on("data", () => { this.dataUpdate()});
-    this.$bus.on("state", () => { this.dataUpdate()});
+    this.$bus.on("model_ready", this.handleModelReady)
+    this.$bus.on("reset", this.handleReset)
+    this.$bus.on("rts", this.handleRts);
+    this.$bus.on("data", this.handleData);
+    this.$bus.on("state", this.handleState);
     if (this.isEnabled) {
       this.updateWatchList()
     }

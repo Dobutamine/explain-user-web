@@ -20,6 +20,7 @@
 import * as models from "./ModelIndex";
 import DataCollector from "./helpers/DataCollector";
 import TaskScheduler from "./helpers/TaskScheduler";
+import { calc_blood_composition } from "./component_models/BloodComposition";
 
 // import the wasm modules
 //import createModule from "./wasm/bc_ems.js";
@@ -29,6 +30,28 @@ import TaskScheduler from "./helpers/TaskScheduler";
 // store all imported models in a list to be able to instantiate them dynamically
 let available_models = [];
 Object.values(models).forEach((model) => available_models.push(model));
+const available_model_map = {};
+for (let i = 0; i < available_models.length; i++) {
+  const model_class = available_models[i];
+  available_model_map[model_class.model_type] = model_class;
+}
+const model_types_cached = [...new Set(available_models.map((mt) => mt.model_type))];
+const ENABLE_STEP_ERROR_GUARD = true;
+
+const _get_data_collector = function () {
+  return model?.DataCollector || null;
+};
+
+const _get_task_scheduler = function () {
+  return model?.TaskScheduler || null;
+};
+
+const _normalize_payload = function (payload) {
+  if (typeof payload === "string") {
+    return JSON.parse(payload);
+  }
+  return payload;
+};
 
 // declare a model object holding the current model
 let model = {
@@ -87,14 +110,14 @@ self.onmessage = (e) => {
     case "PUT": // update a resource
       switch (e.data.message) {
         case "sample_interval":
-          model["DataCollector"].set_sample_interval(e.data.payload);
+          _get_data_collector()?.set_sample_interval(e.data.payload);
           break;
         case "sample_interval_slow":
-          model["DataCollector"].set_sample_interval_slow(e.data.payload);
+          _get_data_collector()?.set_sample_interval_slow(e.data.payload);
           break;
         case "property_value":
           console.log("ModelEngine: task scheduler request: ", e.data.payload )
-          set_property(JSON.parse(e.data.payload));
+          set_property(_normalize_payload(e.data.payload));
           break;
       }
       break;
@@ -102,7 +125,7 @@ self.onmessage = (e) => {
       switch (e.data.message) {
         case "build":
           console.log("ModelEngine: received new model definition.")
-          model_initialized = build(JSON.parse(e.data.payload));
+          model_initialized = build(_normalize_payload(e.data.payload));
           break;
         case "start":
           console.log("ModelEngine: realtime model started.")
@@ -118,7 +141,7 @@ self.onmessage = (e) => {
           break;
         case "call":
           console.log("ModelEngine: calling model a specific function", e.data.payload )
-          call_function(JSON.parse(e.data.payload));
+          call_function(_normalize_payload(e.data.payload));
           break;
         case "add":
           add_model_to_engine(e.data.payload);
@@ -193,16 +216,12 @@ const build = function (model_definition) {
 
   // initialize all sub models
   Object.values(model_definition.models).forEach((sub_model_def) => {
-    // check if the model is available in the available model list
-    let index = available_models.findIndex(
-      (available_model) =>
-        available_model.model_type === sub_model_def.model_type
-    );
+    const model_class = available_model_map[sub_model_def.model_type];
 
     // if the component model was found then instantiate a model
-    if (index > -1) {
+    if (model_class) {
       // instantiate the new component and give it a name, pass the model type and a reference to the whole model
-      let new_sub_model = new available_models[index](
+      let new_sub_model = new model_class(
         model,
         sub_model_def.name,
         sub_model_def.model_type
@@ -213,7 +232,7 @@ const build = function (model_definition) {
       // copy the model interface object
       try {
       model.models[sub_model_def.name].model_interface = [
-        ...available_models[index].model_interface,
+        ...model_class.model_interface,
       ];
       } catch (e) {
         console.log("ModelEngine: model interface copy error: ", sub_model_def.name, sub_model_def.model_type);
@@ -418,12 +437,12 @@ const calculate = function (time_to_calculate) {
   }
 
   // clean up the datacollector
-  model.DataCollector.clean_up();
-  model.DataCollector.clean_up_slow();
+  _get_data_collector()?.clean_up();
+  _get_data_collector()?.clean_up_slow();
 };
 
 const set_property = function (new_prop_value) {
-  model["TaskScheduler"].add_task(new_prop_value);
+  _get_task_scheduler()?.add_task(new_prop_value);
 };
 
 const get_property = function (prop) {
@@ -464,12 +483,20 @@ const get_model_props = function (model_name) {
 
 }
 const get_modeltype_interface = function (model_type) {
-  const result = available_models.find(item => item.model_type === model_type );
-  let new_sub_model = new result(model, "", model_type);
+  const result = available_model_map[model_type];
+  let model_interface = result?.model_interface || [];
+  if ((!model_interface || model_interface.length === 0) && result) {
+    try {
+      let new_sub_model = new result(model, "", model_type);
+      model_interface = new_sub_model.model_interface || [];
+    } catch {
+      model_interface = [];
+    }
+  }
   _send({
     type: "modeltype_interface",
     message: "",
-    payload: new_sub_model.model_interface,
+    payload: model_interface,
   });
 }
 
@@ -482,41 +509,43 @@ const get_model_interface = function (model_name) {
 }
 
 const get_model_types = function () {
-  let types = []
-  Object.values(available_models).forEach(mt => {
-    types.push(mt.model_type)
-  })
-  let types_filtered = [...new Set(types)];
-
   _send({
     type: "model_types",
     message: "",
-    payload: types_filtered,
+    payload: model_types_cached,
   });
 
 }
 
 const call_function = function (new_function_call) {
-  model["TaskScheduler"].add_function_call(new_function_call);
+  _get_task_scheduler()?.add_function_call(new_function_call);
 };
 
 const clear_watchlist = function () {
-  model.DataCollector.clear_watchlist();
+  _get_data_collector()?.clear_watchlist();
 };
 
 const clear_watchlist_slow = function () {
-  model.DataCollector.clear_watchlist_slow();
+  _get_data_collector()?.clear_watchlist_slow();
 };
 
 const watch_props = function (args) {
+  const data_collector = _get_data_collector();
+  if (!data_collector) {
+    return;
+  }
   args.forEach((prop) => {
-    model.DataCollector.add_to_watchlist(prop);
+    data_collector.add_to_watchlist(prop);
   });
 };
 
 const watch_props_slow = function (args) {
+  const data_collector = _get_data_collector();
+  if (!data_collector) {
+    return;
+  }
   args.forEach((prop) => {
-    model.DataCollector.add_to_watchlist_slow(prop);
+    data_collector.add_to_watchlist_slow(prop);
   });
 };
 
@@ -531,7 +560,7 @@ const get_model_state = function () {
 
 const get_model_data = function () {
   // get the realtime model data from the datacollector
-  model_data = model.DataCollector.get_model_data();
+  model_data = _get_data_collector()?.get_model_data() || [];
 
   // send data to the ui
   postMessage({
@@ -543,7 +572,7 @@ const get_model_data = function () {
 
 const get_model_data_slow = function () {
   // get the slow update model data from the datacollector
-  model_data_slow = model.DataCollector.get_model_data_slow();
+  model_data_slow = _get_data_collector()?.get_model_data_slow() || [];
 
   // send data to the ui
   postMessage({
@@ -555,48 +584,55 @@ const get_model_data_slow = function () {
 
 const get_blood_composition = function (model_name) {
   console.log("ModelEngine: calculating blood composition.")
-  let m = model.models[model_name];
-  let args = {
-    tco2: m.tco2,
-    to2 : m.to2,
-    temp : 37.0,
-    hemoglobin : 8.0,
-    na : 138.0,
-    k : 3.5,
-    ca : 1.0,
-    mg : 0.75,
-    cl : 108.0,
-    lact : 1.0,
-    albumin : 25.0,
-    phosphates : 1.64,
-    dpg : 5.0,
-    uma : 3.8,
-    prev_po2 : m.po2,
-    prev_ph : m.ph,
-    p50_0 : 18.8, // P50_0 : 18.8 for fetal hemoglobin, 26.7 for adult hemoglobin
+  const m = model.models[model_name];
+  if (!m) {
+    _send({
+      type: "status",
+      message: `ERROR: blood composition model not found (${model_name})`,
+      payload: [],
+    });
+    return;
   }
-  let result = bc.calc_blood_composition(args);
-  console.log(result)
-  console.log(m.po2)
+
+  try {
+    calc_blood_composition(m);
+    _send({
+      type: "status",
+      message: `blood composition calculated for ${model_name}`,
+      payload: [],
+    });
+  } catch (e) {
+    console.log("ModelEngine: blood composition calculation failed.", e);
+    _send({
+      type: "status",
+      message: `ERROR: blood composition calculation failed for ${model_name}`,
+      payload: [],
+    });
+  }
 }
 
 const _model_step = function () {
   // iterate over all models
-  Object.values(model.models).forEach((model_component) => {
-    try {
+  for (const model_name in model.models) {
+    const model_component = model.models[model_name];
+    if (ENABLE_STEP_ERROR_GUARD) {
+      try {
+        model_component.step_model();
+      } catch(e) {
+        console.log("Step model error: ", model_component.name);
+        console.log(e)
+      }
+    } else {
       model_component.step_model();
-    } catch(e) {
-      console.log("Step model error: ", model_component.name);
-      console.log(e)
     }
 
-  });
+  }
 
   // call the datacollector
-  model["DataCollector"].collect_data(model.model_time_total);
+  _get_data_collector()?.collect_data(model.model_time_total);
 
   // do the tasks
-  model["TaskScheduler"].run_tasks();
+  _get_task_scheduler()?.run_tasks();
 
 
   // increase the model clock
@@ -633,7 +669,7 @@ const _model_step_rt = function () {
 
 const _get_model_data_rt = function () {
   // get the realtime model data from the datacollector
-  model_data = model.DataCollector.get_model_data();
+  model_data = _get_data_collector()?.get_model_data() || [];
 
   // send data to the ui
   postMessage({
@@ -645,7 +681,7 @@ const _get_model_data_rt = function () {
 
 const _get_model_data_rt_slow = function () {
   // get the realtime slow model data from the datacollector
-  model_data = model.DataCollector.get_model_data_slow();
+  model_data = _get_data_collector()?.get_model_data_slow() || [];
 
   // send data to the ui
   postMessage({

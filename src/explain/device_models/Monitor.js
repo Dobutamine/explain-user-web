@@ -187,10 +187,15 @@ export class Monitor extends BaseModelClass {
     this._ua_flow_counter = 0.0;
     this._uv_flow_counter = 0.0;
     this._hr_list = [];
+    this._hr_sum = 0.0;
     this._edv_lv_list = [];
+    this._edv_lv_sum = 0.0;
     this._edv_rv_list = [];
+    this._edv_rv_sum = 0.0;
     this._esv_lv_list = [];
+    this._esv_lv_sum = 0.0;
     this._esv_rv_list = [];
+    this._esv_rv_sum = 0.0;
     this._edp_lv_list = [];
     this._edp_rv_list = [];
     this._rr_list = [];
@@ -246,6 +251,7 @@ export class Monitor extends BaseModelClass {
   calc_avg_heartrate(hr) {
     // average heart rate determination
     this._hr_list.push(hr);
+    this._hr_sum += hr;
 
     // dynamic avg heartrate (Philips Intellivue doc state)
     if (hr < 80) {
@@ -253,11 +259,13 @@ export class Monitor extends BaseModelClass {
     } else {
       this.hr_avg_beats = 12.0
     }
-    // get the rolling average of the heartrate
-    this.heart_rate = this._hr_list.reduce((acc, val) => acc + val, 0) / this._hr_list.length;
     if (this._hr_list.length > this.hr_avg_beats) {
-      this._hr_list.shift();
-      }
+      const removed_hr = this._hr_list.shift();
+      this._hr_sum -= removed_hr;
+    }
+
+    // get the rolling average of the heartrate
+    this.heart_rate = this._hr_sum / this._hr_list.length;
   }
 
   calc_model() {
@@ -337,27 +345,36 @@ export class Monitor extends BaseModelClass {
         this._temp_pa_pres_min = 1000.0;
       }
       if (this._lv) {
-        this._edv_lv_list.push(this._temp_lv_vol_max * 1000.0);
-        this._edv_rv_list.push(this._temp_rv_vol_max * 1000.0);
+        const edv_lv_value = this._temp_lv_vol_max * 1000.0;
+        const edv_rv_value = this._temp_rv_vol_max * 1000.0;
+        const esv_lv_value = this._temp_lv_vol_min * 1000.0;
+        const esv_rv_value = this._temp_rv_vol_min * 1000.0;
 
-        this._esv_lv_list.push(this._temp_lv_vol_min * 1000.0);
-        this._esv_rv_list.push(this._temp_rv_vol_min * 1000.0);
+        this._edv_lv_list.push(edv_lv_value);
+        this._edv_rv_list.push(edv_rv_value);
+        this._esv_lv_list.push(esv_lv_value);
+        this._esv_rv_list.push(esv_rv_value);
+
+        this._edv_lv_sum += edv_lv_value;
+        this._edv_rv_sum += edv_rv_value;
+        this._esv_lv_sum += esv_lv_value;
+        this._esv_rv_sum += esv_rv_value;
 
         // get the rolling averages
-        this.edv_lv = this._edv_lv_list.reduce((acc, val) => acc + val, 0) / this._edv_lv_list.length;
-        this.edv_rv = this._edv_rv_list.reduce((acc, val) => acc + val, 0) / this._edv_rv_list.length;
+        this.edv_lv = this._edv_lv_sum / this._edv_lv_list.length;
+        this.edv_rv = this._edv_rv_sum / this._edv_rv_list.length;
 
-        this.esv_lv = this._esv_lv_list.reduce((acc, val) => acc + val, 0) / this._esv_lv_list.length;
-        this.esv_rv = this._esv_rv_list.reduce((acc, val) => acc + val, 0) / this._esv_rv_list.length;
+        this.esv_lv = this._esv_lv_sum / this._esv_lv_list.length;
+        this.esv_rv = this._esv_rv_sum / this._esv_rv_list.length;
 
         this.lv_sv = this.edv_lv - this.esv_lv
         this.rv_sv = this.edv_rv - this.esv_rv
 
         if (this._edv_lv_list.length > this.hr_avg_beats) {
-          this._edv_lv_list.shift();
-          this._edv_rv_list.shift();
-          this._esv_lv_list.shift();
-          this._esv_rv_list.shift();
+          this._edv_lv_sum -= this._edv_lv_list.shift();
+          this._edv_rv_sum -= this._edv_rv_list.shift();
+          this._esv_lv_sum -= this._esv_lv_list.shift();
+          this._esv_rv_sum -= this._esv_rv_list.shift();
         }
 
         this.edp_lv = this._temp_lv_pres_min;

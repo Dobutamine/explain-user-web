@@ -90,13 +90,13 @@ export default class TaskScheduler {
 
   run_tasks() {
     if (this._task_interval_counter > this._task_interval) {
-      const finished_tasks = [];
       // reset the counter
       this._task_interval_counter = 0.0;
 
       // run the tasks
       for (const id in this._tasks) {
         const task = this._tasks[id];
+        let remove_task = false;
 
         // check if the task should be executed
         if (task.at < this._task_interval && !task.running) {
@@ -112,12 +112,12 @@ export default class TaskScheduler {
               task.current_value = task.t;
               this._set_value(task);
               task.completed = true;
-              finished_tasks.push(id);
+              remove_task = true;
               break;
             case 2:
               task.func.apply(task.model, task.args)
               task.completed = true;
-              finished_tasks.push(id);
+              remove_task = true;
               break;
           }
 
@@ -133,18 +133,17 @@ export default class TaskScheduler {
             this._set_value(task);
             task.stepsize = 0;
             task.completed = true;
-            finished_tasks.push(id);
+            remove_task = true;
           } else {
             task.current_value += task.stepsize;
             this._set_value(task);
           }
         }
-      }
 
-      // remove completed tasks
-      finished_tasks.forEach((ft) => {
-        delete this._tasks[ft];
-      });
+        if (remove_task) {
+          delete this._tasks[id];
+        }
+      }
     }
 
     if (this.is_enabled) {

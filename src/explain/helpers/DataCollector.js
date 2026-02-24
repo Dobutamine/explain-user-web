@@ -5,9 +5,11 @@ export default class Datacollector {
 
     // define the watch list
     this.watch_list = [];
+    this.watch_list_labels = new Set();
 
     // define the watch list
     this.watch_list_slow = [];
+    this.watch_list_slow_labels = new Set();
 
     // define the data sample interval
     this.sample_interval = 0.005;
@@ -37,6 +39,8 @@ export default class Datacollector {
     // add the two always there
     this.watch_list.push(this.ncc_atrial);
     this.watch_list.push(this.ncc_ventricular);
+    this.watch_list_labels.add(this.ncc_atrial.label);
+    this.watch_list_labels.add(this.ncc_ventricular.label);
 
     // define the data list
     this.collected_data = [];
@@ -57,10 +61,13 @@ export default class Datacollector {
 
     // empty the watch list
     this.watch_list = [];
+    this.watch_list_labels.clear();
 
     // add the two always present
     this.watch_list.push(this.ncc_atrial);
     this.watch_list.push(this.ncc_ventricular);
+    this.watch_list_labels.add(this.ncc_atrial.label);
+    this.watch_list_labels.add(this.ncc_ventricular.label);
   }
 
   clear_watchlist_slow() {
@@ -69,11 +76,11 @@ export default class Datacollector {
 
     // empty the watch list
     this.watch_list_slow = [];
+    this.watch_list_slow_labels.clear();
   }
 
   get_model_data() {
-    // make a copy of the current data object
-    let data = [...this.collected_data];
+    let data = this.collected_data;
     // clear the current collection
     this.collected_data = [];
     // return the data object
@@ -81,8 +88,7 @@ export default class Datacollector {
   }
 
   get_model_data_slow() {
-    // make a copy of the current data object
-    let data = [...this.collected_data_slow];
+    let data = this.collected_data_slow;
     // clear the current collection
     this.collected_data_slow = [];
     // return the data object
@@ -110,24 +116,20 @@ export default class Datacollector {
       properties = [properties];
     }
 
-    // add to the watchlist
-    properties.forEach((prop) => {
-      // check whether the property is already in the watchlist
-      let duplicate = this.watch_list.some((wl_item) => wl_item.label === prop);
+    for (let i = 0; i < properties.length; i++) {
+      const prop = properties[i];
 
-      // if the property is not yet present then process it
-      if (!duplicate) {
-        // process the property as it has shape MODEL.prop1.prop2
-        let processed_prop = this._find_model_prop(prop);
+      if (!this.watch_list_labels.has(prop)) {
+        const processed_prop = this._find_model_prop(prop);
 
-        // check whether the property is found and if so, add it to the watchlist
         if (processed_prop !== null) {
           this.watch_list.push(processed_prop);
+          this.watch_list_labels.add(prop);
         } else {
           success = false;
         }
       }
-    });
+    }
 
     return success;
   }
@@ -145,58 +147,32 @@ export default class Datacollector {
       properties = [properties];
     }
 
-    // add to the watchlist
-    properties.forEach((prop) => {
-      // check whether the property is already in the watchlist
-      let duplicate = this.watch_list_slow.some((wl_item) => wl_item.label === prop);
+    for (let i = 0; i < properties.length; i++) {
+      const prop = properties[i];
 
-      // if the property is not yet present then process it
-      if (!duplicate) {
-        // process the property as it has shape MODEL.prop1.prop2
-        let processed_prop = this._find_model_prop(prop);
+      if (!this.watch_list_slow_labels.has(prop)) {
+        const processed_prop = this._find_model_prop(prop);
 
-        // check whether the property is found and if so, add it to the watchlist
         if (processed_prop !== null) {
           this.watch_list_slow.push(processed_prop);
+          this.watch_list_slow_labels.add(prop);
         } else {
           success = false;
         }
       }
-    });
+    }
 
     return success;
   }
 
   clean_up() {
-    let disabledModels = [];
-
-    Object.entries(this.watch_list).forEach(([dc_name, dc_item]) => {
-      if (!dc_item.model.is_enabled) {
-        // remove this item from the data-collector
-        disabledModels.push(dc_name);
-      }
-    });
-
-    // remove the disabled models
-    disabledModels.forEach((dm) => {
-      delete this.watch_list[dm];
-    });
+    this.watch_list = this.watch_list.filter((dc_item) => dc_item.model.is_enabled);
+    this.watch_list_labels = new Set(this.watch_list.map((item) => item.label));
   }
 
   clean_up_slow() {
-    let disabledModels_slow = [];
-
-    Object.entries(this.watch_list_slow).forEach(([dc_name, dc_item]) => {
-      if (!dc_item.model.is_enabled) {
-        // remove this item from the data-collector
-        disabledModels_slow.push(dc_name);
-      }
-    });
-
-    // remove the disabled models
-    disabledModels_slow.forEach((dm) => {
-      delete this.watch_list_slow[dm];
-    });
+    this.watch_list_slow = this.watch_list_slow.filter((dc_item) => dc_item.model.is_enabled);
+    this.watch_list_slow_labels = new Set(this.watch_list_slow.map((item) => item.label));
 
   }
 
@@ -211,7 +187,8 @@ export default class Datacollector {
       const data_object = { time: Math.round(model_clock * 10000) / 10000 };
 
       // process the watch_list
-      this.watch_list.forEach((parameter) => {
+      for (let i = 0; i < this.watch_list.length; i++) {
+        const parameter = this.watch_list[i];
         // get the value of the model variable as stated in the watchlist
         if (parameter.model.is_enabled) {
           let value = parameter.model[parameter.prop1];
@@ -222,7 +199,7 @@ export default class Datacollector {
           data_object[parameter.label] = value;
         }
 
-      });
+      }
 
       // add the data object to the collected data list
       this.collected_data.push(data_object);
@@ -236,7 +213,8 @@ export default class Datacollector {
       const data_object_slow = { time: Math.round(model_clock * 10000) / 10000 };
 
       // process the watch_list
-      this.watch_list_slow.forEach((parameter) => {
+      for (let i = 0; i < this.watch_list_slow.length; i++) {
+        const parameter = this.watch_list_slow[i];
         // get the value of the model variable as stated in the watchlist
         let value = parameter.model[parameter.prop1];
         if (parameter.prop2 !== null) {
@@ -245,7 +223,7 @@ export default class Datacollector {
 
         // add the value to the data object
         data_object_slow[parameter.label] = value;
-      });
+      }
 
       // add the data object to the collected data list
       this.collected_data_slow.push(data_object_slow);

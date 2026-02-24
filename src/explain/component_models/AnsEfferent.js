@@ -67,11 +67,10 @@ export class AnsEfferent extends BaseModelClass {
       rounding: 1,
     },
   ];
-
   /*
     The Efferent class models an autonomic nervous system efferent (effect) pathway.
     It calculates the average firing rate and translates it into an effect size on the target.
-    */
+  */
   constructor(model_ref, name = "") {
     super(model_ref, name);
 

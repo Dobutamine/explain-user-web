@@ -479,7 +479,7 @@ export default defineComponent({
     this.$bus.off("reset", this.updateWatchlist)
     this.$bus.off("model_ready", this.modelReady)
     this.$bus.off("redraw_monitors", this.redrawMonitors)
-    this.$bus.off("sprite_tapped", (e) => this.onDiagramTap(e))
+    this.$bus.off("sprite_tapped", this.onDiagramTap)
   },
   mounted() {
     // return if the user is not logged in
@@ -504,7 +504,7 @@ export default defineComponent({
     this.$bus.on("redraw_monitors", this.redrawMonitors)
 
     // listen for sprite tap
-    this.$bus.on("sprite_tapped", (e) => this.onDiagramTap(e))
+    this.$bus.on("sprite_tapped", this.onDiagramTap)
 
   }
 })

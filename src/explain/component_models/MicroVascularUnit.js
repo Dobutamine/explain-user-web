@@ -158,18 +158,6 @@ export class MicroVascularUnit extends BaseModelClass {
     this.u_vol = 0.005; // total unstressed volume (L)
     this.el_base = 25000.0; // total elastance (mmHg/L)
     this.el_k = 0.0; // non linear elastance (mmHg/L)
-    this.temp = 37.0; // blood temperature (dgs C)
-    this.viscosity = 6.0; // blood viscosity (centiPoise = Pa * s)
-    this.solutes = {}; // dictionary holding all solutes
-    this.drugs = {}; // dictionary holding all drug concentrations
-    this.to2 = 0.0; // total oxygen concentration (mmol/l)
-    this.tco2 = 0.0; // total carbon dioxide concentration (mmol/l)
-    this.ph = -1.0; // ph (unitless)
-    this.pco2 = -1.0; // pco2 (mmHg)
-    this.po2 = -1.0; // po2 (mmHg)
-    this.so2 = -1.0; // o2 saturation
-    this.hco3 = -1.0; // bicarbonate concentration (mmol/l)
-    this.be = -1.0; // base excess (mmol/l)
     this.r_for = 25000; // baseline forward resistance (mmHg*s/l )
     this.r_back = 25000; // baseline backward resistance (mmHg*s/l )
     this.r_k = 0.0; // non linear flow resistance (unitless)
@@ -183,6 +171,19 @@ export class MicroVascularUnit extends BaseModelClass {
     this.el_dist = { art: 0.10, cap: 0.15, ven: 0.75 };  // elastance distribution (inverse making the artery less compiant then the vein)
     this.vol_dist = { art: 0.10, cap: 0.55, ven: 0.35 };  // volume distribution
     this.res_dist = { art: 0.75, cap: 0.15, ven: 0.10 };  // resistance distribution
+
+    this.temp = 37.0; // blood temperature (dgs C)
+    this.viscosity = 6.0; // blood viscosity (centiPoise = Pa * s)
+    this.solutes = {}; // dictionary holding all solutes
+    this.drugs = {}; // dictionary holding all drug concentrations
+    this.to2 = 0.0; // total oxygen concentration (mmol/l)
+    this.tco2 = 0.0; // total carbon dioxide concentration (mmol/l)
+    this.ph = -1.0; // ph (unitless)
+    this.pco2 = -1.0; // pco2 (mmHg)
+    this.po2 = -1.0; // po2 (mmHg)
+    this.so2 = -1.0; // o2 saturation
+    this.hco3 = -1.0; // bicarbonate concentration (mmol/l)
+    this.be = -1.0; // base excess (mmol/l)
 
     // non-persistent property factors. These factors reset to 1.0 after each model step
     this.r_factor = 1.0; // non-persistent resistance factor
@@ -401,7 +402,7 @@ export class MicroVascularUnit extends BaseModelClass {
     // get the pressures and flows from the components
     this.pres = this.components.cap.pres;
     this.pres_in = this.components.art.pres;
-    this.pres_out = this.components.cap.pres;
+    this.pres_out = this.components.ven.pres;
 
     this.flow = this.components.cap.flow;
     this.flow_in = this.components.art.flow;
