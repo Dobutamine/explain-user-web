@@ -262,7 +262,6 @@ export default {
       analysisEnabled: true,
       autoscaleEnabled: true,
       autoscale: true,
-      loopMode: false,
       isEnabled: true,
       et_tube_diameter: 3.5,
       et_tube_length: 110,
@@ -301,7 +300,6 @@ export default {
       y1_axis: [],
       redrawInterval: 0.015,
       redrawTimer: 0.0,
-      debug_mode: true,
       presets: {
         "vent": ["Ventilator.pres"]
       },

@@ -187,7 +187,6 @@ export default {
       analysisEnabled: true,
       autoscaleEnabled: true,
       autoscale: true,
-      loopMode: false,
       x_min: 2,
       x_max: 20.0,
       y_min: 0,
@@ -216,22 +215,46 @@ export default {
       p2_mean: 0.0,
       p2_permin: 0.0,
       p2_perbeat: 0.0,
-      selectedModel3: "",
-      selectedProp3: "",
       modelNames: [],
       prop1Names: [],
       prop2Names: [],
       seconds: 0,
       y1_axis: [],
-      y2_axis: [],
       x_values: [],
       y_values: [],
       redrawInterval: -1,
       redrawTimer: 0.0,
-      debug_mode: true
+      selectionGuard: false
     };
   },
   methods: {
+    runGuardedSelection(action) {
+      if (this.selectionGuard) {
+        return
+      }
+      this.selectionGuard = true
+      try {
+        action()
+      } finally {
+        this.$nextTick(() => {
+          this.selectionGuard = false
+        })
+      }
+    },
+    getNumericPropsForModel(modelName) {
+      const model = explain.modelState?.models?.[modelName]
+      if (!model) {
+        return [""]
+      }
+      const propNames = [""]
+      Object.keys(model).forEach(prop => {
+        if (typeof model[prop] === 'number' && prop[0] !== "_") {
+          propNames.push(prop)
+        }
+      })
+      propNames.sort()
+      return propNames
+    },
     toggleHires() {
       if (this.state.configuration.chart_hires) {
         this.rtWindow = 1.0
@@ -419,58 +442,38 @@ export default {
 
     },
     selectModel1() {
-      this.prop1Names = [""]
-      this.selectedProp1 = ""
-      this.p1 = ""
-      if (this.selectedModel1 !== "") {
-        Object.keys(explain.modelState.models[this.selectedModel1]).forEach(prop => {
-          if (typeof (explain.modelState.models[this.selectedModel1][prop]) === 'number') {
-            if (prop[0] !== "_") {
-              this.prop1Names.push(prop)
-            }
-          }
-        })
-        this.prop1Names.sort()
-      } else {
+      this.runGuardedSelection(() => {
         this.selectedProp1 = ""
         this.p1 = ""
-      }
+        this.prop1Names = this.getNumericPropsForModel(this.selectedModel1)
+      })
     },
     selectProp1() {
-      if (this.selectedProp1 !== "") {
-        this.p1 = this.selectedModel1 + "." + this.selectedProp1
-        explain.watchModelProps([this.p1])
-      } else {
-        this.selectedModel1 = ""
-        this.p1 = ""
-      }
+      this.runGuardedSelection(() => {
+        if (this.selectedProp1 !== "") {
+          this.p1 = this.selectedModel1 + "." + this.selectedProp1
+          explain.watchModelProps([this.p1])
+        } else {
+          this.p1 = ""
+        }
+      })
     },
     selectModel2() {
-      this.prop2Names = [""]
-      this.selectedProp2 = ""
-      this.p2 = ""
-      if (this.selectedModel2 !== "") {
-        Object.keys(explain.modelState.models[this.selectedModel2]).forEach(prop => {
-          if (typeof (explain.modelState.models[this.selectedModel2][prop]) === 'number') {
-            if (prop[0] !== "_") {
-              this.prop2Names.push(prop)
-            }
-          }
-        })
-        this.prop2Names.sort()
-      } else {
+      this.runGuardedSelection(() => {
         this.selectedProp2 = ""
         this.p2 = ""
-      }
+        this.prop2Names = this.getNumericPropsForModel(this.selectedModel2)
+      })
     },
     selectProp2() {
-      if (this.selectedProp2 !== "") {
-        this.p2 = this.selectedModel2 + "." + this.selectedProp2
-        explain.watchModelProps([this.p2])
-      } else {
-        this.selectedModel2 = ""
-        this.p2 = ""
-      }
+      this.runGuardedSelection(() => {
+        if (this.selectedProp2 !== "") {
+          this.p2 = this.selectedModel2 + "." + this.selectedProp2
+          explain.watchModelProps([this.p2])
+        } else {
+          this.p2 = ""
+        }
+      })
     },
     dataUpdateRt() {
       if (this.alive && this.$refs.myChart) {
@@ -615,18 +618,25 @@ export default {
       }
 
       return rows.join('\n');
+    },
+    handleRtf() {
+      this.dataUpdateRt()
+    },
+    handleData() {
+      this.dataUpdate()
     }
   },
   beforeUnmount() {
+    this.$bus.off("rtf", this.handleRtf)
+    this.$bus.off("data", this.handleData)
+    this.$bus.off("state", this.processAvailableModels)
   },
   mounted() {
     // get the realtime slow data
-    this.$bus.on("rtf", () => {
-      this.dataUpdateRt()
-    });
+    this.$bus.on("rtf", this.handleRtf);
 
     this.$bus.on("state", this.processAvailableModels)
-    this.$bus.on("data", () => this.dataUpdate())
+    this.$bus.on("data", this.handleData)
 
     if (this.loadPreset) {
       const firstKey = Object.keys(this.presets)[0]; // Get the key of the first property

@@ -126,7 +126,7 @@ import { useStateStore } from "src/stores/state";
 import { explain } from "../boot/explain";
 import { Bar, Line, Scatter } from 'vue-chartjs'
 import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, PointElement, LineElement, Filler } from 'chart.js'
-import { ref, shallowRef } from 'vue'
+import { shallowRef } from 'vue'
 import * as Stat from "simple-statistics";
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, PointElement, LineElement, Filler)
@@ -233,7 +233,6 @@ export default {
       analysisEnabled: true,
       autoscaleEnabled: true,
       autoscale: true,
-      loopMode: false,
       x_min: 0,
       x_max: 5.0,
       y_min: 0,
@@ -282,16 +281,13 @@ export default {
       y1_axis: [],
       y2_axis: [],
       y3_axis: [],
-      y1_enabled: false,
-      y2_enabled: false,
-      y3_enabled: false,
       chart_fill: false,
       // y1_axis_fill: false,
       // y2_axis_fill: false,
       // y3_axis_fill: false,
       redrawInterval: -1,
       redrawTimer: 0.0,
-      debug_mode: true,
+      selectionGuard: false,
       presetEditMode: false,
       selectedPresetName: "",
       presetNames: [],
@@ -299,6 +295,33 @@ export default {
     };
   },
   methods: {
+    runGuardedSelection(action) {
+      if (this.selectionGuard) {
+        return
+      }
+      this.selectionGuard = true
+      try {
+        action()
+      } finally {
+        this.$nextTick(() => {
+          this.selectionGuard = false
+        })
+      }
+    },
+    getNumericPropsForModel(modelName) {
+      const model = explain.modelState?.models?.[modelName]
+      if (!model) {
+        return [""]
+      }
+      const propNames = [""]
+      Object.keys(model).forEach(prop => {
+        if (typeof model[prop] === 'number' && prop[0] !== "_") {
+          propNames.push(prop)
+        }
+      })
+      propNames.sort()
+      return propNames
+    },
     toggleHires() {
 
       if (this.state.configuration.chart_hires) {
@@ -499,8 +522,13 @@ export default {
 
     },
     toggleAutoscaling() {
-      this.y_max = parseFloat(this.chartData.datasets[0].data.reduce((max, current) => (current > max ? current : max), -Infinity))
-      this.y_min = parseFloat(this.chartData.datasets[0].data.reduce((min, current) => (current < min ? current : min), Infinity))
+      const chart = this.$refs.myTest?.chart
+      const sourceData = chart?.data?.datasets?.[0]?.data || this.chartData?.datasets?.[0]?.data || []
+      if (!sourceData.length) {
+        return
+      }
+      this.y_max = parseFloat(sourceData.reduce((max, current) => (current > max ? current : max), -Infinity))
+      this.y_min = parseFloat(sourceData.reduce((min, current) => (current < min ? current : min), Infinity))
       this.autoscaling()
     },
     autoscaling() {
@@ -565,91 +593,67 @@ export default {
 
     },
     selectModel1() {
-      this.prop1Names = [""]
-      this.selectedProp1 = ""
-      this.p1 = ""
-      if (this.selectedModel1 !== "") {
-        Object.keys(explain.modelState.models[this.selectedModel1]).forEach(prop => {
-          if (typeof (explain.modelState.models[this.selectedModel1][prop]) === 'number') {
-            if (prop[0] !== "_") {
-              this.prop1Names.push(prop)
-            }
-          }
-        })
-        this.prop1Names.sort()
-      } else {
+      this.runGuardedSelection(() => {
         this.selectedProp1 = ""
         this.p1 = ""
-        this.dataUpdate()
-      }
+        this.prop1Names = this.getNumericPropsForModel(this.selectedModel1)
+        if (this.selectedModel1 === "") {
+          this.dataUpdate()
+        }
+      })
     },
     selectProp1() {
-      if (this.selectedProp1 !== "") {
-        this.p1 = this.selectedModel1 + "." + this.selectedProp1
-        explain.watchModelProps([this.p1])
-      } else {
-        this.selectedModel1 = ""
-        this.p1 = ""
-      }
-      this.dataUpdate()
+      this.runGuardedSelection(() => {
+        if (this.selectedProp1 !== "") {
+          this.p1 = this.selectedModel1 + "." + this.selectedProp1
+          explain.watchModelProps([this.p1])
+        } else {
+          this.p1 = ""
+        }
+        this.dataUpdate()
+      })
     },
     selectModel2() {
-      this.prop2Names = [""]
-      this.selectedProp2 = ""
-      this.p2 = ""
-      if (this.selectedModel2 !== "") {
-        Object.keys(explain.modelState.models[this.selectedModel2]).forEach(prop => {
-          if (typeof (explain.modelState.models[this.selectedModel2][prop]) === 'number') {
-            if (prop[0] !== "_") {
-              this.prop2Names.push(prop)
-            }
-          }
-        })
-        this.prop2Names.sort()
-      } else {
+      this.runGuardedSelection(() => {
         this.selectedProp2 = ""
         this.p2 = ""
-        this.dataUpdate()
-      }
+        this.prop2Names = this.getNumericPropsForModel(this.selectedModel2)
+        if (this.selectedModel2 === "") {
+          this.dataUpdate()
+        }
+      })
     },
     selectProp2() {
-      if (this.selectedProp2 !== "") {
-        this.p2 = this.selectedModel2 + "." + this.selectedProp2
-        explain.watchModelProps([this.p2])
-      } else {
-        this.selectedModel2 = ""
-        this.p2 = ""
-      }
-      this.dataUpdate()
+      this.runGuardedSelection(() => {
+        if (this.selectedProp2 !== "") {
+          this.p2 = this.selectedModel2 + "." + this.selectedProp2
+          explain.watchModelProps([this.p2])
+        } else {
+          this.p2 = ""
+        }
+        this.dataUpdate()
+      })
     },
     selectModel3() {
-      this.prop3Names = [""]
-      this.selectedProp3 = ""
-      this.p3 = ""
-      if (this.selectedModel3 !== "") {
-        Object.keys(explain.modelState.models[this.selectedModel3]).forEach(prop => {
-          if (typeof (explain.modelState.models[this.selectedModel3][prop]) === 'number') {
-            if (prop[0] !== "_") {
-              this.prop3Names.push(prop)
-            }
-          }
-        })
-        this.prop3Names.sort()
-      } else {
+      this.runGuardedSelection(() => {
         this.selectedProp3 = ""
         this.p3 = ""
-        this.dataUpdate()
-      }
+        this.prop3Names = this.getNumericPropsForModel(this.selectedModel3)
+        if (this.selectedModel3 === "") {
+          this.dataUpdate()
+        }
+      })
     },
     selectProp3() {
-      if (this.selectedProp3 !== "") {
-        this.p3 = this.selectedModel3 + "." + this.selectedProp3
-        explain.watchModelProps([this.p3])
-      } else {
-        this.selectedModel3 = ""
-        this.p3 = ""
-      }
-      this.dataUpdate()
+      this.runGuardedSelection(() => {
+        if (this.selectedProp3 !== "") {
+          this.p3 = this.selectedModel3 + "." + this.selectedProp3
+          explain.watchModelProps([this.p3])
+        } else {
+          this.p3 = ""
+        }
+        this.dataUpdate()
+      })
     },
     dataUpdateRt() {
       if (this.alive) {
@@ -707,39 +711,6 @@ export default {
           if (this.show_summary) {
             this.analyzeDataRt()
           }
-
-          this.redrawTimer = 0;
-          this.chartData = {
-            labels: this.x_axis,
-            datasets: [
-              {
-                data: [...this.y1_axis],
-                fill: this.y1_axis_fill,
-                borderColor: 'rgb(192, 0, 0, 1.0)',
-                backgroundColor: 'rgba(192, 0, 0, 0.3)',
-                borderWidth: 1,
-                pointStyle: false
-              }, {
-                data: [...this.y2_axis],
-                fill: this.y2_axis_fill,
-                borderColor: 'rgb(0, 192, 0, 1.0)',
-                backgroundColor: 'rgba(0, 192, 0, 0.3)',
-                borderWidth: 1,
-                pointStyle: false
-              }, {
-                data: [...this.y3_axis],
-                fill: this.y3_axis_fill,
-                borderColor: 'rgb(0, 192, 192, 1.0)',
-                backgroundColor: 'rgb(0, 192, 192, 0.3)',
-                borderWidth: 1,
-                pointStyle: false
-              }]
-          }
-
-          if (this.show_summary) {
-            this.analyzeDataRt()
-          }
-
         }
         this.redrawTimer += 0.015
       }
@@ -809,9 +780,18 @@ export default {
         this.x_axis = [...Array(this.y1_axis.length).keys()]
       }
 
-      this.chartData = {
-        labels: this.x_axis,
-        datasets: [...data_sets]
+      const chart = this.$refs.myTest?.chart
+      if (chart) {
+        chart.data.labels = [...this.x_axis]
+        chart.data.datasets = [...data_sets]
+        requestAnimationFrame(() => {
+          chart.update()
+        })
+      } else {
+        this.chartData = {
+          labels: [...this.x_axis],
+          datasets: [...data_sets]
+        }
       }
 
       if (this.show_summary) {
@@ -887,19 +867,26 @@ export default {
       }
 
       return rows.join('\n');
+    },
+    handleRtf() {
+      this.dataUpdateRt()
+    },
+    handleData() {
+      this.dataUpdate()
     }
   },
   beforeUnmount() {
+    this.$bus.off("state", this.processAvailableModels)
+    this.$bus.off("rtf", this.handleRtf)
+    this.$bus.off("data", this.handleData)
   },
   mounted() {
     // get the realtime slow data
-    this.$bus.on("rtf", () => {
-      this.dataUpdateRt()
-    });
+    this.$bus.on("rtf", this.handleRtf);
 
     // listen for state and data changes
     this.$bus.on("state", this.processAvailableModels)
-    this.$bus.on("data", () => this.dataUpdate())
+    this.$bus.on("data", this.handleData)
 
     // fill the presets selector
     this.presetNames = Object.keys(this.state.configuration.presets)
