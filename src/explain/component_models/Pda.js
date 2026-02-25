@@ -145,9 +145,10 @@ export class Pda extends BaseModelClass {
       build_prop: true,
       edit_mode: "basic",
       readonly: false,
+      slider: true,
     },
     {
-      caption: "ductus diameter aortic ampulla (mm)",
+      caption: "max diameter aortic ampulla (mm)",
       target: "diameter_ao_max",
       type: "number",
       delta: 0.1,
@@ -158,7 +159,7 @@ export class Pda extends BaseModelClass {
       readonly: false,
     },
     {
-      caption: "ductus diameter pulmonary end (mm)",
+      caption: "max diameter pulmonary end (mm)",
       target: "diameter_pa_max",
       type: "number",
       delta: 0.1,
