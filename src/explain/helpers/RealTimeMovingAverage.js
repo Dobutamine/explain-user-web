@@ -3,8 +3,10 @@
  */
 export default class RealTimeMovingAverage {
     constructor(windowSize) {
-      this.windowSize = windowSize;
-      this.values = [];
+      this.windowSize = Math.max(1, Math.trunc(windowSize));
+      this.values = new Array(this.windowSize);
+      this.count = 0;
+      this.writeIndex = 0;
       this.sum = 0;
       this.currentAverage = 0;
     }
@@ -15,18 +17,20 @@ export default class RealTimeMovingAverage {
      * @return {number} - The updated average flow
      */
     addValue(newValue) {
-      // Add the new value
-      this.values.push(newValue);
-      this.sum += newValue;
-      
-      // Remove oldest value if we exceed the window size
-      if (this.values.length > this.windowSize) {
-        const oldestValue = this.values.shift();
-        this.sum -= oldestValue;
+      if (this.count < this.windowSize) {
+        this.values[this.writeIndex] = newValue;
+        this.sum += newValue;
+        this.count += 1;
+      } else {
+        const oldestValue = this.values[this.writeIndex];
+        this.values[this.writeIndex] = newValue;
+        this.sum += newValue - oldestValue;
       }
+
+      this.writeIndex = (this.writeIndex + 1) % this.windowSize;
       
       // Calculate the current average
-      this.currentAverage = this.sum / this.values.length;
+      this.currentAverage = this.sum / this.count;
       return this.currentAverage;
     }
     
@@ -42,7 +46,9 @@ export default class RealTimeMovingAverage {
      * Reset the moving average calculator
      */
     reset() {
-      this.values = [];
+      this.values = new Array(this.windowSize);
+      this.count = 0;
+      this.writeIndex = 0;
       this.sum = 0;
       this.currentAverage = 0;
     }

@@ -261,7 +261,7 @@ export default class Pump {
     }
     //let remap = this.remap(to2, 0, this.max_to2, -10, 1);
     let remap = this._remap(to2, 0, this.max_to2, -1.25, 1);
-    if (remap < 0) remap = 0;
+    if (remap < 0 | isNaN(remap)) remap = 0;
     const red = (remap * 210).toFixed(0);
     const green = (remap * 80).toFixed(0);
     const blue = (80 + remap * 75).toFixed(0);

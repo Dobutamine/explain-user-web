@@ -1,4 +1,3 @@
-import { readonly } from "vue";
 import { BaseModelClass } from "../base_models/BaseModelClass.js";
 import { calc_blood_composition } from "../component_models/BloodComposition.js"
 import { calc_gas_composition } from "../component_models/GasComposition.js"
@@ -488,6 +487,11 @@ export class Ecls extends BaseModelClass {
     this._pVenAverage = null
     this._pIntAverage = null
     this._pArtAverage = null
+    this._last_gas_flow = null
+    this._last_co2_gas_flow = null
+    this._last_fio2_gas = null
+    this._last_temp_gas = null
+    this._last_humidity_gas = null
   }
 
   init_model(args = {}) {
@@ -602,17 +606,16 @@ export class Ecls extends BaseModelClass {
       this._pump_oxy.no_back_flow = this.pump_occlusive
 
       // update the gas flow
-      this._gasin_oxy.r_for = (this._gasin.pres - this.pres_atm) / (this.gas_flow / 60.0);
-      this._gasin_oxy.r_back = this._gasin_oxy.r_for;
-
-      // update gas source composition
-      let total_gas_flow = this.gas_flow + (this.co2_gas_flow / 1000.0)
-      let added_fico2 = 0.0
-      if (total_gas_flow > 0) {
-        added_fico2 = (this.co2_gas_flow * 0.001 / total_gas_flow);
+      if (this.gas_flow > 0) {
+        this._gasin_oxy.no_flow = false
+        this._gasin_oxy.r_for = (this._gasin.pres - this.pres_atm) / (this.gas_flow / 60.0);
+        this._gasin_oxy.r_back = this._gasin_oxy.r_for;
+      } else {
+        this._gasin_oxy.no_flow = true
       }
-      this._fico2_gas = 0.0004 + added_fico2
-      calc_gas_composition(this._gasin, this.fio2_gas, this.temp_gas, this.humidity_gas, this._fico2_gas);
+
+      // update gas source composition only when gas settings changed
+      this._update_gas_source_composition()
 
       // update the clamp
       this._drainage.no_flow = this.tubing_clamped
@@ -667,6 +670,7 @@ export class Ecls extends BaseModelClass {
     this.pump_rpm = new_rpm
     this._pump.pump_rpm = this.pump_rpm
   }
+  
   set_gas_flow(new_gas_flow) {
     if (new_gas_flow > 0) {
       this.gas_flow = new_gas_flow
@@ -744,7 +748,10 @@ export class Ecls extends BaseModelClass {
     // volume in l
     if (new_volume >= 0) {
       this.oxy_volume = new_volume
+      this._oxy.vol = new_volume
       this._oxy.u_vol = new_volume
+      this._oxy.el_base = this.oxy_elastance
+      this._oxy.calc_pressure()
     }
   }
 
@@ -761,14 +768,6 @@ export class Ecls extends BaseModelClass {
   set_return_target(new_target) {
     this.return_target = new_target
     this._return.comp_to = new_target
-  }
-
-  set_pump_volume(new_volume) {
-    // volume in l
-    if (new_volume >= 0) {
-      this.pump_volume = new_volume
-      this._pump.u_vol = new_volume
-    }
   }
 
   switch_blood_components(state = true) {
@@ -820,7 +819,7 @@ export class Ecls extends BaseModelClass {
 
   calc_bloodgas() {
     if (this._bloodgas_counter > this._bloodgas_interval) {
-      this._bloodgas_interval = 0;
+      this._bloodgas_counter = 0;
 
       // calc bloodgas pre oxygenator
       calc_blood_composition(this._tubin)
@@ -915,11 +914,14 @@ export class Ecls extends BaseModelClass {
     this._tubout.calc_pressure()
   }
 
-  set_pump_volume() {
-    this._pump.vol = this.pump_volume
-    this._pump.u_vol = this.pump_volume
-    this._pump.el_base = this.pump_elastance
-    this._pump.calc_pressure()
+  set_pump_volume(new_volume = this.pump_volume) {
+    if (new_volume >= 0) {
+      this.pump_volume = new_volume
+      this._pump.vol = this.pump_volume
+      this._pump.u_vol = this.pump_volume
+      this._pump.el_base = this.pump_elastance
+      this._pump.calc_pressure()
+    }
   }
 
   set_oxygenator_volume() {
@@ -969,7 +971,7 @@ export class Ecls extends BaseModelClass {
     this._gasoxy.u_vol = 0.031
     this._gasoxy.el_base = 10000
     this._gasoxy.fixed_composition = false
-    this._gasin.calc_pressure()
+    this._gasoxy.calc_pressure()
 
     // set the gas outlet pressure at atmospheric pressure
     this._gasout.vol = 5.0
@@ -980,19 +982,39 @@ export class Ecls extends BaseModelClass {
   }
 
   set_gas_compositions() {
-    // calculate the gas composition of the gas source and oxygenator
-    let total_gas_flow = this.gas_flow + (this.co2_gas_flow / 1000.0)
+    // calculate the gas composition of the gas source
+    this._update_gas_source_composition(true)
+
+    calc_gas_composition(this._gasoxy, this.fio2_gas, this.temp_gas, this.humidity_gas, this._fico2_gas);
+
+    // calculate the gas composition of the gas outlet
+    calc_gas_composition(this._gasout, 0.205, 20.0, 0.1, 0.0004);
+  }
+
+  _update_gas_source_composition(force = false) {
+    if (!force &&
+      this.gas_flow === this._last_gas_flow &&
+      this.co2_gas_flow === this._last_co2_gas_flow &&
+      this.fio2_gas === this._last_fio2_gas &&
+      this.temp_gas === this._last_temp_gas &&
+      this.humidity_gas === this._last_humidity_gas
+    ) {
+      return;
+    }
+
+    const total_gas_flow = this.gas_flow + (this.co2_gas_flow / 1000.0)
     let added_fico2 = 0.0
     if (total_gas_flow > 0) {
       added_fico2 = (this.co2_gas_flow * 0.001 / total_gas_flow);
     }
     this._fico2_gas = 0.0004 + added_fico2
-
     calc_gas_composition(this._gasin, this.fio2_gas, this.temp_gas, this.humidity_gas, this._fico2_gas);
-    calc_gas_composition(this._gasoxy, this.fio2_gas, this.temp_gas, this.humidity_gas, this._fico2_gas);
 
-    // calculate the gas composition of the gas outlet
-    calc_gas_composition(this._gasout, 0.205, 20.0, 0.1, 0.0004);
+    this._last_gas_flow = this.gas_flow
+    this._last_co2_gas_flow = this.co2_gas_flow
+    this._last_fio2_gas = this.fio2_gas
+    this._last_temp_gas = this.temp_gas
+    this._last_humidity_gas = this.humidity_gas
   }
 
   _calc_tube_volume(diameter, length) {

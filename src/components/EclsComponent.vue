@@ -596,7 +596,11 @@
         this.p_int = explain.modelData[0]['Ecls.p_int'].toFixed(1)
         this.p_ven = explain.modelData[0]['Ecls.p_ven'].toFixed(1)
         this.p_art = explain.modelData[0]['Ecls.p_art'].toFixed(1)
-        this.p_tmp = explain.modelDataSlow[0]['Ecls.p_tmp'].toFixed(1)
+        try {
+          this.p_tmp = explain.modelDataSlow[0]['Ecls.p_tmp'].toFixed(1)
+        } catch (error) {
+          this.p_tmp = 0.0  
+        }
         this.svo2 = explain.modelDataSlow[0]['Ecls.pre_oxy_so2'].toFixed(0)
 
       },
