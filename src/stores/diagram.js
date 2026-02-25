@@ -66,6 +66,28 @@ export const useDiagramStore = defineStore("diagram", {
         return false;
       }
     },
+    async getDefaultDiagramFromServer(apiUrl, token) {
+      const url = `${apiUrl}/api/diagrams/get_user_diagram?token=${token}`;
+      let response = await fetch(url, {
+        method: "POST",
+        headers: {
+          Accept: "application/json, text/plain, */*",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user: "default_user",
+          name: "default_diagram",
+        }),
+      });
+
+      if (response.status === 200) {
+        let data = await response.json();
+        this.diagram_definition = data.diagram_definition;
+        return true;
+      } else {
+        return false;
+      }
+    },
     async saveDiagramToServer(apiUrl, userName, diagramName, token) {
       if (!this.protected) {
         this.name = diagramName;

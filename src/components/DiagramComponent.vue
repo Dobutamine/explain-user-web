@@ -614,7 +614,11 @@ export default {
     async loadModelDefinition() {
       const result = await this.diagram.getDiagramFromServer(this.general.apiUrl, this.user.name, this.state.diagram_definition.name, this.user.token)
       if (!result) {
-        return false;
+        console.log("Diagram load failed or dsdsdsdsfsadfsdfsafa.")
+        const result2 = await this.diagram.getDefaultDiagramFromServer(this.general.apiUrl, this.user.token)
+        if (!result2) {
+          return false;
+        }
       }
 
       if (!this.diagram.diagram_definition) {
