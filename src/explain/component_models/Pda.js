@@ -134,25 +134,38 @@ export class Pda extends BaseModelClass {
       caption: "enabled",
     },
     {
-      caption: "ductus diameter aortic ampulla (mm)",
-      target: "diameter_ao",
+      caption: "ductus diameter (%)",
+      target: "diameter_relative",
       type: "number",
-      delta: 0.1,
-      factor: 1.0,
-      rounding: 1,
+      delta: 1,
+      factor: 100,
+      rounding: 0,
+      ul: 100,
+      ll: 0,
       build_prop: true,
       edit_mode: "basic",
       readonly: false,
     },
     {
-      caption: "ductus diameter pulmonary end (mm)",
-      target: "diameter_pa",
+      caption: "ductus diameter aortic ampulla (mm)",
+      target: "diameter_ao_max",
       type: "number",
       delta: 0.1,
       factor: 1.0,
       rounding: 1,
       build_prop: true,
-      edit_mode: "basic",
+      edit_mode: "extra",
+      readonly: false,
+    },
+    {
+      caption: "ductus diameter pulmonary end (mm)",
+      target: "diameter_pa_max",
+      type: "number",
+      delta: 0.1,
+      factor: 1.0,
+      rounding: 1,
+      build_prop: true,
+      edit_mode: "extra",
       readonly: false,
     },
     {
@@ -163,7 +176,7 @@ export class Pda extends BaseModelClass {
       factor: 1.0,
       rounding: 1,
       build_prop: true,
-      edit_mode: "basic",
+      edit_mode: "extra",
       readonly: false,
     },
     {
@@ -203,7 +216,9 @@ export class Pda extends BaseModelClass {
 
     this.diameter_ao = 4.0; // diameter at aortic origen (mm)
     this.diameter_pa = 2.0; // diameter at pulmonary artery (mm)
-    this.diameter_max = 5.0; // maximum diameter of the ductus arteriosus (mm)
+    this.diameter_ao_max = 3.0; // maximum diameter of the ductus arteriosus (mm)
+    this.diameter_pa_max = 2.0; // maximum diameter of the ductus arteriosus (mm)
+    this.diameter_relative = 0.0; // relative diameter of the ductus arteriosus (0-1) where 1 is the maximum diameter
     this.length = 20; // length (mm)
     this.type = "conical"; // type of the ductal shape (conical, window, tubular, complex, elongated)
     this.el_min = 30000; // elasticity when open (mmHg/L) so both 5.0 mm
@@ -237,6 +252,11 @@ export class Pda extends BaseModelClass {
     this._aar_da = this._model_engine.models["AAR_DA"]; // BloodResistor
     this._da = this._model_engine.models["DA"]; // BloodCapacitance
     this._da_pa = this._model_engine.models["DA_PA"]; // BloodResistor
+
+    // update the diameter based on the relative diameter
+    this.diameter_ao = this.diameter_relative * this.diameter_ao_max;
+    this.diameter_pa = this.diameter_relative * this.diameter_pa_max;
+    this.diameter_relative = this.diameter_pa / this.diameter_pa_max; // update the relative diameter based on the current diameter at the pulmonary end
 
     // get the current flows
     this.flow_ao = this._aar_da.flow;
@@ -283,12 +303,12 @@ export class Pda extends BaseModelClass {
 
   }
 
+
   set_diameter(new_diameter) {
     this.diameter_ao = new_diameter;
     this.diameter_pa = new_diameter;
   }
 
-  calc_closure() {}
 
   calc_resistance(diameter, length = 20.0, viscosity = 6.0) {
     if (diameter > 0.0 && length > 0.0) {
