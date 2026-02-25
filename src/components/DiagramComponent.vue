@@ -21,7 +21,9 @@
         <q-btn v-if="!stateDiagram" flat round dense size="sm" icon="fa-regular fa-star" color="white" class="q-ml-sm"
           @click="setDiagramAsStateDefault">
           <q-tooltip> current diagram is not default state diagram </q-tooltip></q-btn>
-
+        
+          <q-checkbox v-model="ecls_enabled" label="ECLS" class="q-ml-md" size="xs" @update:model-value="toggleEcls"/>
+          <q-checkbox v-model="vent_enabled" label="Ventilator" class="q-ml-sm" size="xs" @update:model-value="toggleVentilator"/>
     </div>
 
   </q-card>
@@ -79,7 +81,9 @@ export default {
       skeletonGraphics: null,
       shortTimer: null,
       rt_running: false,
-      stateDiagram: true
+      stateDiagram: true,
+      ecls_enabled: false,
+      vent_enabled: false,
 
     };
   },
@@ -575,6 +579,37 @@ export default {
         this.stateDiagram = false;
       }
 
+      // check whether ventilator and ECLS should be enabled
+      if (this.diagram.diagram_definition.components["ECLS_OXY"].enabled) {
+        this.ecls_enabled = true
+      } else {
+        this.ecls_enabled = false
+      }
+
+      if (this.diagram.diagram_definition.components["VENT_IN"].enabled) {
+        this.vent_enabled = true
+      } else {
+        this.vent_enabled = false
+      }
+
+    },
+    toggleVentilator(){
+      // find all component with prefix VENT_ and toggle their enabled state
+      Object.keys(this.diagram.diagram_definition.components).forEach((key) => {
+        if (key.startsWith("VENT_")) {
+          this.diagram.diagram_definition.components[key].enabled = this.ventilator_enabled
+        }
+      })
+      this.buildDiagram()
+    },
+    toggleEcls(){
+      // find all components with prefix ECLS_ and toggle their enabled state
+      Object.keys(this.diagram.diagram_definition.components).forEach((key) => {
+        if (key.startsWith("ECLS_")) {
+          this.diagram.diagram_definition.components[key].enabled = this.ecls_enabled
+        }
+      })
+      this.buildDiagram()
     },
     async loadModelDefinition() {
       const result = await this.diagram.getDiagramFromServer(this.general.apiUrl, this.user.name, this.state.diagram_definition.name, this.user.token)
@@ -604,16 +639,36 @@ export default {
     this.$bus.off("update_watchlist", () => this.update_watchlist())
     this.$bus.off("update_drainage_site", (new_site) => {
       try {
-        this.diagram.diagram_definition.components['ECLS_DR'].dbcFrom = new_site
-        this.update_component('ECLS_DR')
+        this.diagram.diagram_definition.components['ECLS_DRAINAGE'].dbcFrom = new_site
+        this.update_component('ECLS_DRAINAGE')
       } catch { }
     })
     this.$bus.off("update_return_site", (new_site) => {
       try {
-        this.diagram.diagram_definition.components['ECLS_RE'].dbcTo = new_site
-        this.update_component('ECLS_RE')
+        this.diagram.diagram_definition.components['ECLS_RETURN'].dbcTo = new_site
+        this.update_component('ECLS_RETURN')
       } catch { }
     })
+        // toggle ECLS
+    this.$bus.off("ecls_display_on", () => {
+      this.ecls_enabled = true
+      this.toggleEcls()
+    })
+    this.$bus.off("ecls_display_off", () => {
+      this.ecls_enabled = false
+      this.toggleEcls()
+    })
+
+    // // toggle ventilator    this.$bus.on("vent_display_on", this.toggleVentilator(true))
+    this.$bus.off("vent_display_on", () => {
+      this.vent_enabled = true
+      this.toggleVentilator()
+    })
+    this.$bus.off("vent_display_off", () => {
+      this.vent_enabled = false
+      this.toggleVentilator()
+    })
+
   },
   mounted() {
     // initialize and build the diagram
@@ -627,6 +682,26 @@ export default {
           console.log("Diagram load failed or unauthorized.")
         }
       })
+    })
+
+    // toggle ECLS
+    this.$bus.on("ecls_display_on", () => {
+      this.ecls_enabled = true
+      this.toggleEcls()
+    })
+    this.$bus.on("ecls_display_off", () => {
+      this.ecls_enabled = false
+      this.toggleEcls()
+    })
+
+    // // toggle ventilator    this.$bus.on("vent_display_on", this.toggleVentilator(true))
+    this.$bus.on("vent_display_on", () => {
+      this.vent_enabled = true
+      this.toggleVentilator()
+    })
+    this.$bus.on("vent_display_off", () => {
+      this.vent_enabled = false
+      this.toggleVentilator()
     })
 
     // add the event listener for the state change
@@ -643,15 +718,15 @@ export default {
 
     this.$bus.on("update_drainage_site", (new_site) => {
       try {
-        this.diagram.diagram_definition.components['ECLS_DR'].dbcFrom = new_site
-        this.update_component('ECLS_DR')
+        this.diagram.diagram_definition.components['ECLS_DRAINAGE'].dbcFrom = new_site
+        this.update_component('ECLS_DRAINAGE')
       } catch { }
     })
 
     this.$bus.on("update_return_site", (new_site) => {
       try {
-        this.diagram.diagram_definition.components['ECLS_RE'].dbcTo = new_site
-        this.update_component('ECLS_RE')
+        this.diagram.diagram_definition.components['ECLS_RETURN'].dbcTo = new_site
+        this.update_component('ECLS_RETURN')
       } catch { }
     })
 
