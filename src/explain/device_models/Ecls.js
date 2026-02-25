@@ -123,6 +123,19 @@ export class Ecls extends BaseModelClass {
       ul: 5000000000,
     },
     {
+      caption: "pump_resistance_back (mmHg/l*s)",
+      target: "pump_resistance_back",
+      type: "number",
+      edit_mode: "extra",
+      build_prop: true,
+      readonly: false,
+      factor: 1,
+      delta: 10,
+      rounding: 0,
+      ll: 15,
+      ul: 5000000000,
+    },
+    {
       caption: "pump volume (l)",
       target: "set_pump_volume",
       type: "function",
@@ -148,6 +161,19 @@ export class Ecls extends BaseModelClass {
     {
       caption: "oxygenator resistance (mmHg/l*s)",
       target: "oxy_resistance",
+      type: "number",
+      edit_mode: "extra",
+      build_prop: true,
+      readonly: false,
+      factor: 1,
+      delta: 10,
+      rounding: 0,
+      ll: 15,
+      ul: 5000000000,
+    },
+    {
+      caption: "oxygenator backflow resistance (mmHg/l*s)",
+      target: "oxy_resistance_back",
       type: "number",
       edit_mode: "extra",
       build_prop: true,
@@ -412,10 +438,12 @@ export class Ecls extends BaseModelClass {
     this.return_cannula_length = 0.11     // return cannula length (m)
     this.pump_volume = 0.014              // volume of the pump (l)
     this.pump_resistance = 50;            // resistance of the pump (mmHg/l*s)
+    this.pump_resistance_back = 10000;    // resistance of the pump (mmHg/l*s)
     this.pump_elastance = 15000;          // elastance of the pump (mmHg/L)
     this.pump_occlusive = false;          
     this.oxy_volume = 0.031               // volume of the oxygenator (l)
-    this.oxy_resistance = 50;             // resistance of the oxygenator (mmHg/l*s)
+    this.oxy_resistance = 50;             // forwardflow resistance of the oxygenator (mmHg/l*s)
+    this.oxy_resistance_back = 60;        // backflow resistance of the oxygenator (mmHg/l*s)
     this.oxy_elastance = 15000;           // elastance of the oxygenator (mmHg/L)
     this.oxy_dif_o2 = 0.0001;             // oxygenator oxygen diffusion constant (mmol/mmHg)
     this.oxy_dif_co2 = 0.0001;            // oxygenator carbon dioxide diffusion constant (mmol/mmHg)
@@ -564,6 +592,9 @@ export class Ecls extends BaseModelClass {
  
     this._update_counter += this._t
     this._bloodgas_counter += this._t
+
+    // the backflow pump resistance is dependent on the rotations of the pump, so we update it every cycle
+    this._pump_oxy.r_back = this.pump_resistance_back * (1 + this.pump_rpm / 1000)
 
     if (this._update_counter > this._update_interval) {
       this._update_counter = 0;
@@ -855,10 +886,10 @@ export class Ecls extends BaseModelClass {
     this._drainage.r_back = this.drainage_resistance + this.tubin_resistance
     // set the resistance TUBIN->PUMP
     this._tubin_pump.r_for = this.pump_resistance;
-    this._tubin_pump.r_back = this.pump_resistance;
+    this._tubin_pump.r_back = this.pump_resistance_back; // make the back resistance 
     // PUMP -> OXY
     this._pump_oxy.r_for = this.oxy_resistance
-    this._pump_oxy.r_back = this.oxy_resistance
+    this._pump_oxy.r_back = this.oxy_resistance_back
     // OXY -> TUBOUT
     this.tubout_resistance = this._calc_tube_resistance(this.tubing_diameter * 0.0254, this.tubing_out_length);
     this._oxy_tubout.r_for =  this.tubout_resistance

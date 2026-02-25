@@ -200,8 +200,8 @@ export default class Pump {
 
     this.sprite.zIndex = this.layout.general.z_index;
     this.sprite.rotation = this.rotationFlow;
-    this.text.rotation = this.layout.rotation;
-
+    
+    //this.text.rotation = this.layout.rotation;
     this.text.x = this.sprite.x + this.layout.label.pos_x;
     this.text.y = this.sprite.y + this.layout.label.pos_y;
     this.text.zIndex = this.sprite.zIndex + 1;
@@ -209,7 +209,7 @@ export default class Pump {
     this.text.alpha = this.layout.general.alpha;
 
     if (isNaN(this.to2)) {
-      this.text.alpha = 0.1;
+      //this.text.alpha = 0.1;
     }
     if (this.layout.general.tinting) {
       this.sprite.tint = this.calculateColor(this.to2);
