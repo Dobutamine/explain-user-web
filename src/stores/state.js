@@ -84,8 +84,8 @@ export const useStateStore = defineStore("state", {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          user: "timothy",
-          name: "baseline neonate",
+          user: "default_user",
+          name: "default_state",
         }),
       });
 
