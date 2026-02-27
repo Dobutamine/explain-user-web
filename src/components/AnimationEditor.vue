@@ -6,34 +6,37 @@
     <div v-if="!collapsed">
       <div class="q-ml-md q-mr-sm q-mb-sm  text-overline justify-center">
         <div class="text-center text-secondary" @click="generalSettingsCollapsed = !generalSettingsCollapsed">general settings</div>
-        <div v-if="!generalSettingsCollapsed" class="q-ma-sm row justify-center">
-          <q-toggle class="col-3" v-model="animation.animation_definition.settings.grid" label="grid" dense dark size="sm"
-            @update:model-value="updateAnimation" />
-          <q-input v-if="animation.animation_definition.settings.grid" class="q-ml-sm col-3" v-model.number="animation.animation_definition.settings.gridSize" type="number" :min="5"
-            :max="100" :step="1" label="grid size" dense dark @update:model-value="updateAnimation" />
-          <q-toggle class="q-ml-sm col-3" v-model="animation.animation_definition.settings.skeleton" label="skeleton" dense dark size="sm"
-            @update:model-value="updateAnimation" />
-        </div>
+        
+        <div v-if="animation.animation_definition != undefined">
+          <div v-if="!generalSettingsCollapsed" class="q-ma-sm row justify-center">
+            <q-toggle class="col-3" v-model="animation.animation_definition.settings.grid" label="grid" dense dark size="sm"
+              @update:model-value="updateAnimation" />
+            <q-input v-if="animation.animation_definition.settings.grid" class="q-ml-sm col-3" v-model.number="animation.animation_definition.settings.gridSize" type="number" :min="5"
+              :max="100" :step="1" label="grid size" dense dark @update:model-value="updateAnimation" />
+            <q-toggle class="q-ml-sm col-3" v-model="animation.animation_definition.settings.skeleton" label="skeleton" dense dark size="sm"
+              @update:model-value="updateAnimation" />
+          </div>
 
-        <div v-if="animation.animation_definition.settings.skeleton && !generalSettingsCollapsed" class="q-ma-sm row">
-          <q-input class="col" v-model.number="animation.animation_definition.settings.xOffset" label="x-offset"
-            type="number" :min="-1000" :max="1000" :step="1" dense dark @update:model-value="updateAnimation" />
-          <q-input class="q-ml-sm col" v-model.number="animation.animation_definition.settings.yOffset" label="y-offset"
-            type="number" :min="-1000" :max="1000" :step="1" dense dark @update:model-value="updateAnimation" />
-          <q-input class="q-ml-sm col" v-model.number="animation.animation_definition.settings.radius" label="radius" dense dark
-            type="number" :min="0.01" :max="1" :step="0.01" @update:model-value="updateAnimation" />
-        </div>
+          <div v-if="animation.animation_definition.settings.skeleton && !generalSettingsCollapsed" class="q-ma-sm row">
+            <q-input class="col" v-model.number="animation.animation_definition.settings.xOffset" label="x-offset"
+              type="number" :min="-1000" :max="1000" :step="1" dense dark @update:model-value="updateAnimation" />
+            <q-input class="q-ml-sm col" v-model.number="animation.animation_definition.settings.yOffset" label="y-offset"
+              type="number" :min="-1000" :max="1000" :step="1" dense dark @update:model-value="updateAnimation" />
+            <q-input class="q-ml-sm col" v-model.number="animation.animation_definition.settings.radius" label="radius" dense dark
+              type="number" :min="0.01" :max="1" :step="0.01" @update:model-value="updateAnimation" />
+          </div>
 
-        <div v-if="!generalSettingsCollapsed" class="q-ma-sm row">
-          <q-input class="col" v-model.number="animation.animation_definition.settings.scaling" label="scaling" dense dark
-            type="number" :min="0.1" :max="1000" :step="0.1" @update:model-value="updateAnimation" />
-          <q-input class="q-ml-sm col" v-model.number="animation.animation_definition.settings.speed" label="speed" dense dark
-            type="number" :min="0.1" :max="1000" :step="0.1" @update:model-value="updateAnimation" />
-        </div>
+          <div v-if="!generalSettingsCollapsed" class="q-ma-sm row">
+            <q-input class="col" v-model.number="animation.animation_definition.settings.scaling" label="scaling" dense dark
+              type="number" :min="0.1" :max="1000" :step="0.1" @update:model-value="updateAnimation" />
+            <q-input class="q-ml-sm col" v-model.number="animation.animation_definition.settings.speed" label="speed" dense dark
+              type="number" :min="0.1" :max="1000" :step="0.1" @update:model-value="updateAnimation" />
+          </div>
 
-        <div v-if="!generalSettingsCollapsed" class="q-ma-sm row">
-          <q-toggle v-model="animation.animation_definition.settings.shuntOptionsVisible" label="shunt and ecls options" dense
-            dark size="sm" @update:model-value="updateAnimation" />
+          <div v-if="!generalSettingsCollapsed" class="q-ma-sm row">
+            <q-toggle v-model="animation.animation_definition.settings.shuntOptionsVisible" label="shunt and ecls options" dense
+              dark size="sm" @update:model-value="updateAnimation" />
+          </div>
         </div>
 
         <div v-if="!generalSettingsCollapsed" class="q-ma-sm row justify-center">
@@ -602,10 +605,12 @@ export default {
     },
     getAllAnimationComponents() {
       let animation_component_names = [];
-      if (this.animation.animation_definition.components) {
-        Object.keys(this.animation.animation_definition.components).forEach((component) => {
-          animation_component_names.push(component);
-        });
+      if (this.animation.animation_definition){
+        if (this.animation.animation_definition.components) {
+          Object.keys(this.animation.animation_definition.components).forEach((component) => {
+            animation_component_names.push(component);
+          });
+        }
       }
       animation_component_names.sort();
       return animation_component_names;

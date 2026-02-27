@@ -619,6 +619,7 @@ export default {
         if (!result2) {
           return false;
         }
+        this.$bus.emit("diagram_loaded")
       }
 
       if (!this.diagram.diagram_definition) {

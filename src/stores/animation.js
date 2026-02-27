@@ -7,7 +7,25 @@ export const useAnimationStore = defineStore("animation", {
     protected: false,
     shared: false,
     animation_definition: {
-      settings: {},
+      settings: {
+        "name": "baseline_neonate_diagram_cindycloin",
+        "name": "baseline_neonate_animation",
+        "owner": "Timothy Antonius",
+        "type": "explain_animation",
+        "backgroundColor": 3355443,
+        "editingMode": 1,
+        "scaling": 1,
+        "speed": 1,
+        "grid": true,
+        "gridSize": 10,
+        "skeleton": false,
+        "skeletonColor": 4473924,
+        "pathColor": 4473924,
+        "radius": 0.6,
+        "xOffset": 0,
+        "yOffset": -10,
+        "shuntOptionsVisible": false
+      },
       components: {},
     }
   }),

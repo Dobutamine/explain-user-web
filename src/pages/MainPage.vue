@@ -13,8 +13,8 @@
             </q-tab>
            <q-tab name="diagram_editor"><q-icon name="fa-solid fa-diagram-project" size="xs"></q-icon><q-tooltip>diagram editor</q-tooltip>
             </q-tab>
-            <!-- <q-tab name="animation_editor"><q-icon name="fa-solid fa-person" size="xs"></q-icon><q-tooltip>animation editor</q-tooltip>
-            </q-tab> -->
+            <q-tab name="animation_editor"><q-icon name="fa-solid fa-person" size="xs"></q-icon><q-tooltip>animation editor</q-tooltip>
+            </q-tab>
           </q-tabs>
           <q-tab-panels v-model="tab_left" keep-alive style="background-color: black">
             <q-tab-panel name="model_editor">
@@ -48,11 +48,7 @@
                 width: '5px',
                 opacity: 0.5
               }">
-                <AnimationEditor></AnimationEditor>
-                <!-- <div v-for="item in state.configuration.enabled_controllers.circulation">
-                  <NiceController :config="state.configuration.controllers[item]"></NiceController>
-                </div> -->
-
+              <AnimationEditor></AnimationEditor>
               </q-scroll-area>
             </q-tab-panel>
             <q-tab-panel name="diagram_editor">
@@ -93,10 +89,10 @@
               <q-tooltip>diagram</q-tooltip>
             </q-tab>
 
-            <!-- <q-tab name="animation">
+            <q-tab name="animation">
               <q-icon name="fa-solid fa-person" size="xs"></q-icon>
               <q-tooltip>animation</q-tooltip>
-            </q-tab> -->
+            </q-tab>
 
             <q-tab name="heart">
               <q-icon name="fa-solid fa-heart" size="xs"></q-icon>

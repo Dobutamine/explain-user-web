@@ -696,6 +696,7 @@ export default {
         if (!result2) {
           return false;
         }
+        this.$bus.emit("animation_loaded")
       }
     }
   },
