@@ -690,6 +690,12 @@ export default {
     },
     async loadModelDefinition() {
       let result = await this.animation.getAnimationFromServer(this.general.apiUrl, this.user.name, this.state.animation_definition.name, this.user.token)
+      if (!result) {
+        console.log("Default diagram load failed, trying to load shared default diagram.")
+        const result2 = await this.animation.getSharedAnimationFromServer(this.general.apiUrl, this.user.name, this.state.animation_definition.name, this.user.token)
+        if (!result2) {
+          return false;
+        }
     }
   },
   beforeUnmount() { 

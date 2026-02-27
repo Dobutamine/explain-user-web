@@ -66,6 +66,32 @@ export const useAnimationStore = defineStore("animation", {
         return false;
       }
     },
+    async getSharedAnimationFromServer(apiUrl, userName, animationName, token) {
+      const url = `${apiUrl}/api/animations/get_user_animation?token=${token}`;
+      let response = await fetch(url, {
+        method: "POST",
+        headers: {
+          Accept: "application/json, text/plain, */*",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user: "timothy",
+          name: "baseline_neonate_animation",
+        }),
+      });
+
+      if (response.status === 200) {
+        let data = await response.json();
+        this.animation_definition = data.animation_definition;
+        this.name = data.name + "_" + userName.toLowerCase();
+        this.animation_definition.settings.name = data.name + "_" + userName.toLowerCase();
+        this.shared = false;
+        this.protected = false;
+        return true;
+      } else {
+        return false;
+      }
+    },
     async saveAnimationToServer(apiUrl, userName, animationName, token) {
       if (!this.protected) {
         this.name = animationName;
