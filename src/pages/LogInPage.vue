@@ -50,7 +50,7 @@
         <div class="row justify-center items-start q-ma-lg">
           <div class="col text-center">
             <p class="text-center text-grey-5">
-              The Explain webapplication is now on version 1.0.
+              The Explain webapplication is now out of beta and we have made some changes to the backend.
             </p>
             <p class="text-center text-grey-5">
               This means that you have to recreate your account if you created one during the beta phase. If you have any questions, suggestions or want to report a bug, please contact us at <a href="mailto:support@explain-labs.com">support@explain-labs.com</a>.
