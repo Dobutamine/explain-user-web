@@ -75,37 +75,6 @@ export const useStateStore = defineStore("state", {
         return false;
       }
     },
-    async getDefaultStateFromServer(apiUrl, userName, token) {
-      const url = `${apiUrl}/api/states/get_user_state?token=${token}`;
-      let response = await fetch(url, {
-        method: "POST",
-        headers: {
-          Accept: "application/json, text/plain, */*",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          user: "default_user",
-          name: "default_state",
-        }),
-      });
-
-      if (response.status === 200) {
-        let data = await response.json();
-        this.user = userName.toLowerCase();
-        this.name = "default_state";
-        this.protected = true;
-        this.shared = data.shared;
-        this.diagram_definition = "default_diagram";
-        this.animation_definition = data.animation_definition;
-        this.model_definition = data.model_definition;
-        this.configuration = data.configuration;
-        this.events= data.events;
-        this.tasks = data.tasks;
-        return true;
-      } else {
-        return false;
-      }
-    },
     async getStateFromServer(apiUrl, userName, stateName, token) {
       const url = `${apiUrl}/api/states/get_user_state?token=${token}`;
       let response = await fetch(url, {
@@ -138,7 +107,7 @@ export const useStateStore = defineStore("state", {
         return false;
       }
     },
-    async getSharedStateFromServer(apiUrl, stateName, token) {
+    async getSharedStateFromServer(apiUrl, userName, stateName, token) {
       const url = `${apiUrl}/api/states/get_shared_state?token=${token}`;
       let response = await fetch(url, {
         method: "POST",
@@ -154,11 +123,11 @@ export const useStateStore = defineStore("state", {
       if (response.status === 200) {
         let data = await response.json();
         this.explain_version = data.explain_version;
-        this.user = data.user.toLowerCase();
-        this.name = data.name;
+        this.name = data.name + "_" + userName.toLowerCase();
         this.description = data.description;
-        this.protected = true;
-        this.shared = data.shared;
+        // make this the users own copy
+        this.protected = false;
+        this.shared = false;
         this.diagram_definition = data.diagram_definition;
         this.animation_definition = data.animation_definition;
         this.model_definition = data.model_definition;
@@ -172,12 +141,16 @@ export const useStateStore = defineStore("state", {
     async saveStateToServer(apiUrl, userName, token) {
       if (!this.protected) {
         const url = `${apiUrl}/api/states/update_state?token=${token}`;
+        console.log("Saving state to server with user: " + userName.toLowerCase());
+        console.log("Saving state to server with name: " + this.name);
+        console.log("State protected: " + this.protected);
         let response = await fetch(url, {
           method: "POST",
           headers: {
             Accept: "application/json, text/plain, */*",
             "Content-Type": "application/json",
           },
+
           body: JSON.stringify({
             explain_version: this.explain_version,
             user: userName.toLowerCase(),
@@ -196,6 +169,7 @@ export const useStateStore = defineStore("state", {
         if (response.status === 200) {
           return { result: true, message: "State saved" };
         } else {
+          console.log(response);
           return {
             result: false,
             message:

@@ -181,8 +181,8 @@ export default {
     LoadDefaultState() {
       this.state.getStateFromServer(this.general.apiUrl, this.user.name, this.user.defaultState, this.user.token);
     },
-    LoadGeneralDefaultState() {
-      this.state.getDefaultStateFromServer(this.general.apiUrl, this.user.name, this.user.token);
+    LoadSharedState(sharedStateName) {
+      this.state.getSharedStateFromServer(this.general.apiUrl, this.user.name, sharedStateName, this.user.token);
     },
     pressedEnter() {
       if (this.newUserEntry) {
@@ -228,7 +228,7 @@ export default {
         after((result) => {
           if (result) {
             this.errorText = ""
-            console.log(`State ${this.state.name} loaded`)
+            console.log(`User default state "${this.user.defaultState}" loaded from server`)
             explain.build(this.state.model_definition);
             if (this.user.defaultState === this.name) {
               this.default = true;
@@ -238,8 +238,9 @@ export default {
             this.state.saved = true;
             this.$router.push("/explain");
           } else {
-            this.errorText = "Cannot find default model state on the server! Loading general default state";
-            this.LoadGeneralDefaultState()
+            console.log(`User default state "${this.user.defaultState}" not found on server`)
+            this.errorText = "Cannot find default model state on the server! Loading basineline neonate state";
+            this.LoadSharedState("baseline neonate")
           }
         });
       }
@@ -249,7 +250,7 @@ export default {
         after((result) => {
           if (result) {
             this.errorText = ""
-            console.log(`State ${this.state.name} loaded`)
+            console.log(`Shared default state loaded from server and renamed to "${this.state.name}"`)
             explain.build(this.state.model_definition);
             if (this.user.defaultState === this.name) {
               this.default = true;
@@ -259,24 +260,7 @@ export default {
             this.state.saved = true;
             this.$router.push("/explain");
           } else {
-            this.errorText = "Cannot find shared model state on the server! Loading general default state";
-            this.LoadGeneralDefaultState()
-          }
-        });
-      }
-    });
-
-    this.load_general_default_state = this.state.$onAction(({ name, after }) => {
-      if (name === "getDefaultStateFromServer") {
-        after((result) => {
-          if (result) {
-            this.errorText = ""
-            console.log(`Default state ${this.state.name} loaded`)
-            explain.build(this.state.model_definition);
-            this.state.saved = true;
-            this.$router.push("/explain");
-          } else {
-            this.errorText = "Cannot find the general default model state on the server!";
+            this.errorText = "Cannot find default or shared baseline model state on the server!";
           }
         });
       }

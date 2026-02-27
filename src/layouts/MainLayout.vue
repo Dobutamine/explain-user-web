@@ -112,6 +112,7 @@
         <q-card>
           <q-card-section>
             <div class="text-h6">Save model state to server</div>
+            <div v-if="state.protected">Current state is protected. Give state a new name!</div>
           </q-card-section>
 
           <q-card-section class="q-pt-none">
@@ -593,9 +594,8 @@ export default defineComponent({
       this.state_destination = "server"
       this.stopRt()
       if (this.state.protected) {
-        if (this.selectedState !== this.state.name) {
-          this.state.protected = false
-        }
+        this.showValidationPopup("State is protected. Please enter a different state name before uploading.")
+        return
       }
       explain.saveModelState()
     },
