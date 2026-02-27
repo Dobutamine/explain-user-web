@@ -66,6 +66,32 @@ export const useDiagramStore = defineStore("diagram", {
         return false;
       }
     },
+    async getSharedDiagramFromServer(apiUrl, userName, diagramName, token) {
+      const url = `${apiUrl}/api/diagrams/get_user_diagram?token=${token}`;
+      let response = await fetch(url, {
+        method: "POST",
+        headers: {
+          Accept: "application/json, text/plain, */*",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user: "timothy",
+          name: "baseline_neonate_diagram",
+        }),
+      });
+
+      if (response.status === 200) {
+        let data = await response.json();
+        this.diagram_definition = data.diagram_definition;
+        this.name = data.name + "_" + userName.toLowerCase();
+        this.diagram_definition.settings.name = data.name + "_" + userName.toLowerCase();
+        this.shared = false;
+        this.protected = false;
+        return true;
+      } else {
+        return false;
+      }
+    },
     async saveDiagramToServer(apiUrl, userName, diagramName, token) {
       if (!this.protected) {
         this.name = diagramName;
