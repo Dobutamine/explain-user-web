@@ -48,11 +48,17 @@
 
 
         <div class="row justify-center items-start q-ma-lg">
-          <div class="col text-center"></div>
           <div class="col text-center">
-
+            <p class="text-center text-grey-5">
+              The Explain webapplication is now on version 1.0.
+            </p>
+            <p class="text-center text-grey-5">
+              This means that you have to recreate your account if you created one during the beta phase. If you have any questions, suggestions or want to report a bug, please contact us at <a href="mailto:support@explain-labs.com">support@explain-labs.com</a>.
+            </p>
+            <p class="text-center text-grey-5">
+              Tim Antonius
+            </p>
           </div>
-          <div class="col text-center"></div>
         </div>
 
       </q-card>
@@ -240,7 +246,7 @@ export default {
           } else {
             console.log(`User default state "${this.user.defaultState}" not found on server`)
             this.errorText = "Cannot find default model state on the server! Loading basineline neonate state";
-            this.LoadSharedState("baseline neonate")
+            this.LoadSharedState("baseline_neonate")
           }
         });
       }
@@ -252,12 +258,10 @@ export default {
             this.errorText = ""
             console.log(`Shared default state loaded from server and renamed to "${this.state.name}"`)
             explain.build(this.state.model_definition);
-            if (this.user.defaultState === this.name) {
-              this.default = true;
-            } else {
-              this.default = false;
-            }
-            this.state.saved = true;
+            this.default = true;
+            this.state.saved = false;
+            this.user.defaultState = this.state.name
+            this.user.updateUser(this.general.apiUrl, this.user.token)
             this.$router.push("/explain");
           } else {
             this.errorText = "Cannot find default or shared baseline model state on the server!";

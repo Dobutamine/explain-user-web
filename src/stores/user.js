@@ -15,11 +15,11 @@ export const useUserStore = defineStore("user", {
     },
     additionalData: {},
     loggedIn: false,
-    defaultState: "default_state",
+    defaultState: "baseline_neonate",
     errorText: "",
     token: "",
     newUserConfig: {},
-    newUserStateName: "default_state",
+    newUserStateName: "baseline_neonate",
   }),
 
   getters: {},
@@ -112,7 +112,7 @@ export const useUserStore = defineStore("user", {
             subscriptionAutoRenew: false,
           },
           additionalData: additionalData,
-          defaultState: "default_state"
+          defaultState: "baseline_neonate"
         }),
       });
 
@@ -139,7 +139,7 @@ export const useUserStore = defineStore("user", {
         this.token = "";
         this.admin = false;
         this.loggedIn = false;
-        this.defaultState = "default_state";
+        this.defaultState = "baseline_neonate";
         return false;
       }
     },
