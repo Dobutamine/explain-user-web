@@ -51,36 +51,37 @@
             <q-icon name="fa-solid fa-arrow-down-up-lock" size="xs"></q-icon>
             <q-tooltip>occlusive pump?</q-tooltip></q-toggle>
         </div>
-        <div>
+        <!-- <div>
           <q-select v-model="ecls_mode" label="ecls mode" :options="ecls_mode_options"
             @update:model-value="set_ecls_mode" color="blue" hide-hint filled dense stack-label
             style="width: 110px; font-size: 12px" class="q-mb-sm" squared>
             </q-select>
+        </div> -->
         </div>
-
-        <div>
-          <q-select v-model="drainage_origin" label="drainage" :options="cannulation_sites"
-            @update:model-value="set_drainage_origin" color="blue" hide-hint filled dense stack-label
-            style="width: 100px; font-size: 12px" class="q-mb-sm" squared>
-            <q-tooltip>site where the blood is drained from</q-tooltip>
-            </q-select>
-        </div>
-        <div>
-          <q-select v-model="return_target" label="return" :options="cannulation_sites"
-            @update:model-value="set_return_target" color="blue" hide-hint filled dense stack-label
-            style="width: 100px; font-size: 12px" class="q-mb-sm" squared>
-            <q-tooltip>site where the blood is returned to</q-tooltip>
-            </q-select>
-        </div>
+        <div v-if="ecls_running" class="q-mt-sm text-overline justify-center q-gutter-xs row">
+          <div>
+            <q-select v-model="drainage_origin" label="drainage" :options="cannulation_sites"
+              @update:model-value="set_drainage_origin" color="blue" hide-hint filled dense stack-label
+              style="width: 100px; font-size: 12px" class="q-mb-sm" squared>
+              <q-tooltip>site where the blood is drained from</q-tooltip>
+              </q-select>
+          </div>
+          <div>
+            <q-select v-model="return_target" label="return" :options="cannulation_sites"
+              @update:model-value="set_return_target" color="blue" hide-hint filled dense stack-label
+              style="width: 100px; font-size: 12px" class="q-mb-sm" squared>
+              <q-tooltip>site where the blood is returned to</q-tooltip>
+              </q-select>
+          </div>
         <!-- <div>
           <q-toggle v-model="advanced" class="q-ml-xs q-pb-lg q-mr-md" left-label dense size="xs">
             <q-icon name="fa-solid fa-ellipsis" size="xs"></q-icon>
             <q-tooltip>advanced parameters</q-tooltip></q-toggle>
         </div> -->
 
-        <div v-if="ecls_running">
-          <q-toggle v-model="graph_control" class="q-ml-sm" left-label dense size="sm"><q-icon name="fa-solid fa-chart-simple" size="xs"></q-icon><q-tooltip>chart options</q-tooltip></q-toggle>
-        </div>
+          <div v-if="ecls_running">
+            <q-toggle v-model="graph_control" class="q-ml-sm" left-label dense size="sm"><q-icon name="fa-solid fa-chart-simple" size="xs"></q-icon><q-tooltip>chart options</q-tooltip></q-toggle>
+          </div>
 
   
       </div>
