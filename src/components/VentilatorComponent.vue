@@ -3,11 +3,29 @@
     <div class="q-mt-es row gutter text-overline justify-center" @click="isEnabled = !isEnabled">
       {{ title }}
     </div>
-
-
     <!-- chart -->
-    <div v-if="!show_loops">
-      <div class="q-mt-sm row text-overline justify-center">pressure (cmh2o)</div>
+    <div>
+      <div v-if="!show_loops">
+        <div class="q-mt-sm row text-overline justify-center">pressure (cmh2o)</div>
+      </div>
+    <div v-if="isEnabled" class="q-mt-xs text-overline justify-center q-gutter-xs row">
+        <div v-if="ventilator_running">
+          <q-btn-toggle class="q-ml-sm" v-model="show_loops" color="grey-9" size="xs" text-color="white"
+            toggle-color="primary" :options="[
+              { label: 'CURVES', value: false },
+              { label: 'LOOPS', value: true },
+            ]" />
+        </div>
+        <div v-if="ventilator_running">
+          <q-btn-toggle class="q-ml-sm" v-model="curve_param" color="grey-9" size="xs" text-color="white"
+            toggle-color="primary" :options="[
+              { label: 'PRES', value: 'pres' },
+              { label: 'FLOW', value: 'flow' },
+              { label: 'VOL', value: 'vol' },
+            ]" @update:model-value="toggleCurveParam" />
+        </div>
+    </div>
+
       <div class="q-mr-sm">
         <Line v-if="isEnabled && !show_loops" ref="myTest" id="my-chart-vent-pres" :options="chartOptions"
           :data="chartData" style="max-height: 250px;" />
@@ -18,40 +36,62 @@
     <XYChartComponent v-if="isEnabled && show_loops" :alive="show_loops" title="" :presets="presets_loops"
       :load-preset="true"></XYChartComponent>
 
-    <div v-if="isEnabled" class="q-mt-sm text-overline justify-center q-gutter-xs row">
+    <div v-if="isEnabled && ventilator_running && graph_control" class="q-mt-xs text-overline justify-center q-gutter-xs row">
       <div>
-          <q-toggle class="q-ml-sm q-pb-lg q-mr-sm" v-model="this.ventilator_running" left-label label="Ventilator" dense size="sm"
-            @update:model-value="toggleVentilator" />
+        <q-toggle v-if="autoscaleEnabled" v-model="autoscale" dense size="xs" label="autoscale" 
+        @update:model-value="toggleAutoscaling" />
       </div>
       <div>
-        <q-toggle v-model="spont_breathing" left-label size="sm" dense label="Breathing" @update:model-value="toggle_spont_breathing" />
+        <q-toggle class="q-ml-sm" v-model="state.configuration.chart_hires" dense label="hi-res" size="sm"
+          @update:model-value="toggleHires" />
       </div>
-      <div v-if="ventilator_running">
-        <q-btn-toggle v-model="mode" color="grey-9" size="xs" text-color="white" toggle-color="primary" :options="[
-          { label: 'PC', value: 'PC' },
-          { label: 'PRVC', value: 'PRVC' },
-          { label: 'PSV', value: 'PSV' },
-        ]" @update:model-value="update_ventilator_setttings" />
       </div>
-
-
-      <div v-if="ventilator_running">
-        <q-btn-toggle class="q-ml-sm" v-model="show_loops" color="grey-9" size="xs" text-color="white"
-          toggle-color="primary" :options="[
-            { label: 'CURVES', value: false },
-            { label: 'LOOPS', value: true },
-          ]" />
+      <div v-if="isEnabled && ventilator_running && graph_control" class="q-mt-sm text-overline justify-center q-gutter-xs row">
+      <div>
+        <q-input v-if="!show_loops && !autoscale" class="q-ml-sm" @update:model-value="autoscaling"
+          v-model.number="y_min" type="number" label="y min" filled dense min="-100" max="100" hide-bottom-space/>
       </div>
-      <div v-if="ventilator_running">
-        <q-btn-toggle class="q-ml-sm" v-model="curve_param" color="grey-9" size="xs" text-color="white"
-          toggle-color="primary" :options="[
-            { label: 'PRES', value: 'pres' },
-            { label: 'FLOW', value: 'flow' },
-            { label: 'VOL', value: 'vol' },
-          ]" @update:model-value="toggleCurveParam" />
+      <div>
+        <q-input v-if="!show_loops && !autoscale" class="q-ml-sm" @update:model-value="autoscaling"
+          v-model.number="y_max" type="number" label="y max" filled dense min="-100" max="100" hide-bottom-space/>
       </div>
-
+      <div>
+        <q-input v-if="!show_loops && !state.configuration.chart_hires" class="q-ml-sm"
+          v-model.number="rtWindow" type="number" label="time" filled dense min="1" max="30" hide-bottom-space
+          @update:model-value="updateRtWindow" />
+      </div>
     </div>
+
+
+    <div v-if="isEnabled" class="q-mt-xs text-overline justify-center q-gutter-xs row">
+        <div>
+            <q-toggle class="q-ml-sm q-mr-sm" v-model="ventilator_running" left-label dense size="xs"
+              @update:model-value="toggleVentilator">
+              <q-icon name="fa-solid fa-power-off" size="xs"></q-icon>
+              <q-tooltip>Ventilator on/off</q-tooltip>
+            </q-toggle>
+        </div>
+        <div>
+          <q-toggle v-model="spont_breathing" class="q-ml-sm q-mr-sm" left-label size="xs" dense 
+              @update:model-value="toggle_spont_breathing">
+              <q-icon name="fa-solid fa-lungs" size="xs"></q-icon>
+              <q-tooltip>Spontaneous breathing on/off</q-tooltip>
+          </q-toggle>
+        </div>
+          <div v-if="ventilator_running">
+            <q-toggle v-model="graph_control" class="q-ml-sm" left-label dense size="sm"><q-icon name="fa-solid fa-chart-simple" size="xs"></q-icon><q-tooltip>chart options</q-tooltip></q-toggle>
+          </div>
+      </div>
+      <div v-if="isEnabled" class="q-mt-xs text-overline justify-center q-gutter-xs row">
+        <div v-if="ventilator_running">
+          <q-btn-toggle v-model="mode" color="grey-9" size="xs" text-color="white" toggle-color="primary" :options="[
+            { label: 'PC', value: 'PC' },
+            { label: 'PRVC', value: 'PRVC' },
+            { label: 'PSV', value: 'PSV' },
+          ]" @update:model-value="update_ventilator_setttings" />
+        </div>
+      </div>
+
 
     <!-- ventilator controls -->
     <div v-if="isEnabled && ventilator_running" class="text-overline justify-center q-gutter-sm row">
@@ -149,29 +189,7 @@
 
     </div>
 
-    <div v-if="isEnabled && ventilator_running" class="q-mt-sm text-overline justify-center q-gutter-xs row">
 
-      <div>
-        <q-toggle class="q-ml-sm q-pb-lg" v-model="state.configuration.chart_hires" dense label="hi-res" size="sm"
-          @update:model-value="toggleHires" />
-      </div>
-      <div>
-        <q-toggle v-if="autoscaleEnabled" v-model="autoscale" dense size="xs" label="autoscale" @update:model-value="toggleAutoscaling" />
-      </div>
-      <div>
-        <q-input v-if="!show_loops && !autoscale" class="q-ml-sm q-pb-lg" @update:model-value="autoscaling"
-          v-model.number="y_min" type="number" label="y min" filled dense min="-100" max="100" hide-bottom-space/>
-      </div>
-      <div>
-        <q-input v-if="!show_loops && !autoscale" class="q-ml-sm q-pb-lg" @update:model-value="autoscaling"
-          v-model.number="y_max" type="number" label="y max" filled dense min="-100" max="100" hide-bottom-space/>
-      </div>
-      <div>
-        <q-input v-if="!show_loops && !state.configuration.chart_hires" class="q-ml-sm q-pb-lg"
-          v-model.number="rtWindow" type="number" label="time" filled dense min="1" max="30" hide-bottom-space
-          @update:model-value="updateRtWindow" />
-      </div>
-    </div>
 
 
   </q-card>
@@ -315,7 +333,8 @@ export default {
         "PV SPONT": ["THORAX.pres", "THORAX.vol"]
       },
       update_model: true,
-      curve_param: "pres"
+      curve_param: "pres",
+      graph_control: false
     };
   },
   methods: {
