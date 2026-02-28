@@ -21,9 +21,6 @@
         <q-btn v-if="!stateDiagram" flat round dense size="sm" icon="fa-regular fa-star" color="white" class="q-ml-sm"
           @click="setDiagramAsStateDefault">
           <q-tooltip> current diagram is not default state diagram </q-tooltip></q-btn>
-        
-          <q-checkbox v-model="ecls_enabled" label="ECLS" class="q-ml-md" size="xs" @update:model-value="toggleEcls"/>
-          <q-checkbox v-model="vent_enabled" label="Ventilator" class="q-ml-sm" size="xs" @update:model-value="toggleVentilator"/>
     </div>
 
   </q-card>
