@@ -22,35 +22,66 @@
       </div>
   
       <!-- chart -->
+       
       <div>
-        <div v-if="isEnabled" class="q-mt-sm row text-overline justify-center"> {{  chart_title }}</div>
-        <div class="q-mr-sm">
-          <Line v-if="isEnabled" ref="myEclsChart" id="my-chart-ecls" :options="chartOptions"
-            :data="chartData" style="max-height: 250px;" />
+          <div v-if="isEnabled" class="q-mt-sm row text-overline justify-center"> {{  chart_title }}</div>
+          <div class="q-mr-sm">
+            <Line v-if="isEnabled" ref="myEclsChart" id="my-chart-ecls" :options="chartOptions" :data="chartData" style="max-height: 250px;" />
+          </div>
+      </div>
+      <!-- ecmo chart controls -->
+      <div v-if="isEnabled && ecls_running && graph_control" class="q-mb-sm text-overline justify-center q-gutter-sm row">
+        <div>
+          <q-toggle v-model="autoscale" left-label label="autoscaling" dense size="xs"
+            @update:model-value="autoscaling" />
+        </div>
+        <div>
+          <q-toggle v-model="state.configuration.chart_hires" left-label label="hi-res" dense size="xs"
+            @update:model-value="toggleHires" />
+        </div>
+        </div>
+      <div v-if="isEnabled && ecls_running && graph_control" class="text-overline justify-center q-gutter-sm row">
+        <div>
+          <q-input v-if="!autoscale"
+            v-model.number="y_min" type="number" left-label label="y-min" min="-1000" max="1000" step="0.1" size="xs" filled dense hide-bottom-space
+            @update:model-value="autoscaling" />
+        </div>
+        <div>
+          <q-input v-if="!autoscale"
+            v-model.number="y_max" type="number" left-label label="y-max" min="-1000" max="1000" step="0.1" size="xs" filled dense hide-bottom-space
+            @update:model-value="autoscaling" />
+        </div>
+
+        <div>
+          <q-input v-if="!state.configuration.chart_hires"
+            v-model.number="rtWindow" type="number" left-label label="time" filled dense min="1" max="30" size="xs" hide-bottom-space
+            @update:model-value="updateRtWindow" />
         </div>
       </div>
-      
-  
       <div v-if="isEnabled" class="q-mt-sm text-overline justify-center q-gutter-xs row">
         <div>
-          <q-toggle class="q-ml-sm q-pb-lg q-mr-sm" v-model="this.ecls_running" left-label dense size="xs"
+          <q-toggle class="q-ml-sm q-pb-sm q-mr-sm" v-model="this.ecls_running" left-label dense size="xs"
             @update:model-value="toggleEcls">
             <q-icon name="fa-solid fa-power-off" size="xs"></q-icon>
             <q-tooltip>ECLS on/off</q-tooltip>
           </q-toggle>
         </div>
         <div>
-          <q-toggle class="q-ml-sm q-pb-lg q-mr-sm" v-model="clamped" left-label dense size="xs"
+          <q-toggle class="q-ml-sm q-pb-sm q-mr-sm" v-model="clamped" left-label dense size="xs"
             @update:model-value="set_clamp">
             <q-icon name="fa-solid fa-road-lock" size="xs"></q-icon>
             <q-tooltip>clamp circuit</q-tooltip>
           </q-toggle>
         </div>
         <div>
-          <q-toggle v-model="pump_occlusive" class="q-ml-sm q-pb-lg q-mr-sm" left-label dense size="xs" @update:model-value="set_pump_occlusive">
+          <q-toggle v-model="pump_occlusive" class="q-ml-sm q-pb-sm q-mr-sm" left-label dense size="xs" @update:model-value="set_pump_occlusive">
             <q-icon name="fa-solid fa-arrow-down-up-lock" size="xs"></q-icon>
             <q-tooltip>occlusive pump?</q-tooltip></q-toggle>
         </div>
+
+          <div v-if="ecls_running">
+            <q-toggle v-model="graph_control" class="q-ml-sm" left-label dense size="sm"><q-icon name="fa-solid fa-chart-simple" size="xs"></q-icon><q-tooltip>chart options</q-tooltip></q-toggle>
+          </div>
         <!-- <div>
           <q-select v-model="ecls_mode" label="ecls mode" :options="ecls_mode_options"
             @update:model-value="set_ecls_mode" color="blue" hide-hint filled dense stack-label
@@ -58,7 +89,7 @@
             </q-select>
         </div> -->
         </div>
-        <div v-if="ecls_running" class="q-mt-sm text-overline justify-center q-gutter-xs row">
+        <div v-if="ecls_running" class="q-mt-xs text-overline justify-center q-gutter-xs row">
           <div>
             <q-select v-model="drainage_origin" label="drainage" :options="cannulation_sites"
               @update:model-value="set_drainage_origin" color="blue" hide-hint filled dense stack-label
@@ -79,38 +110,10 @@
             <q-tooltip>advanced parameters</q-tooltip></q-toggle>
         </div> -->
 
-          <div v-if="ecls_running">
-            <q-toggle v-model="graph_control" class="q-ml-sm" left-label dense size="sm"><q-icon name="fa-solid fa-chart-simple" size="xs"></q-icon><q-tooltip>chart options</q-tooltip></q-toggle>
-          </div>
 
   
       </div>
-      <!-- ecmo controls -->
-      <div v-if="isEnabled && ecls_running && graph_control" class="text-overline justify-center q-gutter-sm row">
-        <div>
-          <q-toggle v-model="autoscale" left-label label="autoscaling" dense size="sm"
-            @update:model-value="autoscaling" />
-        </div>
-        <div>
-          <q-input v-if="!autoscale"
-            v-model.number="y_min" type="number" left-label label="y-min" min="-1000" max="1000" step="0.1" filled dense hide-bottom-space
-            @update:model-value="autoscaling" />
-        </div>
-        <div>
-          <q-input v-if="!autoscale"
-            v-model.number="y_max" type="number" left-label label="y-max" min="-1000" max="1000" step="0.1" filled dense hide-bottom-space
-            @update:model-value="autoscaling" />
-        </div>
-        <div>
-          <q-toggle v-model="state.configuration.chart_hires" left-label label="hi-res" dense size="sm"
-            @update:model-value="toggleHires" />
-        </div>
-        <div>
-          <q-input v-if="!state.configuration.chart_hires"
-            v-model.number="rtWindow" type="number" left-label label="time" filled dense min="1" max="30" hide-bottom-space
-            @update:model-value="updateRtWindow" />
-        </div>
-        </div>
+
   
       <div v-if="isEnabled && ecls_running" class="text-overline justify-center q-gutter-sm row">
         <div  class="q-mr-sm text-center">
