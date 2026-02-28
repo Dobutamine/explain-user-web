@@ -8,8 +8,11 @@
     <!-- chart -->
     <div v-if="!show_loops">
       <div class="q-mt-sm row text-overline justify-center">pressure (cmh2o)</div>
-      <Line v-if="isEnabled && !show_loops" ref="myTest" id="my-chart-vent-pres" :options="chartOptions"
-        :data="chartData" style="max-height: 250px;" />
+      <div class="q-mr-sm">
+        <Line v-if="isEnabled && !show_loops" ref="myTest" id="my-chart-vent-pres" :options="chartOptions"
+          :data="chartData" style="max-height: 250px;" />
+      </div>
+
     </div>
 
     <XYChartComponent v-if="isEnabled && show_loops" :alive="show_loops" title="" :presets="presets_loops"
@@ -20,25 +23,27 @@
           <q-toggle class="q-ml-sm q-pb-lg q-mr-sm" v-model="this.ventilator_running" left-label label="Ventilator" dense size="sm"
             @update:model-value="toggleVentilator" />
       </div>
+      <div>
+        <q-toggle v-model="spont_breathing" left-label size="sm" dense label="Breathing" @update:model-value="toggle_spont_breathing" />
+      </div>
       <div v-if="ventilator_running">
-        <q-btn-toggle v-model="mode" color="grey-9" size="sm" text-color="white" toggle-color="primary" :options="[
+        <q-btn-toggle v-model="mode" color="grey-9" size="xs" text-color="white" toggle-color="primary" :options="[
           { label: 'PC', value: 'PC' },
           { label: 'PRVC', value: 'PRVC' },
           { label: 'PSV', value: 'PSV' },
         ]" @update:model-value="update_ventilator_setttings" />
-
       </div>
 
 
       <div v-if="ventilator_running">
-        <q-btn-toggle class="q-ml-sm" v-model="show_loops" color="grey-9" size="sm" text-color="white"
+        <q-btn-toggle class="q-ml-sm" v-model="show_loops" color="grey-9" size="xs" text-color="white"
           toggle-color="primary" :options="[
             { label: 'CURVES', value: false },
             { label: 'LOOPS', value: true },
           ]" />
       </div>
       <div v-if="ventilator_running">
-        <q-btn-toggle class="q-ml-sm" v-model="curve_param" color="grey-9" size="sm" text-color="white"
+        <q-btn-toggle class="q-ml-sm" v-model="curve_param" color="grey-9" size="xs" text-color="white"
           toggle-color="primary" :options="[
             { label: 'PRES', value: 'pres' },
             { label: 'FLOW', value: 'flow' },
@@ -69,6 +74,14 @@
         <div :style="{ fontSize: '10px' }">cmH2O</div>
       </div>
       <div  class="q-mr-sm text-center">
+        <div class="knob-label">flow</div>
+        <q-knob show-value font-size="12px" v-model="insp_flow" size="50px" :thickness="0.22" :min="0" :max="20"
+          :step="1" color="teal" track-color="grey-3" class="col" @update:model-value="update_ventilator_setttings">
+          {{ insp_flow }}
+        </q-knob>
+        <div :style="{ fontSize: '10px' }">l/min</div>
+      </div>
+      <div  class="q-mr-sm text-center">
         <div class="knob-label">t insp</div>
         <q-knob show-value font-size="12px" v-model="insp_time" size="50px" :min="0.1" :max="2.0" :step="0.05"
           :thickness="0.22" color="teal" track-color="grey-3" class="col"
@@ -77,7 +90,9 @@
         </q-knob>
         <div :style="{ fontSize: '10px' }">sec</div>
       </div>
-      <div  class="q-mr-sm text-center">
+      </div>
+      <div v-if="isEnabled && ventilator_running" class="text-overline justify-center q-gutter-sm row">
+        <div  class="q-mr-sm text-center">
         <div class="knob-label">freq</div>
         <q-knob show-value font-size="12px" v-model="freq" :min="0" :max="70" :step="1" size="50px" :thickness="0.22"
           color="teal" track-color="grey-3" class="col" @update:model-value="update_ventilator_setttings">
@@ -85,14 +100,7 @@
         </q-knob>
         <div :style="{ fontSize: '10px' }">/min</div>
       </div>
-      <div  class="q-mr-sm text-center">
-        <div class="knob-label">flow</div>
-        <q-knob show-value font-size="12px" v-model="insp_flow" size="50px" :thickness="0.22" :min="0" :max="20"
-          :step="1" color="teal" track-color="grey-3" class="col" @update:model-value="update_ventilator_setttings">
-          {{ insp_flow }}
-        </q-knob>
-        <div :style="{ fontSize: '10px' }">l/min</div>
-      </div>
+
       <div v-if="(mode == 'PRVC' || mode == 'VC')" class="q-mr-sm text-center">
         <div class="knob-label">tv</div>
         <q-knob show-value font-size="12px" v-model="tidal_volume" size="50px" :thickness="0.22" :min="1" :max="50"
@@ -109,14 +117,14 @@
         </q-knob>
         <div :style="{ fontSize: '10px' }">%</div>
       </div>
-      <div  class="q-mr-sm text-center">
+      <!-- <div  class="q-mr-sm text-center">
         <div class="knob-label">trigger</div>
         <q-knob show-value font-size="12px" v-model="trigger_perc" size="50px" :thickness="0.22" :min="1" :max="50"
           :step="1" color="teal" track-color="grey-3" class="col" @update:model-value="set_trigger">
           {{ trigger_perc }}
         </q-knob>
         <div :style="{ fontSize: '10px' }">%</div>
-      </div>
+      </div> -->
     </div>
 
     <div v-if="isEnabled && ventilator_running" class="q-mt-md q-mb-md text-overline justify-center q-gutter-xs row">
@@ -142,9 +150,7 @@
     </div>
 
     <div v-if="isEnabled && ventilator_running" class="q-mt-sm text-overline justify-center q-gutter-xs row">
-      <div>
-        <q-toggle v-model="spont_breathing" size="sm" dense label="breathing" @update:model-value="toggle_spont_breathing" />
-      </div>
+
       <div>
         <q-toggle class="q-ml-sm q-pb-lg" v-model="state.configuration.chart_hires" dense label="hi-res" size="sm"
           @update:model-value="toggleHires" />

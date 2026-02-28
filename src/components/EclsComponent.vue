@@ -24,8 +24,10 @@
       <!-- chart -->
       <div>
         <div v-if="isEnabled" class="q-mt-sm row text-overline justify-center"> {{  chart_title }}</div>
-        <Line v-if="isEnabled" ref="myEclsChart" id="my-chart-ecls" :options="chartOptions"
-          :data="chartData" style="max-height: 250px;" />
+        <div class="q-mr-sm">
+          <Line v-if="isEnabled" ref="myEclsChart" id="my-chart-ecls" :options="chartOptions"
+            :data="chartData" style="max-height: 250px;" />
+        </div>
       </div>
       
   
@@ -419,7 +421,12 @@
                 "Ecls.p_tmp"
                 ])
         }
-        this.$bus.emit("ecls_state_changed", this.ecls_running)
+        if (this.ecls_running) {
+          this.$bus.emit("ecls_display_on", this.ecls_running)
+        } else {
+          this.$bus.emit("ecls_display_off", this.ecls_running)
+        }
+        
       },
       set_pump_speed() {
         if (this.update_model) {

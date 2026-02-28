@@ -7,13 +7,18 @@
             narrow-indicator outside-arrows @update:model-value="tabLeftChanged">
             <q-tab name="controllers"><q-icon name="fa-solid fa-sliders" size="xs"></q-icon><q-tooltip>controllers</q-tooltip>
             </q-tab>
+            <q-tab name="ventilator">
+              <q-icon name="fa-solid fa-lungs" size="xs"></q-icon>
+              <q-tooltip>mechanical ventilator</q-tooltip>
+            </q-tab>
+            <q-tab name="ecls">
+              <!-- <q-icon name="fa-solid fa-lungs" size="xs"></q-icon> -->
+              ECLS
+              <q-tooltip>extracorporeal life support</q-tooltip>
+            </q-tab>
             <q-tab name="model_editor"><q-icon name="fa-solid fa-wrench" size="xs"></q-icon><q-tooltip>model editor</q-tooltip>
             </q-tab>
             <q-tab name="model_builder"><q-icon name="fa-solid fa-pen-to-square" size="xs"></q-icon><q-tooltip>model builder</q-tooltip>
-            </q-tab>
-           <q-tab name="diagram_editor"><q-icon name="fa-solid fa-diagram-project" size="xs"></q-icon><q-tooltip>diagram editor</q-tooltip>
-            </q-tab>
-            <q-tab name="animation_editor"><q-icon name="fa-solid fa-person" size="xs"></q-icon><q-tooltip>animation editor</q-tooltip>
             </q-tab>
           </q-tabs>
           <q-tab-panels v-model="tab_left" keep-alive style="background-color: black">
@@ -29,6 +34,29 @@
               <!-- <ModelEditor title="MODEL EDITOR B"></ModelEditor> -->
               </q-scroll-area>
             </q-tab-panel>
+                        <q-tab-panel name="ventilator">
+              <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
+                right: '5px',
+                borderRadius: '5px',
+                background: 'black',
+                width: '5px',
+                opacity: 0.5
+              }">
+                <VentilatorComponent :alive="ventilator_alive"></VentilatorComponent>
+              </q-scroll-area>
+            </q-tab-panel>
+
+            <q-tab-panel name="ecls">
+              <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
+                right: '5px',
+                borderRadius: '5px',
+                background: 'black',
+                width: '5px',
+                opacity: 0.5
+              }">
+                <EclsComponent :alive="ecls_alive"></EclsComponent>
+              </q-scroll-area>
+            </q-tab-panel>
             <q-tab-panel name="model_builder">
               <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
                 right: '5px',
@@ -40,32 +68,7 @@
               <ModelBuilderComponent title="MODEL BUILDER"></ModelBuilderComponent>
               </q-scroll-area>
             </q-tab-panel>
-            <q-tab-panel name="animation_editor">
-              <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
-                right: '5px',
-                borderRadius: '5px',
-                background: 'black',
-                width: '5px',
-                opacity: 0.5
-              }">
-              <AnimationEditor></AnimationEditor>
-              </q-scroll-area>
-            </q-tab-panel>
-            <q-tab-panel name="diagram_editor">
-              <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
-                right: '5px',
-                borderRadius: '5px',
-                background: 'black',
-                width: '5px',
-                opacity: 0.5
-              }">
-                <DiagramEditorComponent></DiagramEditorComponent>
-                <!-- <div v-for="item in state.configuration.enabled_controllers.circulation">
-                  <NiceController :config="state.configuration.controllers[item]"></NiceController>
-                </div> -->
 
-              </q-scroll-area>
-            </q-tab-panel>
             <q-tab-panel name="controllers">
               <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
                 right: '5px',
@@ -97,17 +100,6 @@
             <q-tab name="heart">
               <q-icon name="fa-solid fa-heart" size="xs"></q-icon>
               <q-tooltip>cath lab</q-tooltip>
-            </q-tab>
-
-            <q-tab name="ventilator">
-              <q-icon name="fa-solid fa-lungs" size="xs"></q-icon>
-              <q-tooltip>mechanical ventilator</q-tooltip>
-            </q-tab>
-
-            <q-tab name="ecls">
-              <!-- <q-icon name="fa-solid fa-lungs" size="xs"></q-icon> -->
-              ECLS
-              <q-tooltip>extracorporeal life support</q-tooltip>
             </q-tab>
 
 
@@ -168,30 +160,6 @@
               </q-scroll-area>
             </q-tab-panel>
 
-            <q-tab-panel name="ventilator">
-              <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
-                right: '5px',
-                borderRadius: '5px',
-                background: 'black',
-                width: '5px',
-                opacity: 0.5
-              }">
-                <VentilatorComponent :alive="ventilator_alive"></VentilatorComponent>
-              </q-scroll-area>
-            </q-tab-panel>
-
-            <q-tab-panel name="ecls">
-              <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
-                right: '5px',
-                borderRadius: '5px',
-                background: 'black',
-                width: '5px',
-                opacity: 0.5
-              }">
-                <EclsComponent :alive="ecls_alive"></EclsComponent>
-              </q-scroll-area>
-            </q-tab-panel>
-
             <q-tab-panel name="heart">
               <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
                 right: '5px',
@@ -241,6 +209,10 @@
               <q-icon name="fa-solid fa-wrench" size="xs"></q-icon>
               <q-tooltip>monitoring editor</q-tooltip>
             </q-tab>
+            <q-tab name="diagram_editor"><q-icon name="fa-solid fa-diagram-project" size="xs"></q-icon><q-tooltip>diagram editor</q-tooltip>
+            </q-tab>
+            <q-tab name="animation_editor"><q-icon name="fa-solid fa-person" size="xs"></q-icon><q-tooltip>animation editor</q-tooltip>
+            </q-tab>
 
           </q-tabs>
           <q-tab-panels v-model="tab_right" style="background-color: black">
@@ -273,6 +245,28 @@
                 opacity: 0.5
               }">
               <NumericsEditor title="MONITOR EDITOR"></NumericsEditor>
+              </q-scroll-area>
+            </q-tab-panel>
+                        <q-tab-panel name="animation_editor">
+              <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
+                right: '5px',
+                borderRadius: '5px',
+                background: 'black',
+                width: '5px',
+                opacity: 0.5
+              }">
+              <AnimationEditor></AnimationEditor>
+              </q-scroll-area>
+            </q-tab-panel>
+            <q-tab-panel name="diagram_editor">
+              <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
+                right: '5px',
+                borderRadius: '5px',
+                background: 'black',
+                width: '5px',
+                opacity: 0.5
+              }">
+                <DiagramEditorComponent></DiagramEditorComponent>
               </q-scroll-area>
             </q-tab-panel>
           </q-tab-panels>
