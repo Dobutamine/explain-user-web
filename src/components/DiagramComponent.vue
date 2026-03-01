@@ -577,17 +577,22 @@ export default {
       }
 
       // check whether ventilator and ECLS should be enabled
-      if (this.diagram.diagram_definition.components["ECLS_OXY"].enabled) {
-        this.ecls_enabled = true
-      } else {
-        this.ecls_enabled = false
+      if (this.diagram.diagram_definition.components["ECLS_OXY"]) {
+        if (this.diagram.diagram_definition.components["ECLS_OXY"].enabled) {
+          this.ecls_enabled = true
+        } else {
+          this.ecls_enabled = false
+        }
       }
 
-      if (this.diagram.diagram_definition.components["VENT_IN"].enabled) {
-        this.vent_enabled = true
-      } else {
-        this.vent_enabled = false
+      if (this.diagram.diagram_definition.components["VENT_IN"]){
+        if (this.diagram.diagram_definition.components["VENT_IN"].enabled) {
+          this.vent_enabled = true
+        } else {
+          this.vent_enabled = false
+        }
       }
+
 
     },
     toggleVentilator(){

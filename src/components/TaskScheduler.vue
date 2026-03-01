@@ -19,6 +19,7 @@
             <div v-for="(task, index) in task_list" :key="index">
               <q-item clickable dark dense @click="selectTask">
                 <q-item-section>
+                  <q-card class="q-ma-xs">
                   <div class="q-ma-xs row">
                     <div class="col">
                       <q-select class="q-pa-xs col" v-model="task.model" square label="model" hide-hint
@@ -29,7 +30,8 @@
                       <q-select class="q-pa-xs col" v-model="task.prop" square label="property" hide-hint
                       :options="Object.keys(task._model_interface)" dense dark stack-label style="font-size: 12px" @update:model-value="propChanged(index)" />
                     </div>
-                    
+                    </div>
+                    <div class="q-ma-xs row">
                     <!-- number value -->
                     <div v-if="task.type == 'number' || task.type == 'factor'" class="col">
                       <q-input class="q-pa-xs col" v-model="task.value" label="current value"  dark hide-hint filled dense stack-label
@@ -106,6 +108,8 @@
                         </div>
                     </div>
                     
+                    </div>
+                    <div class="q-ma-xs row">
                     <!-- in time -->
                     <div v-if="task.type == 'number' || task.type == 'factor'" class="col">
                       <q-select class="q-pa-xs col" v-model="task.in" square label="in time(s)" hide-hint
@@ -118,13 +122,14 @@
                       :options="times" dense dark stack-label style="font-size: 12px" @update:model-value="atTimeChanged" />
                     </div>
 
-                    <div v-if="task_list.length > 0" class="col-1 q-mt-md">
+                    <div v-if="task_list.length > 0" class="col-3 q-mt-md">
                       <q-btn v-if="task.prop" class="q-ml-sm" color="primary" size="xs" dense @click="runPartTask(index)"
                       icon="fa-solid fa-play" style="font-size: 8px"><q-tooltip>run</q-tooltip></q-btn>
                       <q-btn class="q-ml-sm" color="negative" size="xs" dense @click="removePartTask(index)"
                       icon="fa-solid fa-trash" style="font-size: 8px"><q-tooltip>delete</q-tooltip></q-btn>
                     </div>
                   </div>
+                  </q-card>
                 </q-item-section>
               </q-item>
             </div>
@@ -231,12 +236,13 @@
         this.selectedTask = ""
       },
       modelChanged(index) {
+     
         // find the property list this.task_list[index]._model_interface
         this.task_list[index]._model_interface = {}
         this.task_list[index].type = ""
         this.task_list[index].prop = ""
-        
-        let model_interface= {...Object.values(explain.modelState.models[this.task_list[index].model].model_interface)}
+        let model_interface = {...Object.values(explain.getModelInterface(this.task_list[index].model))}
+        // let model_interface= {...Object.values(explain.modelState.models[this.task_list[index].model].model_interface)}
         // rebuild the model interface object
         Object.values(model_interface).forEach( _mi => {
           this.task_list[index]._model_interface[_mi.target] = _mi
