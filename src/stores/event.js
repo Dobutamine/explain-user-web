@@ -9,9 +9,7 @@ export const useEventStore = defineStore("event", {
     protected: false,
     shared: false,
     event_definition: {
-        name: "",
-        description: "",
-        task_list: [],
+      tasks: []
     },
     saved: false,
     default: true

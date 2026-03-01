@@ -3,9 +3,25 @@
       <div class="q-mt-es row gutter text-overline justify-center" @click="toggle">
         {{ title }}
       </div>
+      <div class="q-pa-sm q-mt-xs q-mb-xs q-ml-md q-mr-md text-overline justify-center row">
+            <q-select class="q-pa-xs col" v-model="selectedEvent" square label="select event from server" hide-hint
+              :options="availableEvents" dense dark stack-label @update:model-value="selectEvent" />
+            <q-btn class="col-1 q-ma-xs q-mt-md" color="grey-9" size="xs" dense
+              icon="fa-solid fa-refresh" @click="getAllUserEventsFromServer" style="font-size: 8px"><q-tooltip>refresh event list</q-tooltip></q-btn>
+            <q-btn v-if="!selectedEvent" class="col-1 q-ma-xs q-mt-md" color="primary" size="xs" dense
+              icon="fa-solid fa-plus" @click="addTask" style="font-size: 8px"><q-tooltip>add new event</q-tooltip></q-btn>
+            <q-btn v-if="selectedEvent" class="col-1 q-ma-xs q-mt-md" color="negative" size="xs" dense
+              icon="fa-solid fa-trash-can" @click="deleteEventFromServer" style="font-size: 8px"><q-tooltip>delete event from server</q-tooltip></q-btn>
+          </div>
+
       <div v-if="isEnabled">
         <div v-if="task_list.length > 0" class="col q-ma-sm">
           <q-input class="q-pa-xs col" v-model="eventName" label="current event name"  dark hide-hint filled dense stack-label
+                style="font-size: 12px" squared>
+          </q-input>
+        </div>
+        <div v-if="task_list.length > 0" class="col q-ma-sm">
+          <q-input class="q-pa-xs col" v-model="eventDescription" label="event name description"  dark hide-hint filled dense stack-label
                 style="font-size: 12px" squared>
           </q-input>
         </div>
@@ -113,13 +129,13 @@
                     <!-- in time -->
                     <div v-if="task.type == 'number' || task.type == 'factor'" class="col">
                       <q-select class="q-pa-xs col" v-model="task.in" square label="in time(s)" hide-hint
-                      :options="times" dense dark stack-label style="font-size: 12px" @update:model-value="inTimeChanged" />
+                      :options="times" dense dark stack-label style="font-size: 12px" />
                     </div>
 
                     <!-- at time -->
                     <div v-if="task.type == 'boolean'" class="col">
                       <q-select class="q-pa-xs col" v-model="task.at" square label="at time(s)" hide-hint
-                      :options="times" dense dark stack-label style="font-size: 12px" @update:model-value="atTimeChanged" />
+                      :options="times" dense dark stack-label style="font-size: 12px" />
                     </div>
 
                     <div v-if="task_list.length > 0" class="col-3 q-mt-md">
@@ -159,15 +175,19 @@
   import { explain } from "../boot/explain";
   import { useStateStore } from 'src/stores/state';
   import { useUserStore } from 'src/stores/user';
+  import { useGeneralStore } from "src/stores/general";
 
   export default {
     setup() {
       const state = useStateStore();
       const user = useUserStore();
+      const general = useGeneralStore();
 
       return {
         state,
-        user
+        user,
+        general
+
       }
     },
     data() {
@@ -180,6 +200,7 @@
         storedTaskList: [],
         title: "EVENT SCHEDULER",
         eventName: "new_event",
+        eventDescription: "no description",
         modelNames: [],
         selectedModelName: "",
         modelProps: ["pres"],
@@ -187,10 +208,39 @@
         times: [0, 1, 3, 5, 10, 20, 30, 60, 120, 240, 300, 600],
         selectedAtTime: 0,
         selectedInTime: 0,
-        task_list: []
+        task_list: [],
+        availableEvents: [],
+        selectedEvent: "",
       };
     },
     methods: {
+      deleteEventFromServer() {
+        // delete the event from the server
+      },
+      selectEvent() {
+        console.log("selected event", this.selectedEvent)
+      },
+      async getAllUserEventsFromServer() {
+        this.selectedEvent = ""
+        const url = `${this.general.apiUrl}/api/events/get_all_user_events?token=${this.user.token}`;
+        let response = await fetch(url, {
+          method: "POST",
+          headers: {
+            Accept: "application/json, text/plain, */*",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user: this.user.name.toLowerCase(),
+          }),
+        });
+
+        if (response.status === 200) {
+          let data = await response.json();
+          this.availableEvents = data;
+        } else {
+          this.availableEvents = []
+        }
+      },
       loadTask() {
         // process the saved task
         this.eventName = this.selectedTask
@@ -265,8 +315,6 @@
         this.savedTask = false
 
       },
-      inTimeChanged() {},
-      atTimeChanged() {},
       toggle() {
         this.isEnabled = !this.isEnabled
       },
@@ -305,6 +353,7 @@
       },
       runPartTask(index, remove = true) {
         let t = this.buildTask(this.task_list[index])
+        console.log("running task", t)
         switch (t.type) {
           case "direct":
             explain.setPropValue(t.property, t.target, t.in_time, t.at_time)
@@ -350,21 +399,46 @@
       },
       selectTask(e) {
       },
-      saveEventList() {
+      async saveEventList() {
         // rebuild the task list 
         let new_task_list = []
         this.task_list.forEach(task => {
           new_task_list.push(task)
         })
-        if (!this.state.events) {
-          this.state.events = {}
-        }
         if (this.eventName.endsWith('*')) {
           this.eventName = this.eventName.slice(0, -1);
         }
-        this.state.events[this.eventName] = new_task_list
-        this.savedTask = true
-        explain.getModelState()
+        const url = `${this.general.apiUrl}/api/events/update_event?token=${this.user.token}`;
+        let response = await fetch(url, {
+          method: "POST",
+          headers: {
+            Accept: "application/json, text/plain, */*",
+            "Content-Type": "application/json",
+          },
+
+          body: JSON.stringify({
+            explain_version: this.general.version,
+            user: this.user.name.toLowerCase(),
+            name: this.eventName,
+            description: this.eventDescription,
+            protected: false,
+            shared: false,
+            event_definition: {
+              tasks: new_task_list
+            },
+          }),
+        });
+        if (response.status === 200) {
+          this.statusMessage = "event saved"
+          this.savedTask = true
+          explain.getModelState()
+        } else {
+          this.savedTask = false
+          this.statusMessage = "error saving event"
+        } 
+        setTimeout(() => {
+          this.statusMessage = ""
+        }, 3000);
       },
       runAllTasks() {
         for (let i = 0; i < this.task_list.length; i++) {
@@ -399,6 +473,8 @@
     mounted() {
       this.isEnabled = !this.collapsed;
       this.$bus.on("state", this.processAvailableModels)
+
+      this.getAllUserEventsFromServer()
     }
   };
   </script>
