@@ -5,13 +5,6 @@ The model runs in a dedicated Web Worker (`ModelEngine.js`) and is controlled fr
 
 ## High-level architecture
 
-- **`Model.js` (main thread API):** public class used by the UI to build/start/stop/query/update the model.
-- **`ModelEngine.js` (worker):** simulation runtime; receives command messages, performs model steps, sends events/data back.
-- **`ModelIndex.js`:** registry/export barrel of all model classes that can be dynamically instantiated.
-- **`base_models/`:** low-level primitives and base class (`BaseModelClass`) used by most models.
-- **`component_models/`:** physiological subsystems (heart, circulation, respiration, blood, ANS, etc.).
-- **`device_models/`:** external support devices (ventilator, ECLS, monitor, resuscitation).
-- **`helpers/`:** runtime helpers (`DataCollector`, `TaskScheduler`, moving averages, etc.).
 
 ## Runtime lifecycle
 
@@ -42,30 +35,11 @@ The model runs in a dedicated Web Worker (`ModelEngine.js`) and is controlled fr
 
 ### Inbound commands to worker (`ModelEngine`)
 
-- **`POST build`**: build model from definition JSON.
-- **`POST start` / `POST stop`**: start/stop real-time simulation loop.
-- **`POST calc`**: simulate a fixed duration.
-- **`POST call`**: schedule model function execution.
-- **`POST add` / `DELETE remove`**: add/remove submodels.
-- **`POST watch` / `POST watch_slow`**: add properties to fast/slow data watchlists.
-- **`GET state` / `GET data` / `GET data_slow`**: retrieve model state or collected data.
-- **`GET property_value`**: get a single property by path (`Model.prop` or `Model.prop.subprop`).
-- **`PUT property_value`**: schedule property updates through `TaskScheduler`.
-- **`PUT sample_interval` / `PUT sample_interval_slow`**: sampling interval changes.
-- **`POST save`**: emit a serializable snapshot event.
 
 ### Outbound events from worker
 
 Important worker event types handled in `Model.receive()`:
 
-- `model_ready`
-- `status`
-- `rt_start`, `rt_stop`
-- `data`, `data_slow` (on demand / post-calc)
-- `rtf`, `rts` (real-time fast/slow streams)
-- `state`
-- `prop_value`, `model_props`, `model_interface`, `modeltype_interface`, `model_types`
-- `state_saved`
 
 These are re-emitted as `CustomEvent`s on `document` by `Model`.
 
@@ -73,39 +47,25 @@ These are re-emitted as `CustomEvent`s on `document` by `Model`.
 
 Core methods used by UI code:
 
-- **Model control:** `build`, `load`, `restart`, `start`, `stop`, `calculate`
-- **Data/state:** `getModelData`, `getModelDataSlow`, `getModelState`, `saveModelState`
-- **Sampling/watchlists:** `setSampleInterval`, `setSampleIntervalSlow`, `watchModelProps`, `watchModelPropsSlow`, `clearWatchList`, `clearWatchListSlow`
-- **Introspection:** `getModelProps`, `getModelTypes`, `getModelTypeInterface`, `getModelInterface`, `getPropValue`
-- **Mutation/actions:** `setPropValue`, `callModelFunction`, `addNewModel`, `deleteModel`
 
 ## Data collection and scheduling
 
 ### `DataCollector`
 
-- Maintains two watchlists:
   - `watch_list` (fast stream)
   - `watch_list_slow` (slow stream)
-- Samples properties at configurable intervals and buffers time-series objects.
-- Always tracks `Heart.ncc_atrial` and `Heart.ncc_ventricular` in the fast watchlist.
 
 ### `TaskScheduler`
 
-- Schedules property changes and function calls with optional delay (`at`) and interpolation duration (`it`).
-- Numeric properties can be ramped over time.
-- Boolean/string updates are applied as discrete changes.
 
 ## Model class contract
 
 Most classes extend `BaseModelClass` and follow this pattern:
 
-- **Static metadata**
   - `model_type` (string identifier used at build time)
   - `model_interface` (UI-editable schema)
-- **Initialization**
   - constructor defines independent/dependent/local fields
   - `init_model(args)` applies config and sets `_is_initialized`
-- **Simulation step**
   - `step_model()` checks `is_enabled && _is_initialized`
   - `calc_model()` performs actual calculations
 
@@ -113,11 +73,6 @@ Most classes extend `BaseModelClass` and follow this pattern:
 
 `model_interface` is a schema used for configuration and UI editing. Typical entries include:
 
-- `target` (property or function name)
-- `type` (e.g. `number`, `boolean`, `list`, `multiple-list`, `factor`, `function`)
-- `caption`, `readonly`, `build_prop`, `edit_mode`
-- numeric editing fields such as `factor`, `delta`, `rounding`, `ll`, `ul`
-- for function entries: `args` describing call parameters
 
 ## Composite model behavior
 
@@ -158,6 +113,63 @@ explain.stop();
 
 ## Notes and caveats
 
-- `Model.load(name)` fetches from `/model_definitions/<name>.json` relative to app origin.
-- Saved state post-processing (`_processModelState`) removes helper objects and private (`_`) fields before emitting `state_saved`.
-- Worker-based design avoids blocking UI during simulation but requires all interaction via message protocol.
+## Student onboarding manual
+
+### 1. Running the model
+
+1. Start the Quasar dev server (`pnpm dev` from repo root) or the Electron target.
+2. The explain engine bootstraps via `src/boot/explain.js`, which instantiates `Model` and loads the default definition.
+3. Use UI buttons or the console (`window.explain`) to call `build`, `load`, `start`, `stop`, or `calculate(seconds)`.
+4. Place custom definitions under `public/model_definitions` and run `explain.load("definition_name")` (omit `.json`).
+
+### 2. Observing & tweaking data
+
+- Fast telemetry: `explain.watchModelProps(["Heart.heart_rate", "Ventilator.peep"])`.
+- Change parameters with easing: `explain.setPropValue("Ventilator.peep", 10, 5 /* seconds */, 0 /* delay */)`.
+- Trigger functions: `explain.callModelFunction("Heart.resetBaro", [], 0.25)`.
+
+### 3. Adding models
+
+**Base models** (`src/explain/base_models`)
+- Extend `BaseModelClass`, export static `model_type` + `model_interface`.
+- Implement `init_model(config)` and `calc_model()`/`step_model()`.
+- Import/export the class in `ModelIndex.js`.
+
+**Component models** (`src/explain/component_models`)
+- Compose multiple base models or encapsulate subsystems.
+- Register internally created models on the engine `models` map so schedulers and collectors can target them.
+
+**Device models** (`src/explain/device_models`)
+- Represent external hardware; validate dependencies (e.g., lungs) in `init_model` and emit clear errors if missing.
+
+**Helpers** (`src/explain/helpers`)
+- Instantiate new helpers inside `ModelEngine` and keep their state serializable (strip private fields in `_processModelState`).
+
+### 4. Editing definitions
+
+1. Definitions live in `public/model_definitions/*.json`.
+2. Each entry contains `{ name, model_type, settings, inputs }`.
+3. Example block:
+
+```json
+{
+  "name": "MyDevice",
+  "model_type": "MyDevice",
+  "settings": { "pressure": 18 },
+  "inputs": { "Lung": "Lung" }
+}
+```
+
+4. Reload via `explain.load("my_definition")` or rebuild in place with `explain.restart()`.
+
+### 5. Debugging checklist
+
+- Watch worker traffic in DevTools (console logs prefixed with `Model:`).
+- Hook events: `document.addEventListener("status", (evt) => console.log(evt.detail))`.
+- Snapshot: `explain.getModelState()`; inspect the payload emitted by the worker.
+- Missing models usually mean `model_type` typos or missing exports in `ModelIndex`.
+
+### 6. Cleanup
+
+- When done (component unmount, hot reload), call `explain.dispose()` to terminate the worker and drop listeners.
+

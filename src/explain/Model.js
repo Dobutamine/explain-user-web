@@ -1,5 +1,10 @@
 import * as models from "./ModelIndex";
 
+/**
+ * Model manages lifecycle, messaging, and state synchronization between the UI
+ * layer and the ModelEngine worker. It wraps all wire protocols (GET/POST/PUT/DELETE)
+ * exposed by the engine and re-emits results as DOM CustomEvents for consumers.
+ */
 export default class Model {
   // declare an object holding the worker thread which does the heavy llifting
   modelEngine = {};
@@ -40,6 +45,10 @@ export default class Model {
   _data_slow_event = new CustomEvent("data_slow");
   _state_saved_event = new CustomEvent("state_saved")
 
+  /**
+   * Spin up the ModelEngine worker and attach message listeners immediately so
+   * no early responses are missed.
+   */
   constructor() {
     // spin up a new model engine worker thread
     this.modelEngine = new Worker(new URL("./ModelEngine.js", import.meta.url), { type: "module" });
@@ -48,6 +57,10 @@ export default class Model {
     this.receive();
   }
 
+  /**
+   * Fetch a JSON model definition by name and push it into the engine once retrieved.
+   * @param {string} definition_name File stem inside /model_definitions.
+   */
   load(definition_name) {
     console.log(`Model: Loading modeling definition: '${definition_name}'.`)
     const path = "/model_definitions/" + definition_name + ".json";
@@ -70,12 +83,20 @@ export default class Model {
       });
   }
 
+  /**
+   * Proxy helper that posts raw messages to the worker if available.
+   * @param {Object} message Envelope containing type/message/payload.
+   */
   send(message) {
     if (this.modelEngine) {
       this.modelEngine.postMessage(message);
     }
   }
 
+  /**
+   * Attach the onmessage handler that translates engine responses into
+   * local state mutations and DOM events.
+   */
   receive() {
     // set up a listener for messages from the model engine
     this.modelEngine.onmessage = (e) => {
@@ -148,6 +169,10 @@ export default class Model {
   }
 
   // API CALLS
+  /**
+   * Inject a new explain definition into the engine.
+   * @param {Object} explain_definition Parsed JSON definition.
+   */
   build(explain_definition) {
     console.log("Model: Injecting the model definition into the ModelEngine.")
     this.modelDefinition = { ...explain_definition };
@@ -158,6 +183,9 @@ export default class Model {
     });
   }
 
+  /**
+   * Rebuild the engine using the last loaded definition snapshot.
+   */
   restart() {
     this.send({
       type: "POST",
@@ -166,6 +194,10 @@ export default class Model {
     });
   }
 
+  /**
+   * Request an offline calculation run for a fixed number of seconds.
+   * @param {number} time_to_calculate Simulation horizon in seconds.
+   */
   calculate(time_to_calculate) {
     this.send({
       type: "POST",
@@ -174,6 +206,9 @@ export default class Model {
     });
   }
 
+  /**
+   * Start the realtime loop inside the model engine.
+   */
   start() {
     this.send({
       type: "POST",
@@ -182,6 +217,9 @@ export default class Model {
     });
   }
 
+  /**
+   * Halt the realtime loop without clearing state.
+   */
   stop() {
     this.send({
       type: "POST",
@@ -190,6 +228,21 @@ export default class Model {
     });
   }
 
+  /**
+   * Terminate the underlying worker and detach listeners to avoid leaks when
+   * the owning component unmounts or hot reloads.
+   */
+  dispose() {
+    if (this.modelEngine) {
+      this.modelEngine.onmessage = null;
+      this.modelEngine.terminate();
+      this.modelEngine = null;
+    }
+  }
+
+  /**
+   * Remove every fast-sample watch entry.
+   */
   clearWatchList() {
     this.send({
       type: "DELETE",
@@ -198,6 +251,9 @@ export default class Model {
     });
   }
 
+  /**
+   * Remove every slow-sample watch entry.
+   */
   clearWatchListSlow() {
     this.send({
       type: "DELETE",
@@ -206,6 +262,10 @@ export default class Model {
     });
   }
 
+  /**
+   * Subscribe to realtime values for given properties (model.prop1.prop2 strings).
+   * @param {string|string[]} args Property path or array of paths.
+   */
   watchModelProps(args) {
     // args is an array of strings with format model.prop1.prop2
     if (typeof args === "string") {
@@ -218,6 +278,10 @@ export default class Model {
     });
   }
 
+  /**
+   * Subscribe to slow-sampled values for given properties.
+   * @param {string|string[]} args Property path or array of paths.
+   */
   watchModelPropsSlow(args) {
     // args is an array of strings with format model.prop1.prop2
     if (typeof args === "string") {
@@ -230,6 +294,9 @@ export default class Model {
     });
   }
 
+  /**
+   * Pull the latest fast-sampled model data snapshot.
+   */
   getModelData() {
     this.send({
       type: "GET",
@@ -238,6 +305,9 @@ export default class Model {
     });
   }
 
+  /**
+   * Pull the latest slow-sampled model data snapshot.
+   */
   getModelDataSlow() {
     this.send({
       type: "GET",
@@ -246,6 +316,10 @@ export default class Model {
     });
   }
 
+  /**
+   * Update the fast sampler interval inside the engine.
+   * @param {number} new_interval Interval in seconds.
+   */
   setSampleInterval(new_interval) {
     this.send({
       type: "PUT",
@@ -254,6 +328,10 @@ export default class Model {
     });
   }
 
+  /**
+   * Update the slow sampler interval inside the engine.
+   * @param {number} new_interval Interval in seconds.
+   */
   setSampleIntervalSlow(new_interval) {
     this.send({
       type: "PUT",
@@ -262,6 +340,9 @@ export default class Model {
     });
   }
 
+  /**
+   * Request the entire serialized engine state.
+   */
   getModelState() {
     this.send({
       type: "GET",
@@ -270,6 +351,9 @@ export default class Model {
     });
   }
 
+  /**
+   * Ask the engine to persist the current state as a saved snapshot.
+   */
   saveModelState() {
     this.send({
       type: "POST",
@@ -278,6 +362,10 @@ export default class Model {
     });
   }
 
+  /**
+   * Retrieve metadata about a specific model instance.
+   * @param {string} model_name Name of the model instance in state.
+   */
   getModelProps(model_name) {
     // get the properties of a specific model
     this.send({
@@ -287,6 +375,9 @@ export default class Model {
     });
   }
 
+  /**
+   * Request the catalog of model types supported by the engine.
+   */
   getModelTypes() {
     // get all the model types
     this.send({
@@ -296,11 +387,21 @@ export default class Model {
     });
   }
 
+  /**
+   * Look up the static UI interface schema for a model type.
+   * @param {string} model_type Key inside ModelIndex.
+   * @returns {Array} Interface descriptors.
+   */
   getModelTypeInterface(model_type) {
     // get the interface of a specific modeltype
     return models[model_type].model_interface || [];
   }
 
+  /**
+   * Resolve the interface schema for a specific model instance.
+   * @param {string} model_name Instance key inside modelState.
+   * @returns {Array} Interface descriptors.
+   */
   getModelInterface(model_name) {
     // get the model type of a specific model
     let model_type = this.modelState.models[model_name].model_type;
@@ -308,6 +409,10 @@ export default class Model {
     return models[model_type].model_interface || [];
   }
 
+  /**
+   * Fetch a blood composition report for the given model instance.
+   * @param {string} model_name Instance key inside modelState.
+   */
   getBloodComposition(model_name) {
     // get the interface of a specific model
     this.send({
@@ -318,6 +423,10 @@ export default class Model {
   }
 
 
+  /**
+   * Create a brand-new model instance via the engine API.
+   * @param {Object} model_args Arguments required by the engine to instantiate.
+   */
   addNewModel(model_args) {
     // get the interface of a specific model
     this.send({
@@ -327,6 +436,10 @@ export default class Model {
     });
   }
 
+  /**
+   * Remove a model instance from the engine.
+   * @param {string} model_name Instance key inside modelState.
+   */
   deleteModel(model_name) {
     // get the interface of a specific model
     this.send({
@@ -336,6 +449,10 @@ export default class Model {
     });
   }
 
+  /**
+   * Query the current value for a dot-delimited property path.
+   * @param {string} property model.prop1.prop2 path.
+   */
   getPropValue(property) {
     // get the value of a specific property with string format model.prop1.prop2
     this.send({
@@ -345,6 +462,13 @@ export default class Model {
     });
   }
 
+  /**
+   * Schedule a property change with optional tweening parameters.
+   * @param {string} prop model.prop1.prop2 path.
+   * @param {number|string|boolean} new_value Target value.
+   * @param {number} it Interpolation time in seconds (>= 0).
+   * @param {number} at Delay before starting the interpolation.
+   */
   setPropValue(prop, new_value, it = 1, at = 0) {
     // make sure the it is not zero
     if (it < 0) {
@@ -373,6 +497,12 @@ export default class Model {
     });
   }
 
+  /**
+   * Ask the engine to execute a method on a model after an optional delay.
+   * @param {string} model_function Dot path Model.method.
+   * @param {Array} args Arguments to forward to the method.
+   * @param {number} at Delay before invocation in seconds.
+   */
   callModelFunction(model_function, args, at = 0) {
     this.send({
       type: "POST",
@@ -387,6 +517,12 @@ export default class Model {
     });
   }
 
+  /**
+   * Remove transient helpers and local-only objects from a model state snapshot
+   * so that it can be serialized or displayed cleanly.
+   * @param {Object} model_state Raw state object returned by the engine.
+   * @returns {Object} Sanitized model_state reference.
+   */
   _processModelState(model_state) {
     // transfrom the modelstate object to a serializable object by removing the helper objects
     delete model_state["DataCollector"];

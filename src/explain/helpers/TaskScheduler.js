@@ -1,4 +1,12 @@
+/**
+ * TaskScheduler coordinates deferred mutations on model instances.
+ * It supports gradual numeric transitions, immediate primitive swaps,
+ * and arbitrary function executions tied to the modeling timestep.
+ */
 export default class TaskScheduler {
+  /**
+   * @param {Object} model_ref Reference to the model engine exposing models and modeling_stepsize.
+   */
   constructor(model_ref) {
     this._model_engine = model_ref; // object holding a reference to the model engine
     this._t = model_ref.modeling_stepsize; // setting the modeling stepsize
@@ -10,6 +18,10 @@ export default class TaskScheduler {
     this._task_interval = 0.015; // interval at which tasks are evaluated
     this._task_interval_counter = 0.0; // counter
   }
+  /**
+   * Registers a task that simply invokes a model function after the delay.
+   * @param {Object} new_function_call { func: "Model.method", args: [...], at: seconds }
+   */
   add_function_call(new_function_call) {
     const task_id = Math.floor(Math.random() * 10000)
     const id = "task_" + task_id
@@ -29,6 +41,10 @@ export default class TaskScheduler {
     this._tasks[id] = new_function_call;
   }
 
+  /**
+   * Registers a property mutation task. Numeric properties tween, primitives swap instantly.
+   * @param {Object} new_task { model, prop1, prop2, t, it, at, ... }
+   */
   add_task(new_task) {
     // create task id
     const task_id = Math.floor(Math.random() * 10000)
@@ -75,6 +91,11 @@ export default class TaskScheduler {
 
   }
 
+  /**
+   * Removes a scheduled task by its numeric suffix.
+   * @param {number} task_id Random id returned when the task was added.
+   * @returns {boolean} True if a task was removed.
+   */
   remove_task(task_id) {
     const id = "task_" + task_id;
     if (id in this._tasks) {
@@ -84,10 +105,16 @@ export default class TaskScheduler {
     return false;
   }
 
+  /**
+   * Purges every pending task. No-op for already empty scheduler.
+   */
   remove_all_tasks() {
     this._tasks = {};
   }
 
+  /**
+   * Advances internal timers based on the modeling timestep and executes ready tasks.
+   */
   run_tasks() {
     if (this._task_interval_counter > this._task_interval) {
       // reset the counter
@@ -151,6 +178,11 @@ export default class TaskScheduler {
     }
   }
 
+  /**
+   * Writes the task's current value to the target model property.
+   * @param {Object} task Resolved task descriptor.
+   * @private
+   */
   _set_value(task) {
     if (task.prop2 === null) {
       task.model[task.prop1] = task.current_value;
