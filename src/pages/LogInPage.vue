@@ -33,11 +33,11 @@
                 </q-card>
                 <div class="q-mt-lg col text-center">
                   <q-btn v-if="!newUserEntry" class="q-pl-lg q-pr-lg bg-blue-grey-10" @click="LogIn"
-                    style="width: 150px;font-size: 16px;" size="sm">LOG IN</q-btn>
+                    style="width: 120px;font-size: 16px;" size="sm">LOG IN</q-btn>
                   <q-btn class="q-ml-lg q-pl-lg q-pr-lg bg-blue-grey-10" @click="showRegistration"
-                    style="width: 150px;font-size: 16px;" size="sm">REGISTER</q-btn>
+                    style="width: 120px;font-size: 16px;" size="sm">REGISTER</q-btn>
                   <q-btn v-if="newUserEntry" class="q-ml-lg q-pl-lg q-pr-lg bg-blue-grey-10" @click="cancelRegistration"
-                    style="width: 150px;font-size: 16px;" size="sm">CANCEL</q-btn>
+                    style="width: 120px;font-size: 16px;" size="sm">CANCEL</q-btn>
                 </div>
 
               </div>

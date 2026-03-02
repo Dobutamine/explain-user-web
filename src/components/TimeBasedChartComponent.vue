@@ -287,6 +287,8 @@ export default {
       // y3_axis_fill: false,
       redrawInterval: -1,
       redrawTimer: 0.0,
+      redrawMinIntervalMs: 1000 / 30,
+      redrawLastTs: 0,
       selectionGuard: false,
       presetEditMode: false,
       selectedPresetName: "",
@@ -321,6 +323,20 @@ export default {
       })
       propNames.sort()
       return propNames
+    },
+    shouldRedrawChart() {
+      const now = performance.now()
+      if (now - this.redrawLastTs < this.redrawMinIntervalMs) {
+        return false
+      }
+      this.redrawLastTs = now
+      return true
+    },
+    copyArrayInPlace(target, source) {
+      target.length = source.length
+      for (let i = 0; i < source.length; i++) {
+        target[i] = source[i]
+      }
     },
     toggleHires() {
 
@@ -691,28 +707,31 @@ export default {
           }
         }
 
-        if (this.redrawTimer > this.redrawInterval) {
-          this.redrawTimer = 0;
-          const myChart = this.$refs.myTest.chart
-          myChart.data.labels = this.x_axis
-          if (this.p1 !== '') {
-            myChart.data.datasets[0].data = [...this.y1_axis]
-          } 
-          if (this.p2 !== '') {
-            myChart.data.datasets[1].data = [...this.y2_axis]
+        if (this.shouldRedrawChart()) {
+          const myChart = this.$refs.myTest?.chart
+          if (myChart) {
+            if (!Array.isArray(myChart.data.labels)) {
+              myChart.data.labels = []
+            }
+            this.copyArrayInPlace(myChart.data.labels, this.x_axis)
+            if (this.p1 !== '' && myChart.data.datasets[0]) {
+              this.copyArrayInPlace(myChart.data.datasets[0].data, this.y1_axis)
+            }
+            if (this.p2 !== '' && myChart.data.datasets[1]) {
+              this.copyArrayInPlace(myChart.data.datasets[1].data, this.y2_axis)
+            }
+            if (this.p3 !== '' && myChart.data.datasets[2]) {
+              this.copyArrayInPlace(myChart.data.datasets[2].data, this.y3_axis)
+            }
+            requestAnimationFrame(() => {
+              myChart.update()
+            })
           }
-          if (this.p3 !== '') {
-            myChart.data.datasets[2].data = [...this.y3_axis]
-          }
-          requestAnimationFrame(() => {
-            myChart.update()
-          })
 
           if (this.show_summary) {
             this.analyzeDataRt()
           }
         }
-        this.redrawTimer += 0.015
       }
     },
     processAvailableModels() {
