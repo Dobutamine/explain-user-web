@@ -8,11 +8,11 @@
               :options="availableEvents" dense dark stack-label @update:model-value="selectEvent" />
             <q-btn class="col-1 q-ma-xs q-mt-md" color="grey-9" size="xs" dense
               icon="fa-solid fa-refresh" @click="getAllUserEventsFromServer" style="font-size: 8px"><q-tooltip>refresh event list</q-tooltip></q-btn>
-            <q-btn v-if="!selectedEvent" class="col-1 q-ma-xs q-mt-md" color="primary" size="xs" dense
-              icon="fa-solid fa-plus" @click="addTask" style="font-size: 8px"><q-tooltip>add new event</q-tooltip></q-btn>
-            <q-btn v-if="selectedEvent" class="col-1 q-ma-xs q-mt-md" color="negative" size="xs" dense
-              icon="fa-solid fa-trash-can" @click="deleteEventFromServer" style="font-size: 8px"><q-tooltip>delete event from server</q-tooltip></q-btn>
-          </div>
+            <q-btn class="col-1 q-ma-xs q-mt-md" color="primary" size="xs" dense
+              icon="fa-solid fa-plus" @click="addTask" style="font-size: 8px"><q-tooltip>add event</q-tooltip></q-btn>
+              <q-btn class="col-1 q-ma-xs q-mt-md" color="negative" size="xs" dense
+              icon="fa-solid fa-trash" @click="deleteEventFromServer" style="font-size: 8px"><q-tooltip>delete event</q-tooltip></q-btn>
+            </div>
 
       <div v-if="isEnabled">
         <div v-if="task_list.length > 0" class="col q-ma-sm">
@@ -155,17 +155,17 @@
           {{statusMessage}}
         </div>
         
-        <div class="row q-ma-sm q-ml-xl q-mr-xl">
-            <q-btn class="col q-ma-sm" color="primary" size="sm" dense icon="fa-solid fa-add" @click="addTask"
-              style="font-size: 10px"><q-tooltip>add task</q-tooltip></q-btn>
-            <q-btn class="col q-ma-sm" color="primary" size="sm" dense icon="fa-solid fa-play" @click="runAllTasks"
-              style="font-size: 10px"><q-tooltip>run event</q-tooltip></q-btn>
-            <q-btn class="col q-ma-sm" color="secondary" size="sm" dense icon="fa-solid fa-cancel" @click="cancelTasks"
+        <div v-if="task_list.length > 0" class="row q-ma-sm q-ml-xl q-mr-xl">
+          <q-btn class="col q-ma-sm" color="primary" size="sm" dense icon="fa-solid fa-add" @click="addTask"
+            style="font-size: 10px"><q-tooltip>add task</q-tooltip></q-btn>
+          <q-btn class="col q-ma-sm" color="primary" size="sm" dense icon="fa-solid fa-play" @click="runAllTasks"
+            style="font-size: 10px"><q-tooltip>run event</q-tooltip></q-btn>
+          <q-btn class="col q-ma-sm" color="secondary" size="sm" dense icon="fa-solid fa-circle-xmark" @click="cancelTasks"
             style="font-size: 10px"><q-tooltip>cancel event</q-tooltip></q-btn>
-            <q-btn v-if="!savedTask" class="col q-ma-sm" color="grey-8" size="sm" dense icon="fa-solid fa-save" @click="saveEventList"
-            style="font-size: 10px"><q-tooltip>save event to model</q-tooltip></q-btn>
-            <q-btn class="col q-ma-sm" color="negative" size="sm" dense icon="fa-solid fa-trash" @click="deleteEventFromList"
-            style="font-size: 10px"><q-tooltip>delete event from model</q-tooltip></q-btn>
+          <q-btn v-if="!savedTask" class="col q-ma-sm" color="grey-8" size="sm" dense icon="fa-solid fa-save" @click="saveEventList"
+            style="font-size: 10px"><q-tooltip>save event to server</q-tooltip></q-btn>
+          <q-btn class="col q-ma-sm" color="negative" size="sm" dense icon="fa-solid fa-trash" @click="deleteEventFromServer"
+            style="font-size: 10px"><q-tooltip>delete event from server</q-tooltip></q-btn>
           </div>
       </div>
     </q-card>
@@ -187,7 +187,6 @@
         state,
         user,
         general
-
       }
     },
     data() {
@@ -214,16 +213,105 @@
       };
     },
     methods: {
-      deleteEventFromServer() {
-        // delete the event from the server
-      },
       selectEvent() {
-        console.log("selected event", this.selectedEvent)
+        this.getEventFromServer(this.selectedEvent)
+      },
+      async deleteEventFromServer() {
+        const url = `${this.general.apiUrl}/api/events/delete_event?token=${this.user.token}`;
+        let response = await fetch(url, {
+          method: "POST",
+          headers: {
+            Accept: "application/json, text/plain, */*",
+            "Content-Type": "application/json",
+          },
+
+          body: JSON.stringify({
+            explain_version: this.general.version,
+            user: this.user.name.toLowerCase(),
+            name: this.eventName,
+          }),
+        });
+        if (response.status === 200) {
+          this.statusMessage = "event deleted"
+          this.cancelTasks()
+          this.getAllUserEventsFromServer()
+        } else {
+          this.savedTask = false
+          this.statusMessage = "error deleting event"
+        } 
+        setTimeout(() => {
+          this.statusMessage = ""
+        }, 3000);
+      },
+      async saveEventList() {
+        // rebuild the task list 
+        let new_task_list = []
+        this.task_list.forEach(task => {
+          new_task_list.push(task)
+        })
+        if (this.eventName.endsWith('*')) {
+          this.eventName = this.eventName.slice(0, -1);
+        }
+        const url = `${this.general.apiUrl}/api/events/update_event?token=${this.user.token}`;
+        let response = await fetch(url, {
+          method: "POST",
+          headers: {
+            Accept: "application/json, text/plain, */*",
+            "Content-Type": "application/json",
+          },
+
+          body: JSON.stringify({
+            explain_version: this.general.version,
+            user: this.user.name.toLowerCase(),
+            name: this.eventName,
+            description: this.eventDescription,
+            protected: false,
+            shared: false,
+            event_definition: {
+              tasks: new_task_list
+            },
+          }),
+        });
+        if (response.status === 200) {
+          this.statusMessage = "event saved"
+          this.savedTask = true
+          explain.getModelState()
+        } else {
+          this.savedTask = false
+          this.statusMessage = "error saving event"
+        } 
+        setTimeout(() => {
+          this.statusMessage = ""
+        }, 3000);
+      },
+      async getEventFromServer(event_name) {
+        const url = `${this.general.apiUrl}/api/events/get_user_event?token=${this.user.token}`;
+      let response = await fetch(url, {
+        method: "POST",
+        headers: {
+          Accept: "application/json, text/plain, */*",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user: this.user.name.toLowerCase(),
+          name: event_name,
+        }),
+      });
+
+      if (response.status === 200) {
+        let data = await response.json();
+        this.loadTask(data)
+      } else {
+        this.statusMessage = "error loading event"
+        setTimeout(() => {
+          this.statusMessage = ""
+        }, 3000);
+      }
       },
       async getAllUserEventsFromServer() {
-        this.selectedEvent = ""
-        const url = `${this.general.apiUrl}/api/events/get_all_user_events?token=${this.user.token}`;
-        let response = await fetch(url, {
+      this.selectedEvent = ""
+      const url = `${this.general.apiUrl}/api/events/get_all_user_events?token=${this.user.token}`;
+      let response = await fetch(url, {
           method: "POST",
           headers: {
             Accept: "application/json, text/plain, */*",
@@ -241,14 +329,18 @@
           this.availableEvents = []
         }
       },
-      loadTask() {
+      loadTask(task_data) {
         // process the saved task
-        this.eventName = this.selectedTask
-        this.task_list = [...this.state.events[this.selectedTask]]
-        // process the current values
+        this.eventName = task_data.name
+        this.eventDescription = task_data.description
+        this.task_list = task_data.event_definition.tasks
+        // get the current values for each task
         this.task_list.forEach(task => {
-          task.value = explain.modelState.models[task.model][task.prop]
+          if (task.type == "number" || task.type == "factor" || task.type == "boolean") {
+            task.value = explain.modelState.models[task.model][task.prop]
+          } 
         })
+        this.statusMessage = ""
       },
       addTask() {
         let task = {
@@ -286,7 +378,6 @@
         this.selectedTask = ""
       },
       modelChanged(index) {
-     
         // find the property list this.task_list[index]._model_interface
         this.task_list[index]._model_interface = {}
         this.task_list[index].type = ""
@@ -398,47 +489,6 @@
         return scheduled_task
       },
       selectTask(e) {
-      },
-      async saveEventList() {
-        // rebuild the task list 
-        let new_task_list = []
-        this.task_list.forEach(task => {
-          new_task_list.push(task)
-        })
-        if (this.eventName.endsWith('*')) {
-          this.eventName = this.eventName.slice(0, -1);
-        }
-        const url = `${this.general.apiUrl}/api/events/update_event?token=${this.user.token}`;
-        let response = await fetch(url, {
-          method: "POST",
-          headers: {
-            Accept: "application/json, text/plain, */*",
-            "Content-Type": "application/json",
-          },
-
-          body: JSON.stringify({
-            explain_version: this.general.version,
-            user: this.user.name.toLowerCase(),
-            name: this.eventName,
-            description: this.eventDescription,
-            protected: false,
-            shared: false,
-            event_definition: {
-              tasks: new_task_list
-            },
-          }),
-        });
-        if (response.status === 200) {
-          this.statusMessage = "event saved"
-          this.savedTask = true
-          explain.getModelState()
-        } else {
-          this.savedTask = false
-          this.statusMessage = "error saving event"
-        } 
-        setTimeout(() => {
-          this.statusMessage = ""
-        }, 3000);
       },
       runAllTasks() {
         for (let i = 0; i < this.task_list.length; i++) {

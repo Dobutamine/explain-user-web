@@ -7,6 +7,10 @@
             narrow-indicator outside-arrows @update:model-value="tabLeftChanged">
             <q-tab name="controllers"><q-icon name="fa-solid fa-sliders" size="xs"></q-icon><q-tooltip>controllers</q-tooltip>
             </q-tab>
+            <q-tab name="task_scheduler">
+              <q-icon name="fa-solid fa-list-check" size="xs"></q-icon>
+              <q-tooltip>event scheduler</q-tooltip>
+            </q-tab>
             <q-tab name="ventilator">
               <q-icon name="fa-solid fa-lungs" size="xs"></q-icon>
               <q-tooltip>mechanical ventilator</q-tooltip>
@@ -20,10 +24,7 @@
             </q-tab>
             <q-tab name="model_builder"><q-icon name="fa-solid fa-pen-to-square" size="xs"></q-icon><q-tooltip>model builder</q-tooltip>
             </q-tab>
-            <q-tab name="task_scheduler">
-              <q-icon name="fa-solid fa-list-check" size="xs"></q-icon>
-              <q-tooltip>event scheduler</q-tooltip>
-            </q-tab>
+
           </q-tabs>
           <q-tab-panels v-model="tab_left" keep-alive style="background-color: black">
             <q-tab-panel name="model_editor">
