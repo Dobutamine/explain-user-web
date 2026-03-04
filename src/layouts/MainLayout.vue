@@ -335,13 +335,18 @@ export default defineComponent({
       }
       if (result) {
         explain.build(this.state.model_definition);
-        // check whether this is the default state
+        // check whether this is the default state  
         if (this.state.name !== this.user.defaultState) {
           this.state.default = false;
         } else {
           this.state.default = true;
         }
         this.showLoadStatePopUp = false
+        // load the diagram definition that belongs to the state
+        let result = await this.diagram.getDiagramFromServer(this.general.apiUrl, this.user.name, this.state.diagram_definition.name, this.user.token)
+        if (result) {
+          this.$bus.emit("rebuild_diagram");
+        }
         this.$bus.emit('reset')
       }
       this.showLoadStatePopUp = false

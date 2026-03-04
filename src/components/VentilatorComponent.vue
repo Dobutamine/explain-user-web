@@ -27,7 +27,7 @@
     </div>
 
       <div class="q-mr-sm">
-        <Line v-if="isEnabled && !show_loops" ref="myTest" id="my-chart-vent-pres" :options="chartOptions"
+        <Line v-if="isEnabled && !show_loops" ref="myVentTest" id="my-chart-vent-pres" :options="chartOptions"
           :data="chartData" style="max-height: 250px;" />
       </div>
 
@@ -517,7 +517,7 @@ export default {
 
     },
     toggleAutoscaling() {
-      const myChart = this.$refs.myTest.chart
+      const myChart = this.$refs.myVentTest.chart
       this.y_max = parseInt(myChart.data.datasets[0].data.reduce((max, current) => (current > max ? current : max), -Infinity))
       this.y_min = parseInt(myChart.data.datasets[0].data.reduce((min, current) => (current < min ? current : min), Infinity))
       this.autoscaling()
@@ -604,7 +604,7 @@ export default {
         if (this.redrawTimer > this.redrawInterval) {
 
           this.redrawTimer = 0;
-          const myChart = this.$refs.myTest.chart
+          const myChart = this.$refs.myVentTest.chart
           myChart.data.labels = this.x_axis
           myChart.data.datasets[0].data = [...this.y1_axis]
           requestAnimationFrame(() => {

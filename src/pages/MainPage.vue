@@ -169,7 +169,7 @@
                 width: '5px',
                 opacity: 0.5
               }">
-                <TimeBasedChartComponent :alive="chart_alive"></TimeBasedChartComponent>
+                <RealtimeChart :alive="chart_alive"></RealtimeChart>
               </q-scroll-area>
             </q-tab-panel>
 
@@ -302,7 +302,7 @@ import AnimationEditor from 'src/components/AnimationEditor.vue';
 import ModelBuilderComponent from 'src/components/ModelBuilderComponent.vue';
 import ControllerComponent from 'src/components/ControllerComponent.vue';
 import NumericsEditor from 'src/components/NumericsEditor.vue';
-
+import RealtimeChart from 'src/components/RealtimeChart.vue';
 
 export default defineComponent({
   name: 'MainPage',
@@ -334,7 +334,8 @@ export default defineComponent({
     AnimationComponent,
     AnimationEditor,
     ControllerComponent,
-    NumericsEditor
+    NumericsEditor,
+    RealtimeChart
   },
   data() {
     return {

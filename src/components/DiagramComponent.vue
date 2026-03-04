@@ -676,6 +676,9 @@ export default {
       this.toggleVentilator()
     })
 
+    this.$bus.off("load_model_definition", () => this.loadModelDefinition().then(() => this.buildDiagram()))
+
+
   },
   mounted() {
     // initialize and build the diagram
@@ -737,8 +740,10 @@ export default {
       } catch { }
     })
 
+    this.$bus.on("load_model_definition", () => this.loadModelDefinition().then(() => this.buildDiagram()))
+
   },
-};
+};  
 
 </script>
 <style scoped>
