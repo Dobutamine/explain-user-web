@@ -165,8 +165,8 @@ export class Circulation extends BaseModelClass {
     // local properties
     this._combined_list = [];
     this._syst_models = []
-    this._pulm_models = []
     this._pulm_art_models = []
+    this._syst_art_models = []
     this.prev_ans_activity = 0.0;
     this.prev_svr_factor = 1.0;
     this.prev_pvr_factor = 1.0;
@@ -200,12 +200,6 @@ export class Circulation extends BaseModelClass {
       ...this.pulmonary_arteries,
       ...this.pulmonary_capillaries,
       ...this.pulmonary_veins
-    ]
-
-    // build a list of pulmonary vascular models which control arterial vasoconstriction
-    this._pulm_art_models = [
-      ...this.pulmonary_arteries,
-      ...this.pulmonary_capillaries
     ]
 
   }
@@ -249,7 +243,7 @@ export class Circulation extends BaseModelClass {
   }
 
   set_svr_factor(new_svr_factor) {
-    this._syst_models.forEach(syst_model_name => {
+    this.systemic_capillaries.forEach(syst_model_name => {
       // get a reference to the model
       let m = this._model_engine.models[syst_model_name]
       // get the current r_factor from the model
@@ -272,7 +266,7 @@ export class Circulation extends BaseModelClass {
   }
 
   set_pvr_factor(new_pvr_factor) {
-    this._pulm_art_models.forEach(pulm_model_name => {
+    this.pulmonary_capillaries.forEach(pulm_model_name => {
       // get a reference to the model
       let m = this._model_engine.models[pulm_model_name]
       // get the current r_factor from the model

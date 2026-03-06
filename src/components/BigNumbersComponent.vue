@@ -106,7 +106,13 @@ export default {
       if (this.currentData) {
         try {
           this.hr = this.currentData["Monitor.heart_rate"].toFixed(0)
-          this.rr = this.currentData["Monitor.resp_rate"].toFixed(0)
+          
+          if (this.currentData["Monitor.resp_rate"] > 150) {
+            this.rr = "-"
+          } else {      
+            this.rr = this.currentData["Monitor.resp_rate"].toFixed(0)
+          }
+
           this.spo2_pre = this.currentData["Monitor.spo2_pre"].toFixed(0)
           this.spo2_post = this.currentData["Monitor.spo2"].toFixed(0)
           this.abp = this.currentData["Monitor.abp_syst"].toFixed(0) + "/" + this.currentData["Monitor.abp_diast"].toFixed(0)

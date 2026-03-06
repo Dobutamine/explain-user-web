@@ -276,6 +276,7 @@ export class BloodVessel extends BloodCapacitance {
 
     // update the associated resistors
     Object.values(this._resistors).forEach((resistor) => {
+      resistor.is_enabled = this.is_enabled;
       resistor.r_for = this._r_for
       resistor.r_back = this._r_back
       resistor.r_k = this._r_k

@@ -352,6 +352,11 @@ export class MicroVascularUnit extends BaseModelClass {
   }
 
   calc_model() {
+    // make sure all components are enabled or disabled according to the MVU is_enabled property
+    this.components.art.is_enabled = this.is_enabled;
+    this.components.cap.is_enabled = this.is_enabled;
+    this.components.ven.is_enabled = this.is_enabled;
+
     // update the ans activity according the sensitivity of the whole MVU
     let _ans_activity = 1.0 + (this.ans_activity - 1.0) * this.ans_sens;
 

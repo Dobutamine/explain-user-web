@@ -81,6 +81,7 @@ export default {
       stateDiagram: true,
       ecls_enabled: false,
       vent_enabled: false,
+      placenta_enabled: false,
 
     };
   },
@@ -613,6 +614,15 @@ export default {
       })
       this.buildDiagram()
     },
+    togglePlacenta(){
+      // find all components with prefix PL_ and toggle their enabled state
+      Object.keys(this.diagram.diagram_definition.components).forEach((key) => {
+        if (key.startsWith("PL_")) {
+          this.diagram.diagram_definition.components[key].enabled = this.placenta_enabled
+        }
+      })
+      this.buildDiagram()
+    },
     async loadModelDefinition() {
       const result = await this.diagram.getDiagramFromServer(this.general.apiUrl, this.user.name, this.state.diagram_definition.name, this.user.token)
       if (!result) {
@@ -635,7 +645,8 @@ export default {
       }
 
       return true;
-    }
+    },
+    
   },
   beforeUnmount() {
     this.$bus.off("state", this.processStateChanged)
@@ -664,6 +675,16 @@ export default {
     this.$bus.off("ecls_display_off", () => {
       this.ecls_enabled = false
       this.toggleEcls()
+    })
+
+    // toggle placenta
+    this.$bus.off("placenta_display_on", () => {
+      this.placenta_enabled = true
+      this.togglePlacenta()
+    })
+    this.$bus.off("placenta_display_off", () => {
+      this.placenta_enabled = false
+      this.togglePlacenta()
     })
 
     // // toggle ventilator    this.$bus.on("vent_display_on", this.toggleVentilator(true))
@@ -703,6 +724,18 @@ export default {
       this.ecls_enabled = false
       this.toggleEcls()
     })
+
+    // toggle placenta
+    this.$bus.on("placenta_display_on", () => {
+      this.placenta_enabled = true
+      this.togglePlacenta()
+    })
+    this.$bus.on("placenta_display_off", () => {
+      this.placenta_enabled = false
+      this.togglePlacenta()
+    })
+
+    
 
     // // toggle ventilator    this.$bus.on("vent_display_on", this.toggleVentilator(true))
     this.$bus.on("vent_display_on", () => {
