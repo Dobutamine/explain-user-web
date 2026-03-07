@@ -3,9 +3,9 @@
 import { BaseModelClass } from "../base_models/BaseModelClass.js";
 
 
-export class Ecls extends BaseModelClass {
+export class ArtificialWhomb extends BaseModelClass {
   // static properties
-  static model_type = "Ecls";
+  static model_type = "ArtificialWhomb";
   static model_interface = [
     {
       target: "description",
@@ -24,22 +24,21 @@ export class Ecls extends BaseModelClass {
       caption: "enabled",
     },
     {
-      target: "ecls_running",
+      target: "aw_running",
       type: "boolean",
       build_prop: true,
       edit_mode: "caption",
       readonly: false,
-      caption: "ECLS model running",
+      caption: "artifical placenta model running",
     },
     {
-      target: "ecls_clamped",
+      target: "aw_clamped",
       type: "boolean",
       build_prop: true,
       edit_mode: "caption",
       readonly: false,
-      caption: "ECLS clamped",
+      caption: "aw clamped",
     },
-
     {
       caption: "drainage cannula resistance factor",
       target: "drainage_res_factor",
@@ -221,19 +220,12 @@ export class Ecls extends BaseModelClass {
 
   constructor(model_ref, name = "") {
     // initialize the base model class setting all the general properties of the model which all models have in common
-    
-    // Average umbilical cord length at term          : – 55 cm
-    // Mean luminal CSA per artery at 37–39 weeks     : – 0.147 cm² (overall mean across 300 normal pregnancies) DOI: http://dx.doi.org/10.18203/2320-1770.ijrcog20183851
-    // Mean volume of umbilical artery                : 55 * 0.147 = 8.1 cm3 = 8.1 ml per artery => 16.2 ml for two arteries
-    // Mean luminal CSA umbilical vein at 37-39 weeks : - 0.58 cm2
-    // Mean volume of umbilical vein                  : 55 * 0.58 = 31.9 cm3 = 31.9 ml  Spurway J, Logan P, Pak S. The development, structure and blood flow within the umbilical cord with particular reference to the venous system. Australas J Ultrasound Med. 2012 Aug;15(3):97-102. doi: 10.1002/j.2205-0140.2012.tb00013.x. Epub 2015 Dec 31. PMID: 28191152; PMCID: PMC5025097.
-    // Mean volume of fetal part of placenta          : 427 ml DOI: 10.7863/jum.2008.27.11.1583
 
     super(model_ref, name);
     // -----------------------------------------------
     // initialize independent parameters
-    this.ecls_running = false;
-    this.ecls_clamped = true; // flags whether the umbilical vessels are clamped or not
+    this.aw_running = false
+    this.aw_clamped = true; // flags whether the umbilical vessels are clamped or not
     this.drainage_res = 1000; // resistance of the drainage cannula (mmHg/(L/s))
     this.drainage_res_factor = 1.0; // factor to adjust the drainage resistance
     this.return_res = 1000; // resistance of the return cannula (mmHg/(L/s))
@@ -261,57 +253,57 @@ export class Ecls extends BaseModelClass {
     this._update_interval = 0.015; // update interval of the placenta model (s)
     this._update_counter = 0.0; // counter of the update interval (s)
 
-    this._ecls_drainage = null; // reference to the drainage model instance
-    this._ecls_tubing_in = null; // reference to the tubing in model instance
-    this._ecls_pump = null; // reference to the pump model instance
-    this._ecls_oxy = null; // reference to the oxygenator model instance
-    this._ecls_tubing_out = null; // reference to the tubing out model instance
-    this._ecls_return = null; // reference to the return model instance
+    this._aw_drainage = null; // reference to the drainage model instance
+    this._aw_tubing_in = null; // reference to the tubing in model instance
+    this._aw_pump = null; // reference to the pump model instance
+    this._aw_oxy = null; // reference to the oxygenator model instance
+    this._aw_tubing_out = null; // reference to the tubing out model instance
+    this._aw_return = null; // reference to the return model instance
   }
 
   calc_model() {
     this._update_counter += this._t;
-    if (this._update_counter > this._update_interval && this.ecls_running) {
+    if (this._update_counter > this._update_interval && this.aw_running) {
         this._update_counter = 0.0;
 
         // get a reference to the associated models
-        this._ecls_drainage = this._model_engine.models["ECLS_DRAINAGE"];
-        this._ecls_tubing_in = this._model_engine.models["ECLS_TUBING_IN"];
-        this._ecls_pump = this._model_engine.models["ECLS_PUMP"];
-        this._ecls_oxy = this._model_engine.models["ECLS_OXY"];
-        this._ecls_tubing_out = this._model_engine.models["ECLS_TUBING_OUT"];
-        this._ecls_return = this._model_engine.models["ECLS_RETURN"];
+        this._aw_drainage = this._model_engine.models["AW_DRAINAGE"];
+        this._aw_tubing_in = this._model_engine.models["AW_TUBING_IN"];
+        this._aw_pump = this._model_engine.models["AW_PUMP"];
+        this._aw_oxy = this._model_engine.models["AW_OXY"];
+        this._aw_tubing_out = this._model_engine.models["AW_TUBING_OUT"];
+        this._aw_return = this._model_engine.models["AW_RETURN"];
 
         // make sure all the associated models are in the same enabled/disabled state as the placenta model
-        this._ecls_drainage.is_enabled = this.ecls_running;
-        this._ecls_tubing_in.is_enabled = this.ecls_running;
-        this._ecls_pump.is_enabled = this.ecls_running;
-        this._ecls_oxy.is_enabled = this.ecls_running;
-        this._ecls_tubing_out.is_enabled = this.ecls_running;
-        this._ecls_return.is_enabled = this.ecls_running;
+        this._aw_drainage.is_enabled = this.aw_running;
+        this._aw_tubing_in.is_enabled = this.aw_running;
+        this._aw_pump.is_enabled = this.aw_running;
+        this._aw_oxy.is_enabled = this.aw_running;
+        this._aw_tubing_out.is_enabled = this.aw_running;
+        this._aw_return.enabled = this.aw_running;
 
         // clamp umbilical vessels if set to clamped
-        this._ecls_drainage.no_flow = this.ecls_clamped;
-        this._ecls_tubing_in.no_flow = this.ecls_clamped;
-        this._ecls_pump.no_flow = this.ecls_clamped;
-        this._ecls_oxy.no_flow = this.ecls_clamped;
-        this._ecls_tubing_out.no_flow = this.ecls_clamped;
-        this._ecls_return.no_flow = this.ecls_clamped;
+        this._aw_drainage.no_flow = this.aw_clamped;
+        this._aw_tubing_in.no_flow = this.aw_clamped;
+        this._aw_pump.no_flow = this.aw_clamped;
+        this._aw_oxy.no_flow = this.aw_clamped;
+        this._aw_tubing_out.no_flow = this.aw_clamped;
+        this._aw_return.no_flow = this.aw_clamped;
 
 
         // set the resistances of the associated models
-        this._ecls_drainage.r_for = this.drainage_res; // set the drainage resistance to a high value to simulate the umbilical artery resistance
-        this._ecls_drainage.r_back = this.drainage_res; // set the drainage resistance to a high value to simulate the umbilical artery resistance
-        this._ecls_tubing_in.r_for = this.tubing_in_res; // set the tubing resistance to a low value to simulate the tubing resistance
-        this._ecls_tubing_in.r_back = this.tubing_in_res; // set the tubing resistance to a low value to simulate the tubing resistance
-        this._ecls_pump.r_for = this.pump_res_for; // set the pump resistance to a low value to simulate the pump resistance
-        this._ecls_pump.r_back = this.pump_res_back; // set the pump resistance to a low value to simulate the pump resistance
-        this._ecls_oxy.r_for = this.oxy_res_for; // set the oxygenator resistance to a medium value to simulate the oxygenator resistance
-        this._ecls_oxy.r_back = this.oxy_res_back; // set the oxygenator resistance to a medium value to simulate the oxygenator resistance
-        this._ecls_tubing_out.r_for = this.tubing_out_res; // set the tubing resistance to a low value to simulate the tubing resistance
-        this._ecls_tubing_out.r_back = this.tubing_out_res; // set the tubing resistance to a low value to simulate the tubing resistance
-        this._ecls_return.r_for = this.return_res; // set the return resistance to a high value to simulate the umbilical vein resistance
-        this._ecls_return.r_back = this.return_res; // set the return resistance to a high value to simulate the umbilical vein resistance
+        this._aw_drainage.r_for = this.drainage_res; // set the drainage resistance to a high value to simulate the umbilical artery resistance
+        this._aw_drainage.r_back = this.drainage_res; // set the drainage resistance to a high value to simulate the umbilical artery resistance
+        this._aw_tubing_in.r_for = this.tubing_in_res; // set the tubing resistance to a low value to simulate the tubing resistance
+        this._aw_tubing_in.r_back = this.tubing_in_res; // set the tubing resistance to a low value to simulate the tubing resistance
+        this._aw_pump.r_for = this.pump_res_for; // set the pump resistance to a low value to simulate the pump resistance
+        this._aw_pump.r_back = this.pump_res_back; // set the pump resistance to a low value to simulate the pump resistance
+        this._aw_oxy.r_for = this.oxy_res_for; // set the oxygenator resistance to a medium value to simulate the oxygenator resistance
+        this._aw_oxy.r_back = this.oxy_res_back; // set the oxygenator resistance to a medium value to simulate the oxygenator resistance
+        this._aw_tubing_out.r_for = this.tubing_out_res; // set the tubing resistance to a low value to simulate the tubing resistance
+        this._aw_tubing_out.r_back = this.tubing_out_res; // set the tubing resistance to a low value to simulate the tubing resistance
+        this._aw_return.r_for = this.return_res; // set the return resistance to a high value to simulate the umbilical vein resistance
+        this._aw_return.r_back = this.return_res; // set the return resistance to a high value to simulate the umbilical vein resistance
     }
   }
 }

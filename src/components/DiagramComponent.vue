@@ -6,6 +6,12 @@
     </div>
 
     <div class="row justify-center">
+        <q-checkbox class="q-ml-sm" v-model="ecls_enabled" size="xs" label="ecls" @update:model-value="toggleEcls()"/>
+        <q-checkbox class="q-ml-sm" v-model="placenta_enabled" size="xs" label="placenta" @update:model-value="togglePlacenta()"/>
+        <q-checkbox class="q-ml-sm" v-model="aw_enabled" size="xs" label="art whomb" @update:model-value="toggleAwWhomb()"/>          
+    </div>
+
+    <div class="q-mt-md row justify-center">
           <q-btn flat round dense size="sm" icon="fa-solid fa-download" color="white" class="q-ml-sm"
           @click="loadDiagram">
           <q-tooltip> get a diagram from the server </q-tooltip></q-btn>
@@ -22,6 +28,7 @@
           @click="setDiagramAsStateDefault">
           <q-tooltip> current diagram is not default state diagram </q-tooltip></q-btn>
     </div>
+
 
   </q-card>
 </template>
@@ -82,7 +89,7 @@ export default {
       ecls_enabled: false,
       vent_enabled: false,
       placenta_enabled: false,
-
+      aw_enabled: false,
     };
   },
   methods: {
@@ -623,6 +630,15 @@ export default {
       })
       this.buildDiagram()
     },
+    toggleAwWhomb(){
+      // find all components with prefix PL_ and toggle their enabled state
+      Object.keys(this.diagram.diagram_definition.components).forEach((key) => {
+        if (key.startsWith("AW_")) {
+          this.diagram.diagram_definition.components[key].enabled = this.aw_enabled
+        }
+      })
+      this.buildDiagram()
+    },
     async loadModelDefinition() {
       const result = await this.diagram.getDiagramFromServer(this.general.apiUrl, this.user.name, this.state.diagram_definition.name, this.user.token)
       if (!result) {
@@ -697,6 +713,15 @@ export default {
       this.toggleVentilator()
     })
 
+    this.$bus.off("aw_display_on", () => {
+      this.aw_enabled = true
+      this.toggleAwWhomb()
+    })
+    this.$bus.off("aw_display_off", () => {
+      this.aw_enabled = false
+      this.toggleAwWhomb()
+    })
+
     this.$bus.off("load_model_definition", () => this.loadModelDefinition().then(() => this.buildDiagram()))
 
 
@@ -735,8 +760,6 @@ export default {
       this.togglePlacenta()
     })
 
-    
-
     // // toggle ventilator    this.$bus.on("vent_display_on", this.toggleVentilator(true))
     this.$bus.on("vent_display_on", () => {
       this.vent_enabled = true
@@ -745,6 +768,15 @@ export default {
     this.$bus.on("vent_display_off", () => {
       this.vent_enabled = false
       this.toggleVentilator()
+    })
+
+    this.$bus.on("aw_display_on", () => {
+      this.aw_enabled = true
+      this.toggleAwWhomb()
+    })
+    this.$bus.on("aw_display_off", () => {
+      this.aw_enabled = false
+      this.toggleAwWhomb()
     })
 
     // add the event listener for the state change

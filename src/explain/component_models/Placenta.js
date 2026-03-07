@@ -217,10 +217,10 @@ export class Placenta extends BaseModelClass {
       this._update_counter = 0.0;
 
       // get a reference to the associated models
-      this._umb_art = this._model_engine.models["UMB_ART"];
-      this._umb_ven = this._model_engine.models["UMB_VEN"];
-      this._plf = this._model_engine.models["PLF"];
-      this._plm = this._model_engine.models["PLM"];
+      this._umb_art = this._model_engine.models["PL_UMB_ART"];
+      this._umb_ven = this._model_engine.models["PL_UMB_VEN"];
+      this._plf = this._model_engine.models["PL_FETAL"];
+      this._plm = this._model_engine.models["PL_MAT"];
       this._gas_exchanger = this._model_engine.models["PL_GASEX"];
 
       // make sure all the associated models are in the same enabled/disabled state as the placenta model
