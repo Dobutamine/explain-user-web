@@ -1,7 +1,7 @@
 
 
 import { BaseModelClass } from "../base_models/BaseModelClass.js";
-
+import { calc_gas_composition } from "../component_models/GasComposition"
 
 export class Ecls extends BaseModelClass {
   // static properties
@@ -213,6 +213,43 @@ export class Ecls extends BaseModelClass {
       ll:0.0,
       ul:0.1
     },
+    {
+      caption: "gas flow through oxygenator",
+      target: "gas_flow",
+      type: "number",
+      build_prop: true,
+      edit_mode: "basic",
+      factor: 1.0,
+      delta: 0.1,
+      rounding: 1,
+      ll:0.0,
+      ul:10.0 
+    },
+    {
+      caption: "gas fio2 through oxygenator",
+      target: "gas_fio2",
+      type: "number",
+      build_prop: true,
+      edit_mode: "basic",
+      factor: 100.0,
+      delta: 1,
+      rounding: 0,
+      ll:0.21,
+      ul:100.0 
+    },
+    {
+      caption: "gas fico2 through oxygenator",
+      target: "gas_fico2",
+      type: "number",
+      build_prop: true,
+      edit_mode: "basic",
+      factor: 100.0,
+      delta: 0.01,
+      rounding: 2,
+      ll:0.0,
+      ul:10.0 
+    },
+
   ];
 
   /*
@@ -248,8 +285,10 @@ export class Ecls extends BaseModelClass {
     this.oxy_res_factor = 1.0; // factor to adjust the oxygenator resistance
     this.oxy_res_back = 50; // resistance of the oxygenator (mmHg/(L/s))
     this.gas_flow = 0.5; // gas flow rate through the oxygenator (L/min)
-    this.gas_fio2 = 0.21; // fraction of inspired oxygen in the gas flow through the oxygenator
-    this.gas_fico2 = 0.0004; // fraction of inspired carbon dioxide in the gas flow through the oxygenator
+    this.gas_fio2 = 0.205; // fraction of inspired oxygen in the gas flow through the oxygenator
+    this.gas_fico2 = 0.000392; // fraction of inspired carbon dioxide in the gas flow through the oxygenator
+    this.gas_humidity = 0.5; // humidity of the gas flow through the oxygenator (fraction)
+    this.gas_temp = 20.0; // temperature of the gas flow through the oxygenator (dgs C)
     this.dif_o2 = 0.0005; // diffusion constant for oxygen (mmol/mmHg * s)
     this.dif_co2 = 0.001; // diffusion constant for carbon dioxide (mmol/mmHg * s)
 
@@ -258,6 +297,9 @@ export class Ecls extends BaseModelClass {
 
     // -----------------------------------------------
     // local parameters
+    this.prev_fio2 = 0.0; // previous fio2 value to detect changes in fio2
+    this.prev_fico2 = 0.0; // previous fico2 value to detect changes in fico2
+    this.prev_gas_flow = 0.0; // previous gas flow value to detect changes in gas flow
     this._update_interval = 0.015; // update interval of the placenta model (s)
     this._update_counter = 0.0; // counter of the update interval (s)
 
@@ -267,6 +309,11 @@ export class Ecls extends BaseModelClass {
     this._ecls_oxy = null; // reference to the oxygenator model instance
     this._ecls_tubing_out = null; // reference to the tubing out model instance
     this._ecls_return = null; // reference to the return model instance
+    this._ecls_gas_source = null; // reference to the gas source model instance
+    this._ecls_gas_oxy = null; // reference to the gas oxygenator model instance
+    this._ecls_gas_out = null; // reference to the gas out model instance
+    this._ecls_gas_insp_valve = null; // reference to the gas inspiration valve model instance
+    this._ecls_gasexchanger = null; // reference to the gas exchanger model instance
   }
 
   calc_model() {
@@ -281,6 +328,12 @@ export class Ecls extends BaseModelClass {
         this._ecls_oxy = this._model_engine.models["ECLS_OXY"];
         this._ecls_tubing_out = this._model_engine.models["ECLS_TUBING_OUT"];
         this._ecls_return = this._model_engine.models["ECLS_RETURN"];
+        this._ecls_gas_source = this._model_engine.models["ECLS_GAS_SOURCE"];
+        this._ecls_gas_oxy = this._model_engine.models["ECLS_GAS_OXY"];
+        this._ecls_gas_out = this._model_engine.models["ECLS_GAS_OUT"];
+        this._ecls_gas_insp_valve = this._model_engine.models["ECLS_GAS_INSP_VALVE"];
+        this._ecls_gasex = this._model_engine.models["ECLS_GASEX"];
+
 
         // make sure all the associated models are in the same enabled/disabled state as the placenta model
         this._ecls_drainage.is_enabled = this.ecls_running;
@@ -289,6 +342,11 @@ export class Ecls extends BaseModelClass {
         this._ecls_oxy.is_enabled = this.ecls_running;
         this._ecls_tubing_out.is_enabled = this.ecls_running;
         this._ecls_return.is_enabled = this.ecls_running;
+        this._ecls_gas_source.is_enabled = this.ecls_running;
+        this._ecls_gas_oxy.is_enabled = this.ecls_running;
+        this._ecls_gas_out.is_enabled = this.ecls_running;
+        this._ecls_gas_insp_valve.is_enabled = this.ecls_running;
+        this._ecls_gasex.is_enabled = this.ecls_running;
 
         // clamp umbilical vessels if set to clamped
         this._ecls_drainage.no_flow = this.ecls_clamped;
@@ -298,20 +356,42 @@ export class Ecls extends BaseModelClass {
         this._ecls_tubing_out.no_flow = this.ecls_clamped;
         this._ecls_return.no_flow = this.ecls_clamped;
 
-
         // set the resistances of the associated models
-        this._ecls_drainage.r_for = this.drainage_res; // set the drainage resistance to a high value to simulate the umbilical artery resistance
-        this._ecls_drainage.r_back = this.drainage_res; // set the drainage resistance to a high value to simulate the umbilical artery resistance
-        this._ecls_tubing_in.r_for = this.tubing_in_res; // set the tubing resistance to a low value to simulate the tubing resistance
-        this._ecls_tubing_in.r_back = this.tubing_in_res; // set the tubing resistance to a low value to simulate the tubing resistance
-        this._ecls_pump.r_for = this.pump_res_for; // set the pump resistance to a low value to simulate the pump resistance
-        this._ecls_pump.r_back = this.pump_res_back; // set the pump resistance to a low value to simulate the pump resistance
-        this._ecls_oxy.r_for = this.oxy_res_for; // set the oxygenator resistance to a medium value to simulate the oxygenator resistance
-        this._ecls_oxy.r_back = this.oxy_res_back; // set the oxygenator resistance to a medium value to simulate the oxygenator resistance
-        this._ecls_tubing_out.r_for = this.tubing_out_res; // set the tubing resistance to a low value to simulate the tubing resistance
-        this._ecls_tubing_out.r_back = this.tubing_out_res; // set the tubing resistance to a low value to simulate the tubing resistance
-        this._ecls_return.r_for = this.return_res; // set the return resistance to a high value to simulate the umbilical vein resistance
-        this._ecls_return.r_back = this.return_res; // set the return resistance to a high value to simulate the umbilical vein resistance
+        this._ecls_drainage.r_for = this.drainage_res * this.drainage_res_factor; // set the drainage resistance to a high value to simulate the umbilical artery resistance
+        this._ecls_drainage.r_back = this.drainage_res * this.drainage_res_factor; // set the drainage resistance to a high value to simulate the umbilical artery resistance
+        this._ecls_tubing_in.r_for = this.tubing_in_res * this.tubing_res_factor; // set the tubing resistance to a low value to simulate the tubing resistance
+        this._ecls_tubing_in.r_back = this.tubing_in_res * this.tubing_res_factor; // set the tubing resistance to a low value to simulate the tubing resistance
+        this._ecls_pump.r_for = this.pump_res_for * this.pump_res_factor; // set the pump resistance to a low value to simulate the pump resistance
+        this._ecls_pump.r_back = this.pump_res_back * this.pump_res_factor; // set the pump resistance to a low value to simulate the pump resistance
+        this._ecls_oxy.r_for = this.oxy_res_for * this.oxy_res_factor; // set the oxygenator resistance to a medium value to simulate the oxygenator resistance
+        this._ecls_oxy.r_back = this.oxy_res_back * this.oxy_res_factor; // set the oxygenator resistance to a medium value to simulate the oxygenator resistance
+        this._ecls_tubing_out.r_for = this.tubing_out_res * this.tubing_res_factor; // set the tubing resistance to a low value to simulate the tubing resistance
+        this._ecls_tubing_out.r_back = this.tubing_out_res * this.tubing_res_factor; // set the tubing resistance to a low value to simulate the tubing resistance
+        this._ecls_return.r_for = this.return_res * this.return_res_factor; // set the return resistance to a high value to simulate the umbilical vein resistance
+        this._ecls_return.r_back = this.return_res * this.return_res_factor; // set the return resistance to a high value to simulate the umbilical vein resistance
+
+        // update the gas composition in the gas source model if fio2 or fico2 has changed
+        if (this.prev_fio2 !== this.gas_fio2 || this.prev_fico2 !== this.gas_fico2) {
+          calc_gas_composition(this._ecls_gas_source, this.gas_fio2, this.gas_temp, this.gas_humidity, this.gas_fico2);
+          this.prev_fio2 = this.gas_fio2;
+          this.prev_fico2 = this.gas_fico2;
+        }
+
+        // update the inspiratory valve position
+        if (this.prev_gas_flow !== this.gas_flow) {
+          // calculate the resistance of the inspiratory valve. 
+          // flow = pressure / resistance => resistance = pressure / flow. Assuming a maximum pressure of 100 mmHg and a maximum flow of 10 L/min, the maximum resistance would be 100 / 10 = 10 mmHg/(L/min). We can then set the opening of the valve based on the gas flow as a fraction of the maximum flow.
+          // resistance = pressure / flow => opening = flow / max_flow
+          let res = (this._ecls_gas_source.pres - this._ecls_gas_out.pres) / (this.gas_flow / 60.0); // calculate the resistance of the inspiratory valve based on the current pressure and gas flow
+          if (res > 60) {
+            this._ecls_gas_insp_valve.r_for = res - 50; 
+          }
+          this.prev_gas_flow = this.gas_flow;
+        }
+
+        // update the gasexchanger diffusion constants
+        this._ecls_gasex.dif_o2 = this.dif_o2;
+        this._ecls_gasex.dif_co2 = this.dif_co2;
     }
   }
 }

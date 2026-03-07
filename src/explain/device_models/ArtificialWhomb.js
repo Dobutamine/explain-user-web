@@ -292,18 +292,18 @@ export class ArtificialWhomb extends BaseModelClass {
 
 
         // set the resistances of the associated models
-        this._aw_drainage.r_for = this.drainage_res; // set the drainage resistance to a high value to simulate the umbilical artery resistance
-        this._aw_drainage.r_back = this.drainage_res; // set the drainage resistance to a high value to simulate the umbilical artery resistance
-        this._aw_tubing_in.r_for = this.tubing_in_res; // set the tubing resistance to a low value to simulate the tubing resistance
-        this._aw_tubing_in.r_back = this.tubing_in_res; // set the tubing resistance to a low value to simulate the tubing resistance
-        this._aw_pump.r_for = this.pump_res_for; // set the pump resistance to a low value to simulate the pump resistance
-        this._aw_pump.r_back = this.pump_res_back; // set the pump resistance to a low value to simulate the pump resistance
-        this._aw_oxy.r_for = this.oxy_res_for; // set the oxygenator resistance to a medium value to simulate the oxygenator resistance
-        this._aw_oxy.r_back = this.oxy_res_back; // set the oxygenator resistance to a medium value to simulate the oxygenator resistance
-        this._aw_tubing_out.r_for = this.tubing_out_res; // set the tubing resistance to a low value to simulate the tubing resistance
-        this._aw_tubing_out.r_back = this.tubing_out_res; // set the tubing resistance to a low value to simulate the tubing resistance
-        this._aw_return.r_for = this.return_res; // set the return resistance to a high value to simulate the umbilical vein resistance
-        this._aw_return.r_back = this.return_res; // set the return resistance to a high value to simulate the umbilical vein resistance
+        this._aw_drainage.r_for = this.drainage_res * this.drainage_res_factor; // set the drainage resistance to a high value to simulate the umbilical artery resistance
+        this._aw_drainage.r_back = this.drainage_res * this.drainage_res_factor; // set the drainage resistance to a high value to simulate the umbilical artery resistance
+        this._aw_tubing_in.r_for = this.tubing_in_res * this.tubing_res_factor; // set the tubing resistance to a low value to simulate the tubing resistance
+        this._aw_tubing_in.r_back = this.tubing_in_res * this.tubing_res_factor; // set the tubing resistance to a low value to simulate the tubing resistance
+        this._aw_pump.r_for = this.pump_res_for * this.pump_res_factor; // set the pump resistance to a low value to simulate the pump resistance
+        this._aw_pump.r_back = this.pump_res_back * this.pump_res_factor; // set the pump resistance to a low value to simulate the pump resistance
+        this._aw_oxy.r_for = this.oxy_res_for * this.oxy_res_factor; // set the oxygenator resistance to a medium value to simulate the oxygenator resistance
+        this._aw_oxy.r_back = this.oxy_res_back * this.oxy_res_factor; // set the oxygenator resistance to a medium value to simulate the oxygenator resistance
+        this._aw_tubing_out.r_for = this.tubing_out_res * this.tubing_res_factor; // set the tubing resistance to a low value to simulate the tubing resistance
+        this._aw_tubing_out.r_back = this.tubing_out_res * this.tubing_res_factor; // set the tubing resistance to a low value to simulate the tubing resistance
+        this._aw_return.r_for = this.return_res * this.return_res_factor; // set the return resistance to a high value to simulate the umbilical vein resistance
+        this._aw_return.r_back = this.return_res * this.return_res_factor; // set the return resistance to a high value to simulate the umbilical vein resistance
     }
   }
 }
