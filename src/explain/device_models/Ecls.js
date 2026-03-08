@@ -2,6 +2,7 @@
 
 import { BaseModelClass } from "../base_models/BaseModelClass.js";
 import { calc_gas_composition } from "../component_models/GasComposition"
+import RealTimeMovingAverage from "../helpers/RealTimeMovingAverage";
 
 export class Ecls extends BaseModelClass {
   // static properties
@@ -278,6 +279,38 @@ export class Ecls extends BaseModelClass {
       ll:0.0,
       ul:100000.0 
     },
+    {
+      caption: "flow moving average window (samples)",
+      target: "flow_avg_window",
+      delta: 1,
+      factor: 1,
+      rounding: 0,
+      type: "number",
+      build_prop: true,
+      edit_mode: "basic",
+      ll:1,
+      ul:1000
+    },
+    {
+      target: "flow_avg",
+      type: "number",
+      build_prop: true,
+      edit_mode: "caption",
+      readonly: true,
+      caption: "ECLS flow moving average (L/min)",
+    },
+    {
+      caption: "pressure moving average window (samples)",
+      target: "pressure_avg_window",
+      delta: 1,
+      factor: 1,
+      rounding: 0,
+      type: "number",
+      build_prop: true,
+      edit_mode: "basic",
+      ll:1,
+      ul:1000
+    },
 
   ];
 
@@ -329,14 +362,28 @@ export class Ecls extends BaseModelClass {
 
     // -----------------------------------------------
     // initialize dependent parameters
+    this.p_ven = 0.0; // filtered venous pressure (mmHg)
+    this.p_int = 0.0; // filtered pressure at the interface between the drainage cannula and the tubing (mmHg)
+    this.p_art = 0.0; // filtered arterial pressure (mmHg)
+    this.flow = 0.0; // blood flow through the ECLS circuit (L/s)
+    this.flow_avg = 0.0; // moving average of the blood flow through the ECLS circuit (L/s)
+    this.sat_ven_o2 = 0.0; // venous oxygen saturation (%)
+    this.sat_art_o2 = 0.0; // arterial oxygen saturation (%)
 
     // -----------------------------------------------
     // local parameters
     this.prev_fio2 = 0.0; // previous fio2 value to detect changes in fio2
     this.prev_fico2 = 0.0; // previous fico2 value to detect changes in fico2
     this.prev_gas_flow = 0.0; // previous gas flow value to detect changes in gas flow
+    this.pressure_avg_window = 60; // number of samples used for real-time pressure moving averages
+    this.flow_avg_window = 400; // number of samples used for the real-time flow moving average (~0.9 s at 0.015 s updates)
     this._update_interval = 0.015; // update interval of the placenta model (s)
     this._update_counter = 0.0; // counter of the update interval (s)
+    this._flow_avg_calculator = new RealTimeMovingAverage(this.flow_avg_window);
+    this._p_ven_avg_calculator = new RealTimeMovingAverage(this.pressure_avg_window);
+    this._p_int_avg_calculator = new RealTimeMovingAverage(this.pressure_avg_window);
+    this._p_art_avg_calculator = new RealTimeMovingAverage(this.pressure_avg_window);
+    
 
     this._ecls_drainage = null; // reference to the drainage model instance
     this._ecls_tubing_in = null; // reference to the tubing in model instance
@@ -352,9 +399,34 @@ export class Ecls extends BaseModelClass {
   }
 
   calc_model() {
+    if (!this.ecls_running) {
+      this.flow = 0.0;
+      this.flow_avg = 0.0;
+      this.p_ven = 0.0;
+      this.p_int = 0.0;
+      this.p_art = 0.0;
+      this._flow_avg_calculator.reset();
+      this._p_ven_avg_calculator.reset();
+      this._p_int_avg_calculator.reset();
+      this._p_art_avg_calculator.reset();
+      return;
+    }
+
     this._update_counter += this._t;
-    if (this._update_counter > this._update_interval && this.ecls_running) {
+    if (this._update_counter > this._update_interval) {
         this._update_counter = 0.0;
+
+        const newWindow = Math.max(1, Math.trunc(this.flow_avg_window));
+        if (newWindow !== this._flow_avg_calculator.windowSize) {
+          this._flow_avg_calculator = new RealTimeMovingAverage(newWindow);
+        }
+
+        const newPressureWindow = Math.max(1, Math.trunc(this.pressure_avg_window));
+        if (newPressureWindow !== this._p_ven_avg_calculator.windowSize) {
+          this._p_ven_avg_calculator = new RealTimeMovingAverage(newPressureWindow);
+          this._p_int_avg_calculator = new RealTimeMovingAverage(newPressureWindow);
+          this._p_art_avg_calculator = new RealTimeMovingAverage(newPressureWindow);
+        }
 
         // get a reference to the associated models
         this._ecls_drainage = this._model_engine.models["ECLS_DRAINAGE"];
@@ -442,6 +514,16 @@ export class Ecls extends BaseModelClass {
           this._ecls_oxy.p1_ext = this.pump_pressure;
           this._ecls_oxy.p2_ext = 0.0;
         }
-    }
+
+        // get the measured pressures and flow from the associated models
+        const p_ven_raw = this._ecls_tubing_in.pres; // pressure at inlet of drainage cannula
+        const p_int_raw = this._ecls_pump.pres; // pressure at pump interface
+        const p_art_raw = this._ecls_tubing_out.pres; // pressure at outlet of return cannula
+        this.p_ven = this._p_ven_avg_calculator.addValue(p_ven_raw);
+        this.p_int = this._p_int_avg_calculator.addValue(p_int_raw);
+        this.p_art = this._p_art_avg_calculator.addValue(p_art_raw);
+        this.flow = this._ecls_return.flow * 60.0; // blood flow through the ECLS circuit is the flow through the drainage cannula
+        this.flow_avg = this._flow_avg_calculator.addValue(this.flow);
+      }
   }
 }

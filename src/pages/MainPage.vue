@@ -59,7 +59,7 @@
                 width: '5px',
                 opacity: 0.5
               }">
-                <EclsComponent :alive="ecls_alive"></EclsComponent>
+                <EclsControllerComponent :alive="ecls_alive"></EclsControllerComponent>
               </q-scroll-area>
             </q-tab-panel>
             <q-tab-panel name="model_builder">
@@ -124,9 +124,10 @@
               <q-tooltip>time chart</q-tooltip>
             </q-tab>
 
-            <q-tab name="xy_chart">
-              <q-icon name="fa-solid fa-chart-area" size="xs"></q-icon>
-              <q-tooltip>xy chart</q-tooltip>
+
+            <q-tab name="loop_chart">
+              <q-icon name="fa-solid fa-circle-notch" size="xs"></q-icon>
+              <q-tooltip>loop chart</q-tooltip>
             </q-tab>
 
 
@@ -172,12 +173,9 @@
                 <!-- <RealtimeChart :alive="chart_alive"></RealtimeChart> -->
                 <RealtimeChart
                   :alive="chart_alive"
-                  :default-autoscale="false"
-                  :default-y-min="-20"
-                  :default-y-max="120"
+                  :default-autoscale="true"
                   :default-rt-window="5"
-                  chart-title="Aortic Pressure"
-                  :model-properties="['AA.pres', 'LV.pres','RV.pres']" 
+                  chart-title="Realtime Chart"
                 />
 
               </q-scroll-area>
@@ -195,7 +193,7 @@
               </q-scroll-area>
             </q-tab-panel>
 
-            <q-tab-panel name="xy_chart">
+            <q-tab-panel name="loop_chart">
               <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
                 right: '5px',
                 borderRadius: '5px',
@@ -203,7 +201,12 @@
                 width: '5px',
                 opacity: 0.5
               }">
-                <XYChartComponent :alive="xy_alive" title="XY Graph" :presets={}></XYChartComponent>
+                <LoopChart
+                  :alive="loop_alive"
+                  chart-title="Loop Chart"
+                  :default-autoscale="true"
+                  :default-rt-window="3"
+                />
               </q-scroll-area>
             </q-tab-panel>
 
@@ -306,13 +309,14 @@ import NiceController from 'src/components/NiceController.vue';
 import BigNumbersComponent from 'src/components/BigNumbersComponent.vue';
 import DiagramEditorComponent from 'src/components/DiagramEditor.vue';
 import TaskScheduler from 'src/components/TaskScheduler.vue';
-import EclsComponent from 'src/components/EclsComponent.vue';
+import EclsControllerComponent from 'src/components/EclsControllerComponent.vue';
 import AnimationComponent from 'src/components/AnimationComponent.vue';
 import AnimationEditor from 'src/components/AnimationEditor.vue';
 import ModelBuilderComponent from 'src/components/ModelBuilderComponent.vue';
 import ControllerComponent from 'src/components/ControllerComponent.vue';
 import NumericsEditor from 'src/components/NumericsEditor.vue';
 import RealtimeChart from 'src/components/RealtimeChart.vue';
+import LoopChart from 'src/components/LoopChart.vue';
 
 export default defineComponent({
   name: 'MainPage',
@@ -340,12 +344,13 @@ export default defineComponent({
     NiceController,
     DiagramEditorComponent,
     TaskScheduler,
-    EclsComponent,
+    EclsControllerComponent,
     AnimationComponent,
     AnimationEditor,
     ControllerComponent,
     NumericsEditor,
-    RealtimeChart
+    RealtimeChart,
+    LoopChart
   },
   data() {
     return {
@@ -357,6 +362,7 @@ export default defineComponent({
       heart_alive: false,
       ecls_alive:true,
       xy_alive: true,
+      loop_alive: true,
       diagram_alive: true,
       screen_offset: 135.0,
       screen_height: 100.0
@@ -379,7 +385,6 @@ export default defineComponent({
           this.chart_alive = false
           this.xy_alive = false
           this.diagram_alive = false
-          this.ecls_alive = false
           break;
         case "ventilator":
           this.animation_alive = false
@@ -388,7 +393,6 @@ export default defineComponent({
           this.chart_alive = false
           this.xy_alive = false
           this.diagram_alive = false
-          this.ecls_alive = false
           break;
         case "ecls":
           this.animation_alive = false
@@ -406,7 +410,6 @@ export default defineComponent({
           this.chart_alive = false
           this.xy_alive = false
           this.diagram_alive = false
-          this.ecls_alive = false
           break;
         case "time_chart":
           this.animation_alive = false
@@ -414,8 +417,8 @@ export default defineComponent({
           this.heart_alive = false
           this.chart_alive = true
           this.xy_alive = false
+          this.loop_alive = false
           this.diagram_alive = false
-          this.ecls_alive = false
           break;
         case "xy_chart":
           this.animation_alive = false
@@ -423,8 +426,17 @@ export default defineComponent({
           this.heart_alive = false
           this.chart_alive = false
           this.xy_alive = true
+          this.loop_alive = false
           this.diagram_alive = false
-          this.ecls_alive = false
+          break;
+        case "loop_chart":
+          this.animation_alive = false
+          this.ventilator_alive = false
+          this.heart_alive = false
+          this.chart_alive = false
+          this.xy_alive = false
+          this.loop_alive = true
+          this.diagram_alive = false
           break;
         case "diagram":
           this.animation_alive = false
@@ -432,8 +444,8 @@ export default defineComponent({
           this.heart_alive = false
           this.chart_alive = false
           this.xy_alive = false
+          this.loop_alive = false
           this.diagram_alive = true
-          this.ecls_alive = false
           break;
         case "placenta":
           this.animation_alive = false
@@ -441,8 +453,8 @@ export default defineComponent({
           this.heart_alive = false
           this.chart_alive = false
           this.xy_alive = false
+          this.loop_alive = false
           this.diagram_alive = false
-          this.ecls_alive = false
           break;
 
 

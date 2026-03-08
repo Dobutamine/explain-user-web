@@ -1,45 +1,49 @@
 <template>
   <q-card class="q-pb-xs q-pt-xs q-ma-xs" bordered dark flat>
-    <div class="q-mt-es row gutter text-overline justify-center" @click="toggleEnabled">
-      {{ title }}
+    <div v-if="displayTitle" class="q-mt-es row gutter text-overline justify-center" @click="toggleEnabled">
+      {{ displayTitle }}
     </div>
 
     <div v-if="isEnabled && !hasExternalModelProperties" class="q-ma-sm row justify-center items-center q-gutter-sm">
       <q-select
+        class="aa-select"
         v-model="selectedModel"
-        label="model"
+        label="model 1"
         hide-hint
         dense
         dark
         filled
-        style="min-width: 140px;"
+        style="min-width: 110px;"
         :options="modelNames"
         @update:model-value="selectModel"
       />
       <q-select
+        class="aa-select"
         v-if="selectedModel !== ''"
         v-model="selectedProp"
-        label="property"
+        label="property 1"
         hide-hint
         dense
         dark
         filled
-        style="min-width: 140px;"
+        style="min-width: 110px;"
         :options="propNames"
         @update:model-value="selectProp"
       />
       <q-select
+        class="aa-select"
         v-model="selectedModel2"
         label="model 2"
         hide-hint
         dense
         dark
         filled
-        style="min-width: 140px;"
+        style="min-width: 110px;"
         :options="modelNames"
         @update:model-value="selectModel2"
       />
       <q-select
+        class="aa-select"
         v-if="selectedModel2 !== ''"
         v-model="selectedProp2"
         label="property 2"
@@ -47,22 +51,24 @@
         dense
         dark
         filled
-        style="min-width: 140px;"
+        style="min-width: 110px;"
         :options="prop2Names"
         @update:model-value="selectProp2"
       />
       <q-select
+        class="aa-select"
         v-model="selectedModel3"
         label="model 3"
         hide-hint
         dense
         dark
         filled
-        style="min-width: 140px;"
+        style="min-width: 110px;"
         :options="modelNames"
         @update:model-value="selectModel3"
       />
       <q-select
+        class="aa-select"
         v-if="selectedModel3 !== ''"
         v-model="selectedProp3"
         label="property 3"
@@ -70,7 +76,7 @@
         dense
         dark
         filled
-        style="min-width: 140px;"
+        style="min-width: 110px;"
         :options="prop3Names"
         @update:model-value="selectProp3"
       />
@@ -82,10 +88,10 @@
         <span class="aa-series-label aa-series-label-green"> {{ selectedPath2 || "-" }}</span>
         <span class="aa-series-label aa-series-label-blue"> {{ selectedPath3 || "-" }}</span>
       </div>
-      <canvas ref="aaCanvas" class="aa-pressure-canvas" />
+      <canvas ref="aaCanvas" class="aa-pressure-canvas" :style="canvasStyle" />
 
       <div class="q-mt-sm row justify-center items-center q-gutter-sm">
-        <q-checkbox v-model="autoscale" dense label="autoscale" @update:model-value="toggleAutoscaling" />
+        <q-checkbox v-model="autoscale" size="xs" dense label="scale" @update:model-value="toggleAutoscaling" />
         <q-input
           v-model.number="rtWindow"
           type="number"
@@ -94,6 +100,7 @@
           dense
           min="1"
           max="30"
+          size="xs"
           hide-bottom-space
           style="min-width: 70px;"
           @update:model-value="updateRtWindow"
@@ -105,6 +112,7 @@
           label="y min"
           filled
           dense
+          size="xs"
           hide-bottom-space
           style="max-width: 90px;"
           @update:model-value="updateManualScale"
@@ -116,11 +124,33 @@
           label="y max"
           filled
           dense
+          size="xs"
           hide-bottom-space
           style="max-width: 90px;"
           @update:model-value="updateManualScale"
         />
+        <q-btn
+          color="black"
+          size="sm"
+          icon="fa-solid fa-calculator"
+          :outline="!showStats"
+          @click="toggleStats"
+        >
+          <q-tooltip>statistics</q-tooltip>
+        </q-btn>
         <q-btn color="negative" size="sm" icon="fa-solid fa-rotate-left" @click="clearSeries" />
+      </div>
+
+      <div v-if="showStats" class="q-mt-sm text-caption aa-stats-wrap">
+        <div v-if="selectedPath" class="aa-stats-row aa-stats-row-red">
+          {{ selectedPath }}: n={{ stats1.n }} min={{ stats1.min }} max={{ stats1.max }} mean={{ stats1.mean }} sd={{ stats1.sd }}
+        </div>
+        <div v-if="selectedPath2" class="aa-stats-row aa-stats-row-green">
+          {{ selectedPath2 }}: n={{ stats2.n }} min={{ stats2.min }} max={{ stats2.max }} mean={{ stats2.mean }} sd={{ stats2.sd }}
+        </div>
+        <div v-if="selectedPath3" class="aa-stats-row aa-stats-row-blue">
+          {{ selectedPath3 }}: n={{ stats3.n }} min={{ stats3.min }} max={{ stats3.max }} mean={{ stats3.mean }} sd={{ stats3.sd }}
+        </div>
       </div>
     </div>
   </q-card>
@@ -140,6 +170,26 @@ export default {
       type: Array,
       default: () => [],
     },
+    chartHeightFactor: {
+      type: Number,
+      default: 1,
+    },
+    chartTitle: {
+      type: String,
+      default: "",
+    },
+    defaultAutoscale: {
+      type: Boolean,
+      default: true,
+    },
+    defaultYMin: {
+      type: Number,
+      default: 0,
+    },
+    defaultYMax: {
+      type: Number,
+      default: 100,
+    },
   },
   computed: {
     externalModelProperties() {
@@ -154,6 +204,25 @@ export default {
     hasExternalModelProperties() {
       return this.externalModelProperties.length > 0;
     },
+    displayTitle() {
+      if (typeof this.chartTitle !== "string") {
+        return "";
+      }
+      return this.chartTitle.trim();
+    },
+    normalizedChartHeightFactor() {
+      const factor = Number(this.chartHeightFactor);
+      if (!Number.isFinite(factor)) {
+        return 1;
+      }
+      return Math.min(4, Math.max(0.25, factor));
+    },
+    canvasStyle() {
+      const baseHeight = 260;
+      return {
+        height: `${Math.round(baseHeight * this.normalizedChartHeightFactor)}px`,
+      };
+    },
   },
   watch: {
     modelProperties: {
@@ -164,10 +233,23 @@ export default {
       },
       deep: true,
     },
+    chartHeightFactor() {
+      this.$nextTick(() => {
+        this.drawCanvas();
+      });
+    },
+    defaultAutoscale() {
+      this.applyDefaultAxisConfig();
+    },
+    defaultYMin() {
+      this.applyDefaultAxisConfig();
+    },
+    defaultYMax() {
+      this.applyDefaultAxisConfig();
+    },
   },
   data() {
     return {
-      title: "REALTIME CHART",
       isEnabled: true,
       rtWindow: 3,
       rtWindowValidated: 3,
@@ -200,9 +282,83 @@ export default {
       selectedModel3: "",
       selectedProp3: "",
       selectedPath3: "",
+      showStats: false,
+      stats1: { n: 0, min: "-", max: "-", mean: "-", sd: "-" },
+      stats2: { n: 0, min: "-", max: "-", mean: "-", sd: "-" },
+      stats3: { n: 0, min: "-", max: "-", mean: "-", sd: "-" },
     };
   },
   methods: {
+    toggleStats() {
+      this.showStats = !this.showStats;
+      if (this.showStats) {
+        this.updateStatistics();
+      }
+    },
+    applyDefaultAxisConfig() {
+      this.autoscale = this.defaultAutoscale;
+      const yMin = Number(this.defaultYMin);
+      const yMax = Number(this.defaultYMax);
+      if (Number.isFinite(yMin)) {
+        this.y_min = yMin;
+      }
+      if (Number.isFinite(yMax)) {
+        this.y_max = yMax;
+      }
+      if (this.y_min >= this.y_max) {
+        this.y_max = this.y_min + 1;
+      }
+      this.$nextTick(() => {
+        this.drawCanvas();
+      });
+    },
+    calculateSeriesStats(source) {
+      const values = [];
+      for (let i = this.rtWindowStartIndex; i < source.length; i++) {
+        const value = source[i];
+        if (Number.isFinite(value)) {
+          values.push(value);
+        }
+      }
+
+      if (values.length === 0) {
+        return { n: 0, min: "-", max: "-", mean: "-", sd: "-" };
+      }
+
+      let min = Infinity;
+      let max = -Infinity;
+      let sum = 0;
+      for (let i = 0; i < values.length; i++) {
+        const v = values[i];
+        if (v < min) {
+          min = v;
+        }
+        if (v > max) {
+          max = v;
+        }
+        sum += v;
+      }
+      const mean = sum / values.length;
+      let varianceSum = 0;
+      for (let i = 0; i < values.length; i++) {
+        const diff = values[i] - mean;
+        varianceSum += diff * diff;
+      }
+      const sd = Math.sqrt(varianceSum / values.length);
+
+      return {
+        n: values.length,
+        min: min.toFixed(3),
+        max: max.toFixed(3),
+        mean: mean.toFixed(3),
+        sd: sd.toFixed(3),
+      };
+    },
+    updateStatistics() {
+      this.stats1 = this.calculateSeriesStats(this.y_axis);
+      this.stats2 = this.calculateSeriesStats(this.y2_axis);
+      this.stats3 = this.calculateSeriesStats(this.y3_axis);
+    },
     parseModelPath(path) {
       if (typeof path !== "string") {
         return { model: "", prop: "" };
@@ -306,6 +462,9 @@ export default {
       this.y_axis = [];
       this.y2_axis = [];
       this.y3_axis = [];
+      if (this.showStats) {
+        this.updateStatistics();
+      }
       this.drawCanvas();
     },
     processAvailableModels() {
@@ -716,6 +875,9 @@ export default {
       if (!this.shouldRedrawChart()) {
         return;
       }
+      if (this.showStats) {
+        this.updateStatistics();
+      }
       this.drawCanvas();
     },
     handleRtf() {
@@ -723,6 +885,7 @@ export default {
     },
   },
   mounted() {
+    this.applyDefaultAxisConfig();
     this.processAvailableModels();
     if (!this.applyExternalModelProperties()) {
       this.selectProp();
@@ -772,7 +935,34 @@ export default {
 
 .aa-pressure-canvas {
   width: 100%;
-  height: 260px;
   display: block;
+}
+
+.aa-select :deep(.q-field__native),
+.aa-select :deep(.q-field__input),
+.aa-select :deep(.q-field__label) {
+  font-size: 12px;
+}
+
+.aa-stats-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.aa-stats-row {
+  line-height: 1.2;
+}
+
+.aa-stats-row-red {
+  color: #ff6b6b;
+}
+
+.aa-stats-row-green {
+  color: #60d060;
+}
+
+.aa-stats-row-blue {
+  color: #59d3ff;
 }
 </style>

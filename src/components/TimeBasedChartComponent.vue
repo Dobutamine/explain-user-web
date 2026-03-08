@@ -128,12 +128,12 @@
 <script>
 import { useStateStore } from "src/stores/state";
 import { explain } from "../boot/explain";
-import { Bar, Line, Scatter } from 'vue-chartjs'
-import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, PointElement, LineElement, Filler } from 'chart.js'
+import { Line } from 'vue-chartjs'
+import { Chart as ChartJS, Title, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Filler } from 'chart.js'
 import { shallowRef } from 'vue'
 import * as Stat from "simple-statistics";
 
-ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, PointElement, LineElement, Filler)
+ChartJS.register(Title, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Filler)
 
 // :model-properties="['AA.pres', 'LV.pres','RV.pres']" 
 export default {
@@ -321,9 +321,7 @@ export default {
     }
   },
   components: {
-    Bar,
     Line,
-    Scatter
   },
   data() {
     return {
@@ -335,8 +333,6 @@ export default {
       analysisEnabled: true,
       autoscaleEnabled: true,
       autoscale: true,
-      x_min: 0,
-      x_max: 5.0,
       y_min: 0,
       y_max: 100,
       multipliersEnabled: true,
@@ -355,7 +351,6 @@ export default {
       p1_sd: 0.0,
       p1_mean: 0.0,
       p1_permin: 0.0,
-      p1_perbeat: 0.0,
       selectedModel2: "",
       selectedProp2: "",
       p2: "",
@@ -364,7 +359,6 @@ export default {
       p2_sd: 0.0,
       p2_mean: 0.0,
       p2_permin: 0.0,
-      p2_perbeat: 0.0,
       selectedModel3: "",
       selectedProp3: "",
       p3: "",
@@ -373,7 +367,6 @@ export default {
       p3_sd: 0.0,
       p3_mean: 0.0,
       p3_permin: 0.0,
-      p3_perbeat: 0.0,
       modelNames: [],
       prop1Names: [],
       prop2Names: [],
@@ -384,11 +377,6 @@ export default {
       y2_axis: [],
       y3_axis: [],
       chart_fill: false,
-      // y1_axis_fill: false,
-      // y2_axis_fill: false,
-      // y3_axis_fill: false,
-      redrawInterval: -1,
-      redrawTimer: 0.0,
       redrawMinIntervalMs: 1000 / 30,
       redrawLastTs: 0,
       selectionGuard: false,
@@ -638,21 +626,18 @@ export default {
       this.p1_sd = 0.0
       this.p1_mean = 0.0
       this.p1_permin = 0.0
-      this.p1_perbeat = 0.0
 
       this.p2_max = 0.0
       this.p2_min = 0.0
       this.p2_sd = 0.0
       this.p2_mean = 0.0
       this.p2_permin = 0.0
-      this.p2_perbeat = 0.0
 
       this.p3_max = 0.0
       this.p3_min = 0.0
       this.p3_sd = 0.0
       this.p3_mean = 0.0
       this.p3_permin = 0.0
-      this.p3_perbeat = 0.0
     },
     analyzeDataRt() {
       if (this.p1 !== '') {
@@ -661,7 +646,6 @@ export default {
         this.p1_sd = Stat.standardDeviation(this.y1_axis).toFixed(4)
         this.p1_mean = Stat.mean(this.y1_axis).toFixed(4)
         this.p1_permin = Stat.sum(this.y1_axis).toFixed(4)
-        this.p1_perbeat = 0.0
       }
 
       if (this.p2 !== '') {
@@ -670,7 +654,6 @@ export default {
         this.p2_sd = Stat.standardDeviation(this.y2_axis).toFixed(4)
         this.p2_mean = Stat.mean(this.y2_axis).toFixed(4)
         this.p2_permin = Stat.sum(this.y2_axis).toFixed(4)
-        this.p2_perbeat = 0.0
       }
 
       if (this.p3 !== '') {
@@ -679,7 +662,6 @@ export default {
         this.p3_sd = Stat.standardDeviation(this.y3_axis).toFixed(4)
         this.p3_mean = Stat.mean(this.y3_axis).toFixed(4)
         this.p3_permin = Stat.sum(this.y3_axis).toFixed(4)
-        this.p3_perbeat = 0.0
       }
 
     },
@@ -698,7 +680,6 @@ export default {
         this.p1_sd = Stat.standardDeviation(param1).toFixed(4)
         this.p1_mean = Stat.mean(param1).toFixed(4)
         this.p1_permin = Stat.sum(param1).toFixed(4)
-        this.p1_perbeat = 0.0
       }
 
       if (this.p2 !== '') {
@@ -708,7 +689,6 @@ export default {
         this.p2_sd = Stat.standardDeviation(param2).toFixed(4)
         this.p2_mean = Stat.mean(param2).toFixed(4)
         this.p2_permin = Stat.sum(param2).toFixed(4)
-        this.p2_perbeat = 0.0
       }
 
       if (this.p3 !== '') {
@@ -718,7 +698,6 @@ export default {
         this.p3_sd = Stat.standardDeviation(param3).toFixed(4)
         this.p3_mean = Stat.sum(param3).toFixed(4)
         this.p3_permin = 0.0
-        this.p3_perbeat = 0.0
       }
 
 
