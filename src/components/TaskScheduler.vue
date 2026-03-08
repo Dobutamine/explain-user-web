@@ -8,6 +8,8 @@
               :options="availableEvents" dense dark stack-label @update:model-value="selectEvent" />
             <q-btn class="col-1 q-ma-xs q-mt-md" color="grey-9" size="xs" dense
               icon="fa-solid fa-refresh" @click="getAllUserEventsFromServer" style="font-size: 8px"><q-tooltip>refresh event list</q-tooltip></q-btn>
+            <q-btn class="col-1 q-ma-xs q-mt-md" color="grey-9" size="xs" dense
+              icon="fa-solid fa-play" @click="runAllTasks" style="font-size: 8px"><q-tooltip>run event</q-tooltip></q-btn>
             <q-btn class="col-1 q-ma-xs q-mt-md" color="primary" size="xs" dense
               icon="fa-solid fa-plus" @click="addTask" style="font-size: 8px"><q-tooltip>add event</q-tooltip></q-btn>
               <q-btn class="col-1 q-ma-xs q-mt-md" color="negative" size="xs" dense
