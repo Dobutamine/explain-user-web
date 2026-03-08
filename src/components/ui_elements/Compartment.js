@@ -145,11 +145,13 @@ export default class Compartment {
     let volumes = [];
     let pressure = 0;
     let to2s = [];
+    let rot = 0;
     this.models.forEach((model) => {
       volume += data[model + ".vol"];
       volumes.push(data[model + ".vol"]);
       pressure += data[model + ".pres"]
       to2s.push(data[model + ".to2"]);
+      rot += data[model + ".pump_rpm"];
     });
     // calculate factors
     this.to2 = 0;
@@ -158,6 +160,18 @@ export default class Compartment {
         let factor = volumes[i] / volume;
         this.to2 += factor * to2s[i];
       }
+    }
+
+    if (rot) {
+      const modelCount = this.models.length > 0 ? this.models.length : 1;
+      this.rotationFlow += rot / modelCount / 45000.0;
+      if (this.rotationFlow > 2 * Math.PI) {
+        this.rotationFlow = 0;
+      }
+    }
+
+    if (isNaN(this.rotationFlow)) {
+      this.rotationFlow = 0.0;
     }
   
     if (!isNaN(volume) && this.animation == 'vol') {
@@ -171,7 +185,7 @@ export default class Compartment {
       this.volume * this.layout.sprite.scale.y * this.global_scaling
     );
 
-    this.sprite.rotation = this.layout.sprite.rotation;
+    this.sprite.rotation = this.rotationFlow + this.layout.sprite.rotation;
     this.sprite.zIndex = this.layout.general.z_index;
 
     let scaleFont = this.volume * this.layout.label.size * this.global_scaling;

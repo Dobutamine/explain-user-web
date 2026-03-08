@@ -293,6 +293,7 @@ export default {
                 watched_models_comp.push(m + ".vol")
                 watched_models_comp.push(m + ".pres")
                 watched_models_comp.push(m + ".to2")
+                watched_models_comp.push(m + ".pump_rpm")
               })
               explain.watchModelProps(watched_models_comp)
               break;

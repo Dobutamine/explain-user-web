@@ -249,6 +249,18 @@ export class Ecls extends BaseModelClass {
       ll:0.0,
       ul:10.0 
     },
+    {
+      caption: "pump rpm",
+      target: "pump_rpm",
+      delta: 10,
+      factor: 1,
+      rounding: 0,
+      type: "number",
+      build_prop: true,
+      edit_mode: "basic",
+      ll:0.0,
+      ul:100000.0 
+    },
 
   ];
 
@@ -291,6 +303,9 @@ export class Ecls extends BaseModelClass {
     this.gas_temp = 20.0; // temperature of the gas flow through the oxygenator (dgs C)
     this.dif_o2 = 0.0005; // diffusion constant for oxygen (mmol/mmHg * s)
     this.dif_co2 = 0.001; // diffusion constant for carbon dioxide (mmol/mmHg * s)
+    this.pump_rpm = 0.0; // pump speed in rotations per minute
+    this.pump_mode = 0; // pump mode (0=centrifugal, 1=roller pump)
+    this.pump_pressure =  0.0
 
     // -----------------------------------------------
     // initialize dependent parameters
@@ -355,6 +370,7 @@ export class Ecls extends BaseModelClass {
         this._ecls_oxy.no_flow = this.ecls_clamped;
         this._ecls_tubing_out.no_flow = this.ecls_clamped;
         this._ecls_return.no_flow = this.ecls_clamped;
+        this._ecls_gasex.is_enabled = !this.ecls_clamped;
 
         // set the resistances of the associated models
         this._ecls_drainage.r_for = this.drainage_res * this.drainage_res_factor; // set the drainage resistance to a high value to simulate the umbilical artery resistance
@@ -392,6 +408,17 @@ export class Ecls extends BaseModelClass {
         // update the gasexchanger diffusion constants
         this._ecls_gasex.dif_o2 = this.dif_o2;
         this._ecls_gasex.dif_co2 = this.dif_co2;
+
+        // calculate the pump pressure and apply the pump pressures to the connected resistors
+        this.pump_pressure = -this.pump_rpm / 25.0;
+        this._ecls_pump.pump_rpm = this.pump_rpm;
+        if (this.pump_mode === 0) {
+          this._ecls_pump.p1_ext = 0.0;
+          this._ecls_pump.p2_ext = this.pump_pressure;
+        } else {
+          this._ecls_oxy.p1_ext = this.pump_pressure;
+          this._ecls_oxy.p2_ext = 0.0;
+        }
     }
   }
 }

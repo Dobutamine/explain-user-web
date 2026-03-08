@@ -171,7 +171,7 @@ export class MicroVascularUnit extends BaseModelClass {
     this.el_dist = { art: 0.10, cap: 0.15, ven: 0.75 };  // elastance distribution (inverse making the artery less compiant then the vein)
     this.vol_dist = { art: 0.10, cap: 0.55, ven: 0.35 };  // volume distribution
     this.res_dist = { art: 0.75, cap: 0.15, ven: 0.10 };  // resistance distribution
-
+    
     this.temp = 37.0; // blood temperature (dgs C)
     this.viscosity = 6.0; // blood viscosity (centiPoise = Pa * s)
     this.solutes = {}; // dictionary holding all solutes

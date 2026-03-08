@@ -198,6 +198,7 @@ export class BloodVessel extends BloodCapacitance {
     this.alpha = 0.0; // determines relation between resistance change and elastance change. Veins/venules: 0.75, arterioles: 0.63, large arteries: 0.5
     this.ans_sens = 0.0; // sensitivity of this blood vessel for autonomic control. 0.0 is no effect, 1.0 is full effect
     this.ans_activity = 1.0; // ans activity factor (unitless)
+    this.pump_rpm = 0.0; // pump rotations per minute (unitless)
 
     // non-persistent property factors. These factors reset to 1.0 after each model step
     this.r_factor = 1.0; // non-persistent resistance factor
