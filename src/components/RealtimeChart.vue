@@ -121,10 +121,6 @@
           @update:model-value="updateManualScale"
         />
         <q-btn color="negative" size="sm" icon="fa-solid fa-rotate-left" @click="clearSeries" />
-        <q-btn color="primary" size="sm" label="FFT" @click="runSeries1Fft" />
-      </div>
-      <div v-if="fftResult" class="q-mt-xs text-caption text-grey-4 text-center">
-        {{ fftResultLabel }}
       </div>
     </div>
   </q-card>
@@ -157,14 +153,6 @@ export default {
     },
     hasExternalModelProperties() {
       return this.externalModelProperties.length > 0;
-    },
-    fftResultLabel() {
-      if (!this.fftResult) {
-        return "";
-      }
-      const hz = Number.isFinite(this.fftResult.dominantHz) ? this.fftResult.dominantHz.toFixed(3) : "-";
-      const amp = Number.isFinite(this.fftResult.dominantAmplitude) ? this.fftResult.dominantAmplitude.toFixed(3) : "-";
-      return `FFT(${this.selectedPath || "series 1"}): peak ${hz} Hz, amp ${amp}, n=${this.fftResult.originalSampleCount}`;
     },
   },
   watch: {
@@ -212,7 +200,6 @@ export default {
       selectedModel3: "",
       selectedProp3: "",
       selectedPath3: "",
-      fftResult: null,
     };
   },
   methods: {
@@ -319,145 +306,7 @@ export default {
       this.y_axis = [];
       this.y2_axis = [];
       this.y3_axis = [];
-      this.fftResult = null;
       this.drawCanvas();
-    },
-    getVisibleSeries1Samples() {
-      const values = [];
-      const times = [];
-      for (let i = this.rtWindowStartIndex; i < this.y_axis.length; i++) {
-        const value = this.y_axis[i];
-        const time = this.x_axis[i];
-        if (Number.isFinite(value) && Number.isFinite(time)) {
-          values.push(value);
-          times.push(time);
-        }
-      }
-      return { values, times };
-    },
-    estimateDt(times) {
-      if (!Array.isArray(times) || times.length < 2) {
-        return 0;
-      }
-      const deltas = [];
-      for (let i = 1; i < times.length; i++) {
-        const dt = times[i] - times[i - 1];
-        if (Number.isFinite(dt) && dt > 0) {
-          deltas.push(dt);
-        }
-      }
-      if (deltas.length === 0) {
-        return 0;
-      }
-      deltas.sort((a, b) => a - b);
-      return deltas[Math.floor(deltas.length / 2)];
-    },
-    nextPow2(n) {
-      if (n <= 1) {
-        return 1;
-      }
-      return 2 ** Math.floor(Math.log2(n));
-    },
-    fftRadix2(real, imag) {
-      const n = real.length;
-      let j = 0;
-      for (let i = 1; i < n; i++) {
-        let bit = n >> 1;
-        while (j & bit) {
-          j ^= bit;
-          bit >>= 1;
-        }
-        j ^= bit;
-        if (i < j) {
-          const tr = real[i];
-          real[i] = real[j];
-          real[j] = tr;
-          const ti = imag[i];
-          imag[i] = imag[j];
-          imag[j] = ti;
-        }
-      }
-
-      for (let len = 2; len <= n; len <<= 1) {
-        const angle = (-2 * Math.PI) / len;
-        const wLenCos = Math.cos(angle);
-        const wLenSin = Math.sin(angle);
-        for (let start = 0; start < n; start += len) {
-          let wCos = 1;
-          let wSin = 0;
-          for (let offset = 0; offset < len / 2; offset++) {
-            const evenIndex = start + offset;
-            const oddIndex = evenIndex + len / 2;
-
-            const oddReal = real[oddIndex] * wCos - imag[oddIndex] * wSin;
-            const oddImag = real[oddIndex] * wSin + imag[oddIndex] * wCos;
-
-            real[oddIndex] = real[evenIndex] - oddReal;
-            imag[oddIndex] = imag[evenIndex] - oddImag;
-            real[evenIndex] += oddReal;
-            imag[evenIndex] += oddImag;
-
-            const nextCos = wCos * wLenCos - wSin * wLenSin;
-            const nextSin = wCos * wLenSin + wSin * wLenCos;
-            wCos = nextCos;
-            wSin = nextSin;
-          }
-        }
-      }
-    },
-    runSeries1Fft() {
-      const { values, times } = this.getVisibleSeries1Samples();
-      if (values.length < 8) {
-        this.fftResult = null;
-        return;
-      }
-
-      const dt = this.estimateDt(times);
-      if (!Number.isFinite(dt) || dt <= 0) {
-        this.fftResult = null;
-        return;
-      }
-
-      const n = this.nextPow2(values.length);
-      if (n < 8) {
-        this.fftResult = null;
-        return;
-      }
-
-      let mean = 0;
-      for (let i = values.length - n; i < values.length; i++) {
-        mean += values[i];
-      }
-      mean /= n;
-
-      const real = new Array(n);
-      const imag = new Array(n).fill(0);
-      const base = values.length - n;
-      for (let i = 0; i < n; i++) {
-        const hann = 0.5 * (1 - Math.cos((2 * Math.PI * i) / (n - 1)));
-        real[i] = (values[base + i] - mean) * hann;
-      }
-
-      this.fftRadix2(real, imag);
-
-      const sampleRate = 1 / dt;
-      const half = Math.floor(n / 2);
-      let dominantIndex = 1;
-      let dominantAmplitude = 0;
-
-      for (let k = 1; k < half; k++) {
-        const magnitude = Math.sqrt(real[k] * real[k] + imag[k] * imag[k]);
-        if (magnitude > dominantAmplitude) {
-          dominantAmplitude = magnitude;
-          dominantIndex = k;
-        }
-      }
-
-      this.fftResult = {
-        dominantHz: (dominantIndex * sampleRate) / n,
-        dominantAmplitude: dominantAmplitude / n,
-        originalSampleCount: values.length,
-      };
     },
     processAvailableModels() {
       this.modelNames = [""];

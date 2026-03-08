@@ -1,7 +1,7 @@
 <template>
   <q-card class="q-pb-xs q-pt-xs q-ma-xs" bordered dark flat>
     <div class="q-mt-es row gutter text-overline justify-center" @click="isEnabled = !isEnabled">
-      {{ title }}
+      {{ resolvedTitle }}
     </div>
     <div v-if="isEnabled" class="q-pa-sm q-mt-xs q-mb-sm q-ml-md q-mr-md text-overline justify-center q-gutter-xs row">
       <q-select label-color="red" class="q-pa-xs col" v-model="selectedModel1" square label="model1" hide-hint
@@ -43,6 +43,7 @@
     </div>
     <!-- bottom buttons -->
     <div v-if="isEnabled" class="q-ma-sm text-overline justify-center q-gutter-sm row">
+
       <q-checkbox v-if="autoscaleEnabled" v-model="autoscale" dense size="xs" label="autoscale"
         @update:model-value="toggleAutoscaling" />
       <q-input v-if="!autoscale" v-model.number="y_min" type="number" @update:model-value="autoscaling" label="y min"
@@ -225,6 +226,26 @@ export default {
     modelProperties: {
       type: Array,
       default: () => []
+    },
+    chartTitle: {
+      type: String,
+      default: ""
+    },
+    defaultAutoscale: {
+      type: Boolean,
+      default: true
+    },
+    defaultRtWindow: {
+      type: Number,
+      default: 3
+    },
+    defaultYMin: {
+      type: Number,
+      default: 0
+    },
+    defaultYMax: {
+      type: Number,
+      default: 100
     }
   },
   computed: {
@@ -239,9 +260,55 @@ export default {
     },
     hasExternalModelProperties() {
       return this.normalizedModelProperties.length > 0
+    },
+    resolvedTitle() {
+      if (typeof this.chartTitle === "string" && this.chartTitle.trim() !== "") {
+        return this.chartTitle
+      }
+      return this.title
     }
   },
   watch: {
+    defaultAutoscale: {
+      handler(value) {
+        if (typeof value === "boolean") {
+          this.autoscale = value
+          this.autoscaling()
+        }
+      },
+      immediate: true
+    },
+    defaultRtWindow: {
+      handler(value) {
+        if (Number.isFinite(value)) {
+          this.rtWindow = value
+          this.updateRtWindow()
+        }
+      },
+      immediate: true
+    },
+    defaultYMin: {
+      handler(value) {
+        if (Number.isFinite(value)) {
+          this.y_min = value
+          if (!this.autoscale) {
+            this.autoscaling()
+          }
+        }
+      },
+      immediate: true
+    },
+    defaultYMax: {
+      handler(value) {
+        if (Number.isFinite(value)) {
+          this.y_max = value
+          if (!this.autoscale) {
+            this.autoscaling()
+          }
+        }
+      },
+      immediate: true
+    },
     modelProperties: {
       handler() {
         this.externalSlot1Cleared = false
@@ -1039,6 +1106,17 @@ export default {
 
     // check whether hires is enabled
     this.toggleHires()
+
+    // apply prop-provided chart settings after hires defaults are set
+    this.autoscale = this.defaultAutoscale
+    this.autoscaling()
+    this.rtWindow = this.defaultRtWindow
+    this.updateRtWindow()
+    this.y_min = this.defaultYMin
+    this.y_max = this.defaultYMax
+    if (!this.autoscale) {
+      this.autoscaling()
+    }
 
     // initialize from model properties passed by props
     this.applyExternalModelProperties()

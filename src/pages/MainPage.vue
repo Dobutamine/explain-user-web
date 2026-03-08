@@ -169,7 +169,17 @@
                 width: '5px',
                 opacity: 0.5
               }">
-                <RealtimeChart :alive="chart_alive"></RealtimeChart>
+                <!-- <RealtimeChart :alive="chart_alive"></RealtimeChart> -->
+                <RealtimeChart
+                  :alive="chart_alive"
+                  :default-autoscale="false"
+                  :default-y-min="-20"
+                  :default-y-max="120"
+                  :default-rt-window="5"
+                  chart-title="Aortic Pressure"
+                  :model-properties="['AA.pres', 'LV.pres','RV.pres']" 
+                />
+
               </q-scroll-area>
             </q-tab-panel>
 
