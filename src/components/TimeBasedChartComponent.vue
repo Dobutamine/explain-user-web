@@ -8,14 +8,17 @@
         :options="modelNames" dense dark stack-label @update:model-value="selectModel1" />
       <q-select v-if="selectedModel1 !== ''" label-color="red" class="q-pa-xs col" v-model="selectedProp1" square
         label="prop1" hide-hint :options="prop1Names" dense dark stack-label @update:model-value="selectProp1" />
+      <q-btn v-if="selectedProp1 !== ''" color="negative" size="xs" icon="fa-solid fa-xmark" @click="clearPropertySlot(1)" />
       <q-select label-color="green" class="q-pa-xs col" v-model="selectedModel2" square label="model2" hide-hint
         :options="modelNames" dense dark stack-label @update:model-value="selectModel2" />
       <q-select v-if="selectedModel2 !== ''" label-color="green" class="q-pa-xs col" v-model="selectedProp2" square
         label="prop2" hide-hint :options="prop2Names" dense dark stack-label @update:model-value="selectProp2" />
+      <q-btn v-if="selectedProp2 !== ''" color="negative" size="xs" icon="fa-solid fa-xmark" @click="clearPropertySlot(2)" />
       <q-select label-color="light-blue" class="q-pa-xs col" v-model="selectedModel3" square label="model3" hide-hint
         :options="modelNames" dense dark stack-label @update:model-value="selectModel3" />
       <q-select v-if="selectedModel3 !== ''" label-color="light-blue" class="q-pa-xs col" v-model="selectedProp3" square
         label="select model" hide-hint :options="prop3Names" dense dark stack-label @update:model-value="selectProp3" />
+      <q-btn v-if="selectedProp3 !== ''" color="negative" size="xs" icon="fa-solid fa-xmark" @click="clearPropertySlot(3)" />
     </div>
 
     <!-- chart -->
@@ -131,7 +134,7 @@ import * as Stat from "simple-statistics";
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, PointElement, LineElement, Filler)
 
-
+// :model-properties="['AA.pres', 'LV.pres','RV.pres']" 
 export default {
   setup() {
     const state = useStateStore()
@@ -215,8 +218,40 @@ export default {
 
   },
   props: {
-    alive: Boolean
-
+    alive: {
+      type: Boolean,
+      default: true
+    },
+    modelProperties: {
+      type: Array,
+      default: () => []
+    }
+  },
+  computed: {
+    normalizedModelProperties() {
+      if (!Array.isArray(this.modelProperties)) {
+        return []
+      }
+      return this.modelProperties
+        .filter((entry) => typeof entry === "string")
+        .map((entry) => entry.trim())
+        .filter((entry) => entry.length > 0)
+    },
+    hasExternalModelProperties() {
+      return this.normalizedModelProperties.length > 0
+    }
+  },
+  watch: {
+    modelProperties: {
+      handler() {
+        this.externalSlot1Cleared = false
+        this.externalSlot2Cleared = false
+        this.externalSlot3Cleared = false
+        this.applyExternalModelProperties()
+      },
+      deep: true,
+      immediate: true
+    }
   },
   components: {
     Bar,
@@ -290,6 +325,9 @@ export default {
       redrawMinIntervalMs: 1000 / 30,
       redrawLastTs: 0,
       selectionGuard: false,
+      externalSlot1Cleared: false,
+      externalSlot2Cleared: false,
+      externalSlot3Cleared: false,
       presetEditMode: false,
       selectedPresetName: "",
       presetNames: [],
@@ -297,6 +335,85 @@ export default {
     };
   },
   methods: {
+    parseModelPath(path) {
+      if (typeof path !== "string") {
+        return { modelName: "", propName: "" }
+      }
+      const separatorIndex = path.indexOf(".")
+      if (separatorIndex <= 0 || separatorIndex >= path.length - 1) {
+        return { modelName: "", propName: "" }
+      }
+      return {
+        modelName: path.slice(0, separatorIndex),
+        propName: path.slice(separatorIndex + 1)
+      }
+    },
+    refreshWatchedProperties() {
+      const selectedProps = [this.p1, this.p2, this.p3].filter((entry) => entry !== "")
+      explain.watchModelProps(selectedProps)
+    },
+    setModelPropertySelection(slot, path) {
+      const parsed = this.parseModelPath(path)
+      const modelKey = `selectedModel${slot}`
+      const propKey = `selectedProp${slot}`
+      const valueKey = `p${slot}`
+      const optionsKey = `prop${slot}Names`
+
+      if (!parsed.modelName || !parsed.propName) {
+        this[modelKey] = ""
+        this[propKey] = ""
+        this[valueKey] = ""
+        this[optionsKey] = [""]
+        return
+      }
+
+      this[modelKey] = parsed.modelName
+      this[optionsKey] = this.getNumericPropsForModel(parsed.modelName)
+      if (!this[optionsKey].includes(parsed.propName)) {
+        this[propKey] = ""
+        this[valueKey] = ""
+        return
+      }
+
+      this[propKey] = parsed.propName
+      this[valueKey] = `${parsed.modelName}.${parsed.propName}`
+    },
+    applyExternalModelProperties() {
+      if (!this.hasExternalModelProperties) {
+        return false
+      }
+
+      this.runGuardedSelection(() => {
+        this.setModelPropertySelection(1, this.externalSlot1Cleared ? "" : this.normalizedModelProperties[0] || "")
+        this.setModelPropertySelection(2, this.externalSlot2Cleared ? "" : this.normalizedModelProperties[1] || "")
+        this.setModelPropertySelection(3, this.externalSlot3Cleared ? "" : this.normalizedModelProperties[2] || "")
+        this.refreshWatchedProperties()
+        this.dataUpdate()
+      })
+      return true
+    },
+    setExternalSlotCleared(slot, isCleared) {
+      if (!this.hasExternalModelProperties) {
+        return
+      }
+      if (slot === 1) {
+        this.externalSlot1Cleared = isCleared
+      }
+      if (slot === 2) {
+        this.externalSlot2Cleared = isCleared
+      }
+      if (slot === 3) {
+        this.externalSlot3Cleared = isCleared
+      }
+    },
+    clearPropertySlot(slot) {
+      this.runGuardedSelection(() => {
+        this.setExternalSlotCleared(slot, true)
+        this.setModelPropertySelection(slot, "")
+        this.refreshWatchedProperties()
+        this.dataUpdate()
+      })
+    },
     runGuardedSelection(action) {
       if (this.selectionGuard) {
         return
@@ -373,6 +490,9 @@ export default {
 
     },
     clearProps() {
+      this.externalSlot1Cleared = this.hasExternalModelProperties
+      this.externalSlot2Cleared = this.hasExternalModelProperties
+      this.externalSlot3Cleared = this.hasExternalModelProperties
       this.p1 = ""
       this.selectedModel1 = ""
       this.selectedProp1 = ""
@@ -620,12 +740,13 @@ export default {
     },
     selectProp1() {
       this.runGuardedSelection(() => {
+        this.setExternalSlotCleared(1, false)
         if (this.selectedProp1 !== "") {
           this.p1 = this.selectedModel1 + "." + this.selectedProp1
-          explain.watchModelProps([this.p1])
         } else {
           this.p1 = ""
         }
+        this.refreshWatchedProperties()
         this.dataUpdate()
       })
     },
@@ -641,12 +762,13 @@ export default {
     },
     selectProp2() {
       this.runGuardedSelection(() => {
+        this.setExternalSlotCleared(2, false)
         if (this.selectedProp2 !== "") {
           this.p2 = this.selectedModel2 + "." + this.selectedProp2
-          explain.watchModelProps([this.p2])
         } else {
           this.p2 = ""
         }
+        this.refreshWatchedProperties()
         this.dataUpdate()
       })
     },
@@ -662,12 +784,13 @@ export default {
     },
     selectProp3() {
       this.runGuardedSelection(() => {
+        this.setExternalSlotCleared(3, false)
         if (this.selectedProp3 !== "") {
           this.p3 = this.selectedModel3 + "." + this.selectedProp3
-          explain.watchModelProps([this.p3])
         } else {
           this.p3 = ""
         }
+        this.refreshWatchedProperties()
         this.dataUpdate()
       })
     },
@@ -744,6 +867,10 @@ export default {
 
         }
       } catch { }
+
+      if (this.hasExternalModelProperties) {
+        this.applyExternalModelProperties()
+      }
     },
     toggleSummary() {
       if (this.show_summary) {
@@ -912,6 +1039,9 @@ export default {
 
     // check whether hires is enabled
     this.toggleHires()
+
+    // initialize from model properties passed by props
+    this.applyExternalModelProperties()
 
   },
 };

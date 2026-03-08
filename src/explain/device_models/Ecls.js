@@ -39,7 +39,24 @@ export class Ecls extends BaseModelClass {
       readonly: false,
       caption: "ECLS clamped",
     },
-
+    {
+      caption: "drainage site",
+      target: "drainage_site",
+      type: "list",
+      edit_mode: "basic",
+      build_prop: true,
+      readonly: false,
+      options: ["HeartChamber", "BloodTimeVaryingElastance", "BloodVessel","MicroVascularUnit"]
+    },
+    {
+      caption: "return site",
+      target: "return_site",
+      type: "list",
+      edit_mode: "basic",
+      build_prop: true,
+      readonly: false,
+      options: ["HeartChamber", "BloodTimeVaryingElastance", "BloodVessel","MicroVascularUnit"]
+    },
     {
       caption: "drainage cannula resistance factor",
       target: "drainage_res_factor",
@@ -226,7 +243,7 @@ export class Ecls extends BaseModelClass {
       ul:10.0 
     },
     {
-      caption: "gas fio2 through oxygenator",
+      caption: "gas fio2 (%) oxygenator",
       target: "gas_fio2",
       type: "number",
       build_prop: true,
@@ -238,7 +255,7 @@ export class Ecls extends BaseModelClass {
       ul:100.0 
     },
     {
-      caption: "gas fico2 through oxygenator",
+      caption: "gas fico2 (%) oxygenator",
       target: "gas_fico2",
       type: "number",
       build_prop: true,
@@ -283,6 +300,8 @@ export class Ecls extends BaseModelClass {
     // initialize independent parameters
     this.ecls_running = false;
     this.ecls_clamped = true; // flags whether the umbilical vessels are clamped or not
+    this.drainage_site = "RA"; // site of drainage cannula insertion
+    this.return_site = "AAR"; // site of return cannula insertion
     this.drainage_res = 1000; // resistance of the drainage cannula (mmHg/(L/s))
     this.drainage_res_factor = 1.0; // factor to adjust the drainage resistance
     this.return_res = 1000; // resistance of the return cannula (mmHg/(L/s))
@@ -306,6 +325,7 @@ export class Ecls extends BaseModelClass {
     this.pump_rpm = 0.0; // pump speed in rotations per minute
     this.pump_mode = 0; // pump mode (0=centrifugal, 1=roller pump)
     this.pump_pressure =  0.0
+
 
     // -----------------------------------------------
     // initialize dependent parameters
@@ -349,6 +369,9 @@ export class Ecls extends BaseModelClass {
         this._ecls_gas_insp_valve = this._model_engine.models["ECLS_GAS_INSP_VALVE"];
         this._ecls_gasex = this._model_engine.models["ECLS_GASEX"];
 
+        // set the drainage and return sites
+        this._ecls_drainage.comp_from = this.drainage_site;
+        this._ecls_return.comp_to = this.return_site;
 
         // make sure all the associated models are in the same enabled/disabled state as the placenta model
         this._ecls_drainage.is_enabled = this.ecls_running;

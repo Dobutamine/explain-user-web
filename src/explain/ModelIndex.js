@@ -42,4 +42,3 @@ export { Ecls } from "./device_models/Ecls";
 export { Monitor } from "./device_models/Monitor";
 export { Resuscitation } from "./device_models/Resuscitation";
 export { Ventilator } from "./device_models/Ventilator";
-export { ArtificialWhomb } from "./device_models/ArtificialWhomb";

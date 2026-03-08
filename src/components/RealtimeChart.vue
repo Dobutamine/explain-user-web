@@ -51,12 +51,36 @@
         :options="prop2Names"
         @update:model-value="selectProp2"
       />
+      <q-select
+        v-model="selectedModel3"
+        label="model 3"
+        hide-hint
+        dense
+        dark
+        filled
+        style="min-width: 140px;"
+        :options="modelNames"
+        @update:model-value="selectModel3"
+      />
+      <q-select
+        v-if="selectedModel3 !== ''"
+        v-model="selectedProp3"
+        label="property 3"
+        hide-hint
+        dense
+        dark
+        filled
+        style="min-width: 140px;"
+        :options="prop3Names"
+        @update:model-value="selectProp3"
+      />
     </div>
 
     <div v-if="isEnabled" class="q-px-sm q-pb-sm aa-canvas-wrap">
       <div class="aa-series-labels text-caption">
         <span class="aa-series-label aa-series-label-red">{{ selectedPath || "-" }}</span>
         <span class="aa-series-label aa-series-label-green"> {{ selectedPath2 || "-" }}</span>
+        <span class="aa-series-label aa-series-label-blue"> {{ selectedPath3 || "-" }}</span>
       </div>
       <canvas ref="aaCanvas" class="aa-pressure-canvas" />
 
@@ -166,6 +190,7 @@ export default {
       x_axis: [],
       y_axis: [],
       y2_axis: [],
+      y3_axis: [],
       rtWindowStartIndex: 0,
       rtWindowSamplesPerSecond: 200,
       rtCompactionThreshold: 4000,
@@ -177,12 +202,16 @@ export default {
       modelNames: [""],
       propNames: [""],
       prop2Names: [""],
+      prop3Names: [""],
       selectedModel: "",
       selectedProp: "",
       selectedPath: "",
       selectedModel2: "",
       selectedProp2: "",
       selectedPath2: "",
+      selectedModel3: "",
+      selectedProp3: "",
+      selectedPath3: "",
       fftResult: null,
     };
   },
@@ -207,9 +236,11 @@ export default {
 
       const path1 = this.externalModelProperties[0] || "";
       const path2 = this.externalModelProperties[1] || "";
+      const path3 = this.externalModelProperties[2] || "";
 
       this.selectedPath = path1;
       this.selectedPath2 = path2 && path2 !== path1 ? path2 : "";
+      this.selectedPath3 = path3 && path3 !== path1 && path3 !== path2 ? path3 : "";
 
       const parsed1 = this.parseModelPath(this.selectedPath);
       this.selectedModel = parsed1.model;
@@ -218,6 +249,10 @@ export default {
       const parsed2 = this.parseModelPath(this.selectedPath2);
       this.selectedModel2 = parsed2.model;
       this.selectedProp2 = parsed2.prop;
+
+      const parsed3 = this.parseModelPath(this.selectedPath3);
+      this.selectedModel3 = parsed3.model;
+      this.selectedProp3 = parsed3.prop;
 
       this.refreshWatchedPaths();
       return true;
@@ -283,6 +318,7 @@ export default {
       this.x_axis = [];
       this.y_axis = [];
       this.y2_axis = [];
+      this.y3_axis = [];
       this.fftResult = null;
       this.drawCanvas();
     },
@@ -459,6 +495,14 @@ export default {
           this.selectedPath2 = "";
         }
       }
+
+      if (this.selectedModel3) {
+        this.prop3Names = this.getNumericPropsForModel(this.selectedModel3);
+        if (this.selectedProp3 && !this.prop3Names.includes(this.selectedProp3)) {
+          this.selectedProp3 = "";
+          this.selectedPath3 = "";
+        }
+      }
     },
     getNumericPropsForModel(modelName) {
       const model = explain.modelState?.models?.[modelName];
@@ -508,13 +552,30 @@ export default {
       this.refreshWatchedPaths();
       this.clearSeries();
     },
+    selectModel3() {
+      this.selectedProp3 = "";
+      this.selectedPath3 = "";
+      this.prop3Names = this.getNumericPropsForModel(this.selectedModel3);
+      this.refreshWatchedPaths();
+      this.clearSeries();
+    },
+    selectProp3() {
+      if (this.selectedModel3 && this.selectedProp3) {
+        this.selectedPath3 = `${this.selectedModel3}.${this.selectedProp3}`;
+      } else {
+        this.selectedPath3 = "";
+      }
+      this.refreshWatchedPaths();
+      this.clearSeries();
+    },
     refreshWatchedPaths() {
       const watchedPaths = [];
-      if (this.selectedPath) {
-        watchedPaths.push(this.selectedPath);
-      }
-      if (this.selectedPath2 && this.selectedPath2 !== this.selectedPath) {
-        watchedPaths.push(this.selectedPath2);
+      const candidates = [this.selectedPath, this.selectedPath2, this.selectedPath3];
+      for (let i = 0; i < candidates.length; i++) {
+        const candidate = candidates[i];
+        if (candidate && !watchedPaths.includes(candidate)) {
+          watchedPaths.push(candidate);
+        }
       }
       if (watchedPaths.length > 0) {
         explain.watchModelProps(watchedPaths);
@@ -531,6 +592,7 @@ export default {
         this.x_axis = this.x_axis.slice(this.rtWindowStartIndex);
         this.y_axis = this.y_axis.slice(this.rtWindowStartIndex);
         this.y2_axis = this.y2_axis.slice(this.rtWindowStartIndex);
+        this.y3_axis = this.y3_axis.slice(this.rtWindowStartIndex);
         this.rtWindowStartIndex = 0;
       }
     },
@@ -569,6 +631,7 @@ export default {
       for (let i = this.rtWindowStartIndex; i < this.y_axis.length; i++) {
         const value1 = this.y_axis[i];
         const value2 = this.y2_axis[i];
+        const value3 = this.y3_axis[i];
         if (Number.isFinite(value1)) {
           if (value1 < min) {
             min = value1;
@@ -583,6 +646,14 @@ export default {
           }
           if (value2 > max) {
             max = value2;
+          }
+        }
+        if (Number.isFinite(value3)) {
+          if (value3 < min) {
+            min = value3;
+          }
+          if (value3 > max) {
+            max = value3;
           }
         }
       }
@@ -671,6 +742,7 @@ export default {
         for (let i = 0; i < plan.outLength; i++) {
           const value1 = this.y_axis[sourceIndex];
           const value2 = this.y2_axis[sourceIndex];
+          const value3 = this.y3_axis[sourceIndex];
           if (Number.isFinite(value1)) {
             if (value1 < minY) {
               minY = value1;
@@ -685,6 +757,14 @@ export default {
             }
             if (value2 > maxY) {
               maxY = value2;
+            }
+          }
+          if (Number.isFinite(value3)) {
+            if (value3 < minY) {
+              minY = value3;
+            }
+            if (value3 > maxY) {
+              maxY = value3;
             }
           }
           sourceIndex += plan.step;
@@ -749,6 +829,7 @@ export default {
 
       this.drawSeries(ctx, plan, this.y_axis, minY, maxY, "rgba(192, 0, 0, 1.0)", padLeft, padTop, plotWidth, plotHeight);
       this.drawSeries(ctx, plan, this.y2_axis, minY, maxY, "rgba(0, 192, 0, 1.0)", padLeft, padTop, plotWidth, plotHeight);
+      this.drawSeries(ctx, plan, this.y3_axis, minY, maxY, "rgba(0, 192, 192, 1.0)", padLeft, padTop, plotWidth, plotHeight);
     },
     dataUpdateRt() {
       if (!this.alive || !this.isEnabled) {
@@ -760,10 +841,12 @@ export default {
         const sample = samples[i];
         const value1 = sample?.[this.selectedPath];
         const value2 = sample?.[this.selectedPath2];
+        const value3 = sample?.[this.selectedPath3];
         const hasValue1 = Number.isFinite(value1);
         const hasValue2 = Number.isFinite(value2);
+        const hasValue3 = Number.isFinite(value3);
 
-        if (!hasValue1 && !hasValue2) {
+        if (!hasValue1 && !hasValue2 && !hasValue3) {
           continue;
         }
 
@@ -774,6 +857,7 @@ export default {
 
         this.y_axis.push(hasValue1 ? value1 : null);
         this.y2_axis.push(hasValue2 ? value2 : null);
+        this.y3_axis.push(hasValue3 ? value3 : null);
         this.x_axis.push(this.seconds);
         this.seconds += 0.005;
       }
@@ -794,6 +878,7 @@ export default {
     if (!this.applyExternalModelProperties()) {
       this.selectProp();
       this.selectProp2();
+      this.selectProp3();
     }
     this.$bus.on("state", this.processAvailableModels);
     this.$bus.on("rtf", this.handleRtf);
@@ -830,6 +915,10 @@ export default {
 
 .aa-series-label-green {
   color: #60d060;
+}
+
+.aa-series-label-blue {
+  color: #59d3ff;
 }
 
 .aa-pressure-canvas {
