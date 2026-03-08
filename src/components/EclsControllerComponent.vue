@@ -4,12 +4,19 @@
       {{ title }}
     </div>
 
+    <div class="q-mt-xs row justify-center items-center q-gutter-md">
+        <q-toggle v-model="eclsRunning" size="xs" dense label="ecls running" @update:model-value="setRunning" />
+        <q-toggle v-model="eclsClamped" size="xs" dense label="ecls clamped" @update:model-value="setClamped" />
+    </div>
+
+
     <div v-if="isEnabled" class="q-pa-sm">
 
       <RealtimeChart
         v-if="eclsRunning && showPressureChart"
         :alive="alive"
         :chart-height-factor="0.5"
+        :compact-axis-inputs="true"
         :default-autoscale="true"
         :model-properties="pressureSeries"
       />
@@ -17,16 +24,16 @@
         v-if="eclsRunning && showFlowChart"
         :alive="alive"
         :chart-height-factor="0.5"
+        :compact-axis-inputs="true"
         :default-autoscale="false"
         :default-y-min="-0.1"
         :default-y-max="1.0"
         :model-properties="flowSeries"
       />
 
-      <div v-if="eclsRunning" class="row justify-center q-mb-sm">
+      <div v-if="eclsRunning" class="row justify-center q-ma-sm">
         <q-btn-toggle
           v-model="chartMode"
-          dense
           size="sm"
           no-caps
           unelevated
@@ -41,70 +48,78 @@
         />
       </div>
 
-      <div v-if="eclsRunning" class="row justify-center q-gutter-sm">
+      <div v-if="eclsRunning" class="q-mt-sm row justify-center q-gutter-sm">
         <q-input
           v-model="flowDisplay"
-          label="Flow (L/min)"
+          label="Flow"
           readonly
+          size="xs"
           dense
           filled
-          style="max-width: 125px"
+          style="max-width: 60px"
         />
         <q-input
           v-model="pVenDisplay"
-          label="P ven avg"
+          label="P ven"
           readonly
+          size="xs"
           dense
           filled
-          style="max-width: 95px"
+          style="max-width: 60px"
         />
         <q-input
           v-model="pIntDisplay"
-          label="P int avg"
+          label="P int"
           readonly
+          size="xs"
           dense
           filled
-          style="max-width: 95px"
+          style="max-width: 60px"
         />
         <q-input
           v-model="pArtDisplay"
-          label="P art avg"
+          label="P art"
           readonly
+          size="xs"
           dense
           filled
-          style="max-width: 95px"
+          style="max-width: 60px"
         />
       </div>
 
-      <div class="q-mt-sm row justify-center items-center q-gutter-md">
-        <q-toggle v-model="eclsRunning" dense label="running" @update:model-value="setRunning" />
-        <q-toggle v-model="eclsClamped" dense label="clamped" @update:model-value="setClamped" />
-      </div>
-
-      <div class="q-mt-sm row justify-center items-center q-gutter-md">
-        <q-select
-          v-model="drainageSite"
-          :options="cannulationSites"
-          label="drainage"
+      <div v-if="eclsRunning" class="q-mt-xs row justify-center q-gutter-sm">
+        <q-input
+          v-model="satVenDisplay"
+          label="SvO2"
+          readonly
+          size="xs"
           dense
           filled
-          style="min-width: 110px"
-          @update:model-value="setDrainageSite"
+          style="max-width: 60px"
         />
-        <q-select
-          v-model="returnSite"
-          :options="cannulationSites"
-          label="return"
+        <q-input
+          v-model="satPostoxyDisplay"
+          label="SpO2"
+          readonly
+          size="xs"
           dense
           filled
-          style="min-width: 110px"
-          @update:model-value="setReturnSite"
+          style="max-width: 60px"
+        />
+        <q-input
+          v-model="pco2PostoxyDisplay"
+          label="PCO2"
+          readonly
+          size="xs"
+          dense
+          filled
+          style="max-width: 60px"
         />
       </div>
 
-      <div v-if="eclsRunning" class="q-mt-sm row justify-center items-start q-gutter-md">
+      <div v-if="eclsRunning" class="q-mt-xs row justify-center items-start q-gutter-md">
         <div class="text-center ecls-knob-control">
-          <div class="text-caption ecls-knob-label">pump rpm</div>
+          <div class="q-mb-sm text-caption ecls-knob-label">pump rpm</div>
           <q-knob
             v-model="pumpRpm"
             show-value
@@ -124,7 +139,7 @@
         </div>
 
         <div class="text-center ecls-knob-control">
-          <div class="text-caption ecls-knob-label">gas flow</div>
+          <div class="q-mb-sm text-caption ecls-knob-label">gas flow</div>
           <q-knob
             v-model="gasFlow"
             show-value
@@ -143,7 +158,7 @@
           <div class="ecls-knob-unit">L/min</div>
         </div>
         <div class="text-center ecls-knob-control">
-          <div class="text-caption ecls-knob-label">FiO2</div>
+          <div class="q-mb-sm text-caption ecls-knob-label">FiO2</div>
           <q-knob
             v-model="gasFio2Percent"
             show-value
@@ -161,7 +176,7 @@
           </q-knob>
           <div class="ecls-knob-unit">%</div>
         </div>
-        <q-input
+        <!-- <q-input
           v-model.number="gasFico2Percent"
           type="number"
           label="FiCO2 (%)"
@@ -172,8 +187,33 @@
           step="0.01"
           style="max-width: 95px"
           @update:model-value="setGasFico2"
+        /> -->
+      </div>
+
+
+      <div v-if="eclsRunning" class="q-mt-sm row justify-center items-center q-gutter-md">
+        <q-select
+          v-model="drainageSite"
+          :options="cannulationSites"
+          label="drainage"
+          dense
+          size="xs"
+          filled
+          style="min-width: 110px"
+          @update:model-value="setDrainageSite"
+        />
+        <q-select
+          v-model="returnSite"
+          :options="cannulationSites"
+          label="return"
+          dense
+          size="xs"
+          filled
+          style="min-width: 110px"
+          @update:model-value="setReturnSite"
         />
       </div>
+
     </div>
   </q-card>
 </template>
@@ -230,6 +270,9 @@ export default {
       pVenDisplay: "0.0",
       pIntDisplay: "0.0",
       pArtDisplay: "0.0",
+      satVenDisplay: "0",
+      satPostoxyDisplay: "0",
+      pco2PostoxyDisplay: "0.0",
       pVenPath: "Ecls.p_ven",
       pIntPath: "Ecls.p_int",
       pArtPath: "Ecls.p_art",
@@ -249,6 +292,11 @@ export default {
       explain.setPropValue(prop, value, 0, 0);
     },
     setRunning() {
+      if (this.eclsRunning) {
+        this.$bus.emit("ecls_display_on");
+      } else {
+        this.$bus.emit("ecls_display_off");
+      }
       this.setProp("Ecls.ecls_running", this.eclsRunning);
     },
     setClamped() {
@@ -256,9 +304,11 @@ export default {
     },
     setDrainageSite() {
       this.setProp("Ecls.drainage_site", this.drainageSite);
+      this.$bus.emit("update_drainage_site", this.drainageSite);
     },
     setReturnSite() {
       this.setProp("Ecls.return_site", this.returnSite);
+      this.$bus.emit("update_return_site", this.returnSite);
     },
     setPumpRpm() {
       const value = Number(this.pumpRpm);
@@ -287,7 +337,15 @@ export default {
       }
     },
     refreshWatchProps() {
-      const paths = ["Ecls.flow_avg", this.pVenPath, this.pIntPath, this.pArtPath];
+      const paths = [
+        "Ecls.flow_avg",
+        this.pVenPath,
+        this.pIntPath,
+        this.pArtPath,
+        "Ecls.sat_ven_o2",
+        "Ecls.sat_postoxy_o2",
+        "Ecls.pco2_postoxy",
+      ];
       const key = paths.join("|");
       if (key === this.watchedPathsKey) {
         return;
@@ -360,6 +418,9 @@ export default {
       this.pVenDisplay = this.toFixedSafe(latest[this.pVenPath], 1);
       this.pIntDisplay = this.toFixedSafe(latest[this.pIntPath], 1);
       this.pArtDisplay = this.toFixedSafe(latest[this.pArtPath], 1);
+      this.satVenDisplay = this.toFixedSafe(latest["Ecls.sat_ven_o2"], 0);
+      this.satPostoxyDisplay = this.toFixedSafe(latest["Ecls.sat_postoxy_o2"], 0);
+      this.pco2PostoxyDisplay = this.toFixedSafe(latest["Ecls.pco2_postoxy"], 1);
     },
     toFixedSafe(value, digits) {
       const num = Number(value);

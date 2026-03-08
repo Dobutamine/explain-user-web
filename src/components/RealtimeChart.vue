@@ -91,8 +91,10 @@
       <canvas ref="aaCanvas" class="aa-pressure-canvas" :style="canvasStyle" />
 
       <div class="q-mt-sm row justify-center items-center q-gutter-sm">
-        <q-checkbox v-model="autoscale" size="xs" dense label="scale" @update:model-value="toggleAutoscaling" />
+        <q-checkbox v-model="autoscale" size="xs" dense  @update:model-value="toggleAutoscaling"><q-tooltip>autoscale</q-tooltip></q-checkbox>
         <q-input
+          class="aa-time-input"
+          :class="{ 'aa-axis-input-compact': compactAxisInputs }"
           v-model.number="rtWindow"
           type="number"
           label="time (s)"
@@ -102,10 +104,11 @@
           max="30"
           size="xs"
           hide-bottom-space
-          style="min-width: 70px;"
           @update:model-value="updateRtWindow"
         />
         <q-input
+          class="aa-y-input"
+          :class="{ 'aa-axis-input-compact': compactAxisInputs }"
           v-if="!autoscale"
           v-model.number="y_min"
           type="number"
@@ -114,10 +117,11 @@
           dense
           size="xs"
           hide-bottom-space
-          style="max-width: 90px;"
           @update:model-value="updateManualScale"
         />
         <q-input
+          class="aa-y-input"
+          :class="{ 'aa-axis-input-compact': compactAxisInputs }"
           v-if="!autoscale"
           v-model.number="y_max"
           type="number"
@@ -126,7 +130,6 @@
           dense
           size="xs"
           hide-bottom-space
-          style="max-width: 90px;"
           @update:model-value="updateManualScale"
         />
         <q-btn
@@ -189,6 +192,10 @@ export default {
     defaultYMax: {
       type: Number,
       default: 100,
+    },
+    compactAxisInputs: {
+      type: Boolean,
+      default: false,
     },
   },
   computed: {
@@ -942,6 +949,28 @@ export default {
 .aa-select :deep(.q-field__input),
 .aa-select :deep(.q-field__label) {
   font-size: 12px;
+}
+
+.aa-time-input {
+  min-width: 70px;
+}
+
+.aa-y-input {
+  max-width: 90px;
+}
+
+.aa-axis-input-compact.aa-time-input {
+  min-width: 56px;
+}
+
+.aa-axis-input-compact.aa-y-input {
+  max-width: 72px;
+}
+
+.aa-axis-input-compact :deep(.q-field__native),
+.aa-axis-input-compact :deep(.q-field__input),
+.aa-axis-input-compact :deep(.q-field__label) {
+  font-size: 11px;
 }
 
 .aa-stats-wrap {

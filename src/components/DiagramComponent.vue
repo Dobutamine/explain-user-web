@@ -5,10 +5,6 @@
       </canvas>
     </div>
 
-    <div class="row justify-center">
-        <q-checkbox class="q-ml-sm" v-model="ecls_enabled" size="xs" label="ecls" @update:model-value="toggleEcls()"/>
-        <q-checkbox class="q-ml-sm" v-model="placenta_enabled" size="xs" label="placenta" @update:model-value="togglePlacenta()"/>       
-    </div>
 
     <div class="q-mt-md row justify-center">
           <q-btn flat round dense size="sm" icon="fa-solid fa-download" color="white" class="q-ml-sm"

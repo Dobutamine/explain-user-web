@@ -2,6 +2,7 @@
 
 import { BaseModelClass } from "../base_models/BaseModelClass.js";
 import { calc_gas_composition } from "../component_models/GasComposition"
+import { calc_blood_composition } from "../component_models/BloodComposition";
 import RealTimeMovingAverage from "../helpers/RealTimeMovingAverage";
 
 export class Ecls extends BaseModelClass {
@@ -9,54 +10,12 @@ export class Ecls extends BaseModelClass {
   static model_type = "Ecls";
   static model_interface = [
     {
-      target: "description",
-      type: "string",
-      build_prop: true,
-      edit_mode: "caption",
-      readonly: true,
-      caption: "description",
-    },
-    {
-      target: "is_enabled",
-      type: "boolean",
-      build_prop: true,
-      edit_mode: "all",
-      readonly: false,
-      caption: "enabled",
-    },
-    {
-      target: "ecls_running",
-      type: "boolean",
-      build_prop: true,
-      edit_mode: "caption",
-      readonly: false,
-      caption: "ECLS model running",
-    },
-    {
       target: "ecls_clamped",
       type: "boolean",
       build_prop: true,
       edit_mode: "caption",
-      readonly: false,
+      readonly: true,
       caption: "ECLS clamped",
-    },
-    {
-      caption: "drainage site",
-      target: "drainage_site",
-      type: "list",
-      edit_mode: "basic",
-      build_prop: true,
-      readonly: false,
-      options: ["HeartChamber", "BloodTimeVaryingElastance", "BloodVessel","MicroVascularUnit"]
-    },
-    {
-      caption: "return site",
-      target: "return_site",
-      type: "list",
-      edit_mode: "basic",
-      build_prop: true,
-      readonly: false,
-      options: ["HeartChamber", "BloodTimeVaryingElastance", "BloodVessel","MicroVascularUnit"]
     },
     {
       caption: "drainage cannula resistance factor",
@@ -122,7 +81,8 @@ export class Ecls extends BaseModelClass {
       build_prop: true,
       edit_mode: "basic",
       readonly: false,
-      caption: "return cannula resistance (mmHg/(L/s))",
+      caption: "return cannula res (mmHg/(L/s))",
+      slider: true,
       factor: 1,
       delta: 1,
       rounding: 0,
@@ -230,88 +190,7 @@ export class Ecls extends BaseModelClass {
       rounding: 4,
       ll:0.0,
       ul:0.1
-    },
-    {
-      caption: "gas flow through oxygenator",
-      target: "gas_flow",
-      type: "number",
-      build_prop: true,
-      edit_mode: "basic",
-      factor: 1.0,
-      delta: 0.1,
-      rounding: 1,
-      ll:0.0,
-      ul:10.0 
-    },
-    {
-      caption: "gas fio2 (%) oxygenator",
-      target: "gas_fio2",
-      type: "number",
-      build_prop: true,
-      edit_mode: "basic",
-      factor: 100.0,
-      delta: 1,
-      rounding: 0,
-      ll:0.21,
-      ul:100.0 
-    },
-    {
-      caption: "gas fico2 (%) oxygenator",
-      target: "gas_fico2",
-      type: "number",
-      build_prop: true,
-      edit_mode: "basic",
-      factor: 100.0,
-      delta: 0.01,
-      rounding: 2,
-      ll:0.0,
-      ul:10.0 
-    },
-    {
-      caption: "pump rpm",
-      target: "pump_rpm",
-      delta: 10,
-      factor: 1,
-      rounding: 0,
-      type: "number",
-      build_prop: true,
-      edit_mode: "basic",
-      ll:0.0,
-      ul:100000.0 
-    },
-    {
-      caption: "flow moving average window (samples)",
-      target: "flow_avg_window",
-      delta: 1,
-      factor: 1,
-      rounding: 0,
-      type: "number",
-      build_prop: true,
-      edit_mode: "basic",
-      ll:1,
-      ul:1000
-    },
-    {
-      target: "flow_avg",
-      type: "number",
-      build_prop: true,
-      edit_mode: "caption",
-      readonly: true,
-      caption: "ECLS flow moving average (L/min)",
-    },
-    {
-      caption: "pressure moving average window (samples)",
-      target: "pressure_avg_window",
-      delta: 1,
-      factor: 1,
-      rounding: 0,
-      type: "number",
-      build_prop: true,
-      edit_mode: "basic",
-      ll:1,
-      ul:1000
-    },
-
+    }
   ];
 
   /*
@@ -355,7 +234,7 @@ export class Ecls extends BaseModelClass {
     this.gas_temp = 20.0; // temperature of the gas flow through the oxygenator (dgs C)
     this.dif_o2 = 0.0005; // diffusion constant for oxygen (mmol/mmHg * s)
     this.dif_co2 = 0.001; // diffusion constant for carbon dioxide (mmol/mmHg * s)
-    this.pump_rpm = 0.0; // pump speed in rotations per minute
+    this.pump_rpm = 1500.0; // pump speed in rotations per minute
     this.pump_mode = 0; // pump mode (0=centrifugal, 1=roller pump)
     this.pump_pressure =  0.0
 
@@ -368,17 +247,20 @@ export class Ecls extends BaseModelClass {
     this.flow = 0.0; // blood flow through the ECLS circuit (L/s)
     this.flow_avg = 0.0; // moving average of the blood flow through the ECLS circuit (L/s)
     this.sat_ven_o2 = 0.0; // venous oxygen saturation (%)
-    this.sat_art_o2 = 0.0; // arterial oxygen saturation (%)
+    this.sat_postoxy_o2 = 0.0; // post-oxygenator oxygen saturation (%)
+    this.pco2_postoxy = 0.0; // post-oxygenator pCO2 (mmHg)
 
     // -----------------------------------------------
     // local parameters
     this.prev_fio2 = 0.0; // previous fio2 value to detect changes in fio2
     this.prev_fico2 = 0.0; // previous fico2 value to detect changes in fico2
     this.prev_gas_flow = 0.0; // previous gas flow value to detect changes in gas flow
-    this.pressure_avg_window = 60; // number of samples used for real-time pressure moving averages
+    this.pressure_avg_window = 400; // number of samples used for real-time pressure moving averages
     this.flow_avg_window = 400; // number of samples used for the real-time flow moving average (~0.9 s at 0.015 s updates)
     this._update_interval = 0.015; // update interval of the placenta model (s)
     this._update_counter = 0.0; // counter of the update interval (s)
+    this._blood_comp_interval = 1.0; // low-frequency blood composition update interval (s)
+    this._blood_comp_counter = 0.0; // counter for low-frequency blood composition updates (s)
     this._flow_avg_calculator = new RealTimeMovingAverage(this.flow_avg_window);
     this._p_ven_avg_calculator = new RealTimeMovingAverage(this.pressure_avg_window);
     this._p_int_avg_calculator = new RealTimeMovingAverage(this.pressure_avg_window);
@@ -409,9 +291,11 @@ export class Ecls extends BaseModelClass {
       this._p_ven_avg_calculator.reset();
       this._p_int_avg_calculator.reset();
       this._p_art_avg_calculator.reset();
+      this._blood_comp_counter = 0.0;
       return;
     }
 
+    this._blood_comp_counter += this._t;
     this._update_counter += this._t;
     if (this._update_counter > this._update_interval) {
         this._update_counter = 0.0;
@@ -524,6 +408,15 @@ export class Ecls extends BaseModelClass {
         this.p_art = this._p_art_avg_calculator.addValue(p_art_raw);
         this.flow = this._ecls_return.flow * 60.0; // blood flow through the ECLS circuit is the flow through the drainage cannula
         this.flow_avg = this._flow_avg_calculator.addValue(this.flow);
+
+        if (this._blood_comp_counter >= this._blood_comp_interval) {
+          this._blood_comp_counter -= this._blood_comp_interval;
+          calc_blood_composition(this._ecls_tubing_in);
+          calc_blood_composition(this._ecls_tubing_out);
+          this.sat_ven_o2 = this._ecls_tubing_in.so2;
+          this.sat_postoxy_o2 = this._ecls_tubing_out.so2;
+          this.pco2_postoxy = this._ecls_tubing_out.pco2;
+        }
       }
   }
 }
