@@ -80,7 +80,7 @@
                             <div class="row">
                               <q-slider class="q-ma-sm q-mr-sm col-10" v-model="field.value" :step="field.delta"
                                 :min="field.ll" :max="field.ul" snap :markers="1" dense thumb-color="teal"
-                                color="transparent" @change="sliderChange(field)"/>
+                                color="transparent" @change="sliderChange(field, true)"/>
 
                               <div class="col q-ml-sm">
                                 <q-btn  dense size="xs" @click="toggleSlider(field)">num</q-btn>
@@ -114,7 +114,7 @@
 
                             <q-slider class="q-ma-xs col-8" v-model="field.slider_value" :step="field.delta"
                               :min="field.ll" :max="field.ul" snap :markers="1" dense thumb-color="teal"
-                              color="transparent" @change="changeSliderValue(field)" />
+                              color="transparent" @change="changeSliderValue(field, true)" />
 
                               <q-btn @click="increaseSliderValue(field)" class="q-ma-xs col" dense size="xs" color="grey-10"
                               icon="fa-solid fa-chevron-right"></q-btn>
@@ -283,6 +283,9 @@ export default {
       selectedModelInterface: [],
       modelInterfaces: [],
       handleStateDebounceId: null,
+      sliderApplyTimerId: null,
+      sliderApplyLastTs: 0,
+      sliderApplyMinIntervalMs: 90,
     };
   },
   methods: {
@@ -303,6 +306,90 @@ export default {
         return [...entry.option_default]
       }
       return []
+    },
+    buildModelChoices(entry) {
+      const choices = this.getDefaultChoices(entry)
+      this.getAllModels().forEach(model => {
+        if (this.matchesAllowedModelTypes(entry?.options, model.model_type)) {
+          choices.push(model.name)
+        }
+      })
+      return choices
+    },
+    buildNumericPropChoices(modelName) {
+      const selectedModel = explain.modelState?.models?.[modelName]
+      if (!selectedModel) {
+        return []
+      }
+
+      const choices = []
+      Object.keys(selectedModel).forEach(prop => {
+        if (typeof selectedModel[prop] === "number" && prop[0] !== "_") {
+          choices.push(prop)
+        }
+      })
+      return choices
+    },
+    processParamByType(param) {
+      switch (param.type) {
+        case "number":
+          this.processNumberType(param)
+          break
+        case "factor":
+          this.processFactorType(param)
+          break
+        case "string":
+          this.processStringType(param)
+          break
+        case "boolean":
+          this.processBooleanType(param)
+          break
+        case "list":
+          this.processListType(param)
+          break
+        case "multiple-list":
+          this.processMultipleListType(param)
+          break
+        case "prop-list":
+          this.processPropListType(param)
+          break
+        case "function":
+          this.processFunctionType(param)
+          break
+        case "object":
+          break
+        case "object-list":
+          this.processObjectListType(param)
+          break
+        case "reference":
+          this.processReferenceType(param)
+          break
+        default:
+          console.error("Unknown type: ", param.type)
+      }
+    },
+    processInterfaceForModel(modelInterface, modelName) {
+      if (!Array.isArray(modelInterface)) {
+        return []
+      }
+
+      const previousModelName = this.selectedModelName
+      this.selectedModelName = modelName
+
+      modelInterface.forEach(param => {
+        param.model_name = modelName
+        param.state_changed = false
+        if (param.readonly === undefined) {
+          param.readonly = false
+        }
+        if (!param.edit_mode) {
+          param.edit_mode = "all"
+        }
+        this.processParamByType(param)
+      })
+
+      this.selectedModelName = previousModelName
+      return modelInterface
     },
     queueHandleState() {
       if (this.handleStateDebounceId) {
@@ -360,17 +447,9 @@ export default {
             persistent: true
         })
         .onOk(() => {
-          let found_index = -1
-          // find the correct controller list with list items with object in it
-          let counter = 0
-          this.state.configuration.controllers.forEach(controller => {
-            controller.forEach(item => {
-              if (item.value == this.selectedModelName) {
-                found_index = counter
-              }
-            })
-            counter += 1;
-          })
+          const found_index = this.state.configuration.controllers.findIndex(controller =>
+            controller.some(item => item.value === this.selectedModelName)
+          )
           if (found_index > -1) {
             this.state.configuration.controllers.splice(found_index, 1)
           }
@@ -381,20 +460,52 @@ export default {
 
 
     },
-    sliderChange(param) {
+    scheduleSliderApply(force = false) {
+      const applyNow = () => {
+        this.sliderApplyLastTs = Date.now()
+        this.sliderApplyTimerId = null
+        this.updateValue()
+      }
+
+      if (force) {
+        if (this.sliderApplyTimerId) {
+          clearTimeout(this.sliderApplyTimerId)
+          this.sliderApplyTimerId = null
+        }
+        applyNow()
+        return
+      }
+
+      const now = Date.now()
+      const elapsed = now - this.sliderApplyLastTs
+      if (elapsed >= this.sliderApplyMinIntervalMs) {
+        applyNow()
+        return
+      }
+
+      if (this.sliderApplyTimerId) {
+        return
+      }
+
+      this.sliderApplyTimerId = setTimeout(() => {
+        applyNow()
+      }, this.sliderApplyMinIntervalMs - elapsed)
+    },
+    sliderChange(param, force = false) {
       this.state_changed = true;
       param.state_changed = true;
-      this.updateValue();
+      this.scheduleSliderApply(force);
     },
     toggleSlider(param) {
       param.slider = !param.slider
       param.value = parseFloat(param.value)
     },
-    changeSliderValue(parameter) {
+    changeSliderValue(parameter, force = false) {
       parameter.state_changed = true;
+      this.state_changed = true;
       parameter.display_value = this.translateSliderToValue(parameter.slider_value).toFixed(parameter.rounding)
       parameter.value = this.translateSliderToValue(parameter.slider_value)
-      this.updateValue();
+      this.scheduleSliderApply(force);
     },
     increaseSliderValue(parameter) {
       parameter.slider_value += parameter.delta;
@@ -437,78 +548,50 @@ export default {
       return 0;
     },
     changePropState(param, arg) {
-      if (param.type == "prop-list" && arg == 'model_changed') {
+      if (param.type === "prop-list" && arg === "model_changed") {
         // reset the prop list choices
-        param['choices_props'] = []
-        param['value_prop'] = ""
-        const selectedModel = explain.modelState?.models?.[param.value_model]
-        if (!selectedModel) {
-          return
-        }
-        Object.keys(selectedModel).forEach(prop => {
-          if (typeof (selectedModel[prop]) === 'number') {
-            if (prop[0] !== "_") {
-              param["choices_props"].push(prop)
-            }
-          }
-        })
+        param.choices_props = this.buildNumericPropChoices(param.value_model)
+        param.value_prop = ""
       }
       this.state_changed = true
       param.state_changed = true
+    },
+    applyChangedProperty(prop) {
+      const path = `${prop.model_name}.${prop.target}`
+      switch (prop.type) {
+        case "function": {
+          const functionArgs = prop.args.map(arg => (arg.type === "number" ? arg.value / arg.factor : arg.value))
+          explain.callModelFunction(path, functionArgs)
+          return
+        }
+        case "number":
+          explain.setPropValue(path, parseFloat(prop.value / prop.factor), parseFloat(this.changeInTime), 0)
+          return
+        case "factor":
+          explain.setPropValue(path, parseFloat(prop.value), parseFloat(this.changeInTime), 0)
+          return
+        case "boolean":
+        case "string":
+        case "list":
+        case "multiple-list":
+          explain.setPropValue(path, prop.value, 0, 0)
+          return
+        case "prop-list": {
+          const modelPath = `${prop.model_name}.${prop.target_model}`
+          const propPath = `${prop.model_name}.${prop.target_prop}`
+          explain.setPropValue(modelPath, prop.value_model, 0, 0)
+          explain.setPropValue(propPath, prop.value_prop, 0, 0)
+          return
+        }
+        default:
+          return
+      }
     },
     updateValue() {
       this.modelInterfaces.forEach(mi => {
         mi.forEach(prop => {
           if (prop.state_changed) {
-            if (prop.type == 'function') {
-              let function_name = prop.model_name + "." + prop.target;
-              let function_args = []
-              prop.args.forEach(arg => {
-                if (arg.type == 'number') {
-                  function_args.push(arg.value / arg.factor)
-                } else {
-                  function_args.push(arg.value)
-                }
-              })
-              explain.callModelFunction(function_name, function_args)
-            }
-
-            if (prop.type == 'number') {
-              let p = prop.model_name + "." + prop.target
-              explain.setPropValue(p, parseFloat(prop.value / prop.factor), parseFloat(this.changeInTime), 0)
-            }
-            if (prop.type == 'factor') {
-              let p = prop.model_name + "." + prop.target
-              explain.setPropValue(p, parseFloat(prop.value), parseFloat(this.changeInTime), 0)
-            }
-            if (prop.type == 'boolean') {
-              let p = prop.model_name + "." + prop.target
-              explain.setPropValue(p, prop.value, 0, 0)
-            }
-            if (prop.type == 'string') {
-              let new_value = prop.value
-              let p = prop.model_name + "." + prop.target
-              explain.setPropValue(p, new_value, 0, 0)
-            }
-            if (prop.type == 'list') {
-              let new_value = prop.value
-              let p = prop.model_name + "." + prop.target
-              explain.setPropValue(p, new_value, 0, 0)
-            }
-            if (prop.type == 'multiple-list') {
-              let new_value = prop.value
-              let p = prop.model_name + "." + prop.target
-              explain.setPropValue(p, new_value, 0, 0)
-            }
-            if (prop.type == 'prop-list') {
-              let new_value_model = prop.value_model
-              let p_model = prop.model_name + "." + prop.target_model
-              explain.setPropValue(p_model, new_value_model, 0, 0)
-
-              let new_value_prop = prop.value_prop
-              let p_prop = prop.model_name + "." + prop.target_prop
-              explain.setPropValue(p_prop, new_value_prop, 0, 0)
-            }
+            this.applyChangedProperty(prop)
           }
           prop.state_changed = false
         })
@@ -539,63 +622,12 @@ export default {
       }
 
       // get the model interface of the model type of the seleced model
-      this.selectedModelInterface = explain.getModelInterface(this.selectedModelName)
-      if (!Array.isArray(this.selectedModelInterface)) {
+      const selectedInterface = explain.getModelInterface(this.selectedModelName)
+      if (!Array.isArray(selectedInterface)) {
         this.selectedModelInterface = []
         return
       }
-
-      // add a flag to the property which can be set when the property needs to be updated
-      this.selectedModelInterface.forEach(param => {
-        // we have to extend the param with some additional properties
-        param['model_name'] = this.selectedModelName
-        param['state_changed'] = false
-        if (param.readonly === undefined) {
-          param['readonly'] = false
-        }
-
-        if (!param['edit_mode']) {
-          param['edit_mode'] = 'all'
-        }
-        // process the different types of parameters
-        switch (param.type) {
-          case 'number':
-            this.processNumberType(param)
-            break;
-          case 'factor':
-            this.processFactorType(param)
-            break;
-          case 'string':
-            this.processStringType(param)
-            break;
-          case 'boolean':
-            this.processBooleanType(param)
-            break;
-          case 'list':
-            this.processListType(param)
-            break;
-          case 'multiple-list':
-            this.processMultipleListType(param)
-            break;
-          case 'prop-list':
-            this.processPropListType(param)
-            break;
-          case 'function':
-            this.processFunctionType(param)
-            break;
-          case 'object':
-            // for objects we don't need to do anything here, they will be processed later
-            break;
-          case 'object-list':
-            this.processObjectListType(param)
-            break;
-          case 'reference':
-            this.processReferenceType(param)
-            break;
-          default:
-            console.error("Unknown type: ", param.type)
-        }
-      })
+      this.selectedModelInterface = this.processInterfaceForModel(selectedInterface, this.selectedModelName)
       this.modelInterfaces.push(this.selectedModelInterface)
     },
     processNumberType(param) {
@@ -623,12 +655,7 @@ export default {
       }
       // file the options list
       if (!param['choices']) {
-        param['choices'] = this.getDefaultChoices(param)
-        this.getAllModels().forEach(model => {
-          if (this.matchesAllowedModelTypes(param.options, model.model_type)) {
-            param["choices"].push(model.name)
-          }
-        })
+        param['choices'] = this.buildModelChoices(param)
       }
 
     },
@@ -638,12 +665,7 @@ export default {
         param['value'] = param['default']
       }
       // file the options list
-      param['choices'] = this.getDefaultChoices(param)
-      this.getAllModels().forEach(model => {
-        if (this.matchesAllowedModelTypes(param.options, model.model_type)) {
-          param["choices"].push(model.name)
-        }
-      })
+      param['choices'] = this.buildModelChoices(param)
       param['slider'] = false
     },
     processFactorType(param) {
@@ -659,25 +681,8 @@ export default {
       param['value_model'] = this.getModelValue(this.selectedModelName, param.target_model)
       param['value_prop'] = this.getModelValue(this.selectedModelName, param.target_prop)
       // file the options list
-      param['choices_model'] = []
-      param["choices_props"] = []
-      this.getAllModels().forEach(model => {
-        if (this.matchesAllowedModelTypes(param.options, model.model_type)) {
-          param["choices_model"].push(model.name)
-
-        }
-      })
-      const selectedModel = explain.modelState?.models?.[param.value_model]
-      if (!selectedModel) {
-        return
-      }
-      Object.keys(selectedModel).forEach(prop => {
-          if (typeof (selectedModel[prop]) === 'number') {
-            if (prop[0] !== "_") {
-              param["choices_props"].push(prop)
-            }
-          }
-      })
+      param['choices_model'] = this.buildModelChoices(param)
+      param["choices_props"] = this.buildNumericPropChoices(param.value_model)
 
     },
     processFunctionType(param) {
@@ -697,34 +702,18 @@ export default {
         }
         if (arg.options) {
           if (arg.type == 'list') {
-            arg['choices'] = []
-            if (arg['options_default']) {
-              arg['choices'] = arg['options_default']
-            }
+            arg['choices'] = this.buildModelChoices(arg)
             arg['value'] = this.getModelValue(this.selectedModelName, arg.target)
             if (arg['default']) {
               arg['value'] = arg['default']
             }
-            this.getAllModels().forEach(model => {
-              if (this.matchesAllowedModelTypes(arg.options, model.model_type)) {
-                arg["choices"].push(model.name)
-              }
-            })
           }
           if (arg.type == 'multiple-list') {
-            arg['choices'] = []
-            if (arg['options_default']) {
-              arg['choices'] = arg['options_default']
-            }
+            arg['choices'] = this.buildModelChoices(arg)
             arg['value'] = this.getModelValue(this.selectedModelName, arg.target)
             if (arg['default']) {
               arg['value'] = arg['default']
             }
-            this.getAllModels().forEach(model => {
-              if (this.matchesAllowedModelTypes(arg.options, model.model_type)) {
-                arg["choices"].push(model.name)
-              }
-            })
           }
         }
       }
@@ -777,71 +766,13 @@ export default {
         return
       }
 
-      let temp = this.selectedModelName
-
-      this.selectedModelName = param.target
       // get the model interface of the model type of the seleced model
-      let model_interface_reference = explain.getModelInterface(param.target)
+      const model_interface_reference = explain.getModelInterface(param.target)
       if (!Array.isArray(model_interface_reference)) {
-        this.selectedModelName = temp
         return
       }
 
-      // add a flag to the property which can be set when the property needs to be updated
-      model_interface_reference.forEach(param => {
-        // we have to extend the param with some additional properties
-        param['model_name'] = this.selectedModelName
-        param['state_changed'] = false
-        if (param.readonly === undefined) {
-          param['readonly'] = false
-        }
-
-        if (!param['edit_mode']) {
-          param['edit_mode'] = 'all'
-        }
-        // process the different types of parameters
-        switch (param.type) {
-          case 'number':
-            this.processNumberType(param)
-            break;
-          case 'factor':
-            this.processFactorType(param)
-            break;
-          case 'string':
-            this.processStringType(param)
-            break;
-          case 'boolean':
-            this.processBooleanType(param)
-            break;
-          case 'list':
-            this.processListType(param)
-            break;
-          case 'multiple-list':
-            this.processMultipleListType(param)
-            break;
-          case 'prop-list':
-            this.processPropListType(param)
-            break;
-          case 'function':
-            this.processFunctionType(param)
-            break;
-          case 'object':
-            // for objects we don't need to do anything here, they will be processed later
-            break;
-          case 'object-list':
-            this.processObjectListType(param)
-            break;
-          case 'reference':
-            this.processReferenceType(param)
-            break;
-          default:
-            console.error("Unknown type: ", param.type)
-        }
-      })
-
-      // return the model interface
-      this.modelInterfaces.push(model_interface_reference)
-      this.selectedModelName = temp
+      this.modelInterfaces.push(this.processInterfaceForModel(model_interface_reference, param.target))
     },
     processAvailableModels() {
       this.availableModelNames = []
@@ -866,6 +797,10 @@ export default {
     if (this.handleStateDebounceId) {
       clearTimeout(this.handleStateDebounceId)
       this.handleStateDebounceId = null
+    }
+    if (this.sliderApplyTimerId) {
+      clearTimeout(this.sliderApplyTimerId)
+      this.sliderApplyTimerId = null
     }
     this.$bus.off("state", this.queueHandleState)
   },
