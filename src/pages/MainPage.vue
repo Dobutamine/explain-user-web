@@ -39,7 +39,8 @@
               <!-- <ModelEditor title="MODEL EDITOR B"></ModelEditor> -->
               </q-scroll-area>
             </q-tab-panel>
-                        <q-tab-panel name="ventilator">
+            
+            <q-tab-panel name="ventilator">
               <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
                 right: '5px',
                 borderRadius: '5px',
@@ -62,6 +63,7 @@
                 <EclsControllerComponent :alive="ecls_alive"></EclsControllerComponent>
               </q-scroll-area>
             </q-tab-panel>
+
             <q-tab-panel name="model_builder">
               <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
                 right: '5px',
@@ -85,6 +87,7 @@
               <ControllerComponent title="CONTROLLERS"></ControllerComponent>
               </q-scroll-area>
             </q-tab-panel>
+            
             <q-tab-panel name="task_scheduler">
               <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
                 right: '5px',

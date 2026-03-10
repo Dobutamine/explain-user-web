@@ -48,7 +48,7 @@
               { label: 'ALL', value: 'all' },
             ]"/>
           </div>
-          <div v-if="redraw > 0.0" class="q-ma-sm q-mb-md">
+          <div class="q-ma-sm q-mb-md">
             <div v-for="(mi, index_main) in modelInterfaces" :key="index_main">
               <q-card class="bg-grey-10 q-pt-xs q-mt-sm" dark bordered flat>
                 <div v-for="(field, index) in mi" :key="index">
@@ -258,13 +258,10 @@ import { useStateStore } from "src/stores/state";
 
 export default {
   setup() {
-    let selectedModelInterface = []
-    let selectedNewModelProps = []
-    let modelInterfaces = []
     const state = useStateStore();
 
     return {
-      selectedModelInterface: selectedModelInterface, selectedNewModelProps, state, modelInterfaces
+      state
     }
   },
   props: {
@@ -276,39 +273,46 @@ export default {
       newControllerCaption: "",
       newControllerModelName: "",
       collapsed: false,
-      isEnabled: true,
-      addEnabled: false,
       factorsEnabled: true,
-      redraw: 1,
-      availableModelTypes: [],
-      selectedModelType: "",
-      selectedNewModelPropsChoices: [],
-      showNewModelInDiagram: false,
-      newModelErrorFlag: false,
-      noNewModelError: "q-ml-md q-mr-md q-mt-md text-secondary text-center",
-      newModelError: "q-ml-md q-mr-md q-mt-md text-negative text-center",
-      newModelErrorClass: "q-ml-md q-mr-md q-mt-md text-secondary text-center",
-      newModelErrorMessage: "no error",
-      modelTypes: ["BloodCapacitance", "BloodTimeVaryingElastance", "BloodResistor", "BloodValve", "BloodDiffusor", "BloodPump", "GasCapacitance"],
       selectedModelName: "",
-      show_optionals: false,
-      show_relatives: false,
-      optionals_caption: "SHOW ADVANCED",
-      optionals_color: "grey-9",
-      optionals_text: "show advanced properties",
-      relatives_caption: "SHOW RELATIVES",
-      relatives_color: "grey-9",
-      relatives_text: "show relative properties",
-      modelNames: [],
       timeOptions: [1, 5, 10, 30, 60, 120, 240, 360],
       changeInTime: 1,
       state_changed: false,
-      collaps_icon: "fa-solid fa-chevron-up",
       edit_mode: "basic",
       availableModelNames: [],
+      selectedModelInterface: [],
+      modelInterfaces: [],
+      handleStateDebounceId: null,
     };
   },
   methods: {
+    getAllModels() {
+      return Object.values(explain.modelState?.models || {})
+    },
+    matchesAllowedModelTypes(allowedTypes, modelType) {
+      if (!Array.isArray(allowedTypes) || allowedTypes.length === 0) {
+        return true
+      }
+      return allowedTypes.includes(modelType)
+    },
+    getDefaultChoices(entry) {
+      if (Array.isArray(entry?.options_default)) {
+        return [...entry.options_default]
+      }
+      if (Array.isArray(entry?.option_default)) {
+        return [...entry.option_default]
+      }
+      return []
+    },
+    queueHandleState() {
+      if (this.handleStateDebounceId) {
+        return
+      }
+      this.handleStateDebounceId = setTimeout(() => {
+        this.handleStateDebounceId = null
+        this.handleState()
+      }, 40)
+    },
     getModelValue(modelName, path) {
       const model = explain.modelState?.models?.[modelName]
       if (!model || !path) {
@@ -381,19 +385,16 @@ export default {
       this.state_changed = true;
       param.state_changed = true;
       this.updateValue();
-      this.redraw += 1;
     },
     toggleSlider(param) {
       param.slider = !param.slider
       param.value = parseFloat(param.value)
-      this.redraw +=1;
     },
     changeSliderValue(parameter) {
       parameter.state_changed = true;
       parameter.display_value = this.translateSliderToValue(parameter.slider_value).toFixed(parameter.rounding)
       parameter.value = this.translateSliderToValue(parameter.slider_value)
       this.updateValue();
-      this.redraw += 1;
     },
     increaseSliderValue(parameter) {
       parameter.slider_value += parameter.delta;
@@ -435,16 +436,6 @@ export default {
 
       return 0;
     },
-    collapsEditor() {
-
-      if (this.isEnabled) {
-        this.isEnabled = false
-        this.collaps_icon = "fa-solid fa-chevron-up"
-      } else {
-        this.isEnabled = true
-        this.collaps_icon = "fa-solid fa-chevron-down"
-      }
-    },
     changePropState(param, arg) {
       if (param.type == "prop-list" && arg == 'model_changed') {
         // reset the prop list choices
@@ -464,7 +455,6 @@ export default {
       }
       this.state_changed = true
       param.state_changed = true
-      this.redraw += 1
     },
     updateValue() {
       this.modelInterfaces.forEach(mi => {
@@ -532,18 +522,15 @@ export default {
       this.newControllerCaption = "";
       this.newControllerModelName = "";
       this.selectedModelName = ""
-      this.selectedModelInterface = {}
+      this.selectedModelInterface = []
       this.state_changed = false
       this.modelInterfaces = []
       explain.getModelState()
     },
     modelChanged() {
-      // enable the full control
-      this.isEnabled = true
-      this.collaps_icon = "fa-solid fa-chevron-down"
       this.state_changed = false
       this.modelInterfaces = []
-      this.selectModel()
+      // this.selectModel()
       explain.getModelState()
     },
     selectModel() {
@@ -610,7 +597,6 @@ export default {
         }
       })
       this.modelInterfaces.push(this.selectedModelInterface)
-      this.redraw += 1
     },
     processNumberType(param) {
       const currentValue = this.getModelValue(this.selectedModelName, param.target)
@@ -637,12 +623,9 @@ export default {
       }
       // file the options list
       if (!param['choices']) {
-        param['choices'] = []
-        if (param['option_default']) {
-          param['choices'] = param['options_default']
-        }
-        Object.values(explain.modelState.models).forEach(model => {
-          if (param.options.includes(model.model_type) || param.options.length == 0) {
+        param['choices'] = this.getDefaultChoices(param)
+        this.getAllModels().forEach(model => {
+          if (this.matchesAllowedModelTypes(param.options, model.model_type)) {
             param["choices"].push(model.name)
           }
         })
@@ -655,12 +638,9 @@ export default {
         param['value'] = param['default']
       }
       // file the options list
-      param['choices'] = []
-      if (param['option_default']) {
-        param['choices'] = param['options_default']
-      }
-      Object.values(explain.modelState.models).forEach(model => {
-        if (param.options.includes(model.model_type) || param.options.length == 0) {
+      param['choices'] = this.getDefaultChoices(param)
+      this.getAllModels().forEach(model => {
+        if (this.matchesAllowedModelTypes(param.options, model.model_type)) {
           param["choices"].push(model.name)
         }
       })
@@ -681,8 +661,8 @@ export default {
       // file the options list
       param['choices_model'] = []
       param["choices_props"] = []
-      Object.values(explain.modelState.models).forEach(model => {
-        if (param.options.includes(model.model_type) || param.options.length == 0) {
+      this.getAllModels().forEach(model => {
+        if (this.matchesAllowedModelTypes(param.options, model.model_type)) {
           param["choices_model"].push(model.name)
 
         }
@@ -725,8 +705,8 @@ export default {
             if (arg['default']) {
               arg['value'] = arg['default']
             }
-            Object.values(explain.modelState.models).forEach(model => {
-              if (arg.options.includes(model.model_type) || arg.options.length == 0) {
+            this.getAllModels().forEach(model => {
+              if (this.matchesAllowedModelTypes(arg.options, model.model_type)) {
                 arg["choices"].push(model.name)
               }
             })
@@ -740,8 +720,8 @@ export default {
             if (arg['default']) {
               arg['value'] = arg['default']
             }
-            Object.values(explain.modelState.models).forEach(model => {
-              if (arg.options.includes(model.model_type) || arg.options.length == 0) {
+            this.getAllModels().forEach(model => {
+              if (this.matchesAllowedModelTypes(arg.options, model.model_type)) {
                 arg["choices"].push(model.name)
               }
             })
@@ -868,21 +848,30 @@ export default {
       try {
           const models = explain.modelState?.models
           if (models && Object.keys(models)) {
-          this.availableModelNames = [...Object.keys(models)].sort();
+            this.availableModelNames = [...Object.keys(models)].sort();
           }
       } catch { }
     },
     handleState() {
       this.processAvailableModels()
+      if (!this.selectedModelName) {
+        return
+      }
+      this.modelInterfaces = []
+      this.selectModel()
     }
   },
   beforeUnmount() {
     this.state_changed = false
-    this.$bus.off("state", this.handleState)
+    if (this.handleStateDebounceId) {
+      clearTimeout(this.handleStateDebounceId)
+      this.handleStateDebounceId = null
+    }
+    this.$bus.off("state", this.queueHandleState)
   },
   mounted() {
     // update if state changes
-    this.$bus.on("state", this.handleState)
+    this.$bus.on("state", this.queueHandleState)
   },
 };
 </script>
