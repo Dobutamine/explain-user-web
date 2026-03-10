@@ -108,10 +108,10 @@
               <q-tooltip>diagram</q-tooltip>
             </q-tab>
 
-            <q-tab name="animation">
+            <!-- <q-tab name="animation">
               <q-icon name="fa-solid fa-person" size="xs"></q-icon>
               <q-tooltip>animation</q-tooltip>
-            </q-tab>
+            </q-tab> -->
 
             <q-tab name="heart">
               <q-icon name="fa-solid fa-heart" size="xs"></q-icon>
@@ -136,7 +136,7 @@
 
           <q-tab-panels v-model="tab_center" keep-alive style="background-color: black">
 
-            <q-tab-panel name="animation">
+            <!-- <q-tab-panel name="animation">
               <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
                 right: '5px',
                 borderRadius: '5px',
@@ -147,7 +147,7 @@
                 <AnimationComponent :alive="animation_alive">
                 </AnimationComponent>
               </q-scroll-area>
-            </q-tab-panel>
+            </q-tab-panel> -->
 
             <q-tab-panel name="diagram">
               <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
@@ -227,8 +227,8 @@
             </q-tab>
             <q-tab name="diagram_editor"><q-icon name="fa-solid fa-diagram-project" size="xs"></q-icon><q-tooltip>diagram editor</q-tooltip>
             </q-tab>
-            <q-tab name="animation_editor"><q-icon name="fa-solid fa-person" size="xs"></q-icon><q-tooltip>animation editor</q-tooltip>
-            </q-tab>
+            <!-- <q-tab name="animation_editor"><q-icon name="fa-solid fa-person" size="xs"></q-icon><q-tooltip>animation editor</q-tooltip>
+            </q-tab> -->
 
           </q-tabs>
           <q-tab-panels v-model="tab_right" style="background-color: black">
@@ -263,7 +263,7 @@
               <NumericsEditor title="MONITOR EDITOR"></NumericsEditor>
               </q-scroll-area>
             </q-tab-panel>
-                        <q-tab-panel name="animation_editor">
+            <!-- <q-tab-panel name="animation_editor">
               <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
                 right: '5px',
                 borderRadius: '5px',
@@ -273,7 +273,7 @@
               }">
               <AnimationEditor></AnimationEditor>
               </q-scroll-area>
-            </q-tab-panel>
+            </q-tab-panel> -->
             <q-tab-panel name="diagram_editor">
               <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
                 right: '5px',
