@@ -85,9 +85,66 @@ export default {
       vent_enabled: false,
       placenta_enabled: false,
       aw_enabled: false,
+      busHandlers: {},
     };
   },
   methods: {
+    registerBusListeners() {
+      if (this.busHandlers?.state) {
+        return;
+      }
+
+      this.busHandlers = {
+        state: this.processStateChanged,
+        rt_start: () => { this.rt_running = true; },
+        rt_stop: () => { this.rt_running = false; },
+        reset: () => { this.buildDiagram(); },
+        rebuild_diagram: () => { this.buildDiagram(); },
+        update_watchlist: () => { this.update_watchlist(); },
+        update_drainage_site: (new_site) => {
+          try {
+            this.diagram.diagram_definition.components.ECLS_DRAINAGE.dbcFrom = new_site;
+            this.update_component("ECLS_DRAINAGE");
+          } catch { }
+        },
+        update_return_site: (new_site) => {
+          try {
+            this.diagram.diagram_definition.components.ECLS_RETURN.dbcTo = new_site;
+            this.update_component("ECLS_RETURN");
+          } catch { }
+        },
+        ecls_display_on: () => {
+          this.ecls_enabled = true;
+          this.toggleEcls();
+        },
+        ecls_display_off: () => {
+          this.ecls_enabled = false;
+          this.toggleEcls();
+        },
+        placenta_display_on: () => {
+          this.placenta_enabled = true;
+          this.togglePlacenta();
+        },
+        placenta_display_off: () => {
+          this.placenta_enabled = false;
+          this.togglePlacenta();
+        },
+        load_model_definition: () => this.loadModelDefinition().then(() => this.buildDiagram()),
+      };
+
+      Object.entries(this.busHandlers).forEach(([eventName, handler]) => {
+        this.$bus.on(eventName, handler);
+      });
+    },
+    unregisterBusListeners() {
+      if (!this.busHandlers) {
+        return;
+      }
+      Object.entries(this.busHandlers).forEach(([eventName, handler]) => {
+        this.$bus.off(eventName, handler);
+      });
+      this.busHandlers = {};
+    },
     setDiagramAsStateDefault() {
       if (!this.diagram?.diagram_definition?.settings?.name) {
         return;
@@ -105,7 +162,12 @@ export default {
     async initDiagram() {
       // first clear all children from the stage
       if (pixiApp) {
-        pixiApp.destroy();
+        try {
+          pixiApp.ticker.remove(this.tickerFunction, this);
+          pixiApp.ticker.stop();
+        } catch { }
+        pixiApp.destroy(true);
+        pixiApp = null;
       }
 
       // get the reference to the canvas
@@ -567,11 +629,11 @@ export default {
       })
 
       // first remove the old ticker
-      if (this.ticker) {
-        pixiApp.ticker.remove(this.tickerFunction)
+      if (this.ticker && pixiApp?.ticker) {
+        pixiApp.ticker.remove(this.tickerFunction, this)
       }
       // add the new ticker function and start it
-      this.ticker = pixiApp.ticker.add(this.tickerFunction);
+      this.ticker = pixiApp.ticker.add(this.tickerFunction, this);
 
       // check whether diagram is default state diagram
       if (this.state.diagram_definition.name == this.diagram.diagram_definition.settings.name) {
@@ -643,47 +705,23 @@ export default {
     
   },
   beforeUnmount() {
-    this.$bus.off("state", this.processStateChanged)
-    this.$bus.off('rt_start', () => this.rt_running = true)
-    this.$bus.off('rt_stop', () => this.rt_running = false)
-    this.$bus.off('reset', () => this.buildDiagram())
-    this.$bus.off('rebuild_diagram', () => this.buildDiagram())
-    this.$bus.off("update_watchlist", () => this.update_watchlist())
-    this.$bus.off("update_drainage_site", (new_site) => {
+    this.unregisterBusListeners();
+
+    if (pixiApp?.ticker) {
+      pixiApp.ticker.remove(this.tickerFunction, this);
+    }
+    this.ticker = null;
+
+    if (pixiApp) {
       try {
-        this.diagram.diagram_definition.components['ECLS_DRAINAGE'].dbcFrom = new_site
-        this.update_component('ECLS_DRAINAGE')
+        pixiApp.ticker.stop();
       } catch { }
-    })
-    this.$bus.off("update_return_site", (new_site) => {
-      try {
-        this.diagram.diagram_definition.components['ECLS_RETURN'].dbcTo = new_site
-        this.update_component('ECLS_RETURN')
-      } catch { }
-    })
-        // toggle ECLS
-    this.$bus.off("ecls_display_on", () => {
-      this.ecls_enabled = true
-      this.toggleEcls()
-    })
-    this.$bus.off("ecls_display_off", () => {
-      this.ecls_enabled = false
-      this.toggleEcls()
-    })
+      pixiApp.destroy(true);
+      pixiApp = null;
+    }
 
-    // toggle placenta
-    this.$bus.off("placenta_display_on", () => {
-      this.placenta_enabled = true
-      this.togglePlacenta()
-    })
-    this.$bus.off("placenta_display_off", () => {
-      this.placenta_enabled = false
-      this.togglePlacenta()
-    })
-
-
-    this.$bus.off("load_model_definition", () => this.loadModelDefinition().then(() => this.buildDiagram()))
-
+    diagram_components = {};
+    this.rt_running = false;
 
   },
   mounted() {
@@ -700,53 +738,7 @@ export default {
       })
     })
 
-    // toggle ECLS
-    this.$bus.on("ecls_display_on", () => {
-      this.ecls_enabled = true
-      this.toggleEcls()
-    })
-    this.$bus.on("ecls_display_off", () => {
-      this.ecls_enabled = false
-      this.toggleEcls()
-    })
-
-    // toggle placenta
-    this.$bus.on("placenta_display_on", () => {
-      this.placenta_enabled = true
-      this.togglePlacenta()
-    })
-    this.$bus.on("placenta_display_off", () => {
-      this.placenta_enabled = false
-      this.togglePlacenta()
-    })
-
-    // add the event listener for the state change
-    this.$bus.on("state", this.processStateChanged)
-
-    // add the event listener for the diagram update
-    this.$bus.on('rt_start', () => this.rt_running = true)
-    this.$bus.on('rt_stop', () => this.rt_running = false)
-
-    this.$bus.on('reset', () => this.buildDiagram())
-    this.$bus.on('rebuild_diagram', () => this.buildDiagram())
-
-    this.$bus.on("update_watchlist", () => this.update_watchlist())
-
-    this.$bus.on("update_drainage_site", (new_site) => {
-      try {
-        this.diagram.diagram_definition.components['ECLS_DRAINAGE'].dbcFrom = new_site
-        this.update_component('ECLS_DRAINAGE')
-      } catch { }
-    })
-
-    this.$bus.on("update_return_site", (new_site) => {
-      try {
-        this.diagram.diagram_definition.components['ECLS_RETURN'].dbcTo = new_site
-        this.update_component('ECLS_RETURN')
-      } catch { }
-    })
-
-    this.$bus.on("load_model_definition", () => this.loadModelDefinition().then(() => this.buildDiagram()))
+    this.registerBusListeners();
 
   },
 };  
