@@ -90,8 +90,8 @@
       </div>
       <canvas ref="aaCanvas" class="aa-pressure-canvas" :style="canvasStyle" />
 
-      <div class="q-mt-sm row justify-center items-center q-gutter-sm">
-        <q-checkbox v-model="autoscale" size="xs" dense  @update:model-value="toggleAutoscaling"><q-tooltip>autoscale</q-tooltip></q-checkbox>
+      <div v-if="showControls" class="q-mt-sm row justify-center items-center q-gutter-sm">
+        <q-checkbox v-model="autoscale" size="xs" dense label="autoscale"  @update:model-value="toggleAutoscaling"><q-tooltip>autoscale</q-tooltip></q-checkbox>
         <q-input
           class="aa-time-input"
           :class="{ 'aa-axis-input-compact': compactAxisInputs }"
@@ -102,7 +102,6 @@
           dense
           min="1"
           max="30"
-          size="xs"
           hide-bottom-space
           @update:model-value="updateRtWindow"
         />
@@ -115,7 +114,6 @@
           label="y min"
           filled
           dense
-          size="xs"
           hide-bottom-space
           @update:model-value="updateManualScale"
         />
@@ -128,12 +126,11 @@
           label="y max"
           filled
           dense
-          size="xs"
           hide-bottom-space
           @update:model-value="updateManualScale"
         />
         <q-btn
-          color="black"
+          color="secondary"
           size="sm"
           icon="fa-solid fa-calculator"
           :outline="!showStats"
@@ -141,10 +138,19 @@
         >
           <q-tooltip>statistics</q-tooltip>
         </q-btn>
+        <q-btn
+          color="primary"
+          size="sm"
+          icon="fa-solid fa-file-csv"
+          :disable="x_axis.length === 0"
+          @click="exportCsv"
+        >
+          <q-tooltip>export csv</q-tooltip>
+        </q-btn>
         <q-btn color="negative" size="sm" icon="fa-solid fa-rotate-left" @click="clearSeries" />
       </div>
 
-      <div v-if="showStats" class="q-mt-sm text-caption aa-stats-wrap">
+      <div v-if="showControls && showStats" class="q-mt-sm text-caption aa-stats-wrap">
         <div v-if="selectedPath" class="aa-stats-row aa-stats-row-red">
           {{ selectedPath }}: n={{ stats1.n }} min={{ stats1.min }} max={{ stats1.max }} mean={{ stats1.mean }} sd={{ stats1.sd }}
         </div>
@@ -196,6 +202,10 @@ export default {
     compactAxisInputs: {
       type: Boolean,
       default: false,
+    },
+    showControls: {
+      type: Boolean,
+      default: true,
     },
   },
   computed: {
@@ -365,6 +375,59 @@ export default {
       this.stats1 = this.calculateSeriesStats(this.y_axis);
       this.stats2 = this.calculateSeriesStats(this.y2_axis);
       this.stats3 = this.calculateSeriesStats(this.y3_axis);
+    },
+    csvEscape(value) {
+      if (value === null || value === undefined) {
+        return "";
+      }
+      const asString = String(value);
+      if (/[",\n\r]/.test(asString)) {
+        return `"${asString.replace(/"/g, '""')}"`;
+      }
+      return asString;
+    },
+    makeCsvFileName() {
+      const now = new Date();
+      const pad = (n) => String(n).padStart(2, "0");
+      const timestamp = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+      const base = (this.displayTitle || "realtime-chart").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "realtime-chart";
+      return `${base}-${timestamp}.csv`;
+    },
+    exportCsv() {
+      const startIndex = this.rtWindowStartIndex;
+      if (startIndex >= this.x_axis.length) {
+        return;
+      }
+
+      const series = [
+        { path: this.selectedPath, values: this.y_axis },
+        { path: this.selectedPath2, values: this.y2_axis },
+        { path: this.selectedPath3, values: this.y3_axis },
+      ].filter((entry) => typeof entry.path === "string" && entry.path.length > 0);
+
+      const headers = ["time", ...series.map((entry) => entry.path)];
+      const rows = [headers.map((value) => this.csvEscape(value)).join(",")];
+
+      for (let i = startIndex; i < this.x_axis.length; i++) {
+        const row = [this.x_axis[i]];
+        for (let j = 0; j < series.length; j++) {
+          const value = series[j].values[i];
+          row.push(Number.isFinite(value) ? value : "");
+        }
+        rows.push(row.map((value) => this.csvEscape(value)).join(","));
+      }
+
+      const csvText = `${rows.join("\n")}\n`;
+      const blob = new Blob([csvText], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", this.makeCsvFileName());
+      link.style.display = "none";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
     },
     parseModelPath(path) {
       if (typeof path !== "string") {

@@ -212,21 +212,16 @@ export class Ecls extends BaseModelClass {
     // initialize independent parameters
     this.ecls_running = false;
     this.ecls_clamped = true; // flags whether the umbilical vessels are clamped or not
-    this.drainage_site = "RA"; // site of drainage cannula insertion
-    this.return_site = "AAR"; // site of return cannula insertion
-    this.drainage_res = 1000; // resistance of the drainage cannula (mmHg/(L/s))
+    
+    
     this.drainage_res_factor = 1.0; // factor to adjust the drainage resistance
-    this.return_res = 1000; // resistance of the return cannula (mmHg/(L/s))
     this.return_res_factor = 1.0; // factor to adjust the return resistance
-    this.tubing_in_res = 1000; // resistance of the tubing in (mmHg/(L/s))
-    this.tubing_out_res = 1000; // resistance of the tubing out (mmHg/(L/s))
     this.tubing_res_factor = 1.0; // factor to adjust the tubing in resistance
-    this.pump_res_for = 50; // resistance of the pump (mmHg/(L/s))
     this.pump_res_factor = 1.0; // factor to adjust the pump resistance
-    this.pump_res_back = 50; // resistance of the pump (mmHg/(L/s))
-    this.oxy_res_for = 50; // resistance of the oxygenator (mmHg/(L/s))
+    this.oxy_res_for = 1500; // resistance of the oxygenator (mmHg/(L/s))
+    this.oxy_res_back = 1500; // resistance of the oxygenator (mmHg/(L/s))
     this.oxy_res_factor = 1.0; // factor to adjust the oxygenator resistance
-    this.oxy_res_back = 50; // resistance of the oxygenator (mmHg/(L/s))
+    this.oxy_vol = 0.09; // volume of the oxygenator (L)
     this.gas_flow = 0.5; // gas flow rate through the oxygenator (L/min)
     this.gas_fio2 = 0.205; // fraction of inspired oxygen in the gas flow through the oxygenator
     this.gas_fico2 = 0.000392; // fraction of inspired carbon dioxide in the gas flow through the oxygenator
@@ -237,7 +232,102 @@ export class Ecls extends BaseModelClass {
     this.pump_rpm = 1500.0; // pump speed in rotations per minute
     this.pump_mode = 0; // pump mode (0=centrifugal, 1=roller pump)
     this.pump_pressure =  0.0
+    this.cannula_sizes_single = [6, 8, 10, 12]; // sizes of the drainage and return cannula in Fr
+    this.cannula_size_double = [13, 14, 15]; // sizes of the drainage cannula in Fr for double lumen cannula (the return cannula is always 1 Fr larger than the drainage cannula in this case)
+    
+    this.drainage_site = "RA"; // site of drainage cannula insertion
+    this.drainage_cannula_diameter = 0.0027; // diameter of the drainage cannula (m)
+    this.drainage_cannula_length = 0.105; // length of the drainage cannula (m)
 
+    this.return_site = "AAR"; // site of return cannula insertion
+    this.return_cannula_diameter = 0.0027; // diameter of the return cannula (m)
+    this.return_cannula_length = 0.105; // length of the return cannula (m)
+    
+    this.tubing_in_diameter = 0.00375; // diameter of the tubing (m)
+    this.tubing_in_length = 1.0; // length of the tubing (m)
+
+    this.tubing_out_diameter = 0.00375; // diameter of the tubing (m)
+    this.tubing_out_length = 1.0; // length of the tubing (m)
+
+    this.pump_res_for = 50; // resistance of the pump (mmHg/(L/s))
+    this.pump_res_back = 50; // resistance of the pump (mmHg/(L/s))
+    this.pump_vol = 0.031; // volume of the pump (L)
+
+
+    this.return_cannulas = {
+      "Bio-Medicus arterial 8 Fr": {
+        "inner_diameter": 0.002, // m
+        "length": 0.1, // m
+        "resistance": 5500
+      },
+      "Bio-Medicus arterial 10 Fr": {
+        "inner_diameter": 0.00267, // m
+        "length": 0.105, // m
+        "resistance": 1700
+      },
+      "Bio-Medicus arterial 12 Fr": {
+        "inner_diameter": 0.0032, // m
+        "length": 0.11, // m
+        "resistance": 650
+      },
+       "Medtronic Crescent 13 Fr": {
+        "inner_diameter": 0.0029, // m
+        "length": 0.089, // m
+        "resistance": 7000
+      },
+       "Medtronic Crescent 15 Fr": {
+        "inner_diameter": 0.0029, // m
+        "length": 0.097, // m
+        "resistance": 2700
+      },
+    }
+
+    this.drainage_cannulas = {
+      "Bio-Medicus venous 8 Fr": {
+        "inner_diameter": 0.0021, // m
+        "length": 0.1, // m
+        "resistance": 4600
+      },
+      "Bio-Medicus venous 10 Fr": {
+        "inner_diameter": 0.0027, // m
+        "length": 0.105, // m
+        "resistance": 1500
+      },
+      "Bio-Medicus venous 12 Fr": {
+        "inner_diameter": 0.0033, // m
+        "length": 0.11, // m
+        "resistance": 600
+      },
+      "Bio-Medicus venous 14 Fr": {
+        "inner_diameter": 0.0039, // m
+        "length": 0.115, // m
+        "resistance": 260
+      },
+      "Medtronic Crescent 13 Fr": {
+        "inner_diameter": 0.0028, // m
+        "length": 0.089, // m
+        "resistance": 2500,
+      },
+      "Medtronic Crescent 15 Fr": {
+        "inner_diameter": 0.0028, // m
+        "length": 0.097, // m
+        "resistance": 1100,
+      },
+    }
+
+    this.drainage_cannula_type = "Bio-Medicus venous 12 Fr";
+    this.return_cannula_type = "Bio-Medicus arterial 10 Fr";
+
+    if (this.drainage_cannulas[this.drainage_cannula_type]) {
+      const selectedDrainageCannula = this.drainage_cannulas[this.drainage_cannula_type];
+      this.drainage_cannula_diameter = selectedDrainageCannula.inner_diameter;
+      this.drainage_cannula_length = selectedDrainageCannula.length;
+    }
+    if (this.return_cannulas[this.return_cannula_type]) {
+      const selectedReturnCannula = this.return_cannulas[this.return_cannula_type];
+      this.return_cannula_diameter = selectedReturnCannula.inner_diameter;
+      this.return_cannula_length = selectedReturnCannula.length;
+    }
 
     // -----------------------------------------------
     // initialize dependent parameters
@@ -249,6 +339,12 @@ export class Ecls extends BaseModelClass {
     this.sat_ven_o2 = 0.0; // venous oxygen saturation (%)
     this.sat_postoxy_o2 = 0.0; // post-oxygenator oxygen saturation (%)
     this.pco2_postoxy = 0.0; // post-oxygenator pCO2 (mmHg)
+    this.tubing_in_res = 1000; // resistance of the tubing in (mmHg/(L/s))
+    this.tubing_in_vol = 0.1; // volume of the tubing in (L)
+    this.tubing_out_res = 1000; // resistance of the tubing out (mmHg/(L/s))
+    this.tubing_out_vol = 0.1; // volume of the tubing out (L)
+    this.drainage_res = this.drainage_cannulas[this.drainage_cannula_type]?.resistance || 1000; // resistance of the drainage cannula (mmHg/(L/s))
+    this.return_res = this.return_cannulas[this.return_cannula_type]?.resistance || 1000; // resistance of the return cannula (mmHg/(L/s))
 
     // -----------------------------------------------
     // local parameters
@@ -328,6 +424,20 @@ export class Ecls extends BaseModelClass {
         // set the drainage and return sites
         this._ecls_drainage.comp_from = this.drainage_site;
         this._ecls_return.comp_to = this.return_site;
+
+        const selectedDrainageCannula = this.drainage_cannulas[this.drainage_cannula_type];
+        if (selectedDrainageCannula) {
+          this.drainage_res = selectedDrainageCannula.resistance;
+          this.drainage_cannula_diameter = selectedDrainageCannula.inner_diameter;
+          this.drainage_cannula_length = selectedDrainageCannula.length;
+        }
+
+        const selectedReturnCannula = this.return_cannulas[this.return_cannula_type];
+        if (selectedReturnCannula) {
+          this.return_res = selectedReturnCannula.resistance;
+          this.return_cannula_diameter = selectedReturnCannula.inner_diameter;
+          this.return_cannula_length = selectedReturnCannula.length;
+        }
 
         // make sure all the associated models are in the same enabled/disabled state as the placenta model
         this._ecls_drainage.is_enabled = this.ecls_running;

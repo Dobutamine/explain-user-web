@@ -18,6 +18,7 @@
         :chart-height-factor="0.5"
         :compact-axis-inputs="true"
         :default-autoscale="true"
+        :show-controls="false"
         :model-properties="pressureSeries"
       />
       <RealtimeChart
@@ -25,9 +26,8 @@
         :alive="alive"
         :chart-height-factor="0.5"
         :compact-axis-inputs="true"
-        :default-autoscale="false"
-        :default-y-min="-0.1"
-        :default-y-max="1.0"
+        :default-autoscale="true"
+        :show-controls="false"
         :model-properties="flowSeries"
       />
 
@@ -47,13 +47,12 @@
           ]"
         />
       </div>
-
+      <q-separator v-if="eclsRunning" class="q-mt-md" />
       <div v-if="eclsRunning" class="q-mt-sm row justify-center q-gutter-sm">
         <q-input
           v-model="flowDisplay"
           label="Flow"
           readonly
-          size="xs"
           dense
           filled
           style="max-width: 60px"
@@ -62,7 +61,6 @@
           v-model="pVenDisplay"
           label="P ven"
           readonly
-          size="xs"
           dense
           filled
           style="max-width: 60px"
@@ -71,7 +69,6 @@
           v-model="pIntDisplay"
           label="P int"
           readonly
-          size="xs"
           dense
           filled
           style="max-width: 60px"
@@ -80,7 +77,6 @@
           v-model="pArtDisplay"
           label="P art"
           readonly
-          size="xs"
           dense
           filled
           style="max-width: 60px"
@@ -92,7 +88,6 @@
           v-model="satVenDisplay"
           label="SvO2"
           readonly
-          size="xs"
           dense
           filled
           style="max-width: 60px"
@@ -101,7 +96,6 @@
           v-model="satPostoxyDisplay"
           label="SpO2"
           readonly
-          size="xs"
           dense
           filled
           style="max-width: 60px"
@@ -110,13 +104,13 @@
           v-model="pco2PostoxyDisplay"
           label="PCO2"
           readonly
-          size="xs"
           dense
           filled
           style="max-width: 60px"
         />
       </div>
 
+      <q-separator v-if="eclsRunning" class="q-mt-md" />
       <div v-if="eclsRunning" class="q-mt-xs row justify-center items-start q-gutter-md">
         <div class="text-center ecls-knob-control">
           <div class="q-mb-sm text-caption ecls-knob-label">pump rpm</div>
@@ -190,27 +184,52 @@
         /> -->
       </div>
 
+      <q-separator v-if="eclsRunning" class="q-mt-md" />
 
-      <div v-if="eclsRunning" class="q-mt-sm row justify-center items-center q-gutter-md">
+      <div v-if="eclsRunning" class="q-mt-md q-ml-md q-mr-md row justify-left items-left">
         <q-select
           v-model="drainageSite"
           :options="cannulationSites"
-          label="drainage"
+          label="drainage site"
           dense
-          size="xs"
           filled
-          style="min-width: 110px"
+          style="min-width: 100%"
           @update:model-value="setDrainageSite"
         />
+      </div>
+      <div v-if="eclsRunning" class="q-mt-sm q-ml-md q-mr-md row justify-left items-left">
+        <q-select
+          v-model="drainageCannulaType"
+          :options="drainageCannulaOptions"
+          label="drainage cannula"
+          dense
+          filled
+          style="min-width: 100%"
+          @update:model-value="setDrainageCannulaType"
+        />
+      </div>
+
+      <div v-if="eclsRunning" class="q-mt-sm q-ml-md q-mr-md row justify-left items-left">
         <q-select
           v-model="returnSite"
           :options="cannulationSites"
           label="return"
           dense
-          size="xs"
           filled
-          style="min-width: 110px"
+          style="min-width: 100%"
           @update:model-value="setReturnSite"
+        />
+      </div>
+
+      <div v-if="eclsRunning" class="q-mt-sm q-ml-md q-mr-md row justify-left items-left">
+        <q-select
+          v-model="returnCannulaType"
+          :options="returnCannulaOptions"
+          label="return cannula"
+          dense
+          filled
+          style="min-width: 100%"
+          @update:model-value="setReturnCannulaType"
         />
       </div>
 
@@ -262,6 +281,8 @@ export default {
       eclsClamped: true,
       drainageSite: "RA",
       returnSite: "AAR",
+      drainageCannulaType: "",
+      returnCannulaType: "",
       pumpRpm: 0,
       gasFlow: 0.5,
       gasFio2Percent: 20.5,
@@ -277,6 +298,10 @@ export default {
       pIntPath: "Ecls.p_int",
       pArtPath: "Ecls.p_art",
       cannulationSites: [],
+      drainageCannulaOptions: [],
+      returnCannulaOptions: [],
+      drainageCannulas: {},
+      returnCannulas: {},
       allowedCannulationTypes: ["HeartChamber", "BloodTimeVaryingElastance", "BloodVessel", "MicroVascularUnit"],
       pressureSeries: ["Ecls.p_ven", "Ecls.p_int", "Ecls.p_art"],
       flowSeries: ["Ecls.flow_avg"],
@@ -309,6 +334,28 @@ export default {
     setReturnSite() {
       this.setProp("Ecls.return_site", this.returnSite);
       this.$bus.emit("update_return_site", this.returnSite);
+    },
+    setDrainageCannulaType() {
+      const cannula = this.drainageCannulas[this.drainageCannulaType];
+      if (!cannula) {
+        return;
+      }
+
+      this.setProp("Ecls.drainage_cannula_type", this.drainageCannulaType);
+      this.setProp("Ecls.drainage_res", cannula.resistance);
+      this.setProp("Ecls.drainage_cannula_diameter", cannula.inner_diameter);
+      this.setProp("Ecls.drainage_cannula_length", cannula.length);
+    },
+    setReturnCannulaType() {
+      const cannula = this.returnCannulas[this.returnCannulaType];
+      if (!cannula) {
+        return;
+      }
+
+      this.setProp("Ecls.return_cannula_type", this.returnCannulaType);
+      this.setProp("Ecls.return_res", cannula.resistance);
+      this.setProp("Ecls.return_cannula_diameter", cannula.inner_diameter);
+      this.setProp("Ecls.return_cannula_length", cannula.length);
     },
     setPumpRpm() {
       const value = Number(this.pumpRpm);
@@ -374,6 +421,26 @@ export default {
       this.eclsClamped = Boolean(ecls.ecls_clamped);
       this.drainageSite = ecls.drainage_site || this.drainageSite;
       this.returnSite = ecls.return_site || this.returnSite;
+
+      this.drainageCannulas = ecls.drainage_cannulas || {};
+      this.returnCannulas = ecls.return_cannulas || {};
+      this.drainageCannulaOptions = Object.keys(this.drainageCannulas).sort();
+      this.returnCannulaOptions = Object.keys(this.returnCannulas).sort();
+
+      this.drainageCannulaType = this.resolveCannulaSelection(
+        this.drainageCannulaOptions,
+        this.drainageCannulas,
+        ecls.drainage_cannula_type,
+        Number(ecls.drainage_res),
+      );
+
+      this.returnCannulaType = this.resolveCannulaSelection(
+        this.returnCannulaOptions,
+        this.returnCannulas,
+        ecls.return_cannula_type,
+        Number(ecls.return_res),
+      );
+
       this.pumpRpm = Number(ecls.pump_rpm) || 0;
       this.gasFlow = Number(ecls.gas_flow) || 0;
       this.gasFio2Percent = (Number(ecls.gas_fio2) || 0) * 100.0;
@@ -428,6 +495,27 @@ export default {
         return "0";
       }
       return num.toFixed(digits);
+    },
+    resolveCannulaSelection(options, cannulas, selectedType, referenceResistance) {
+      if (!Array.isArray(options) || options.length === 0) {
+        return "";
+      }
+
+      if (typeof selectedType === "string" && options.includes(selectedType)) {
+        return selectedType;
+      }
+
+      if (Number.isFinite(referenceResistance)) {
+        const byResistance = options.find((name) => {
+          const cannula = cannulas[name];
+          return Number(cannula?.resistance) === referenceResistance;
+        });
+        if (byResistance) {
+          return byResistance;
+        }
+      }
+
+      return options[0];
     },
   },
   mounted() {
