@@ -15,18 +15,18 @@
         </div>
         <div class="q-mr-sm">
           <div class="q-mr-sm text-left text-purple-12" :style="{ 'font-size': '10px' }">
-            SpO2 pre (%)
+            SaO2 pre (%)
           </div>
           <div class="text-purple-12" :style="{ 'font-size': '36px' }">
-            {{ spo2_pre }}
+            {{ sao2_pre }}
           </div>
         </div>
         <div class="q-mr-sm">
           <div class="q-mr-sm text-left text-purple-11" :style="{ 'font-size': '10px' }">
-            SpO2 post (%)
+            SaO2 post (%)
           </div>
           <div class="text-purple-11" :style="{ 'font-size': '36px' }">
-            {{ spo2_post }}
+            {{ sao2_post }}
           </div>
         </div>
         <div class="q-mr-sm">
@@ -67,8 +67,8 @@ export default {
       currentData: {},
       mutableParameters: [],
       hr: "-",
-      spo2_pre: "-",
-      spo2_post: "-",
+      sao2_pre: "-",
+      sao2_post: "-",
       abp: "-/-",
       abp_mean: "(-)",
       rr: "-",
@@ -89,11 +89,11 @@ export default {
         explain.watchModelPropsSlow([
           "Monitor.heart_rate", 
           "Monitor.resp_rate", 
-          "Monitor.spo2_pre",
-          "Monitor.spo2",
-          "Monitor.abp_syst",
-          "Monitor.abp_diast",
-          "Monitor.abp_mean"
+          "Monitor.sao2_pre",
+          "Monitor.sao2_post",
+          "Monitor.abp_post_syst",
+          "Monitor.abp_post_diast",
+          "Monitor.abp_post_mean"
         ])
       }
 
@@ -113,10 +113,10 @@ export default {
             this.rr = this.currentData["Monitor.resp_rate"].toFixed(0)
           }
 
-          this.spo2_pre = this.currentData["Monitor.spo2_pre"].toFixed(0)
-          this.spo2_post = this.currentData["Monitor.spo2"].toFixed(0)
-          this.abp = this.currentData["Monitor.abp_syst"].toFixed(0) + "/" + this.currentData["Monitor.abp_diast"].toFixed(0)
-          this.abp_mean = "(" + this.currentData["Monitor.abp_mean"].toFixed(0) + ")"
+          this.sao2_pre = this.currentData["Monitor.sao2_pre"].toFixed(0)
+          this.sao2_post = this.currentData["Monitor.sao2_post"].toFixed(0)
+          this.abp = this.currentData["Monitor.abp_post_syst"].toFixed(0) + "/" + this.currentData["Monitor.abp_post_diast"].toFixed(0)
+          this.abp_mean = "(" + this.currentData["Monitor.abp_post_mean"].toFixed(0) + ")"
         } catch { }
 
       }

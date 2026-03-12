@@ -430,7 +430,8 @@ export class Mob extends BaseModelClass {
     this._heart._lv.el_max_mob_factor = this.cont_factor;
     this._heart._rv.el_max_mob_factor = this.cont_factor;
     this._heart._la.el_max_mob_factor = this.cont_factor;
-    this._heart._ra.el_max_mob_factor = this.cont_factor;
+    this._heart._raivci.el_max_mob_factor = this.cont_factor;
+    this._heart._rasvc.el_max_mob_factor = this.cont_factor;
   }
 
   activation_function(value, max, setpoint, min) {

@@ -126,13 +126,16 @@ export class Shunts extends BaseModelClass {
     // -----------------------------------------------
     // initialize local properties (preceded with _)
     // -----------------------------------------------
-    this._fo = {};  
+    this._fo_ivci = {};  
+    this._fo_svc = {};
     this._vsd = {}; // muscular ventricular septal defect
   }
 
   calc_model() {
     // get a reference to the models
-    this._fo = this._model_engine.models["FO"];
+    this._fo_ivci = this._model_engine.models["LA_RAIVCI"];
+    this._fo_svc = this._model_engine.models["LA_RASVC"];
+
     this._vsd = this._model_engine.models["VSD"];
 
     // get the viscosity from the model engine
@@ -143,7 +146,8 @@ export class Shunts extends BaseModelClass {
     this.diameter_vsd = Math.min(this.diameter_vsd, this.diameter_vsd_max);
 
     // if the diameter is zero, set the resistance to a very high value to represent no flow
-    this._fo.no_flow = this.diameter_fo === 0;
+    this._fo_ivci.no_flow = this.diameter_fo === 0;
+    this._fo_svc.no_flow = this.diameter_fo === 0;
     this._vsd.no_flow = this.diameter_vsd === 0;
 
     // calculate the resistance across the FO and VSD
@@ -151,14 +155,17 @@ export class Shunts extends BaseModelClass {
     this.res_vsd = this.calc_resistance(this.diameter_vsd, this.ventricular_septal_width, this.viscosity);
 
     // transfer the resistances to the models
-    this._fo.r_for = this.res_fo * this.fo_lr_factor;
-    this._fo.r_back = this.res_fo;
+    this._fo_ivci.r_for = this.res_fo * this.fo_lr_factor;
+    this._fo_ivci.r_back = this.res_fo;
+
+    this._fo_svc.r_for = this.res_fo * this.fo_lr_factor;
+    this._fo_svc.r_back = this.res_fo;
 
     this._vsd.r_for = this.res_vsd;
     this._vsd.r_back = this.res_vsd;
 
     // get the flows
-    this.flow_fo = this._fo.flow;
+    this.flow_fo = this._fo_ivci.flow + this._fo_svc.flow;
     this.flow_vsd = this._vsd.flow;
 
     // calculate the area of the fo and vsd

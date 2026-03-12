@@ -29,6 +29,16 @@ export class TimeVaryingElastance extends BaseModelClass {
       caption: "enabled",
     },
     {
+      caption: "volume (L)",
+      target: "vol",
+      type: "number",
+      build_prop: true,
+      edit_mode: "basic",
+      factor: 1.0,
+      delta: 0.001,
+      rounding: 3,
+    },
+    {
       caption: "unstressed volume (L)",
       target: "u_vol",
       type: "number",

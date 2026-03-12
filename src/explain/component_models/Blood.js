@@ -175,7 +175,6 @@ export class Blood extends BaseModelClass {
     this._update_counter = 0.0; // update counter intermediate
     this._ascending_aorta = null; // reference to ascending aorta model
     this._descending_aorta = null; // reference to descending aorta model
-    this._right_atrium = null; // reference to right atrium
     this._blood_components = [];
   }
 
@@ -203,7 +202,6 @@ export class Blood extends BaseModelClass {
     // get the components where we measure the bloodgases
     this._ascending_aorta = this._model_engine.models["AA"];
     this._descending_aorta = this._model_engine.models["AD"];
-    this._right_atrium = this._model_engine.models["RA"];
 
     // copy the initial arterial solutes
     this.art_solutes = { ...this.solutes };
@@ -241,16 +239,6 @@ export class Blood extends BaseModelClass {
       };
 
       // venous bloodgas
-      calc_blood_composition(this._right_atrium);
-      this.ven_bloodgas = {
-        ph: this._right_atrium.ph,
-        pco2: this._right_atrium.pco2,
-        po2: this._right_atrium.po2,
-        hco3: this._right_atrium.hco3,
-        be: this._right_atrium.be,
-        so2: this._right_atrium.so2,
-      };
-
       calc_blood_composition(this._model_engine.models["IVCI"])
       calc_blood_composition(this._model_engine.models["SVC"])
 

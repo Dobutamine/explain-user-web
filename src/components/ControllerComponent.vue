@@ -58,7 +58,7 @@
                       <div class="q-ml-md q-mr-md q-mt-md text-left text-secondary" :style="{ 'font-size': '12px' }">
                         <div class="text-white" :style="{ 'font-size': '10px' }">
                           <div v-if="!field.slider" class="row">
-                            <q-input v-if="!field.slider" class="q-mb-sm col-10" v-model="field.value" :label="field.caption" :max="field.ul" :min="field.ll" :readonly="field.readonly"
+                            <q-input v-if="!field.slider" class="q-mb-sm col-10" v-model.number="field.value" :label="field.caption" :max="field.ul" :min="field.ll" :readonly="field.readonly"
                               :step="field.delta" color="blue" hide-hint filled dense
                               @update:model-value="changePropState(field, arg)" stack-label type="number"
                               style="font-size: 12px" squared>
@@ -632,11 +632,13 @@ export default {
     },
     processNumberType(param) {
       const currentValue = this.getModelValue(this.selectedModelName, param.target)
+      const factor = Number.isFinite(Number(param.factor)) ? Number(param.factor) : 1
+      const rounding = Number.isFinite(Number(param.rounding)) ? Number(param.rounding) : 0
       const numericValue = Number(currentValue)
       if (Number.isFinite(numericValue)) {
-        param['value'] = (numericValue * param.factor).toFixed(param.rounding)
+        param['value'] = Number((numericValue * factor).toFixed(rounding))
       } else {
-        param['value'] = Number(0).toFixed(param.rounding)
+        param['value'] = Number((0).toFixed(rounding))
       }
     },
     processStringType(param) {

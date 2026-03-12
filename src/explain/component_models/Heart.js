@@ -276,11 +276,13 @@ export class Heart extends BaseModelClass {
     this._qt_running = false;
     this._la = null;
     this._lv = null;
-    this._ra = null;
+    this._raivci = null;
+    this._raivci_rv = null;
+    this._rasvc = null;
+    this._rasvc_rv = null;
     this._rv = null;
     this._la_lv = null;
     this._lv_aa = null;
-    this._ra_rv = null;
     this._coronaries = null;
 
     this._systole_running = false
@@ -307,63 +309,89 @@ export class Heart extends BaseModelClass {
   init_model(args = {}) {
     super.init_model(args);
 
-    this._la = this._model_engine.models["LA"];
-    this._lv = this._model_engine.models["LV"];
-    this._ra = this._model_engine.models["RA"];
-    this._rv = this._model_engine.models["RV"];
-    this._la_lv = this._model_engine.models["LA_LV"];
-    this._ra_rv = this._model_engine.models["RA_RV"];
-    this._lv_aa = this._model_engine.models["LV_AA"];
+    // left atrial components (atrium and mitral valve)
+    this._la = this._model_engine.models["LA"] || null;
+    this._la_lv = this._model_engine.models["LA_LV"] || null;
+
+    // preferential flow models are not always present in the model, so we check for their presence
+    this._raivci = this._model_engine.models["RAIVCI"] || null;
+    this._raivci_rv = this._model_engine.models["RAIVCI_RV"] || null;
+    this._rasvc = this._model_engine.models["RASVC"] || null;
+    this._rasvc_rv = this._model_engine.models["RASVC_RV"] || null;
+    this._raivci_rasvc = this._model_engine.models["RAIVCI_RASVC"] || null;
+
+    // right ventricular components (ventricle and pulmonary valve)
+    this._rv = this._model_engine.models["RV"] || null;
+    this._rv_pa = this._model_engine.models["RV_PA"] || null;
+    
+    // TGA or other congenital heart diseases may not have a normal connection
+    this._rv_aa = this._model_engine.models["RV_AA"] || null; 
+
+    // left ventricular components (ventricle and aortic valve)
+    this._lv = this._model_engine.models["LV"] || null;
+    this._lv_aa = this._model_engine.models["LV_AA"] || null;
+    
+    // TGA or other congenital heart diseases may not have a normal connection, so we check for the presence of the LV_PA model before trying to access it
+    this._lv_pa = this._model_engine.models["LV_PA"] || null; 
+
+    // coronary circulation model (not always present in the model, so we check for its presence)
     this._coronaries = this._model_engine.models["COR"] || this._model_engine.models["CORONARIES"] || null;
-    this._pc = this._model_engine.models["PERICARDIUM"];
+    this._aa_cor = this._model_engine.models["AA_COR"] || null;
+    
+    // preferential flow models are not always present in the model, so we check for their presence
+    this._cor_raivci = this._model_engine.models["COR_RAIVCI"] || null;
+    this._cor_rasvc = this._model_engine.models["COR_RASVC"] || null;
+
+    // pericardium model (not always present in the model, so we check for its presence)
+    this._pc = this._model_engine.models["PERICARDIUM"] || null;
   }
 
   analyze() {
     // state going from diastole to systole (end_diastolic)
     if (this.prev_cardiac_cycle_state === 0 && this.cardiac_cycle_state === 1) {
-      this.lv_edv = this._lv.vol
-      this.lv_edp = this._lv.pres_in
+      this.lv_edv = this._lv ? this._lv.vol : 0;
+      this.lv_edp = this._lv ? this._lv.pres_in : 0;
       
-      this.rv_edv = this._rv.vol
-      this.rv_edp = this._rv.pres_in
-
+      this.rv_edv = this._rv ? this._rv.vol : 0;
+      this.rv_edp = this._rv ? this._rv.pres_in : 0;
     }
 
     // state going from systole to diastole (end systolic)
     if (this.prev_cardiac_cycle_state === 1 && this.cardiac_cycle_state === 0) {
-      this.lv_esv = this._lv.vol
-      this.lv_esp = this._lv.pres_in
+      this.lv_esv = this._lv ? this._lv.vol : 0;
+      this.lv_esp = this._lv ? this._lv.pres_in : 0;
 
-      this.la_esv = this._la.vol
-      this.la_esp = this._la.pres_in
+      this.la_esv = this._la ? this._la.vol : 0;
+      this.la_esp = this._la ? this._la.pres_in : 0;
       
-      this.rv_esv = this._rv.vol
-      this.rv_esp = this._rv.pres_in
+      this.rv_esv = this._rv ? this._rv.vol : 0;
+      this.rv_esp = this._rv ? this._rv.pres_in : 0;
       
-      this.ra_esv = this._ra.vol
-      this.ra_esp = this._ra.pres_in
+      this.ra_esv = (this._raivci ? this._raivci.vol : 0) + (this._rasvc ? this._rasvc.vol : 0)
+      this.ra_esp = 0.5 * ((this._raivci ? this._raivci.pres_in : 0) + (this._rasvc ? this._rasvc.pres_in : 0) )
     }
 
     // state going from diastole to systole (end diastolic)
     if (this.prev_cardiac_cycle_state === 0 && this.cardiac_cycle_state === 1) {
-      this.lv_edv = this._lv.vol
-      this.lv_esp = this._lv.pres_in
+      this.lv_edv = this._lv ? this._lv.vol : 0;
+      this.lv_esp = this._lv ? this._lv.pres_in : 0;
 
-      this.la_edv = this._la.vol
-      this.la_esp = this._la.pres_in
+      this.la_edv = this._la ? this._la.vol : 0;
+      this.la_esp = this._la ? this._la.pres_in : 0;
       
-      this.rv_edv = this._rv.vol
-      this.rv_esp = this._rv.pres_in
+      this.rv_edv = this._rv ? this._rv.vol : 0;
+      this.rv_esp = this._rv ? this._rv.pres_in : 0;
       
-      this.ra_edv = this._ra.vol
-      this.ra_esp = this._ra.pres_in
+      this.ra_edv = (this._raivci ? this._raivci.vol : 0) + (this._rasvc ? this._rasvc.vol : 0);
+      this.ra_esp = 0.5 * ((this._raivci ? this._raivci.pres_in : 0) + (this._rasvc ? this._rasvc.pres_in : 0));
 
       // store the other parameters
       this.lv_sv = this.lv_edv - this.lv_esv
-      this.rv_sv = this.rv_edv - this.lv_edv
+      this.rv_sv = this.rv_edv - this.rv_esv
       this.lv_ef = this.lv_sv / this.lv_edv
       this.rv_ef = this.rv_sv / this.rv_edv
     }
+
   }
 
   calc_model() {
@@ -576,22 +604,35 @@ export class Heart extends BaseModelClass {
     }
 
     // incorporate the ans factors ans sensitivity on the heart function
-    this._la.ans_sens = this.ans_sens
-    this._ra.ans_sens = this.ans_sens
-    this._lv.ans_sens = this.ans_sens
-    this._rv.ans_sens = this.ans_sens
+    if (this._raivci) {
+      this._raivci.ans_sens = this.ans_sens
+      this._raivci.ans_activity = this.ans_activity
+      this._raivci.act_factor = this.aaf;
+    }
+    if (this._rasvc) {
+      this._rasvc.ans_sens = this.ans_sens
+      this._rasvc.ans_activity = this.ans_activity
+      this._rasvc.act_factor = this.aaf;
+    }
 
-    this._la.ans_activity = this.ans_activity
-    this._ra.ans_activity = this.ans_activity
-    this._lv.ans_activity = this.ans_activity
-    this._rv.ans_activity = this.ans_activity
+    if (this._rv) {
+      this._rv.ans_sens = this.ans_sens
+      this._rv.ans_activity = this.ans_activity
+      this._rv.act_factor = this.vaf;
+    }
 
-    // transfer the activation factor to the heart components
-    this._la.act_factor = this.aaf;
-    this._ra.act_factor = this.aaf;
+    if (this._la) {
+      this._la.ans_sens = this.ans_sens
+      this._la.ans_activity = this.ans_activity
+      this._la.act_factor = this.aaf;
+    } 
 
-    this._lv.act_factor = this.vaf;
-    this._rv.act_factor = this.vaf;
+    if (this._lv) {
+      this._lv.ans_sens = this.ans_sens
+      this._lv.ans_activity = this.ans_activity
+      this._lv.act_factor = this.vaf;
+    }
+
     if (this._coronaries) {
       this._coronaries.act_factor = this.vaf;
     }
@@ -627,7 +668,8 @@ export class Heart extends BaseModelClass {
     // get the current factors from the model
     let f_ps_la = this._la.el_max_factor_ps;
     let f_ps_lv = this._lv.el_max_factor_ps;
-    let f_ps_ra = this._ra.el_max_factor_ps;
+    let f_ps_raivc = this._raivci.el_max_factor_ps;
+    let f_ps_rasvc = this._rasvc.el_max_factor_ps;
     let f_ps_rv = this._rv.el_max_factor_ps;
 
     let delta_left = new_cont_factor_left - this.prev_cont_factor_left;
@@ -636,13 +678,15 @@ export class Heart extends BaseModelClass {
     // add the increase/decrease in factor
     f_ps_la = Math.max(f_ps_la + delta_left, 0);
     f_ps_lv = Math.max(f_ps_lv + delta_left, 0);
-    f_ps_ra = Math.max(f_ps_ra + delta_right, 0);
+    f_ps_raivc = Math.max(f_ps_raivc + delta_right, 0);
+    f_ps_rasvc = Math.max(f_ps_rasvc + delta_right, 0);
     f_ps_rv = Math.max(f_ps_rv + delta_right, 0);
 
     // transfer the factors
     this._la.el_max_factor_ps = f_ps_la
     this._lv.el_max_factor_ps = f_ps_lv
-    this._ra.el_max_factor_ps = f_ps_ra
+    this._raivci.el_max_factor_ps = f_ps_raivc
+    this._rasvc.el_max_factor_ps = f_ps_rasvc
     this._rv.el_max_factor_ps = f_ps_rv
 
     // store the new factor
@@ -654,7 +698,8 @@ export class Heart extends BaseModelClass {
     // get the current factors from the model
     let f_ps_la = this._la.el_min_factor_ps;
     let f_ps_lv = this._lv.el_min_factor_ps;
-    let f_ps_ra = this._ra.el_min_factor_ps;
+    let f_ps_raivc = this._raivci.el_min_factor_ps;
+    let f_ps_rasvc = this._rasvc.el_min_factor_ps;
     let f_ps_rv = this._rv.el_min_factor_ps;
 
     let delta_left = new_relax_factor_left - this.prev_relax_factor_left;
@@ -663,13 +708,15 @@ export class Heart extends BaseModelClass {
     // add the increase/decrease in factor
     f_ps_la = Math.max(f_ps_la + delta_left, 0);
     f_ps_lv = Math.max(f_ps_lv + delta_left, 0);
-    f_ps_ra = Math.max(f_ps_ra + delta_right, 0);
+    f_ps_raivc = Math.max(f_ps_raivc + delta_right, 0);
+    f_ps_rasvc = Math.max(f_ps_rasvc + delta_right, 0);
     f_ps_rv = Math.max(f_ps_rv + delta_right, 0);
 
     // transfer the factors
     this._la.el_min_factor_ps = f_ps_la
     this._lv.el_min_factor_ps = f_ps_lv
-    this._ra.el_min_factor_ps = f_ps_ra
+    this._raivci.el_min_factor_ps = f_ps_raivc
+    this._rasvc.el_min_factor_ps = f_ps_rasvc 
     this._rv.el_min_factor_ps = f_ps_rv
 
     // store the new factor

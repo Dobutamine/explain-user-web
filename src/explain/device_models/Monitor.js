@@ -35,6 +35,7 @@ export class Monitor extends BaseModelClass {
 
     // Independent properties
     this.hr_avg_beats = 5.0; // the number of beats for averaging the heartrate
+    this.flow_avg_beats = 1.0; // the number of beats for averaging the flows
     this.rr_avg_time = 20.0; // averaging time of the respiratory rate
     this.sat_avg_time = 5.0; // averaging time of the pulse oximeter
     this.sat_sampling_interval = 1.0;
@@ -44,20 +45,22 @@ export class Monitor extends BaseModelClass {
     this.ascending_aorta = "AA"; // name of the ascending aorta
     this.descending_aorta = "AD"; // name of the descending aorta
     this.pulm_artery = "PA"; // name of the descending aorta
-    this.right_atrium = "RA"; // name of the right atrium model
+    this.right_atrium_ivci = "RAIVCI"; // name of the right atrium model
+    this.right_atrium_svc = "RASVC"; // name of the right atrium model
     this.breathing = "Breathing"; // name of the spontanenous breathing model
     this.ventilator = "Ventilator"; // name of the mechanical ventilator model
     this.aortic_valve = "LV_AA"; // name of the aortic valve
     this.pulm_valve = "RV_PA"; // name of the pulmonary valve
-    this.cor_ra = "COR_RA"; // name of the connector connecting the coronaries to the right atrium
+    this.aa_cor = "AA_COR"; // name of the connector connecting the aorta to the coronaries
     this.aa_brain = "AA_BR"; // name of the connector connecting the aorta to the brain
-    this.ad_kid = "AD_KID"; // name of the connector connecting the descending aorta to the kidneys
-    this.ivc_ra = "IVCI_RA"; // name of the connector connecting the inferior vena cava to the right atrium
-    this.svc_ra = "SVC_RA"; // name of the connector connecting the superior vena cava to the right atrium
+    this.ad_kid = "AD_KID_ART"; // name of the connector connecting the descending aorta to the kidneys
+    this.ivc_ra = "IVCI_RAIVCI"; // name of the connector connecting the inferior vena cava to the right atrium
+    this.svc_ra = "SVC_RASVC"; // name of the connector connecting the superior vena cava to the right atrium
     this.thorax = "THORAX"; // name of the thorax model
     this.deadspace = "DS"; // name of the dead space airway model
-    this.fo = "FO"; // name of the foramen ovale
-    this.da = "DA_OUT"; // name of the ductus arteriosus
+    this.fo_ivci = "LA_RAIVCI"; // name of the foramen ovale
+    this.fo_svc = "LA_RASVC"; // name of the foramen ovale
+    this.da = "AAR_DA"; // name of the ductus arteriosus
     this.vsd = "VSD"; // name of the ventricular septal defect
     this.ips = "IPS"; // name of the intrapulmonary shunt
     this.ua = "AD_UMB_ART"; // name of the umbilical artery connection
@@ -68,13 +71,12 @@ export class Monitor extends BaseModelClass {
     this.heart_rate_btb = 0.0; // measured heartrate (bpm)
     this.resp_rate = 0.0; // respiratory rate in (/min)
     this.resp_rate_btb = 0.0; // measured respiratory rate (/min)
-    this.test = 0.0;
-    this.abp_syst = 0.0; // arterial blood pressure systole (mmHg)
-    this.abp_diast = 0.0; // arterial blood pressure diastole (mmHg)
-    this.abp_mean = 0.0; // arterial blood pressure mean (mmHg)
     this.abp_pre_syst = 0.0; // arterial blood pressure systole (mmHg)
     this.abp_pre_diast = 0.0; // arterial blood pressure diastole (mmHg)
     this.abp_pre_mean = 0.0; // arterial blood pressure mean (mmHg)
+    this.abp_post_syst = 0.0; // arterial blood pressure systole (mmHg)
+    this.abp_post_diast = 0.0; // arterial blood pressure diastole (mmHg)
+    this.abp_post_mean = 0.0; // arterial blood pressure mean (mmHg)
     this.pap_syst = 0.0; // pulmonary artery pressure systole (mmHg)
     this.pap_diast = 0.0; // pulmonary artery pressure diastole (mmHg)
     this.pap_mean = 0.0; // pulmonary artery pressure mean (mmHg)
@@ -86,10 +88,12 @@ export class Monitor extends BaseModelClass {
     this.esv_rv = 0.0; // left ventricular end systolic volume
     this.edp_rv = 0.0; // left ventricular end diastolic pressure
     this.esp_rv = 0.0; // left ventricular end systolic pressure
-    this.cvp = 0.0; // central venous pressure (mmHg)
-    this.spo2 = 0.0; // arterial oxygen saturation in descending aorta (%)
-    this.spo2_pre = 0.0; // arterial oxygen saturation in ascending aorta (%)
-    this.spo2_ven = 0.0; // venous oxygen saturation in right atrium (%)
+    this.cvp_ivci = 0.0; // central venous pressure (mmHg)
+    this.cvp_svc = 0.0; // central venous pressure (mmHg)
+    this.sao2_pre = 0.0; // arterial oxygen saturation in ascending aorta (%)
+    this.sao2_post = 0.0; // arterial oxygen saturation in ascending aorta (%)
+    this.svo2_ivci = 0.0; // venous oxygen saturation in right atrium (%)
+    this.svo2_svc = 0.0; // venous oxygen saturation in right atrium (%)
     this.etco2 = 0.0; // end tidal partial pressure of carbon dioxide (kPa)
     this.temp = 0.0; // blood temperature (dgs C)
     this.co = 0.0; // cardiac output (l/min)
@@ -104,7 +108,9 @@ export class Monitor extends BaseModelClass {
     this.brain_flow = 0.0; // brain flow (l/min)
     this.kid_flow = 0.0; // kidney flow (l/min)
     this.da_flow = 0.0; // ductus arteriosus flow (l/min)
-    this.fo_flow = 0.0; // foramen ovale flow (l/min)
+    this.fo = 0.0; // foramen ovale flow (l/min)
+    this.fo_ivci_flow = 0.0; // foramen ovale flow (l/min)
+    this.fo_svc_flow = 0.0; // foramen ovale flow (l/min)
     this.vsd_flow = 0.0; // vsd flow (l/min)
     this.ips_flow = 0.0; // ips flow (l/min)
     this.fio2 = 0.0; // inspired fraction of oxygen
@@ -126,8 +132,9 @@ export class Monitor extends BaseModelClass {
     this.abp_signal = 0.0; // abp signal
     this.pap_signal = 0.0; // pap signal
     this.cvp_signal = 0.0; // cvp signal
-    this.spo2_pre_signal = 0.0; // pulse-oximeter signal
-    this.spo2_signal = 0.0; // pulse-oximeter signal
+    this.sao2_pre_signal = 0.0; // pulse-oximeter signal
+    this.sao2_post_signal = 0.0; // pulse-oximeter signal
+    this.sao2_signal = 0.0; // pulse-oximeter signal
     this.resp_signal = 0.0; // respiratory signal
     this.co2_signal = 0.0; // co2 signal
 
@@ -139,7 +146,8 @@ export class Monitor extends BaseModelClass {
     this._ventilator = null; // reference to the mechanical ventilator model
     this._aa = null; // reference to the ascending aorta
     this._ad = null; // reference to the descending aorta
-    this._ra = null; // reference to the right atrium
+    this._ra_ivci = null; // reference to the inferior vena cava to right atrium connector
+    this._ra_svc = null; // reference to the superior vena cava to right atrium connector
     this._pa = null; // reference to the pulmonary artery
     this._ds = null; // reference to the upper airway deadspace
     this._thorax = null; // reference to the thorax
@@ -147,12 +155,13 @@ export class Monitor extends BaseModelClass {
     this._rv_pa = null; // reference to the pulmonary valve
     this._ivc_ra = null; // reference to the inferior cava to right atrium connector
     this._svc_ra = null; // reference to the superior cava to right atrium connector
-    this._cor_ra = null; // reference to the coronaries to right atrium connector
+    this._aa_cor = null; // reference to the coronaries to right atrium connector
     this._aa_br = null; // reference to the ascending aorta to brain connector
     this._ad_kid = null; // reference to the descending aorta to kidneys connector
     this._ad_umb_art = null; // reference to the umbilical artery connector
     this._umb_ven_ivci = null ;// reference to the umbilical vein connector
-    this._fo = null; // reference to the foramen ovale
+    this._fo_ivci = null; // reference to the foramen ovale
+    this._fo_svc = null; // reference to the foramen ovale
     this._da = null; // reference to the ductus arteriosus
     this._vsd = null; // reference to the ventricular septal defect
     this._ips = null; // reference to the intrapulmonary shunt
@@ -161,8 +170,10 @@ export class Monitor extends BaseModelClass {
     this._temp_aa_pres_min = 1000.0;
     this._temp_ad_pres_max = -1000.0;
     this._temp_ad_pres_min = 1000.0;
-    this._temp_ra_pres_max = -1000.0;
-    this._temp_ra_pres_min = 1000.0;
+    this._temp_ra_ivci_pres_max = -1000.0;
+    this._temp_ra_ivci_pres_min = 1000.0;
+    this._temp_ra_svc_pres_max = -1000.0;
+    this._temp_ra_svc_pres_min = 1000.0;
     this._temp_pa_pres_max = -1000.0;
     this._temp_pa_pres_min = 1000.0;
     this._temp_lv_pres_max = -1000.0;
@@ -181,7 +192,8 @@ export class Monitor extends BaseModelClass {
     this._brain_flow_counter = 0.0;
     this._kid_flow_counter = 0.0;
     this._da_flow_counter = 0.0;
-    this._fo_flow_counter = 0.0;
+    this._fo_ivci_flow_counter = 0.0;
+    this._fo_svc_flow_counter = 0.0;
     this._vsd_flow_counter = 0.0;
     this._ips_flow_counter = 0.0;
     this._ua_flow_counter = 0.0;
@@ -199,9 +211,9 @@ export class Monitor extends BaseModelClass {
     this._edp_lv_list = [];
     this._edp_rv_list = [];
     this._rr_list = [];
-    this._spo2_list = [];
-    this._spo2_pre_list = [];
-    this._spo2_ven_list = [];
+    this._sao2_list = [];
+    this._sao2_pre_list = [];
+    this._sao2_ven_list = [];
     this._rr_avg_counter = 0.0;
     this._sat_avg_counter = 0.0;
     this._sat_sampling_counter = 0.0;
@@ -222,6 +234,8 @@ export class Monitor extends BaseModelClass {
     this._lv = this._model_engine.models[this.lv] ?? null;
     this._rv = this._model_engine.models[this.rv] ?? null;
     this._ra = this._model_engine.models[this.right_atrium] ?? null;
+    this._ra_ivci = this._model_engine.models[this.right_atrium_ivci] ?? null;
+    this._ra_svc = this._model_engine.models[this.right_atrium_svc] ?? null;
     this._breathing = this._model_engine.models[this.breathing] ?? null;
     this._ventilator = this._model_engine.models[this.ventilator] ?? null;
     this._ds = this._model_engine.models[this.deadspace] ?? null;
@@ -233,11 +247,12 @@ export class Monitor extends BaseModelClass {
     this._rv_pa = this._model_engine.models[this.pulm_valve] ?? null;
     this._ivc_ra = this._model_engine.models[this.ivc_ra] ?? null;
     this._svc_ra = this._model_engine.models[this.svc_ra] ?? null;
-    this._cor_ra = this._model_engine.models[this.cor_ra] ?? null;
+    this._aa_cor = this._model_engine.models[this.aa_cor] ?? null;
     this._aa_br = this._model_engine.models[this.aa_brain] ?? null;
     this._ad_kid = this._model_engine.models[this.ad_kid] ?? null;
     this._da = this._model_engine.models[this.da] ?? null;
-    this._fo = this._model_engine.models[this.fo] ?? null;
+    this._fo_ivci = this._model_engine.models[this.fo_ivci] ?? null;
+    this._fo_svc = this._model_engine.models[this.fo_svc] ?? null;
     this._vsd = this._model_engine.models[this.vsd] ?? null;
     this._ips = this._model_engine.models[this.ips] ?? null;
     this._ad_umb_art = this._model_engine.models[this.ua] ?? null;
@@ -308,12 +323,10 @@ export class Monitor extends BaseModelClass {
     this._rr_update_counter += this._t
 
 
-
     // determine the begin of the cardiac cycle
     if (this._heart.ncc_ventricular === 1) {
       // add 1 beat
       this._beats_counter += 1;
-
       // blood pressures
       if (this._aa) {
         this.abp_pre_syst = this._temp_aa_pres_max;
@@ -324,18 +337,23 @@ export class Monitor extends BaseModelClass {
         this._temp_aa_pres_min = 1000.0;
       }
       if (this._ad) {
-        this.abp_syst = this._temp_ad_pres_max;
-        this.abp_diast = this._temp_ad_pres_min;
-        this.abp_mean =
-          (2 * this._temp_ad_pres_min + this._temp_ad_pres_max) / 3.0;
+        this.abp_post_syst = this._temp_ad_pres_max;
+        this.abp_post_diast = this._temp_ad_pres_min;
+        this.abp_post_mean = (2 * this._temp_ad_pres_min + this._temp_ad_pres_max) / 3.0;
         this._temp_ad_pres_max = -1000.0;
         this._temp_ad_pres_min = 1000.0;
       }
-      if (this._ra) {
-        this.cvp = (2 * this._temp_ra_pres_min + this._temp_ra_pres_max) / 3.0;
-        this._temp_ra_pres_max = -1000.0;
-        this._temp_ra_pres_min = 1000.0;
+      if (this._ra_ivci) {
+        this.cvp_ivci = (2 * this._temp_ra_ivci_pres_min + this._temp_ra_ivci_pres_max) / 3.0;
+        this._temp_ra_ivci_pres_max = -1000.0;
+        this._temp_ra_ivci_pres_min = 1000.0;
       }
+      if (this._ra_svc) {
+        this.cvp_svc = (2 * this._temp_ra_svc_pres_min + this._temp_ra_svc_pres_max) / 3.0;
+        this._temp_ra_svc_pres_max = -1000.0;
+        this._temp_ra_svc_pres_min = 1000.0;
+      }
+
       if (this._pa) {
         this.pap_syst = this._temp_pa_pres_max;
         this.pap_diast = this._temp_pa_pres_min;
@@ -398,7 +416,8 @@ export class Monitor extends BaseModelClass {
     }
 
     // cardiac outputs
-    if (this._beats_counter > this.hr_avg_beats) {
+    if (this._beats_counter > this.flow_avg_beats) {
+
       if (this._lv_aa) {
         this.lvo = (this._lvo_counter / this._beats_time) * 60.0;
         this._lvo_counter = 0.0;
@@ -415,7 +434,7 @@ export class Monitor extends BaseModelClass {
         this.svc_flow = (this._svc_flow_counter / this._beats_time) * 60.0;
         this._svc_flow_counter = 0.0;
       }
-      if (this._cor_ra) {
+      if (this._aa_cor) {
         this.cor_flow = (this._cor_flow_counter / this._beats_time) * 60.0;
         this._cor_flow_counter = 0.0;
       }
@@ -435,10 +454,14 @@ export class Monitor extends BaseModelClass {
         this._da_flow_counter = 0.0;
       }
 
-      if (this._fo) {
-        this.fo_flow = (this._fo_flow_counter / this._beats_time) * 60.0;
-        this._fo_flow_counter = 0.0;
-      }
+      if (this._fo_ivci && this._fo_svc) {
+        this.fo_ivci_flow = (this._fo_ivci_flow_counter / this._beats_time) * 60.0;
+        this._fo_ivci_flow_counter = 0.0;
+        this.fo_svc_flow = (this._fo_svc_flow_counter / this._beats_time) * 60.0;
+        this._fo_svc_flow_counter = 0.0;
+        this.fo_flow = this.fo_ivci_flow + this.fo_svc_flow;  
+
+      }      
 
       if (this._vsd) {
         this.vsd_flow = (this._vsd_flow_counter / this._beats_time) * 60.0;
@@ -470,22 +493,22 @@ export class Monitor extends BaseModelClass {
     this._beats_time += this._t;
 
     // get the pre- and postdutcal arterial o2-saturation levels from the ascending and descending aorta
-    this.spo2 = this._ad.so2
-    this.spo2_pre = this._aa.so2
+    this.sao2_pre = this._aa.so2
+    this.sao2_post = this._ad.so2
 
     // get the venous o2 saturation from the right atrium
-    this.spo2_ven = this._ra.so2
-
+    this.svo2_ivci = this._ra_ivci ? this._ra_ivci.so2 : 0.0;
+    this.svo2_svc = this._ra_svc ? this._ra_svc.so2 : 0.0;
 
   }
   collect_signals() {
     this.ecg_signal = this._heart ? this._heart.ecg_signal : 0.0;
     this.resp_signal = this._thorax ? this._thorax.vol : 0.0;
-    this.spo2_pre_signal = this._aa ? this._aa.pres_in : 0.0;
-    this.spo2_signal = this._ad ? this._ad.pres_in : 0.0;
+    this.sao2_pre_signal = this._aa ? this._aa.pres_in : 0.0;
+    this.sao2_post_signal = this._ad ? this._ad.pres_in : 0.0;
     this.abp_signal = this._ad ? this._ad.pres_in : 0.0;
     this.pap_signal = this._pa ? this._pa.pres_in : 0.0;
-    this.cvp_signal = this._ra ? this._ra.pres_in : 0.0;
+    this.cvp_signal = this._ra_ivci ? this._ra_ivci.pres_in : 0.0;
     this.co2_signal = this._ventilator ? this._ventilator.co2 : 0.0;
   }
 
@@ -508,8 +531,11 @@ export class Monitor extends BaseModelClass {
     this._temp_ad_pres_max = this._ad ? Math.max(this._temp_ad_pres_max, this._ad.pres_in) : -1000;
     this._temp_ad_pres_min = this._ad ? Math.min(this._temp_ad_pres_min, this._ad.pres_in) : 1000;
 
-    this._temp_ra_pres_max = this._ra ? Math.max(this._temp_ra_pres_max, this._ra.pres_in) : -1000;
-    this._temp_ra_pres_min = this._ra ? Math.min(this._temp_ra_pres_min, this._ra.pres_in) : 1000;
+    this._temp_ra_ivci_pres_max = this._ra_ivci ? Math.max(this._temp_ra_ivci_pres_max, this._ra_ivci.pres_in) : -1000;
+    this._temp_ra_ivci_pres_min = this._ra_ivci ? Math.min(this._temp_ra_ivci_pres_min, this._ra_ivci.pres_in) : 1000;
+    
+    this._temp_ra_svc_pres_max = this._ra_svc ? Math.max(this._temp_ra_svc_pres_max, this._ra_svc.pres_in) : -1000;
+    this._temp_ra_svc_pres_min = this._ra_svc ? Math.min(this._temp_ra_svc_pres_min, this._ra_svc.pres_in) : 1000;
 
     this._temp_pa_pres_max = this._pa ? Math.max(this._temp_pa_pres_max, this._pa.pres_in) : -1000;
     this._temp_pa_pres_min = this._pa ? Math.min(this._temp_pa_pres_min, this._pa.pres_in) : 1000;
@@ -518,13 +544,14 @@ export class Monitor extends BaseModelClass {
   collect_blood_flows() {
     this._lvo_counter += this._lv_aa ? this._lv_aa.flow * this._t : 0.0;
     this._rvo_counter += this._rv_pa ? this._rv_pa.flow * this._t : 0.0;
-    this._cor_flow_counter += this._cor_ra ? this._cor_ra.flow * this._t : 0.0;
+    this._cor_flow_counter += this._aa_cor ? this._aa_cor.flow * this._t : 0.0;
     this._ivc_flow_counter += this._ivc_ra ? this._ivc_ra.flow * this._t : 0.0;
     this._svc_flow_counter += this._svc_ra ? this._svc_ra.flow * this._t : 0.0;
     this._brain_flow_counter += this._aa_br ? this._aa_br.flow * this._t : 0.0;
     this._kid_flow_counter += this._ad_kid ? this._ad_kid.flow * this._t : 0.0;
     this._da_flow_counter += this._da ? this._da.flow * this._t : 0.0;
-    this._fo_flow_counter += this._fo ? this._fo.flow * this._t : 0.0;
+    this._fo_ivci_flow_counter += this._fo_ivci ? this._fo_ivci.flow * this._t : 0.0;
+    this._fo_svc_flow_counter += this._fo_svc ? this._fo_svc.flow * this._t : 0.0;
     this._vsd_flow_counter += this._vsd ? this._vsd.flow * this._t : 0.0;
     this._ips_flow_counter += this._ips ? this._ips.flow * this._t : 0.0;
     this._ua_flow_counter += this._ad_umb_art ? this._ad_umb_art.flow * this._t : 0.0;
