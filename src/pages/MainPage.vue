@@ -84,6 +84,7 @@
                 width: '5px',
                 opacity: 0.5
               }">
+              <DemoComponent title="DEMO COMPONENT"></DemoComponent>
               <ControllerComponent title="CONTROLLERS"></ControllerComponent>
               </q-scroll-area>
             </q-tab-panel>
@@ -318,6 +319,7 @@ import AnimationComponent from 'src/components/AnimationComponent.vue';
 import AnimationEditor from 'src/components/AnimationEditor.vue';
 import ModelBuilderComponent from 'src/components/ModelBuilderComponent.vue';
 import ControllerComponent from 'src/components/ControllerComponent.vue';
+import DemoComponent from 'src/components/DemoComponent.vue';
 import NumericsEditor from 'src/components/NumericsEditor.vue';
 import RealtimeChart from 'src/components/RealtimeChart.vue';
 import LoopChart from 'src/components/LoopChart.vue';
@@ -354,7 +356,9 @@ export default defineComponent({
     ControllerComponent,
     NumericsEditor,
     RealtimeChart,
-    LoopChart
+    LoopChart,
+    DemoComponent
+
   },
   data() {
     return {

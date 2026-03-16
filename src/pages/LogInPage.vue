@@ -32,11 +32,13 @@
                   {{ errorText }}
                 </q-card>
                 <div class="q-mt-lg col text-center">
-                  <q-btn v-if="!newUserEntry" class="q-pl-lg q-pr-lg bg-blue-grey-10" @click="LogIn"
+                  <q-btn v-if="!newUserEntry" class="q-ml-sm bg-blue-grey-10" @click="LogIn"
                     style="width: 120px;font-size: 16px;" size="sm">LOG IN</q-btn>
-                  <q-btn class="q-ml-lg q-pl-lg q-pr-lg bg-blue-grey-10" @click="showRegistration"
+                  <q-btn v-if="!newUserEntry" class="q-ml-sm bg-blue-grey-10" @click="LogInAsDemo"
+                    style="width: 120px;font-size: 16px;" size="sm">DEMO</q-btn>
+                  <q-btn class="q-ml-sm bg-blue-grey-10" @click="showRegistration"
                     style="width: 120px;font-size: 16px;" size="sm">REGISTER</q-btn>
-                  <q-btn v-if="newUserEntry" class="q-ml-lg q-pl-lg q-pr-lg bg-blue-grey-10" @click="cancelRegistration"
+                  <q-btn v-if="newUserEntry" class="q-ml-sm bg-blue-grey-10" @click="cancelRegistration"
                     style="width: 120px;font-size: 16px;" size="sm">CANCEL</q-btn>
                 </div>
 
@@ -50,10 +52,14 @@
         <div class="row justify-center items-start q-ma-lg">
           <div class="col text-center">
             <p class="text-center text-grey-5">
-              The Explain webapplication is now out of beta and we have made some changes to the backend.
+              The Explain webapplication is an interactive, animated interface for the Explain model. 
             </p>
             <p class="text-center text-grey-5">
-              This means that you have to recreate your account if you created one during the beta phase. If you have any questions, suggestions or want to report a bug, please contact us at <a href="mailto:support@explain-labs.com">support@explain-labs.com</a>.
+              You can try the demo to get a quick overview of the capabilities of the Explain model and web application and to test the published cases. For the full Explain experience with all physiological models including ECLS, placenta and mechanical ventilator models please register.
+            </p>
+
+            <p class="text-center text-grey-5">
+              If you have any questions, suggestions or want to report a bug, please contact me at <a href="mailto:support@explain-labs.com">support@explain-labs.com</a>.
             </p>
             <p class="text-center text-grey-5">
               Tim Antonius
@@ -168,6 +174,9 @@ export default {
     },
     LogIn() {
       this.user.logIn(this.general.apiUrl, this.name, this.password);
+    },
+    LogInAsDemo() {
+      this.user.logIn(this.general.apiUrl, "demo-user", "demo-user");
     },
     LogOut() {
       this.id = "";
