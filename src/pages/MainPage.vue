@@ -5,6 +5,10 @@
         <div class="col-3">
           <q-tabs v-model="tab_left" dense class="text-white" active-color="primary" indicator-color="primary"
             narrow-indicator outside-arrows @update:model-value="tabLeftChanged">
+            <q-tab name="demo">
+              <q-icon name="fa-solid fa-flask" size="xs"></q-icon>
+              <q-tooltip>demo</q-tooltip>
+            </q-tab>
             <q-tab name="controllers"><q-icon name="fa-solid fa-sliders" size="xs"></q-icon><q-tooltip>controllers</q-tooltip>
             </q-tab>
             <q-tab name="task_scheduler">
@@ -27,6 +31,18 @@
 
           </q-tabs>
           <q-tab-panels v-model="tab_left" keep-alive style="background-color: black">
+            <q-tab-panel name="demo">
+              <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
+                right: '5px',
+                borderRadius: '5px',
+                background: 'black',
+                width: '5px',
+                opacity: 0.5
+              }">
+              <DemoComponent title="DEMO COMPONENT"></DemoComponent>
+              </q-scroll-area>
+            </q-tab-panel>
+
             <q-tab-panel name="model_editor">
               <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
                 right: '5px',
@@ -84,7 +100,6 @@
                 width: '5px',
                 opacity: 0.5
               }">
-              <DemoComponent title="DEMO COMPONENT"></DemoComponent>
               <ControllerComponent title="CONTROLLERS"></ControllerComponent>
               </q-scroll-area>
             </q-tab-panel>
@@ -362,7 +377,7 @@ export default defineComponent({
   },
   data() {
     return {
-      tab_left: "controllers",
+      tab_left: "demo",
       tab_center: "diagram",
       tab_right: "numerics",
       chart_alive: true,

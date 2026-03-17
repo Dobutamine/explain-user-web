@@ -6,8 +6,8 @@
 
     <div v-if="!collapsed" class="q-pa-sm">
         <div class="row q-col-gutter-sm items-end q-mb-sm">
-            <div class="col">
-                <q-btn-dropdown style="width: 100%;" color="black" label="Part I: Cardiovascular system" size="md" no-caps align="left">
+            <div class="col ">
+                <q-btn-dropdown class="text-overline" style="width: 100%;" color="black" label="Cardiovascular system" size="md" no-caps align="left">
                     <q-list>
                         <div v-for="(mi, index_main) in circ_cases_names" :key="index_main">
                             <q-item clickable v-close-popup>
@@ -18,14 +18,14 @@
                 </q-btn-dropdown>
                 <div class="q-mt-xs q-ml-sm text-caption case-publication-note">
                     <a href="https://pubmed.ncbi.nlm.nih.gov/37322544/" target="_blank" rel="noopener noreferrer">
-                        * in this published article
+                        * published <u>here</u>
                     </a>
                 </div>
             </div>
         </div>  
         <div class="row q-col-gutter-sm items-end q-mb-sm">
             <div class="col">
-                <q-btn-dropdown style="width: 100%;" color="black" label="Part II: Respiratory system" size="md" no-caps align="left">
+                <q-btn-dropdown class="text-overline" style="width: 100%;" color="black" label="Respiratory system" size="md" no-caps align="left">
                     <q-list>
                         <div v-for="(mi, index_main) in resp_cases_names" :key="index_main">
                             <q-item clickable v-close-popup>
@@ -36,16 +36,16 @@
                 </q-btn-dropdown>
                 <div class="q-mt-xs q-ml-sm text-caption case-publication-note">
                     <a href="https://pubmed.ncbi.nlm.nih.gov/37322544/" target="_blank" rel="noopener noreferrer">
-                        * in this published article
+                        * published <u>here</u>
                     </a>
                 </div>
             </div>
         </div> 
         <div class="row q-col-gutter-sm items-end q-mb-sm">
             <div class="col">
-                <q-btn-dropdown style="width: 100%;" color="black" label="Part III: Extracorporeal Life Support" size="md" no-caps align="left">
+                <q-btn-dropdown class="text-overline" style="width: 100%;" color="black" label="Extracorporeal and perinatal life support" size="md" no-caps align="left">
                     <q-list>
-                        <div v-for="(mi, index_main) in resp_cases_names" :key="index_main">
+                        <div v-for="(mi, index_main) in ecls_cases_names" :key="index_main">
                             <q-item clickable v-close-popup>
                                 <q-item-section>{{ mi }}</q-item-section>
                             </q-item>
@@ -59,9 +59,25 @@
         </div> 
         <div class="row q-col-gutter-sm items-end q-mb-sm">
             <div class="col">
-                <q-btn-dropdown style="width: 100%;" color="black" label="Part IV: Placenta and artifical whomb" size="md" no-caps align="left">
+                <q-btn-dropdown class="text-overline" style="width: 100%;" color="black" label="Fetal and placental cases" size="md" no-caps align="left">
                     <q-list>
-                        <div v-for="(mi, index_main) in resp_cases_names" :key="index_main">
+                        <div v-for="(mi, index_main) in placenta_cases_names" :key="index_main">
+                            <q-item clickable v-close-popup>
+                                <q-item-section>{{ mi }}</q-item-section>
+                            </q-item>
+                        </div>
+                    </q-list>
+                </q-btn-dropdown>
+                <div class="q-mt-xs q-ml-sm text-caption case-publication-note">
+                    not published yet
+                </div>
+            </div>
+        </div> 
+        <div class="row q-col-gutter-sm items-end q-mb-sm">
+            <div class="col">
+                <q-btn-dropdown class="text-overline" style="width: 100%;" color="black" label="Miscellaneous cases" size="md" no-caps align="left">
+                    <q-list>
+                        <div v-for="(mi, index_main) in miscellaneous_cases_names" :key="index_main">
                             <q-item clickable v-close-popup>
                                 <q-item-section>{{ mi }}</q-item-section>
                             </q-item>
@@ -98,22 +114,32 @@ export default {
         collapsed: false,
         circ_cases_names: [ 
             "normal neonate *", 
-            "ductus arteriosus restricted *", 
-            "ductus arteriosus unrestricted *",
-            "acute pulmonary hypertension * ",
-            "hypoplastic left heart syndrome", 
-            "hypoplastic right heart syndrome", 
-            "tricuspid atresia", 
-            "tetralogy of fallot", 
-            "transposition of the great arteries", 
-            "total anomalous pulmonary venous return"
+            "ductus arteriosus restricted flow *", 
+            "ductus arteriosus unrestricted flow *",
+            "ductus arteriosus bidirectional flow *",
+            "acute pulmonary hypertension with RtL shunting *",
+            "coarctation of the aorta",
+            "tetralogy of fallot",
+            "hypoplastic left heart syndrome",
+            "transposition of the great arteries",
+            "total anomalous pulmonary venous connection"
         ],
         resp_cases_names: [ 
-            "normal neonate", 
-            "meconium aspiration syndrome", 
-            "congenital diaphragmatic hernia", 
-            "pneumothorax", 
-        ]
+            "normal neonate *",
+            "meconium aspiration syndrome *",
+            "congenital diaphragmatic hernia *",
+        ],
+        ecls_cases_names: [ 
+            "meconium aspiration syndrome on VV-ECMO *", 
+            "congenital diaphragmatic hernia on VA-ECMO *",
+            "premature fetus on perinatal life support *"
+        ],
+        placenta_cases_names: [ 
+            "normal term fetus *",
+        ],
+        miscellaneous_cases_names: [ 
+        ],
+
     };
   },
   methods: {
