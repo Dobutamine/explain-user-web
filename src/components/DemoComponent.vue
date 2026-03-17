@@ -7,7 +7,7 @@
     <div v-if="!collapsed" class="q-pa-sm">
         <div class="row q-col-gutter-sm items-end q-mb-sm">
             <div class="col ">
-                <q-btn-dropdown class="text-overline" style="width: 100%;" color="black" label="Cardiovascular system" size="md" no-caps align="left">
+                <q-btn-dropdown class="text-overline" style="width: 100%;" color="black" label="Cardiovascular" no-caps align="left">
                     <q-list>
                         <div v-for="(mi, index_main) in circ_cases_names" :key="index_main">
                             <q-item clickable v-close-popup>
@@ -25,7 +25,7 @@
         </div>  
         <div class="row q-col-gutter-sm items-end q-mb-sm">
             <div class="col">
-                <q-btn-dropdown class="text-overline" style="width: 100%;" color="black" label="Respiratory system" size="md" no-caps align="left">
+                <q-btn-dropdown class="text-overline" style="width: 100%;" color="black" label="Respiratory" no-caps align="left">
                     <q-list>
                         <div v-for="(mi, index_main) in resp_cases_names" :key="index_main">
                             <q-item clickable v-close-popup>
@@ -43,7 +43,7 @@
         </div> 
         <div class="row q-col-gutter-sm items-end q-mb-sm">
             <div class="col">
-                <q-btn-dropdown class="text-overline" style="width: 100%;" color="black" label="Extracorporeal and perinatal life support" size="md" no-caps align="left">
+                <q-btn-dropdown class="text-overline" style="width: 100%;" color="black" label="ECMO and Perinatal Life Support"  no-caps align="left">
                     <q-list>
                         <div v-for="(mi, index_main) in ecls_cases_names" :key="index_main">
                             <q-item clickable v-close-popup>
@@ -59,7 +59,7 @@
         </div> 
         <div class="row q-col-gutter-sm items-end q-mb-sm">
             <div class="col">
-                <q-btn-dropdown class="text-overline" style="width: 100%;" color="black" label="Fetal and placental cases" size="md" no-caps align="left">
+                <q-btn-dropdown class="text-overline" style="width: 100%;" color="black" label="Fetal and placental" no-caps align="left">
                     <q-list>
                         <div v-for="(mi, index_main) in placenta_cases_names" :key="index_main">
                             <q-item clickable v-close-popup>
@@ -75,7 +75,7 @@
         </div> 
         <div class="row q-col-gutter-sm items-end q-mb-sm">
             <div class="col">
-                <q-btn-dropdown class="text-overline" style="width: 100%;" color="black" label="Miscellaneous cases" size="md" no-caps align="left">
+                <q-btn-dropdown class="text-overline" style="width: 100%;" color="black" label="Miscellaneous"  no-caps align="left">
                     <q-list>
                         <div v-for="(mi, index_main) in miscellaneous_cases_names" :key="index_main">
                             <q-item clickable v-close-popup>
