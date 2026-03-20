@@ -254,8 +254,8 @@ export default {
             this.$router.push("/explain");
           } else {
             console.log(`User default state "${this.user.defaultState}" not found on server`)
-            this.errorText = "Cannot find default model state on the server! Loading basineline neonate state";
-            this.LoadSharedState("baseline_neonate")
+            this.errorText = "Cannot find default model state on the server! Loading term neonate state";
+            this.LoadSharedState("term_neonate")
           }
         });
       }
