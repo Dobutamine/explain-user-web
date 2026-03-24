@@ -12,7 +12,7 @@
               icon="fa-solid fa-play" @click="runAllTasks" style="font-size: 8px"><q-tooltip>run event</q-tooltip></q-btn>
             <q-btn class="col-1 q-ma-xs q-mt-md" color="primary" size="xs" dense
               icon="fa-solid fa-plus" @click="addTask" style="font-size: 8px"><q-tooltip>add event</q-tooltip></q-btn>
-              <q-btn class="col-1 q-ma-xs q-mt-md" color="negative" size="xs" dense
+            <q-btn v-if="user.name !== 'demo-user'" class="col-1 q-ma-xs q-mt-md" color="negative" size="xs" dense
               icon="fa-solid fa-trash" @click="deleteEventFromServer" style="font-size: 8px"><q-tooltip>delete event</q-tooltip></q-btn>
             </div>
 
@@ -164,9 +164,9 @@
             style="font-size: 10px"><q-tooltip>run event</q-tooltip></q-btn>
           <q-btn class="col q-ma-sm" color="secondary" size="sm" dense icon="fa-solid fa-circle-xmark" @click="cancelTasks"
             style="font-size: 10px"><q-tooltip>cancel event</q-tooltip></q-btn>
-          <q-btn v-if="!savedTask" class="col q-ma-sm" color="grey-8" size="sm" dense icon="fa-solid fa-save" @click="saveEventList"
+          <q-btn v-if="!savedTask & user.name !== 'demo-user'" class="col q-ma-sm" color="grey-8" size="sm" dense icon="fa-solid fa-save" @click="saveEventList"
             style="font-size: 10px"><q-tooltip>save event to server</q-tooltip></q-btn>
-          <q-btn class="col q-ma-sm" color="negative" size="sm" dense icon="fa-solid fa-trash" @click="deleteEventFromServer"
+          <q-btn v-if="user.name !== 'demo-user'" class="col q-ma-sm" color="negative" size="sm" dense icon="fa-solid fa-trash" @click="deleteEventFromServer"
             style="font-size: 10px"><q-tooltip>delete event from server</q-tooltip></q-btn>
           </div>
       </div>
