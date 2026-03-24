@@ -121,7 +121,7 @@ export default {
             this.state.default = this.state.name === this.user.defaultState;
 
             if (this.state?.diagram_definition?.name) {
-                const diagramLoaded = await this.diagram.getDemoDiagramFromServer(
+                const diagramLoaded = await this.diagram.getSharedDiagramFromServer(
                     this.general.apiUrl,
                     this.state.diagram_definition.name,
                     this.user.token

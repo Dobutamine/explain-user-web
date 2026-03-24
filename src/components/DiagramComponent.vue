@@ -683,7 +683,7 @@ export default {
       const result = await this.diagram.getDiagramFromServer(this.general.apiUrl, this.user.name, this.state.diagram_definition.name, this.user.token)
       if (!result) {
         console.log("Default diagram load failed, trying to load shared default diagram.")
-        const result2 = await this.diagram.getSharedDiagramFromServer(this.general.apiUrl, this.user.name, this.state.diagram_definition.name, this.user.token)
+        const result2 = await this.diagram.getDefaultDiagramFromServer(this.general.apiUrl, this.user.name, this.state.diagram_definition.name, this.user.token)
         if (!result2) {
           return false;
         }

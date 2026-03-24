@@ -66,7 +66,7 @@ export const useDiagramStore = defineStore("diagram", {
         return false;
       }
     },
-    async getDemoDiagramFromServer(apiUrl, diagramName, token) {
+    async getSharedDiagramFromServer(apiUrl, diagramName, token) {
       const url = `${apiUrl}/api/diagrams/get_shared_diagram?token=${token}`;
       let response = await fetch(url, {
         method: "POST",
@@ -87,7 +87,7 @@ export const useDiagramStore = defineStore("diagram", {
         return false;
       }
     },
-    async getSharedDiagramFromServer(apiUrl, userName, diagramName, token) {
+    async getDefaultDiagramFromServer(apiUrl, userName, diagramName, token) {
       const url = `${apiUrl}/api/diagrams/get_user_diagram?token=${token}`;
       let response = await fetch(url, {
         method: "POST",
