@@ -66,6 +66,27 @@ export const useDiagramStore = defineStore("diagram", {
         return false;
       }
     },
+    async getDemoDiagramFromServer(apiUrl, diagramName, token) {
+      const url = `${apiUrl}/api/diagrams/get_shared_diagram?token=${token}`;
+      let response = await fetch(url, {
+        method: "POST",
+        headers: {
+          Accept: "application/json, text/plain, */*",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: diagramName,
+        }),
+      });
+
+      if (response.status === 200) {
+        let data = await response.json();
+        this.diagram_definition = data.diagram_definition;
+        return true;
+      } else {
+        return false;
+      }
+    },
     async getSharedDiagramFromServer(apiUrl, userName, diagramName, token) {
       const url = `${apiUrl}/api/diagrams/get_user_diagram?token=${token}`;
       let response = await fetch(url, {
