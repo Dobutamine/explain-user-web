@@ -7,6 +7,18 @@
     <div v-if="isEnabled && !hasExternalModelProperties" class="q-ma-sm row justify-center items-center q-gutter-sm">
       <q-select
         class="aa-select"
+        v-model="selectedPreset"
+        label="preset"
+        hide-hint
+        dense
+        dark
+        filled
+        style="min-width: 140px;"
+        :options="presetNames"
+        @update:model-value="selectPreset"
+      />
+      <q-select
+        class="aa-select"
         v-model="selectedModel"
         label="model 1"
         hide-hint
@@ -168,6 +180,12 @@
 <script>
 import { explain } from "../boot/explain";
 
+const MANUAL_PRESET = "Manual";
+const CHART_PRESETS = {
+  [MANUAL_PRESET]: [],
+  "Pda velocity": ["Pda.velocity_pa"],
+};
+
 export default {
   name: "RealtimeChart",
   props: {
@@ -209,6 +227,9 @@ export default {
     },
   },
   computed: {
+    presetNames() {
+      return Object.keys(CHART_PRESETS);
+    },
     externalModelProperties() {
       if (!Array.isArray(this.modelProperties)) {
         return [];
@@ -290,6 +311,7 @@ export default {
       propNames: [""],
       prop2Names: [""],
       prop3Names: [""],
+      selectedPreset: MANUAL_PRESET,
       selectedModel: "",
       selectedProp: "",
       selectedPath: "",
@@ -306,6 +328,84 @@ export default {
     };
   },
   methods: {
+    ensureOptionInList(options, value) {
+      const nextOptions = Array.isArray(options) ? [...options] : [""];
+      if (!value || nextOptions.includes(value)) {
+        return nextOptions;
+      }
+
+      const normalized = nextOptions.filter((entry) => entry !== "");
+      normalized.push(value);
+      normalized.sort();
+      return ["", ...normalized];
+    },
+    applyPathSelections(paths) {
+      const path1 = paths[0] || "";
+      const path2 = paths[1] || "";
+      const path3 = paths[2] || "";
+
+      this.selectedPath = path1;
+      this.selectedPath2 = path2 && path2 !== path1 ? path2 : "";
+      this.selectedPath3 = path3 && path3 !== path1 && path3 !== path2 ? path3 : "";
+
+      const parsed1 = this.parseModelPath(this.selectedPath);
+      this.selectedModel = parsed1.model;
+      this.selectedProp = parsed1.prop;
+      this.propNames = this.selectedModel
+        ? this.ensureOptionInList(this.getNumericPropsForModel(this.selectedModel), this.selectedProp)
+        : [""];
+
+      const parsed2 = this.parseModelPath(this.selectedPath2);
+      this.selectedModel2 = parsed2.model;
+      this.selectedProp2 = parsed2.prop;
+      this.prop2Names = this.selectedModel2
+        ? this.ensureOptionInList(this.getNumericPropsForModel(this.selectedModel2), this.selectedProp2)
+        : [""];
+
+      const parsed3 = this.parseModelPath(this.selectedPath3);
+      this.selectedModel3 = parsed3.model;
+      this.selectedProp3 = parsed3.prop;
+      this.prop3Names = this.selectedModel3
+        ? this.ensureOptionInList(this.getNumericPropsForModel(this.selectedModel3), this.selectedProp3)
+        : [""];
+
+      this.refreshWatchedPaths();
+    },
+    syncPresetSelection() {
+      const selectedPaths = [this.selectedPath, this.selectedPath2, this.selectedPath3].filter((entry) => entry);
+      const presetNames = Object.keys(CHART_PRESETS);
+      for (let i = 0; i < presetNames.length; i++) {
+        const presetName = presetNames[i];
+        const presetPaths = CHART_PRESETS[presetName];
+        if (presetPaths.length !== selectedPaths.length) {
+          continue;
+        }
+
+        let matches = true;
+        for (let j = 0; j < presetPaths.length; j++) {
+          if (presetPaths[j] !== selectedPaths[j]) {
+            matches = false;
+            break;
+          }
+        }
+
+        if (matches) {
+          this.selectedPreset = presetName;
+          return;
+        }
+      }
+
+      this.selectedPreset = MANUAL_PRESET;
+    },
+    selectPreset() {
+      if (this.selectedPreset === MANUAL_PRESET) {
+        return;
+      }
+
+      this.applyPathSelections(CHART_PRESETS[this.selectedPreset] || []);
+      explain.getModelState();
+      this.clearSeries();
+    },
     toggleStats() {
       this.showStats = !this.showStats;
       if (this.showStats) {
@@ -447,27 +547,8 @@ export default {
         return false;
       }
 
-      const path1 = this.externalModelProperties[0] || "";
-      const path2 = this.externalModelProperties[1] || "";
-      const path3 = this.externalModelProperties[2] || "";
-
-      this.selectedPath = path1;
-      this.selectedPath2 = path2 && path2 !== path1 ? path2 : "";
-      this.selectedPath3 = path3 && path3 !== path1 && path3 !== path2 ? path3 : "";
-
-      const parsed1 = this.parseModelPath(this.selectedPath);
-      this.selectedModel = parsed1.model;
-      this.selectedProp = parsed1.prop;
-
-      const parsed2 = this.parseModelPath(this.selectedPath2);
-      this.selectedModel2 = parsed2.model;
-      this.selectedProp2 = parsed2.prop;
-
-      const parsed3 = this.parseModelPath(this.selectedPath3);
-      this.selectedModel3 = parsed3.model;
-      this.selectedProp3 = parsed3.prop;
-
-      this.refreshWatchedPaths();
+      this.applyPathSelections(this.externalModelProperties);
+      this.syncPresetSelection();
       return true;
     },
     toggleEnabled() {
@@ -599,6 +680,7 @@ export default {
       return props;
     },
     selectModel() {
+      this.selectedPreset = MANUAL_PRESET;
       this.selectedProp = "";
       this.selectedPath = "";
       this.propNames = this.getNumericPropsForModel(this.selectedModel);
@@ -611,10 +693,12 @@ export default {
       } else {
         this.selectedPath = "";
       }
+      this.syncPresetSelection();
       this.refreshWatchedPaths();
       this.clearSeries();
     },
     selectModel2() {
+      this.selectedPreset = MANUAL_PRESET;
       this.selectedProp2 = "";
       this.selectedPath2 = "";
       this.prop2Names = this.getNumericPropsForModel(this.selectedModel2);
@@ -627,10 +711,12 @@ export default {
       } else {
         this.selectedPath2 = "";
       }
+      this.syncPresetSelection();
       this.refreshWatchedPaths();
       this.clearSeries();
     },
     selectModel3() {
+      this.selectedPreset = MANUAL_PRESET;
       this.selectedProp3 = "";
       this.selectedPath3 = "";
       this.prop3Names = this.getNumericPropsForModel(this.selectedModel3);
@@ -643,6 +729,7 @@ export default {
       } else {
         this.selectedPath3 = "";
       }
+      this.syncPresetSelection();
       this.refreshWatchedPaths();
       this.clearSeries();
     },
@@ -958,6 +1045,7 @@ export default {
     this.applyDefaultAxisConfig();
     this.processAvailableModels();
     if (!this.applyExternalModelProperties()) {
+      this.syncPresetSelection();
       this.selectProp();
       this.selectProp2();
       this.selectProp3();
