@@ -117,6 +117,7 @@ export default {
                 return;
             }
 
+            this.$bus.emit("stop_rt");
             explain.build(this.state.model_definition);
             this.state.default = this.state.name === this.user.defaultState;
 

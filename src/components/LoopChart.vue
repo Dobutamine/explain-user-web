@@ -7,6 +7,18 @@
     <div v-if="isEnabled && !hasExternalModelProperties" class="q-ma-sm row justify-center items-center q-gutter-sm">
       <q-select
         class="loop-select"
+        v-model="selectedPreset"
+        label="preset"
+        hide-hint
+        dense
+        dark
+        filled
+        style="min-width: 140px;"
+        :options="presetNames"
+        @update:model-value="selectPreset"
+      />
+      <q-select
+        class="loop-select"
         v-model="selectedModelX"
         label="x model"
         hide-hint
@@ -134,6 +146,15 @@
 import { useStateStore } from "src/stores/state";
 import { explain } from "../boot/explain";
 
+const MANUAL_PRESET = "Manual";
+const LOOP_PRESETS = {
+  [MANUAL_PRESET]: [],
+  "LV PV loop": ["LV.vol", "LV.pres"],
+  "RV PV loop": ["RV.vol", "RV.pres"],
+  "Left lung PV loop": ["DS.pres", "ALL.vol"],
+  "Right lung PV loop": ["DS.pres", "ALR.vol"],
+};
+
 export default {
   name: "LoopChart",
   setup() {
@@ -184,6 +205,9 @@ export default {
         return this.chartTitle;
       }
       return this.title;
+    },
+    presetNames() {
+      return Object.keys(LOOP_PRESETS);
     },
     externalModelProperties() {
       if (!Array.isArray(this.modelProperties)) {
@@ -292,6 +316,7 @@ export default {
       redrawPointsPerPixel: 1.5,
       redrawMinPoints: 250,
       redrawMaxPoints: 1000,
+      selectedPreset: MANUAL_PRESET,
       modelNames: [""],
       propNamesX: [""],
       propNamesY: [""],
@@ -487,7 +512,77 @@ export default {
       props.sort();
       return props;
     },
+    ensureOptionInList(options, value) {
+      const nextOptions = Array.isArray(options) ? [...options] : [""];
+      if (!value || nextOptions.includes(value)) {
+        return nextOptions;
+      }
+
+      const normalized = nextOptions.filter((entry) => entry !== "");
+      normalized.push(value);
+      normalized.sort();
+      return ["", ...normalized];
+    },
+    applyPathSelections(paths) {
+      const pathX = paths[0] || "";
+      const pathY = paths[1] || "";
+
+      this.selectedPathX = pathX;
+      this.selectedPathY = pathY && pathY !== pathX ? pathY : "";
+
+      const parsedX = this.parseModelPath(this.selectedPathX);
+      this.selectedModelX = parsedX.model;
+      this.selectedPropX = parsedX.prop;
+      this.propNamesX = this.selectedModelX
+        ? this.ensureOptionInList(this.getNumericPropsForModel(this.selectedModelX), this.selectedPropX)
+        : [""];
+
+      const parsedY = this.parseModelPath(this.selectedPathY);
+      this.selectedModelY = parsedY.model;
+      this.selectedPropY = parsedY.prop;
+      this.propNamesY = this.selectedModelY
+        ? this.ensureOptionInList(this.getNumericPropsForModel(this.selectedModelY), this.selectedPropY)
+        : [""];
+
+      this.refreshWatchedPaths();
+    },
+    syncPresetSelection() {
+      const selectedPaths = [this.selectedPathX, this.selectedPathY].filter((entry) => entry);
+      const presetNames = Object.keys(LOOP_PRESETS);
+      for (let i = 0; i < presetNames.length; i++) {
+        const presetName = presetNames[i];
+        const presetPaths = LOOP_PRESETS[presetName];
+        if (presetPaths.length !== selectedPaths.length) {
+          continue;
+        }
+
+        let matches = true;
+        for (let j = 0; j < presetPaths.length; j++) {
+          if (presetPaths[j] !== selectedPaths[j]) {
+            matches = false;
+            break;
+          }
+        }
+
+        if (matches) {
+          this.selectedPreset = presetName;
+          return;
+        }
+      }
+
+      this.selectedPreset = MANUAL_PRESET;
+    },
+    selectPreset() {
+      if (this.selectedPreset === MANUAL_PRESET) {
+        return;
+      }
+
+      this.applyPathSelections(LOOP_PRESETS[this.selectedPreset] || []);
+      explain.getModelState();
+      this.clearSeries();
+    },
     selectModelX() {
+      this.selectedPreset = MANUAL_PRESET;
       this.selectedPropX = "";
       this.selectedPathX = "";
       this.propNamesX = this.getNumericPropsForModel(this.selectedModelX);
@@ -500,10 +595,12 @@ export default {
       } else {
         this.selectedPathX = "";
       }
+      this.syncPresetSelection();
       this.refreshWatchedPaths();
       this.clearSeries();
     },
     selectModelY() {
+      this.selectedPreset = MANUAL_PRESET;
       this.selectedPropY = "";
       this.selectedPathY = "";
       this.propNamesY = this.getNumericPropsForModel(this.selectedModelY);
@@ -516,6 +613,7 @@ export default {
       } else {
         this.selectedPathY = "";
       }
+      this.syncPresetSelection();
       this.refreshWatchedPaths();
       this.clearSeries();
     },
@@ -785,6 +883,11 @@ export default {
     handleRtf() {
       this.dataUpdateRt();
     },
+    onModelReady() {
+      this.processAvailableModels();
+      this.refreshWatchedPaths();
+      this.clearSeries();
+    },
   },
   mounted() {
     this.autoscale = this.defaultAutoscale;
@@ -797,10 +900,12 @@ export default {
 
     this.processAvailableModels();
     if (!this.applyExternalModelProperties()) {
+      this.syncPresetSelection();
       this.selectPropX();
       this.selectPropY();
     }
     this.$bus.on("state", this.processAvailableModels);
+    this.$bus.on("model_ready", this.onModelReady);
     this.$bus.on("rtf", this.handleRtf);
     this.$nextTick(() => {
       this.drawCanvas();
@@ -808,6 +913,7 @@ export default {
   },
   beforeUnmount() {
     this.$bus.off("state", this.processAvailableModels);
+    this.$bus.off("model_ready", this.onModelReady);
     this.$bus.off("rtf", this.handleRtf);
   },
 };

@@ -334,6 +334,7 @@ export default defineComponent({
         result = await this.state.getStateFromServer(this.general.apiUrl, this.user.name, selectedState, this.user.token)
       }
       if (result) {
+        this.stopRt();
         explain.build(this.state.model_definition);
         // check whether this is the default state  
         if (this.state.name !== this.user.defaultState) {
@@ -765,6 +766,7 @@ export default defineComponent({
     this.$bus.off('load_animation_dialog', this.onLoadAnimationDialog)
     this.$bus.off('save_animation_dialog', this.onSaveAnimationDialog)
     this.$bus.off('upload_state', this.onUploadState)
+    this.$bus.off('stop_rt', this.stopRt)
     document.removeEventListener("status", this.statusUpdate);
     document.removeEventListener("model_ready", this.onModelReady);
     document.removeEventListener("error", this.onModelFailed);
@@ -876,6 +878,7 @@ export default defineComponent({
     this.$bus.on('save_animation_dialog', this.onSaveAnimationDialog)
 
     this.$bus.on('upload_state', this.onUploadState)
+    this.$bus.on('stop_rt', this.stopRt)
   }
 })
 </script>

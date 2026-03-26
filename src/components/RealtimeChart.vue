@@ -1040,6 +1040,11 @@ export default {
     handleRtf() {
       this.dataUpdateRt();
     },
+    onModelReady() {
+      this.processAvailableModels();
+      this.refreshWatchedPaths();
+      this.clearSeries();
+    },
   },
   mounted() {
     this.applyDefaultAxisConfig();
@@ -1051,6 +1056,7 @@ export default {
       this.selectProp3();
     }
     this.$bus.on("state", this.processAvailableModels);
+    this.$bus.on("model_ready", this.onModelReady);
     this.$bus.on("rtf", this.handleRtf);
     this.$nextTick(() => {
       this.drawCanvas();
@@ -1058,6 +1064,7 @@ export default {
   },
   beforeUnmount() {
     this.$bus.off("state", this.processAvailableModels);
+    this.$bus.off("model_ready", this.onModelReady);
     this.$bus.off("rtf", this.handleRtf);
   },
 };
