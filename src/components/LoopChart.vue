@@ -17,6 +17,9 @@
         :options="presetNames"
         @update:model-value="selectPreset"
       />
+      <q-btn flat round dense size="xs" icon="fa-solid fa-floppy-disk" color="grey" @click="savePresetDialog">
+        <q-tooltip>Save as preset</q-tooltip>
+      </q-btn>
       <q-select
         class="loop-select"
         v-model="selectedModelX"
@@ -147,13 +150,6 @@ import { useStateStore } from "src/stores/state";
 import { explain } from "../boot/explain";
 
 const MANUAL_PRESET = "Manual";
-const LOOP_PRESETS = {
-  [MANUAL_PRESET]: [],
-  "LV PV loop": ["LV.vol", "LV.pres"],
-  "RV PV loop": ["RV.vol", "RV.pres"],
-  "Left lung PV loop": ["DS.pres", "ALL.vol"],
-  "Right lung PV loop": ["DS.pres", "ALR.vol"],
-};
 
 export default {
   name: "LoopChart",
@@ -206,8 +202,15 @@ export default {
       }
       return this.title;
     },
+    loopPresets() {
+      const configPresets = this.state?.configuration?.presets?.LoopCharts;
+      if (configPresets && typeof configPresets === "object" && !Array.isArray(configPresets)) {
+        return configPresets;
+      }
+      return {};
+    },
     presetNames() {
-      return Object.keys(LOOP_PRESETS);
+      return [MANUAL_PRESET, ...Object.keys(this.loopPresets)];
     },
     externalModelProperties() {
       if (!Array.isArray(this.modelProperties)) {
@@ -548,10 +551,11 @@ export default {
     },
     syncPresetSelection() {
       const selectedPaths = [this.selectedPathX, this.selectedPathY].filter((entry) => entry);
-      const presetNames = Object.keys(LOOP_PRESETS);
+      const presets = this.loopPresets;
+      const presetNames = Object.keys(presets);
       for (let i = 0; i < presetNames.length; i++) {
         const presetName = presetNames[i];
-        const presetPaths = LOOP_PRESETS[presetName];
+        const presetPaths = presets[presetName].paths;
         if (presetPaths.length !== selectedPaths.length) {
           continue;
         }
@@ -577,9 +581,62 @@ export default {
         return;
       }
 
-      this.applyPathSelections(LOOP_PRESETS[this.selectedPreset] || []);
+      const preset = this.loopPresets[this.selectedPreset];
+      if (!preset) {
+        return;
+      }
+      this.applyPathSelections(preset.paths || []);
+      if (preset.autoscale !== undefined) {
+        this.autoscale = preset.autoscale;
+      }
+      if (Number.isFinite(preset.xMin)) {
+        this.x_min = preset.xMin;
+      }
+      if (Number.isFinite(preset.xMax)) {
+        this.x_max = preset.xMax;
+      }
+      if (Number.isFinite(preset.yMin)) {
+        this.y_min = preset.yMin;
+      }
+      if (Number.isFinite(preset.yMax)) {
+        this.y_max = preset.yMax;
+      }
       explain.getModelState();
       this.clearSeries();
+    },
+    savePresetDialog() {
+      this.$q.dialog({
+        title: "Save preset",
+        message: "Enter a name for this preset:",
+        prompt: {
+          model: "",
+          type: "text",
+        },
+        cancel: true,
+        persistent: false,
+        dark: true,
+      }).onOk((name) => {
+        const trimmed = typeof name === "string" ? name.trim() : "";
+        if (!trimmed || trimmed === MANUAL_PRESET) {
+          return;
+        }
+        const preset = {
+          paths: [this.selectedPathX, this.selectedPathY].filter((p) => p),
+          autoscale: this.autoscale,
+          xMin: this.x_min,
+          xMax: this.x_max,
+          yMin: this.y_min,
+          yMax: this.y_max,
+        };
+        if (!this.state.configuration.presets) {
+          this.state.configuration.presets = {};
+        }
+        if (!this.state.configuration.presets.LoopCharts) {
+          this.state.configuration.presets.LoopCharts = {};
+        }
+        this.state.configuration.presets.LoopCharts[trimmed] = preset;
+        this.selectedPreset = trimmed;
+      });
     },
     selectModelX() {
       this.selectedPreset = MANUAL_PRESET;

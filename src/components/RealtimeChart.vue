@@ -17,6 +17,9 @@
         :options="presetNames"
         @update:model-value="selectPreset"
       />
+      <q-btn flat round dense size="xs" icon="fa-solid fa-floppy-disk" color="grey" @click="savePresetDialog">
+        <q-tooltip>Save as preset</q-tooltip>
+      </q-btn>
       <q-select
         class="aa-select"
         v-model="selectedModel"
@@ -104,6 +107,7 @@
 
       <div v-if="showControls" class="q-mt-sm row justify-center items-center q-gutter-sm">
         <q-checkbox v-model="autoscale" size="xs" dense label="autoscale"  @update:model-value="toggleAutoscaling"><q-tooltip>autoscale</q-tooltip></q-checkbox>
+        <q-checkbox v-model="fillArea" size="xs" dense label="fill" @update:model-value="drawCanvas"><q-tooltip>fill area</q-tooltip></q-checkbox>
         <q-input
           class="aa-time-input"
           :class="{ 'aa-axis-input-compact': compactAxisInputs }"
@@ -178,16 +182,17 @@
 </template>
 
 <script>
+import { useStateStore } from "src/stores/state";
 import { explain } from "../boot/explain";
 
 const MANUAL_PRESET = "Manual";
-const CHART_PRESETS = {
-  [MANUAL_PRESET]: [],
-  "Pda velocity": ["Pda.velocity_pa"],
-};
 
 export default {
   name: "RealtimeChart",
+  setup() {
+    const state = useStateStore();
+    return { state };
+  },
   props: {
     alive: {
       type: Boolean,
@@ -227,8 +232,15 @@ export default {
     },
   },
   computed: {
+    chartPresets() {
+      const configPresets = this.state?.configuration?.presets?.RealTimeCharts;
+      if (configPresets && typeof configPresets === "object" && !Array.isArray(configPresets)) {
+        return configPresets;
+      }
+      return {};
+    },
     presetNames() {
-      return Object.keys(CHART_PRESETS);
+      return [MANUAL_PRESET, ...Object.keys(this.chartPresets)];
     },
     externalModelProperties() {
       if (!Array.isArray(this.modelProperties)) {
@@ -289,9 +301,10 @@ export default {
   data() {
     return {
       isEnabled: true,
-      rtWindow: 3,
-      rtWindowValidated: 3,
+      rtWindow: 2,
+      rtWindowValidated: 2,
       autoscale: true,
+      fillArea: false,
       y_min: 0,
       y_max: 100,
       seconds: 0,
@@ -373,10 +386,11 @@ export default {
     },
     syncPresetSelection() {
       const selectedPaths = [this.selectedPath, this.selectedPath2, this.selectedPath3].filter((entry) => entry);
-      const presetNames = Object.keys(CHART_PRESETS);
+      const presets = this.chartPresets;
+      const presetNames = Object.keys(presets);
       for (let i = 0; i < presetNames.length; i++) {
         const presetName = presetNames[i];
-        const presetPaths = CHART_PRESETS[presetName];
+        const presetPaths = presets[presetName].paths;
         if (presetPaths.length !== selectedPaths.length) {
           continue;
         }
@@ -402,9 +416,58 @@ export default {
         return;
       }
 
-      this.applyPathSelections(CHART_PRESETS[this.selectedPreset] || []);
+      const preset = this.chartPresets[this.selectedPreset];
+      if (!preset) {
+        return;
+      }
+      this.applyPathSelections(preset.paths || []);
+      if (preset.autoscale !== undefined) {
+        this.autoscale = preset.autoscale;
+      }
+      if (preset.fill !== undefined) {
+        this.fillArea = preset.fill;
+      }
+      if (Number.isFinite(preset.yMin)) {
+        this.y_min = preset.yMin;
+      }
+      if (Number.isFinite(preset.yMax)) {
+        this.y_max = preset.yMax;
+      }
       explain.getModelState();
       this.clearSeries();
+    },
+    savePresetDialog() {
+      this.$q.dialog({
+        title: "Save preset",
+        message: "Enter a name for this preset:",
+        prompt: {
+          model: "",
+          type: "text",
+        },
+        cancel: true,
+        persistent: false,
+        dark: true,
+      }).onOk((name) => {
+        const trimmed = typeof name === "string" ? name.trim() : "";
+        if (!trimmed || trimmed === MANUAL_PRESET) {
+          return;
+        }
+        const preset = {
+          paths: [this.selectedPath, this.selectedPath2, this.selectedPath3].filter((p) => p),
+          autoscale: this.autoscale,
+          fill: this.fillArea,
+          yMin: this.y_min,
+          yMax: this.y_max,
+        };
+        if (!this.state.configuration.presets) {
+          this.state.configuration.presets = {};
+        }
+        if (!this.state.configuration.presets.RealTimeCharts) {
+          this.state.configuration.presets.RealTimeCharts = {};
+        }
+        this.state.configuration.presets.RealTimeCharts[trimmed] = preset;
+        this.selectedPreset = trimmed;
+      });
     },
     toggleStats() {
       this.showStats = !this.showStats;
@@ -835,6 +898,8 @@ export default {
 
       let sourceIndex = plan.startIndex;
       let drawing = false;
+      let firstX = 0;
+      let lastX = 0;
       for (let i = 0; i < plan.outLength; i++) {
         const value = source[sourceIndex];
         const x = padLeft + (plotWidth * i) / (plan.outLength - 1);
@@ -844,10 +909,12 @@ export default {
           const y = padTop + plotHeight * (1 - norm);
           if (!drawing) {
             ctx.moveTo(x, y);
+            firstX = x;
             drawing = true;
           } else {
             ctx.lineTo(x, y);
           }
+          lastX = x;
         } else {
           drawing = false;
         }
@@ -856,6 +923,17 @@ export default {
       }
 
       ctx.stroke();
+
+      if (this.fillArea && drawing) {
+        const baseline = padTop + plotHeight;
+        ctx.lineTo(lastX, baseline);
+        ctx.lineTo(firstX, baseline);
+        ctx.closePath();
+        ctx.globalAlpha = 0.15;
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+      }
     },
     formatAxisTick(value, yMin, yMax) {
       const range = Math.abs(yMax - yMin);
