@@ -11,7 +11,7 @@
     "build": "quasar build"
   },
   "dependencies": {
-    "@quasar/cli": "^2.4.0",
+    "@quasar/cli": "^3.0.0",
     "@quasar/extras": "^1.16.4",
     "chart.js": "^4.4.1",
     "pinia": "^2.0.11",
