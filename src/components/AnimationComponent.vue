@@ -10,19 +10,19 @@
         class="text-overline" type="checkbox" @update:model-value="toggleShunts"></q-option-group>
     </div>
     <div class="row justify-center">
-          <q-btn flat round dense size="sm" icon="fa-solid fa-download" color="white" class="q-ml-sm"
+          <q-btn v-if="user.name !== 'demo-user'" flat round dense size="sm" icon="fa-solid fa-download" color="white" class="q-ml-sm"
           @click="loadAnimation">
           <q-tooltip> get a animation from the server </q-tooltip></q-btn>
 
-        <q-btn flat round dense size="sm" icon="fa-solid fa-upload" color="white" class="q-mr-sm q-ml-sm"
+        <q-btn v-if="user.name !== 'demo-user'" flat round dense size="sm" icon="fa-solid fa-upload" color="white" class="q-mr-sm q-ml-sm"
           @click="saveAnimation">
           <q-tooltip> save animation to the server </q-tooltip></q-btn>
 
-        <q-btn v-if="stateAnimation" flat round dense size="sm" icon="fa-solid fa-star" color="white" class="q-ml-sm"
+        <q-btn v-if="user.name !== 'demo-user' && stateAnimation" flat round dense size="sm" icon="fa-solid fa-star" color="white" class="q-ml-sm"
           @click="setAnimationAsStateDefault">
           <q-tooltip> current animation is default state animation </q-tooltip></q-btn>
 
-        <q-btn v-if="!stateAnimation" flat round dense size="sm" icon="fa-regular fa-star" color="white" class="q-ml-sm"
+        <q-btn v-if="user.name !== 'demo-user' && !stateAnimation" flat round dense size="sm" icon="fa-regular fa-star" color="white" class="q-ml-sm"
           @click="setAnimationAsStateDefault">
           <q-tooltip> current animation is not default state animation </q-tooltip></q-btn>
     </div>

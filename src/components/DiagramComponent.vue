@@ -7,19 +7,19 @@
 
 
     <div class="q-mt-md row justify-center">
-          <q-btn flat round dense size="sm" icon="fa-solid fa-download" color="white" class="q-ml-sm"
+          <q-btn v-if="user.name !== 'demo-user'" flat round dense size="sm" icon="fa-solid fa-download" color="white" class="q-ml-sm"
           @click="loadDiagram">
           <q-tooltip> get a diagram from the server </q-tooltip></q-btn>
 
-        <q-btn flat round dense size="sm" icon="fa-solid fa-upload" color="white" class="q-mr-sm q-ml-sm"
+        <q-btn v-if="user.name !== 'demo-user'" flat round dense size="sm" icon="fa-solid fa-upload" color="white" class="q-mr-sm q-ml-sm"
           @click="saveDiagram">
           <q-tooltip> save diagram to the server </q-tooltip></q-btn>
 
-        <q-btn v-if="stateDiagram" flat round dense size="sm" icon="fa-solid fa-star" color="white" class="q-ml-sm"
+        <q-btn v-if="user.name !== 'demo-user' && stateDiagram" flat round dense size="sm" icon="fa-solid fa-star" color="white" class="q-ml-sm"
           @click="setDiagramAsStateDefault">
           <q-tooltip> current diagram is default state diagram </q-tooltip></q-btn>
 
-        <q-btn v-if="!stateDiagram" flat round dense size="sm" icon="fa-regular fa-star" color="white" class="q-ml-sm"
+        <q-btn v-if="user.name !== 'demo-user' && !stateDiagram" flat round dense size="sm" icon="fa-regular fa-star" color="white" class="q-ml-sm"
           @click="setDiagramAsStateDefault">
           <q-tooltip> current diagram is not default state diagram </q-tooltip></q-btn>
     </div>

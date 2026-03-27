@@ -191,19 +191,19 @@
           color="white" class="q-ml-sm" @click="protectState">
           <q-tooltip> state is not protected </q-tooltip></q-btn>
 
-        <q-btn v-if="state.default" flat round dense size="sm" icon="fa-solid fa-star" color="white" class="q-ml-sm"
+        <q-btn v-if="user.name !== 'demo-user' && state.default" flat round dense size="sm" icon="fa-solid fa-star" color="white" class="q-ml-sm"
           @click="setStateAsDefault">
           <q-tooltip> current state is the default state </q-tooltip></q-btn>
 
-        <q-btn v-if="!state.default" flat round dense size="sm" icon="fa-regular fa-star" color="white" class="q-ml-sm"
+        <q-btn v-if="user.name !== 'demo-user' && !state.default" flat round dense size="sm" icon="fa-regular fa-star" color="white" class="q-ml-sm"
           @click="setStateAsDefault">
           <q-tooltip> set current state as default </q-tooltip></q-btn>
 
-        <q-btn flat round dense size="sm" icon="fa-solid fa-download" color="white" class="q-ml-sm"
+        <q-btn v-if="user.name !== 'demo-user'" flat round dense size="sm" icon="fa-solid fa-download" color="white" class="q-ml-sm"
           @click="getAllUserStates">
           <q-tooltip> get states from server </q-tooltip></q-btn>
 
-        <q-btn flat round dense size="sm" icon="fa-solid fa-upload" color="white" class="q-mr-sm q-ml-sm"
+        <q-btn v-if="user.name !== 'demo-user'" flat round dense size="sm" icon="fa-solid fa-upload" color="white" class="q-mr-sm q-ml-sm"
           @click="saveState">
           <q-tooltip> save model state to server </q-tooltip></q-btn>
 
