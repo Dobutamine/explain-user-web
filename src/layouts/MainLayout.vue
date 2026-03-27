@@ -119,6 +119,8 @@
             <q-input v-model="selectedState" label="state name" filled clearable />
             <q-checkbox class="q-ma-sm" v-model="state.shared" label="shared state" color="primary" dense dark
               size="xs" />
+            <q-input v-if="user.admin && state.shared" v-model="state.shared_category" label="shared category (e.g. Cardiovascular)" filled dense
+              class="q-mt-sm" />
           </q-card-section>
 
           <q-card-actions>

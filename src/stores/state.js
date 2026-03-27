@@ -8,6 +8,7 @@ export const useStateStore = defineStore("state", {
     description: "",
     protected: false,
     shared: false,
+    shared_category: "",
     diagram_definition: {
       name: ""
     },
@@ -97,6 +98,7 @@ export const useStateStore = defineStore("state", {
         this.description = data.description;
         this.protected = data.protected;
         this.shared = data.shared;
+        this.shared_category = data.shared_category || "";
         this.diagram_definition = data.diagram_definition;
         this.animation_definition = data.animation_definition;
         this.model_definition = data.model_definition;
@@ -128,6 +130,7 @@ export const useStateStore = defineStore("state", {
         // make this the users own copy
         this.protected = false;
         this.shared = false;
+        this.shared_category = "";
         this.diagram_definition = data.diagram_definition;
         this.animation_definition = data.animation_definition;
         this.model_definition = data.model_definition;
@@ -158,6 +161,7 @@ export const useStateStore = defineStore("state", {
             description: this.description,
             protected: this.protected,
             shared: this.shared,
+            shared_category: this.shared_category,
             diagram_definition: this.diagram_definition,
             animation_definition: this.animation_definition,
             model_definition: this.model_definition,

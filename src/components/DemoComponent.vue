@@ -56,55 +56,51 @@ export default {
     return {
         title: "BUILT-IN PATIENT CASES",
         collapsed: false,
+        demoDropdownSections: [],
     };
   },
-    computed: {
-        demoDropdownSections() {
-            const demo = this.state?.configuration?.demo;
+  methods: {
+        async fetchDemoCases() {
+            const sharedStates = await this.state.getAllSharedStatesFromServer(
+                this.general.apiUrl,
+                this.user.name,
+                this.user.token
+            );
 
-            if (!demo || typeof demo !== "object" || Array.isArray(demo)) {
-                return [];
+            if (!sharedStates || !Array.isArray(sharedStates)) {
+                this.demoDropdownSections = [];
+                return;
             }
 
-            return Object.entries(demo)
-                .map(([sectionKey, sectionValue]) => {
-                    const entries = Array.isArray(sectionValue)
-                        ? sectionValue
-                        : sectionValue && typeof sectionValue === "object"
-                            ? [sectionValue]
-                            : [];
+            const groups = {};
+            for (const entry of sharedStates) {
+                const category = entry?.shared_category;
+                if (!category) continue;
+                if (!groups[category]) {
+                    groups[category] = [];
+                }
+                groups[category].push({
+                    label: entry.name,
+                    stateName: entry.name,
+                });
+            }
 
-                    const itemKeys = entries.flatMap((entry) => {
-                        if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
-                            return [];
-                        }
-
-                        return Object.entries(entry).map(([label, fileName]) => ({
-                            label,
-                            fileName,
-                        }));
-                    });
-
-                    return {
-                        label: sectionKey,
-                        items: itemKeys,
-                    };
-                })
-                .filter((section) => section.items.length > 0);
+            this.demoDropdownSections = Object.entries(groups).map(([label, items]) => ({
+                label,
+                items,
+            }));
         },
-    },
-  methods: {
         async loadDemoState(demoItem) {
-            const fileName = typeof demoItem?.fileName === "string" ? demoItem.fileName.trim() : "";
+            const stateName = typeof demoItem?.stateName === "string" ? demoItem.stateName.trim() : "";
 
-            if (!fileName) {
+            if (!stateName) {
                 return;
             }
 
             const loaded = await this.state.getSharedStateFromServer(
                 this.general.apiUrl,
                 this.user.name,
-                fileName,
+                stateName,
                 this.user.token
             );
 
@@ -112,7 +108,7 @@ export default {
                 this.$q.notify({
                     color: "negative",
                     textColor: "white",
-                    message: `Could not load demo state: ${fileName}`,
+                    message: `Could not load demo state: ${stateName}`,
                 });
                 return;
             }
@@ -135,10 +131,9 @@ export default {
 
             this.$bus.emit("reset");
         },
-
   },
   mounted() {
-
+        this.fetchDemoCases();
   },
 };
 </script>
