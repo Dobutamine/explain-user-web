@@ -217,7 +217,7 @@
           <q-tooltip> export model state to disk (python) </q-tooltip></q-btn> -->
 
 
-        <q-btn flat round dense size="sm" :icon="butIcon" :color="butColor" class="q-mr-sm" @click="togglePlay">
+        <q-btn flat round dense size="sm" :icon="butIcon" :color="butColor" class="q-ml-sm q-mr-sm" @click="togglePlay">
           <q-tooltip> start/stop model </q-tooltip></q-btn>
 
         <q-btn flat round dense :icon="butCalcIcon" size="sm" @click="calculate" :color="butCalcColor" class="q-mr-sm">
