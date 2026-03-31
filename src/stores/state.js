@@ -10,18 +10,18 @@ export const useStateStore = defineStore("state", {
     shared: false,
     shared_category: "",
     diagram_definition: {
-      name: ""
+      settings: {},
+      components: {}
     },
     animation_definition: {
-      name: ""
+      settings: {},
+      components: {}
     },
     model_definition: {},
     configuration: {},
     events: {},
     saved: false,
     default: true,
-    prev_diagram_definition: {},
-    prev_animation_definition: {}
   }),
 
   getters: {},

@@ -74,39 +74,7 @@
         </q-card>
       </q-dialog>
 
-      <q-dialog v-model="showLoadDiagramPopUp" persistent transition-show="slide-up" transition-hide="slide-down">
-        <q-card>
-          <q-card-section>
-            <div class="text-h6">Select diagram from server</div>
-          </q-card-section>
 
-          <q-card-section class="q-pt-none">
-            <q-select v-model="selectedDiagram" :options="diagramList" label="user diagrams" filled dense />
-          </q-card-section>
-
-          <q-card-actions>
-            <q-btn flat label="Cancel" color="primary" size="sm" v-close-popup />
-            <q-btn flat label="Load" color="primary" size="sm" @click="loadSelectedDiagram" />
-          </q-card-actions>
-        </q-card>
-      </q-dialog>
-
-      <q-dialog v-model="showLoadAnimationPopUp" persistent transition-show="slide-up" transition-hide="slide-down">
-        <q-card>
-          <q-card-section>
-            <div class="text-h6">Select animation from server</div>
-          </q-card-section>
-
-          <q-card-section class="q-pt-none">
-            <q-select v-model="selectedAnimation" :options="animationList" label="user animations" filled dense />
-          </q-card-section>
-
-          <q-card-actions>
-            <q-btn flat label="Cancel" color="primary" size="sm" v-close-popup />
-            <q-btn flat label="Load" color="primary" size="sm" @click="loadSelectedAnimation" />
-          </q-card-actions>
-        </q-card>
-      </q-dialog>
 
       <q-dialog v-model="showSaveStatePopUp" persistent transition-show="slide-up" transition-hide="slide-down">
         <q-card>
@@ -130,39 +98,7 @@
         </q-card>
       </q-dialog>
 
-      <q-dialog v-model="showSaveDiagramPopUp" persistent transition-show="slide-up" transition-hide="slide-down">
-        <q-card>
-          <q-card-section>
-            <div class="text-h6">Save diagram to server</div>
-          </q-card-section>
 
-          <q-card-section class="q-pt-none">
-            <q-input v-model="selectedDiagram" label="diagram name" filled clearable />
-          </q-card-section>
-
-          <q-card-actions>
-            <q-btn flat label="Cancel" color="primary" size="sm" v-close-popup />
-            <q-btn flat label="Save" color="primary" size="sm" @click="upload_diagram" />
-          </q-card-actions>
-        </q-card>
-      </q-dialog>
-
-      <q-dialog v-model="showSaveAnimationPopUp" persistent transition-show="slide-up" transition-hide="slide-down">
-        <q-card>
-          <q-card-section>
-            <div class="text-h6">Save animation to server</div>
-          </q-card-section>
-
-          <q-card-section class="q-pt-none">
-            <q-input v-model="selectedAnimation" label="animation name" filled clearable />
-          </q-card-section>
-
-          <q-card-actions>
-            <q-btn flat label="Cancel" color="primary" size="sm" v-close-popup />
-            <q-btn flat label="Save" color="primary" size="sm" @click="upload_animation" />
-          </q-card-actions>
-        </q-card>
-      </q-dialog>
     </q-page-container>
 
     <q-footer class="bg-grey-8 text-white footerCustomStyle">
@@ -241,8 +177,6 @@ import { defineComponent } from 'vue'
 import { useGeneralStore } from 'src/stores/general';
 import { useUserStore } from 'src/stores/user';
 import { useStateStore } from 'src/stores/state';
-import { useDiagramStore } from 'src/stores/diagram';
-import { useAnimationStore } from 'src/stores/animation';
 import { explain } from 'src/boot/explain';
 
 export default defineComponent({
@@ -252,15 +186,10 @@ export default defineComponent({
     const user = useUserStore()
     const general = useGeneralStore()
     const state = useStateStore()
-    const diagram = useDiagramStore()
-    const animation = useAnimationStore()
-
     return {
       user,
       general,
-      state,
-      diagram,
-      animation
+      state
     }
   },
   data() {
@@ -294,18 +223,6 @@ export default defineComponent({
       stateList: [],
       userStateList: [],
       sharedStateList: [],
-      showLoadDiagramPopUp: false,
-      showSaveDiagramPopUp: false,
-      showLoadAnimationPopUp: false,
-      showSaveAnimationPopUp: false,
-      selectedDiagram: "",
-      selectedAnimation: "",
-      diagramList: [],
-      userDiagramList: [],
-      sharedDiagramList: [],
-      animationList: [],
-      userAnimationList: [],
-      sharedAnimationList: [],
       userInput: "",
       durations: [1, 2, 3, 5, 10, 20, 30, 60, 120, 240, 360, 600, 1200, 1800],
       current_model_definition: 'baseline_neonate',
@@ -345,11 +262,7 @@ export default defineComponent({
           this.state.default = true;
         }
         this.showLoadStatePopUp = false
-        // load the diagram definition that belongs to the state
-        let result = await this.diagram.getDiagramFromServer(this.general.apiUrl, this.user.name, this.state.diagram_definition.name, this.user.token)
-        if (result) {
-          this.$bus.emit("rebuild_diagram");
-        }
+        this.$bus.emit("rebuild_diagram");
         this.$bus.emit('reset')
       }
       this.showLoadStatePopUp = false
@@ -365,52 +278,6 @@ export default defineComponent({
       this.buildStateList()
       this.showLoadStatePopUp = true
     },
-    async loadSelectedDiagram() {
-      const selectedDiagram = typeof this.selectedDiagram === "string" ? this.selectedDiagram.trim() : ""
-      if (!selectedDiagram) {
-        this.showValidationPopup("Please select a diagram first.")
-        return
-      }
-
-      let result = await this.diagram.getDiagramFromServer(this.general.apiUrl, this.user.name, this.selectedDiagram, this.user.token)
-      if (result) {
-        this.showLoadDiagramPopUp = false
-        this.$bus.emit("rebuild_diagram");
-      }
-      this.showLoadDiagramPopUp = false
-    },
-    async getAllUserDiagrams() {
-      this.diagramList = []
-      this.userDiagramList = []
-
-      this.userDiagramList = await this.diagram.getAllUserDiagramsFromServer(this.general.apiUrl, this.user.name, this.user.token)
-
-      this.buildDiagramList()
-      this.showLoadDiagramPopUp = true
-    },
-    async loadSelectedAnimation() {
-      const selectedAnimation = typeof this.selectedAnimation === "string" ? this.selectedAnimation.trim() : ""
-      if (!selectedAnimation) {
-        this.showValidationPopup("Please select an animation first.")
-        return
-      }
-
-      let result = await this.animation.getAnimationFromServer(this.general.apiUrl, this.user.name, this.selectedAnimation, this.user.token)
-      if (result) {
-        this.showLoadAnimationPopUp = false
-        this.$bus.emit("rebuild_animation");
-      }
-      this.showLoadAnimationPopUp = false
-    },
-    async getAllUserAnimations() {
-      this.animationList = []
-      this.userAnimationList = []
-
-      this.userAnimationList = await this.animation.getAllUserAnimationsFromServer(this.general.apiUrl, this.user.name, this.user.token)
-
-      this.buildAnimationList()
-      this.showLoadAnimationPopUp = true
-    },
     toggleSharedStates() {
       this.buildStateList()
     },
@@ -422,14 +289,6 @@ export default defineComponent({
           this.stateList.push(t + " (shared)")
         })
       }
-    },
-    buildDiagramList() {
-      this.selectedDiagram = ""
-      this.diagramList = [...this.userDiagramList]
-    },
-    buildAnimationList() {
-      this.selectedAnimation = ""
-      this.animationList = [...this.userAnimationList]
     },
     protectState() {
       this.state.protected = !this.state.protected
@@ -520,16 +379,6 @@ export default defineComponent({
       this.selectedState = this.state.name
       this.showSaveStatePopUp = true
     },
-    saveDiagram() {
-      this.stopRt()
-      this.selectedDiagram = this.diagram.diagram_definition.settings.name
-      this.showSaveDiagramPopUp = true
-    },
-    saveAnimation() {
-      this.stopRt()
-      this.selectedAnimation = this.animation.animation_definition.settings.name
-      this.showSaveAnimationPopUp = true
-    },
     submitInput() {
       if (this.userInput.length > 0) {
         this.state.renameState(this.userInput, this.user.name)
@@ -548,50 +397,6 @@ export default defineComponent({
       this.state_format = "json"
       this.stopRt()
       explain.saveModelState()
-    },
-    upload_diagram() {
-      const selectedDiagram = typeof this.selectedDiagram === "string" ? this.selectedDiagram.trim() : ""
-      if (!selectedDiagram) {
-        this.showValidationPopup("Please enter a diagram name.")
-        return
-      }
-
-      // update the name of the diagram definition
-      this.diagram.diagram_definition.settings.name = selectedDiagram;
-      // save the diagram definition
-      this.diagram.saveDiagramToServer(this.general.apiUrl, this.user.name, selectedDiagram, this.user.token).then((t) => {
-        if (t.result) {
-          this.popupClass = "text-h6"
-          this.$bus.emit('show_popup', { title: "Success!", message: t.message })
-          this.showSaveDiagramPopUp = false;
-        } else {
-          this.popupClass = "text-h6 text-negative"
-          this.$bus.emit('show_popup', { title: "Error!", message: t.message })
-          //this.showSaveDiagramPopUp = false;
-        }
-      })
-    },
-    upload_animation() {
-      const selectedAnimation = typeof this.selectedAnimation === "string" ? this.selectedAnimation.trim() : ""
-      if (!selectedAnimation) {
-        this.showValidationPopup("Please enter an animation name.")
-        return
-      }
-
-      // update the name of the diagram definition
-      this.animation.animation_definition.settings.name = selectedAnimation;
-      // save the diagram definition
-      this.animation.saveAnimationToServer(this.general.apiUrl, this.user.name, selectedAnimation, this.user.token).then((t) => {
-        if (t.result) {
-          this.popupClass = "text-h6"
-          this.$bus.emit('show_popup', { title: "Success!", message: t.message })
-          this.showSaveAnimationPopUp = false;
-        } else {
-          this.popupClass = "text-h6 text-negative"
-          this.$bus.emit('show_popup', { title: "Error!", message: t.message })
-          //this.showSaveDiagramPopUp = false;
-        }
-      })
     },
     upload_no_dialog() {
       if (!this.state.name || !String(this.state.name).trim()) {
@@ -746,27 +551,11 @@ export default defineComponent({
     onSpriteTappedEvent(e) {
       this.$bus.emit("sprite_tapped", e.detail)
     },
-    onLoadDiagramDialog() {
-      this.getAllUserDiagrams()
-    },
-    onSaveDiagramDialog() {
-      this.saveDiagram()
-    },
-    onLoadAnimationDialog() {
-      this.getAllUserAnimations()
-    },
-    onSaveAnimationDialog() {
-      this.saveAnimation()
-    },
     onUploadState() {
       this.upload_no_dialog()
     }
   },
   beforeUnmount() {
-    this.$bus.off('load_diagram_dialog', this.onLoadDiagramDialog)
-    this.$bus.off('save_diagram_dialog', this.onSaveDiagramDialog)
-    this.$bus.off('load_animation_dialog', this.onLoadAnimationDialog)
-    this.$bus.off('save_animation_dialog', this.onSaveAnimationDialog)
     this.$bus.off('upload_state', this.onUploadState)
     this.$bus.off('stop_rt', this.stopRt)
     document.removeEventListener("status", this.statusUpdate);
@@ -872,12 +661,6 @@ export default defineComponent({
       document.removeEventListener("sprite_tapped", this.onSpriteTappedEvent);
     } catch {}
     document.addEventListener("sprite_tapped", this.onSpriteTappedEvent);
-
-    this.$bus.on('load_diagram_dialog', this.onLoadDiagramDialog)
-    this.$bus.on('save_diagram_dialog', this.onSaveDiagramDialog)
-
-    this.$bus.on('load_animation_dialog', this.onLoadAnimationDialog)
-    this.$bus.on('save_animation_dialog', this.onSaveAnimationDialog)
 
     this.$bus.on('upload_state', this.onUploadState)
     this.$bus.on('stop_rt', this.stopRt)

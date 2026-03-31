@@ -34,7 +34,6 @@
 import { useGeneralStore } from "src/stores/general";
 import { useUserStore } from "src/stores/user";
 import { useStateStore } from 'src/stores/state';
-import { useDiagramStore } from 'src/stores/diagram';
 import { explain } from 'src/boot/explain';
 
 export default {
@@ -43,13 +42,10 @@ export default {
     const user = useUserStore();
     const general = useGeneralStore();
     const state = useStateStore();
-        const diagram = useDiagramStore();
-
     return {
       user,
       general,
       state,
-            diagram,
     };
   },
   data() {
@@ -117,16 +113,8 @@ export default {
             explain.build(this.state.model_definition);
             this.state.default = this.state.name === this.user.defaultState;
 
-            if (this.state?.diagram_definition?.name) {
-                const diagramLoaded = await this.diagram.getSharedDiagramFromServer(
-                    this.general.apiUrl,
-                    this.state.diagram_definition.name,
-                    this.user.token
-                );
-
-                if (diagramLoaded) {
-                    this.$bus.emit("rebuild_diagram");
-                }
+            if (this.state?.diagram_definition?.settings) {
+                this.$bus.emit("rebuild_diagram");
             }
 
             this.$bus.emit("reset");
