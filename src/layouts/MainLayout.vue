@@ -177,6 +177,7 @@ import { defineComponent } from 'vue'
 import { useGeneralStore } from 'src/stores/general';
 import { useUserStore } from 'src/stores/user';
 import { useStateStore } from 'src/stores/state';
+import { useModelStore } from 'src/stores/model';
 import { explain } from 'src/boot/explain';
 
 export default defineComponent({
@@ -186,10 +187,12 @@ export default defineComponent({
     const user = useUserStore()
     const general = useGeneralStore()
     const state = useStateStore()
+    const modelStore = useModelStore()
     return {
       user,
       general,
-      state
+      state,
+      modelStore
     }
   },
   data() {
@@ -354,7 +357,6 @@ export default defineComponent({
     },
     statusUpdate() {
       this.statusMessage = "STATUS: " + explain.statusMessage
-      this.$bus.emit('status', explain.statusMessage)
       if (this.statusMessage.includes("calculation ready")) {
         if (this.first_run) {
           this.first_run = false
@@ -504,53 +506,6 @@ export default defineComponent({
         }
       })
     },
-    onModelReady() {
-      this.first_run = true;
-      explain.calculate(1)
-      this.$bus.emit("model_ready")
-    },
-    onModelFailed() {
-      this.$bus.emit("model_failed")
-    },
-    onRtStartEvent() {
-      this.$bus.emit("rt_start")
-    },
-    onRtStopEvent() {
-      this.$bus.emit("rt_stop")
-    },
-    onRtsEvent() {
-      this.$bus.emit("rts")
-    },
-    onRtfEvent() {
-      this.$bus.emit("rtf")
-    },
-    onStateEvent() {
-      this.$bus.emit("state")
-    },
-    onDataEvent() {
-      this.$bus.emit("data")
-    },
-    onDataSlowEvent() {
-      this.$bus.emit("data_slow")
-    },
-    onPropValueEvent(e) {
-      this.$bus.emit("prop_value", e.detail)
-    },
-    onModelPropsEvent(e) {
-      this.$bus.emit("model_props", e.detail)
-    },
-    onModelInterfaceEvent(e) {
-      this.$bus.emit("model_interface", e.detail)
-    },
-    onModelTypesEvent(e) {
-      this.$bus.emit("model_types", e.detail)
-    },
-    onModelTypeInterfaceEvent(e) {
-      this.$bus.emit("modeltype_interface", e.detail)
-    },
-    onSpriteTappedEvent(e) {
-      this.$bus.emit("sprite_tapped", e.detail)
-    },
     onUploadState() {
       this.upload_no_dialog()
     }
@@ -558,109 +513,38 @@ export default defineComponent({
   beforeUnmount() {
     this.$bus.off('upload_state', this.onUploadState)
     this.$bus.off('stop_rt', this.stopRt)
-    document.removeEventListener("status", this.statusUpdate);
-    document.removeEventListener("model_ready", this.onModelReady);
-    document.removeEventListener("error", this.onModelFailed);
-    document.removeEventListener("rt_start", this.onRtStartEvent);
-    document.removeEventListener("rt_stop", this.onRtStopEvent);
-    document.removeEventListener("rts", this.onRtsEvent);
-    document.removeEventListener("rtf", this.onRtfEvent);
-    document.removeEventListener("state", this.onStateEvent);
-    document.removeEventListener("data", this.onDataEvent);
-    document.removeEventListener("data_slow", this.onDataSlowEvent);
-    document.removeEventListener("prop_value", this.onPropValueEvent);
-    document.removeEventListener("model_props", this.onModelPropsEvent);
-    document.removeEventListener("model_interface", this.onModelInterfaceEvent);
-    document.removeEventListener("model_types", this.onModelTypesEvent);
-    document.removeEventListener("modeltype_interface", this.onModelTypeInterfaceEvent);
-    document.removeEventListener("state_saved", this.stateSaved);
-    document.removeEventListener("sprite_tapped", this.onSpriteTappedEvent);
+    explain.off("status", this._onStatus)
+    explain.off("model_ready", this._onModelReady)
+    explain.off("state_saved", this._onStateSaved)
+    document.removeEventListener("sprite_tapped", this._onSpriteTapped)
+    if (this._unwatchRunning) this._unwatchRunning()
   },
   mounted() {
-    try {
-      document.removeEventListener("status", this.statusUpdate);
-    } catch { }
-    document.addEventListener("status", this.statusUpdate);
+    // Listen to engine events directly via explain.on
+    this._onStatus = () => this.statusUpdate()
+    this._onModelReady = () => {
+      this.first_run = true;
+      explain.calculate(1)
+    }
+    this._onStateSaved = () => this.stateSaved()
+    this._onSpriteTapped = (e) => this.$bus.emit("sprite_tapped", e.detail)
 
-    try {
-      document.removeEventListener("model_ready", this.onModelReady);
-    } catch {}
-    document.addEventListener("model_ready", this.onModelReady);
+    explain.on("status", this._onStatus)
+    explain.on("model_ready", this._onModelReady)
+    explain.on("state_saved", this._onStateSaved)
+    document.addEventListener("sprite_tapped", this._onSpriteTapped)
 
-    try {
-      document.removeEventListener("error", this.onModelFailed);
-    } catch {}
-    document.addEventListener("error", this.onModelFailed);
-
-    try {
-      document.removeEventListener("rt_start", this.onRtStartEvent);
-    } catch {}
-    document.addEventListener("rt_start", this.onRtStartEvent);
-
-    try {
-      document.removeEventListener("rt_stop", this.onRtStopEvent);
-    } catch {}
-    document.addEventListener("rt_stop", this.onRtStopEvent);
-
-    try {
-      document.removeEventListener("rts", this.onRtsEvent);
-    } catch {}
-    document.addEventListener("rts", this.onRtsEvent);
-
-    try {
-      document.removeEventListener("rtf", this.onRtfEvent);
-    } catch {}
-    document.addEventListener("rtf", this.onRtfEvent);
-
-    try {
-      document.removeEventListener("state", this.onStateEvent);
-    } catch {}
-    document.addEventListener("state", this.onStateEvent);
-
-    try {
-      document.removeEventListener("data", this.onDataEvent);
-    } catch {}
-    document.addEventListener("data", this.onDataEvent);
-
-    try {
-      document.removeEventListener("data_slow", this.onDataSlowEvent);
-    } catch {}
-    document.addEventListener("data_slow", this.onDataSlowEvent);
-
-    try {
-      document.removeEventListener("prop_value", this.onPropValueEvent);
-    } catch {}
-    document.addEventListener("prop_value", this.onPropValueEvent);
-
-    try {
-      document.removeEventListener("model_props", this.onModelPropsEvent);
-    } catch {}
-    document.addEventListener("model_props", this.onModelPropsEvent);
-
-    try {
-      document.removeEventListener("model_interface", this.onModelInterfaceEvent);
-    } catch {}
-    document.addEventListener("model_interface", this.onModelInterfaceEvent);
-
-    try {
-      document.removeEventListener("modeltype_interface", this.onModelTypeInterfaceEvent);
-    } catch {}
-    document.addEventListener("modeltype_interface", this.onModelTypeInterfaceEvent);
-
-    try {
-      document.removeEventListener("model_types", this.onModelTypesEvent);
-    } catch {}
-    document.addEventListener("model_types", this.onModelTypesEvent);
-
-    try {
-      document.removeEventListener("state_saved", this.stateSaved);
-    } catch { }
-    document.addEventListener("state_saved", this.stateSaved);
-
-    try {
-      document.removeEventListener("sprite_tapped", this.onSpriteTappedEvent);
-    } catch {}
-    document.addEventListener("sprite_tapped", this.onSpriteTappedEvent);
+    // Watch store for rt state to update UI
+    this._unwatchRunning = this.$watch(
+      () => this.modelStore.isRunning,
+      (running) => {
+        if (running) {
+          this.rtState = true;
+          this.butIcon = "fa-solid fa-stop";
+          this.butCaption = "STOP";
+        }
+      }
+    )
 
     this.$bus.on('upload_state', this.onUploadState)
     this.$bus.on('stop_rt', this.stopRt)

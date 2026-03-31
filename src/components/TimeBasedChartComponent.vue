@@ -127,6 +127,7 @@
 
 <script>
 import { useStateStore } from "src/stores/state";
+import { useModelStore } from "src/stores/model";
 import { explain } from "../boot/explain";
 import { Line } from 'vue-chartjs'
 import { Chart as ChartJS, Title, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Filler } from 'chart.js'
@@ -139,6 +140,7 @@ ChartJS.register(Title, Tooltip, Legend, CategoryScale, LinearScale, PointElemen
 export default {
   setup() {
     const state = useStateStore()
+    const modelStore = useModelStore()
 
     let y1_axis_fill = false
     let y2_axis_fill = false
@@ -210,6 +212,7 @@ export default {
 
     return {
       state,
+      modelStore,
       chartData,
       chartOptions,
       y1_axis_fill,
@@ -1068,17 +1071,20 @@ export default {
     }
   },
   beforeUnmount() {
-    this.$bus.off("state", this.processAvailableModels)
-    this.$bus.off("rtf", this.handleRtf)
-    this.$bus.off("data", this.handleData)
+    if (this._unwatchState) this._unwatchState()
+    explain.off("rtf", this.handleRtf)
+    explain.off("data", this.handleData)
   },
   mounted() {
     // get the realtime slow data
-    this.$bus.on("rtf", this.handleRtf);
+    explain.on("rtf", this.handleRtf);
 
     // listen for state and data changes
-    this.$bus.on("state", this.processAvailableModels)
-    this.$bus.on("data", this.handleData)
+    this._unwatchState = this.$watch(
+      () => this.modelStore.modelState,
+      () => this.processAvailableModels()
+    )
+    explain.on("data", this.handleData)
 
     // fill the presets selector
     this.presetNames = Object.keys(this.state.configuration.presets)

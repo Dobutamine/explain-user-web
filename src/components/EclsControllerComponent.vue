@@ -239,10 +239,15 @@
 
 <script>
 import { explain } from "../boot/explain";
+import { useModelStore } from "src/stores/model";
 import RealtimeChart from "./RealtimeChart.vue";
 
 export default {
   name: "EclsControllerComponent",
+  setup() {
+    const modelStore = useModelStore();
+    return { modelStore }
+  },
   components: {
     RealtimeChart,
   },
@@ -521,20 +526,22 @@ export default {
   mounted() {
     this.refreshWatchProps();
 
-    this._onState = () => this.processModelState();
     this._onRtf = () => this.dataUpdateRt();
+    explain.on("rtf", this._onRtf);
 
-    this.$bus.on("state", this._onState);
-    this.$bus.on("rtf", this._onRtf);
+    this._unwatchState = this.$watch(
+      () => this.modelStore.modelState,
+      () => this.processModelState()
+    );
 
     this.processModelState();
   },
   beforeUnmount() {
-    if (this._onState) {
-      this.$bus.off("state", this._onState);
+    if (this._unwatchState) {
+      this._unwatchState();
     }
     if (this._onRtf) {
-      this.$bus.off("rtf", this._onRtf);
+      explain.off("rtf", this._onRtf);
     }
   },
 };

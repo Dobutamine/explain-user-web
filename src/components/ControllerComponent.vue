@@ -254,14 +254,17 @@
 
 import { explain } from "../boot/explain";
 import { useStateStore } from "src/stores/state";
+import { useModelStore } from "src/stores/model";
 
 
 export default {
   setup() {
     const state = useStateStore();
+    const modelStore = useModelStore();
 
     return {
-      state
+      state,
+      modelStore
     }
   },
   props: {
@@ -804,11 +807,16 @@ export default {
       clearTimeout(this.sliderApplyTimerId)
       this.sliderApplyTimerId = null
     }
-    this.$bus.off("state", this.queueHandleState)
+    if (this._unwatchState) {
+      this._unwatchState()
+    }
   },
   mounted() {
     // update if state changes
-    this.$bus.on("state", this.queueHandleState)
+    this._unwatchState = this.$watch(
+      () => this.modelStore.modelState,
+      () => this.queueHandleState()
+    )
   },
 };
 </script>

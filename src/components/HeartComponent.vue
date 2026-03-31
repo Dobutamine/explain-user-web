@@ -55,6 +55,7 @@
 
 <script>
 import { useStateStore } from "src/stores/state";
+import { useModelStore } from "src/stores/model";
 import { explain } from "../boot/explain";
 import { Bar, Line, Scatter } from 'vue-chartjs'
 import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, PointElement, LineElement } from 'chart.js'
@@ -66,6 +67,7 @@ ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale,
 export default {
   setup() {
     const state = useStateStore()
+    const modelStore = useModelStore()
 
     let p1_color = ref("rgb(192, 0, 0)")
     let p2_color = ref("rgb(0, 192, 0)")
@@ -259,7 +261,8 @@ export default {
       p4_color,
       p5_color,
       p6_color,
-      p7_color
+      p7_color,
+      modelStore
 
     }
 
@@ -1052,10 +1055,20 @@ export default {
       }
     }
   },
+  beforeUnmount() {
+    explain.off("rtf", this._onRtf);
+    explain.off("data", this._onData);
+    if (this._unwatchState) this._unwatchState();
+  },
   mounted() {
-    this.$bus.on("rtf", () => this.dataUpdateRt());
-    this.$bus.on("data", () => this.dataUpdate())
-    this.$bus.on("state", this.processModelState)
+    this._onRtf = () => this.dataUpdateRt();
+    this._onData = () => this.dataUpdate();
+    explain.on("rtf", this._onRtf);
+    explain.on("data", this._onData);
+    this._unwatchState = this.$watch(
+      () => this.modelStore.modelState,
+      () => this.processModelState()
+    )
     explain.watchModelProps(["LV.pres", "LV.vol", "LA.pres", "LA.vol", "AA.pres", "LA_LV.flow", "LV_AA.flow", "RV.pres", "RV.vol", "RA.pres", "RA.vol", "PA.pres", "RA_RV.flow", "RV_PA.flow"])
 
     // check whether hires is enabled

@@ -57,9 +57,14 @@
 
 <script>
 import { explain } from "../boot/explain";
+import { useModelStore } from "src/stores/model";
 
 
 export default {
+  setup() {
+    const modelStore = useModelStore();
+    return { modelStore }
+  },
   data() {
     return {
       isEnabled: true,
@@ -129,18 +134,21 @@ export default {
     },
   },
   beforeUnmount() {
-    this.$bus.off("rts", this.handleRts);
-    this.$bus.off("data", this.handleData);
-    this.$bus.off("model_ready", this.updateWatchList)
+    explain.off("rts", this.handleRts);
+    explain.off("data", this.handleData);
+    if (this._unwatchReady) this._unwatchReady()
     this.$bus.off("reset", this.updateWatchList)
   },
   mounted() {
     this.isEnabled = !this.collapsed;
 
     // get the realtime slow data
-  this.$bus.on("rts", this.handleRts);
-  this.$bus.on("data", this.handleData);
-    this.$bus.on("model_ready", this.updateWatchList)
+    explain.on("rts", this.handleRts);
+    explain.on("data", this.handleData);
+    this._unwatchReady = this.$watch(
+      () => this.modelStore.isReady,
+      (val) => { if (val) this.updateWatchList() }
+    )
     this.$bus.on("reset", this.updateWatchList)
 
     // watch the big bumber data

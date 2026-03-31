@@ -97,6 +97,7 @@
 
 <script>
 import { useStateStore } from "src/stores/state";
+import { useModelStore } from "src/stores/model";
 import { explain } from "../boot/explain";
 import { Bar, Line, Scatter } from 'vue-chartjs'
 import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, PointElement, LineElement } from 'chart.js'
@@ -109,6 +110,7 @@ ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale,
 export default {
   setup() {
     const state = useStateStore()
+    const modelStore = useModelStore()
     // make the chartdata reactive
     let chartData = {
       labels: [],
@@ -160,6 +162,7 @@ export default {
 
     return {
       state,
+      modelStore,
       chartData,
       chartOptions
     }
@@ -627,16 +630,19 @@ export default {
     }
   },
   beforeUnmount() {
-    this.$bus.off("rtf", this.handleRtf)
-    this.$bus.off("data", this.handleData)
-    this.$bus.off("state", this.processAvailableModels)
+    explain.off("rtf", this.handleRtf)
+    explain.off("data", this.handleData)
+    if (this._unwatchState) this._unwatchState()
   },
   mounted() {
     // get the realtime slow data
-    this.$bus.on("rtf", this.handleRtf);
+    explain.on("rtf", this.handleRtf);
 
-    this.$bus.on("state", this.processAvailableModels)
-    this.$bus.on("data", this.handleData)
+    this._unwatchState = this.$watch(
+      () => this.modelStore.modelState,
+      () => this.processAvailableModels()
+    )
+    explain.on("data", this.handleData)
 
     if (this.loadPreset) {
       const firstKey = Object.keys(this.presets)[0]; // Get the key of the first property

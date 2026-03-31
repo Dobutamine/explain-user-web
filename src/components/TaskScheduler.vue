@@ -178,17 +178,20 @@
   import { useStateStore } from 'src/stores/state';
   import { useUserStore } from 'src/stores/user';
   import { useGeneralStore } from "src/stores/general";
+  import { useModelStore } from "src/stores/model";
 
   export default {
     setup() {
       const state = useStateStore();
       const user = useUserStore();
       const general = useGeneralStore();
+      const modelStore = useModelStore();
 
       return {
         state,
         user,
-        general
+        general,
+        modelStore
       }
     },
     data() {
@@ -520,11 +523,16 @@
       }
     },
     beforeUnmount() {
-      this.$bus.off("state", this.processAvailableModels)
+      if (this._unwatchState) {
+        this._unwatchState()
+      }
     },
     mounted() {
       this.isEnabled = !this.collapsed;
-      this.$bus.on("state", this.processAvailableModels)
+      this._unwatchState = this.$watch(
+        () => this.modelStore.modelState,
+        () => this.processAvailableModels()
+      )
 
       this.getAllUserEventsFromServer()
     }

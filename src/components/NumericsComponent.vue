@@ -19,8 +19,13 @@
 
 <script>
 import { explain } from "../boot/explain";
+import { useModelStore } from "src/stores/model";
 
 export default {
+  setup() {
+    const modelStore = useModelStore();
+    return { modelStore }
+  },
   props: {
     title: String,
     collapsed: Boolean,
@@ -99,20 +104,26 @@ export default {
     },
   },
   beforeUnmount() {
-    this.$bus.off("model_ready", this.handleModelReady)
+    if (this._unwatchReady) this._unwatchReady()
     this.$bus.off("reset", this.handleReset)
-    this.$bus.off("rts", this.handleRts);
-    this.$bus.off("data", this.handleData);
-    this.$bus.off("state", this.handleState);
+    explain.off("rts", this.handleRts);
+    explain.off("data", this.handleData);
+    if (this._unwatchState) this._unwatchState()
   },
   mounted() {
     this.isEnabled = !this.collapsed;
     this.mutableParameters = [...this.parameters];
-    this.$bus.on("model_ready", this.handleModelReady)
+    this._unwatchReady = this.$watch(
+      () => this.modelStore.isReady,
+      (val) => { if (val) this.handleModelReady() }
+    )
     this.$bus.on("reset", this.handleReset)
-    this.$bus.on("rts", this.handleRts);
-    this.$bus.on("data", this.handleData);
-    this.$bus.on("state", this.handleState);
+    explain.on("rts", this.handleRts);
+    explain.on("data", this.handleData);
+    this._unwatchState = this.$watch(
+      () => this.modelStore.modelState,
+      () => this.handleState()
+    )
     if (this.isEnabled) {
       this.updateWatchList()
     }

@@ -22,11 +22,6 @@ import DataCollector from "./helpers/DataCollector";
 import TaskScheduler from "./helpers/TaskScheduler";
 import { calc_blood_composition } from "./component_models/BloodComposition";
 
-// import the wasm modules
-//import createModule from "./wasm/bc_ems.js";
-//const bc = await createModule({locateFile: p => new URL('./wasm/bc_ems.wasm', import.meta.url).pathname})
-
-
 // store all imported models in a list to be able to instantiate them dynamically
 let available_models = [];
 Object.values(models).forEach((model) => available_models.push(model));

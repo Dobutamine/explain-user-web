@@ -60,6 +60,7 @@
 
 <script>
 import { explain } from "../boot/explain";
+import { useModelStore } from "src/stores/model";
 
 /*
     "title": <string> title of the controller
@@ -81,6 +82,10 @@ import { explain } from "../boot/explain";
     ]
 */
 export default {
+  setup() {
+    const modelStore = useModelStore();
+    return { modelStore }
+  },
   props: {
     title: String,
     collapsed: Boolean,
@@ -234,7 +239,9 @@ export default {
     },
   },
   beforeUnmount() {
-    this.$bus.off("state", this.processModelState)
+    if (this._unwatchState) {
+      this._unwatchState()
+    }
   },
   mounted() {
     // set enabled state
@@ -242,9 +249,12 @@ export default {
 
     // make a mutable list from the parameters
     this.mutableParameters = [...this.parameters];
-    
+
     // get model state
-    this.$bus.on("state", this.processModelState)
+    this._unwatchState = this.$watch(
+      () => this.modelStore.modelState,
+      () => this.processModelState()
+    )
 
   },
 };

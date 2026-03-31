@@ -18,6 +18,7 @@ import { PIXI } from "../boot/pixi";
 import { useStateStore } from "src/stores/state";
 import { useGeneralStore } from "src/stores/general";
 import { useUserStore } from "src/stores/user";
+import { useModelStore } from "src/stores/model";
 
 import Compartment from "./ui_elements/Compartment";
 import Connector from "./ui_elements/Connector";
@@ -41,7 +42,8 @@ export default {
     const state = useStateStore();
     const general = useGeneralStore();
     const user = useUserStore();
-    return { state, general, user };
+    const modelStore = useModelStore();
+    return { state, general, user, modelStore };
   },
   props: {
     alive: Boolean,
@@ -664,46 +666,14 @@ export default {
       return true;
     }
   },
-  beforeUnmount() { 
-    this.$bus.off("state", this.processStateChanged)
-    this.$bus.off('rt_start', () => this.rt_running = true)
-    this.$bus.off('rt_stop', () => this.rt_running = false)
-    this.$bus.off('reset', () => this.buildAnimation())
-    this.$bus.off('rebuild_animation', () => this.buildAnimation())
-    this.$bus.off("update_watchlist", () => this.update_watchlist())
-    this.$bus.off("update_drainage_site", (new_site) => {
-      try {
-        this.state.animation_definition.components['ECLS_DR'].dbcFrom = new_site
-        this.update_component('ECLS_DR')
-      } catch { }
-    })
-    this.$bus.off("update_return_site", (new_site) => {
-      try {
-        this.state.animation_definition.components['ECLS_RE'].dbcTo = new_site
-        this.update_component('ECLS_RE')
-      } catch { }
-    })
-    this.$bus.off("ecls_state_changed", (state) => { 
-      if (state) {
-        this.selected_shunts.push('ECLS')
-        this.selected_shunts = [...new Set(this.selected_shunts)];
-        this.toggleShunts()
-      } else {
-        this.selected_shunts.filter(item => item !== 'ECLS');
-        this.toggleShunts()
-      }
-    })
-    this.$bus.off("placenta_state_changed", (state) => { 
-      if (state) {
-        this.selected_shunts.push('PLACENTA')
-        this.selected_shunts = [...new Set(this.selected_shunts)];
-        this.toggleShunts()
-      } else {
-        this.selected_shunts = this.selected_shunts.filter(item => item !== 'PLACENTA');
-        this.toggleShunts()
-      }
-    })
-    this.$bus.off("ecls_mode_change", (mode) => this.changeEclsMode(mode))
+  beforeUnmount() {
+    if (this._unwatchState) this._unwatchState()
+    if (this._unwatchRunning) this._unwatchRunning()
+    if (this._busHandlers) {
+      Object.entries(this._busHandlers).forEach(([eventName, handler]) => {
+        this.$bus.off(eventName, handler);
+      });
+    }
   },
   mounted() {
     // initialize and build the animation
@@ -717,55 +687,58 @@ export default {
       }
     })
 
-    // add the event listener for the state change
-    this.$bus.on("state", this.processStateChanged)
+    // watch model state and running status from store
+    this._unwatchState = this.$watch(
+      () => this.modelStore.modelState,
+      () => this.processStateChanged()
+    )
+    this._unwatchRunning = this.$watch(
+      () => this.modelStore.isRunning,
+      (val) => { this.rt_running = val; }
+    )
 
-    // add the event listener for the animation update
-    this.$bus.on('rt_start', () => this.rt_running = true)
-    this.$bus.on('rt_stop', () => this.rt_running = false)
-
-    this.$bus.on('reset', () => this.buildAnimation())
-    this.$bus.on('rebuild_animation', () => this.buildAnimation())
-
-    this.$bus.on("update_watchlist", () => this.update_watchlist())
-
-    this.$bus.on("update_drainage_site", (new_site) => {
-      try {
-        this.state.animation_definition.components['ECLS_DR'].dbcFrom = new_site
-        this.update_component('ECLS_DR')
-      } catch { }
-    })
-
-    this.$bus.on("update_return_site", (new_site) => {
-      try {
-        this.state.animation_definition.components['ECLS_RE'].dbcTo = new_site
-        this.update_component('ECLS_RE')
-      } catch { }
-    })
-
-    this.$bus.on("ecls_state_changed", (state) => { 
-      if (state) {
-        this.selected_shunts.push('ECLS')
-        this.selected_shunts = [...new Set(this.selected_shunts)];
-        this.toggleShunts()
-      } else {
-        this.selected_shunts = this.selected_shunts.filter(item => item !== 'ECLS');
-        this.toggleShunts()
-      }
-    })
-
-    this.$bus.on("placenta_state_changed", (state) => { 
-      if (state) {
-        this.selected_shunts.push('PLACENTA')
-        this.selected_shunts = [...new Set(this.selected_shunts)];
-        this.toggleShunts()
-      } else {
-        this.selected_shunts = this.selected_shunts.filter(item => item !== 'PLACENTA');
-        this.toggleShunts()
-      }
-    })
-    
-    this.$bus.on("ecls_mode_change", (mode) => this.changeEclsMode(mode))
+    // register bus handlers for UI events (stored for proper cleanup)
+    this._busHandlers = {
+      reset: () => this.buildAnimation(),
+      rebuild_animation: () => this.buildAnimation(),
+      update_watchlist: () => this.update_watchlist(),
+      update_drainage_site: (new_site) => {
+        try {
+          this.state.animation_definition.components['ECLS_DR'].dbcFrom = new_site
+          this.update_component('ECLS_DR')
+        } catch { }
+      },
+      update_return_site: (new_site) => {
+        try {
+          this.state.animation_definition.components['ECLS_RE'].dbcTo = new_site
+          this.update_component('ECLS_RE')
+        } catch { }
+      },
+      ecls_state_changed: (state) => {
+        if (state) {
+          this.selected_shunts.push('ECLS')
+          this.selected_shunts = [...new Set(this.selected_shunts)];
+          this.toggleShunts()
+        } else {
+          this.selected_shunts = this.selected_shunts.filter(item => item !== 'ECLS');
+          this.toggleShunts()
+        }
+      },
+      placenta_state_changed: (state) => {
+        if (state) {
+          this.selected_shunts.push('PLACENTA')
+          this.selected_shunts = [...new Set(this.selected_shunts)];
+          this.toggleShunts()
+        } else {
+          this.selected_shunts = this.selected_shunts.filter(item => item !== 'PLACENTA');
+          this.toggleShunts()
+        }
+      },
+      ecls_mode_change: (mode) => this.changeEclsMode(mode)
+    }
+    Object.entries(this._busHandlers).forEach(([eventName, handler]) => {
+      this.$bus.on(eventName, handler);
+    });
   },
 };
 

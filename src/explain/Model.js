@@ -1,11 +1,13 @@
 import * as models from "./ModelIndex";
+import ModelEmitter from "./ModelEmitter";
 
 /**
  * Model manages lifecycle, messaging, and state synchronization between the UI
  * layer and the ModelEngine worker. It wraps all wire protocols (GET/POST/PUT/DELETE)
- * exposed by the engine and re-emits results as DOM CustomEvents for consumers.
+ * exposed by the engine and re-emits results via the ModelEmitter pub/sub system.
+ * Components subscribe with explain.on(event, handler) / explain.off(event, handler).
  */
-export default class Model {
+export default class Model extends ModelEmitter {
   // declare an object holding the worker thread which does the heavy llifting
   modelEngine = {};
 
@@ -32,24 +34,13 @@ export default class Model {
   message_log = [];
   no_logs = 25;
 
-  // declare the events
-  _model_ready_event = new CustomEvent("model_ready")
-  _error_event = new CustomEvent("error");
-  _rt_start_event = new CustomEvent("rt_start");
-  _rt_stop_event = new CustomEvent("rt_stop");
-  _rts_event = new CustomEvent("rts");
-  _rtf_event = new CustomEvent("rtf");
-  _status_event = new CustomEvent("status");
-  _state_event = new CustomEvent("state");
-  _data_event = new CustomEvent("data");
-  _data_slow_event = new CustomEvent("data_slow");
-  _state_saved_event = new CustomEvent("state_saved")
 
   /**
    * Spin up the ModelEngine worker and attach message listeners immediately so
    * no early responses are missed.
    */
   constructor() {
+    super();
     // spin up a new model engine worker thread
     this.modelEngine = new Worker(new URL("./ModelEngine.js", import.meta.url), { type: "module" });
 
@@ -95,7 +86,7 @@ export default class Model {
 
   /**
    * Attach the onmessage handler that translates engine responses into
-   * local state mutations and DOM events.
+   * local state mutations and emitter callbacks.
    */
   receive() {
     // set up a listener for messages from the model engine
@@ -103,62 +94,55 @@ export default class Model {
       switch (e.data.type) {
         case "state":
           this.modelState = e.data.payload;
-          document.dispatchEvent(this._state_event);
+          this.emit("state");
           break;
         case "status":
-          this.statusMessage = e.data.message
-          document.dispatchEvent(this._status_event)
+          this.statusMessage = e.data.message;
+          this.emit("status");
           break;
         case "model_ready":
-          const model_ready_event = new CustomEvent("model_ready", { detail: e.data.payload, bubbles: true, cancelable: true, composed: false });
-          document.dispatchEvent(model_ready_event);
+          this.emit("model_ready", e.data.payload);
           break;
         case "rt_start":
-          document.dispatchEvent(this._rt_start_event);
+          this.emit("rt_start");
           break;
         case "rt_stop":
-          document.dispatchEvent(this._rt_stop_event);
+          this.emit("rt_stop");
           break;
         case "data":
           this.modelData = e.data.payload;
-          document.dispatchEvent(this._data_event);
+          this.emit("data");
           break;
         case "data_slow":
           this.modelDataSlow = e.data.payload;
-          document.dispatchEvent(this._data_slow_event);
+          this.emit("data_slow");
           break;
         case "rtf":
           this.modelData = e.data.payload;
-          document.dispatchEvent(this._rtf_event);
+          this.emit("rtf");
           break;
         case "rts":
           this.modelDataSlow = e.data.payload;
-          document.dispatchEvent(this._rts_event);
+          this.emit("rts");
           break;
         case "prop_value":
-          const _prop_value_event = new CustomEvent("prop_value", { detail: e.data.payload, bubbles: true, cancelable: true, composed: false });
-          document.dispatchEvent(_prop_value_event)
+          this.emit("prop_value", e.data.payload);
           break;
         case "model_props":
-          const _model_props_event = new CustomEvent("model_props", { detail: e.data.payload, bubbles: true, cancelable: true, composed: false });
-          document.dispatchEvent(_model_props_event)
+          this.emit("model_props", e.data.payload);
           break;
         case "model_interface":
-          const _model_interface_event = new CustomEvent("model_interface", { detail: e.data.payload, bubbles: true, cancelable: true, composed: false });
-          document.dispatchEvent(_model_interface_event)
+          this.emit("model_interface", e.data.payload);
           break;
         case "modeltype_interface":
-          const _modeltype_interface_event = new CustomEvent("modeltype_interface", { detail: e.data.payload, bubbles: true, cancelable: true, composed: false });
-          document.dispatchEvent(_modeltype_interface_event)
+          this.emit("modeltype_interface", e.data.payload);
           break;
         case "model_types":
-          const _model_types_event = new CustomEvent("model_types", { detail: e.data.payload, bubbles: true, cancelable: true, composed: false });
-          document.dispatchEvent(_model_types_event)
+          this.emit("model_types", e.data.payload);
           break;
         case "state_saved":
-          this.savedState = this._processModelState({...e.data.payload})
-          const _state_saved_event = new CustomEvent("state_saved");
-          document.dispatchEvent(_state_saved_event)
+          this.savedState = this._processModelState({...e.data.payload});
+          this.emit("state_saved");
           break;
         default:
           console.log("Unknown message type received from model engine");

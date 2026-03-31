@@ -188,15 +188,18 @@
 <script>
 
 import { explain } from "../boot/explain";
+import { useModelStore } from "src/stores/model";
 
 
 export default {
   setup() {
     let selectedModelInterface = []
     let selectedNewModelProps = []
+    const modelStore = useModelStore();
 
     return {
-      selectedModelInterface: selectedModelInterface, selectedNewModelProps
+      selectedModelInterface: selectedModelInterface, selectedNewModelProps,
+      modelStore
     }
   },
   props: {
@@ -832,25 +835,35 @@ export default {
   },
   beforeUnmount() {
     this.state_changed = false
-    this.$bus.off("state", this.processAvailableModels)
-    this.$bus.off("model_interface", this.processModelInterface)
-    this.$bus.off("modeltype_interface",  this.processModelTypeInterface)
-    this.$bus.off("model_types", (e) => this.processAvailableModelTypes(e))
-    this.$bus.off('select_model', (e) => {
-      this.selectedModelName = e
-      this.modelChanged()
-    })
+    if (this._unwatchState) this._unwatchState()
+    if (this._unwatchModelInterface) this._unwatchModelInterface()
+    if (this._unwatchModelTypeInterface) this._unwatchModelTypeInterface()
+    if (this._unwatchModelTypes) this._unwatchModelTypes()
+    this.$bus.off('select_model', this._onSelectModel)
   },
   mounted() {
     // update if state changes
-    this.$bus.on("state", this.processAvailableModels)
-    this.$bus.on("model_interface",  this.processModelInterface)
-    this.$bus.on("modeltype_interface",  (e) => this.processModelTypeInterface(e))
-    this.$bus.on("model_types", (e) => this.processAvailableModelTypes(e))
-    this.$bus.on('select_model', (e) => {
+    this._unwatchState = this.$watch(
+      () => this.modelStore.modelState,
+      () => this.processAvailableModels()
+    )
+    this._unwatchModelInterface = this.$watch(
+      () => this.modelStore.modelInterface,
+      (val) => { if (val) this.processModelInterface(val) }
+    )
+    this._unwatchModelTypeInterface = this.$watch(
+      () => this.modelStore.modelTypeInterface,
+      (val) => { if (val) this.processModelTypeInterface(val) }
+    )
+    this._unwatchModelTypes = this.$watch(
+      () => this.modelStore.modelTypes,
+      (val) => { if (val) this.processAvailableModelTypes(val) }
+    )
+    this._onSelectModel = (e) => {
       this.selectedModelName = e
       this.modelChanged()
-    })
+    }
+    this.$bus.on('select_model', this._onSelectModel)
     explain.getModelTypes()
 
   },

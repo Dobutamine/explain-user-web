@@ -197,6 +197,7 @@
 
 <script>
 import { useStateStore } from "src/stores/state";
+import { useModelStore } from "src/stores/model";
 import { explain } from "../boot/explain";
 import { Bar, Line, Scatter } from 'vue-chartjs'
 import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, PointElement, LineElement } from 'chart.js'
@@ -257,8 +258,11 @@ export default {
       }
     })
 
+    const modelStore = useModelStore()
+
     return {
       state,
+      modelStore,
       chartData,
       chartOptions
     }
@@ -678,16 +682,22 @@ export default {
     }
   },
   beforeUnmount() {
-    this.$bus.off("rtf", () => { if (this.ventilator_running) { this.dataUpdateRt() }});
-    this.$bus.off("rts", () => { if (this.ventilator_running) { this.dataUpdateSlow() }});
-    this.$bus.off("data", () => { if (this.ventilator_running) this.dataUpdate()})
-    this.$bus.off("state", this.processModelState)
+    explain.off("rtf", this._onRtf);
+    explain.off("rts", this._onRts);
+    explain.off("data", this._onData);
+    if (this._unwatchState) this._unwatchState()
   },
   mounted() {
-    this.$bus.on("rtf", () => { if (this.ventilator_running) { this.dataUpdateRt() }});
-    this.$bus.on("rts", () => { if (this.ventilator_running) { this.dataUpdateSlow() }});
-    this.$bus.on("data", () => { if (this.ventilator_running) this.dataUpdate()})
-    this.$bus.on("state", this.processModelState)
+    this._onRtf = () => { if (this.ventilator_running) { this.dataUpdateRt() }};
+    this._onRts = () => { if (this.ventilator_running) { this.dataUpdateSlow() }};
+    this._onData = () => { if (this.ventilator_running) this.dataUpdate()};
+    explain.on("rtf", this._onRtf);
+    explain.on("rts", this._onRts);
+    explain.on("data", this._onData);
+    this._unwatchState = this.$watch(
+      () => this.modelStore.modelState,
+      () => this.processModelState()
+    )
 
     explain.watchModelProps([
       "Ventilator.pres", 

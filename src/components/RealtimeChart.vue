@@ -183,6 +183,7 @@
 
 <script>
 import { useStateStore } from "src/stores/state";
+import { useModelStore } from "src/stores/model";
 import { explain } from "../boot/explain";
 
 const MANUAL_PRESET = "Manual";
@@ -191,7 +192,8 @@ export default {
   name: "RealtimeChart",
   setup() {
     const state = useStateStore();
-    return { state };
+    const modelStore = useModelStore();
+    return { state, modelStore };
   },
   props: {
     alive: {
@@ -1133,17 +1135,23 @@ export default {
       this.selectProp2();
       this.selectProp3();
     }
-    this.$bus.on("state", this.processAvailableModels);
-    this.$bus.on("model_ready", this.onModelReady);
-    this.$bus.on("rtf", this.handleRtf);
+    this._unwatchState = this.$watch(
+      () => this.modelStore.modelState,
+      () => this.processAvailableModels()
+    );
+    this._unwatchReady = this.$watch(
+      () => this.modelStore.isReady,
+      (val) => { if (val) this.onModelReady() }
+    );
+    explain.on("rtf", this.handleRtf);
     this.$nextTick(() => {
       this.drawCanvas();
     });
   },
   beforeUnmount() {
-    this.$bus.off("state", this.processAvailableModels);
-    this.$bus.off("model_ready", this.onModelReady);
-    this.$bus.off("rtf", this.handleRtf);
+    if (this._unwatchState) this._unwatchState();
+    if (this._unwatchReady) this._unwatchReady();
+    explain.off("rtf", this.handleRtf);
   },
 };
 </script>

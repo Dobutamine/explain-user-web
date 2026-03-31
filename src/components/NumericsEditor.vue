@@ -244,12 +244,15 @@
 
 import { explain } from "../boot/explain";
 import { useStateStore } from "src/stores/state";
+import { useModelStore } from "src/stores/model";
 
 export default {
   setup() {
     const state = useStateStore();
+    const modelStore = useModelStore();
     return {
-        state
+        state,
+        modelStore
     }
   },
   props: {
@@ -410,8 +413,8 @@ export default {
     }
   },
   beforeUnmount() {
-    this.$bus.off("state", this.processAvailableModels)
-    this.$bus.off("model_interface",  this.processModelInterface)
+    if (this._unwatchState) this._unwatchState()
+    if (this._unwatchModelInterface) this._unwatchModelInterface()
   },
   mounted() {
     // process the available monitors
@@ -419,8 +422,14 @@ export default {
     Object.keys(this.state.configuration.monitors).forEach(monitor_name => {
         this.availableMonitorNames.push(monitor_name)
     })
-    this.$bus.on("state", this.processAvailableModels)
-    this.$bus.on("model_interface",  this.processModelInterface)
+    this._unwatchState = this.$watch(
+      () => this.modelStore.modelState,
+      () => this.processAvailableModels()
+    )
+    this._unwatchModelInterface = this.$watch(
+      () => this.modelStore.modelInterface,
+      (val) => { if (val) this.processModelInterface(val) }
+    )
   },
 };
 </script>

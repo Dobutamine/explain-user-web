@@ -16,6 +16,7 @@ import { PIXI } from "../boot/pixi";
 import { useStateStore } from "src/stores/state";
 import { useGeneralStore } from "src/stores/general";
 import { useUserStore } from "src/stores/user";
+import { useModelStore } from "src/stores/model";
 
 import Compartment from "./ui_elements/Compartment";
 import Connector from "./ui_elements/Connector";
@@ -39,7 +40,8 @@ export default {
     const state = useStateStore();
     const general = useGeneralStore();
     const user = useUserStore();
-    return { state, general, user };
+    const modelStore = useModelStore();
+    return { state, general, user, modelStore };
   },
   props: {
     alive: Boolean,
@@ -74,9 +76,6 @@ export default {
       }
 
       this.busHandlers = {
-        state: this.processStateChanged,
-        rt_start: () => { this.rt_running = true; },
-        rt_stop: () => { this.rt_running = false; },
         reset: () => { this.buildDiagram(); },
         rebuild_diagram: () => { this.buildDiagram(); },
         update_watchlist: () => { this.update_watchlist(); },
@@ -654,6 +653,8 @@ export default {
   },
   beforeUnmount() {
     this.unregisterBusListeners();
+    if (this._unwatchState) this._unwatchState();
+    if (this._unwatchRunning) this._unwatchRunning();
 
     if (pixiApp?.ticker) {
       pixiApp.ticker.remove(this.tickerFunction, this);
@@ -685,6 +686,15 @@ export default {
     })
 
     this.registerBusListeners();
+
+    this._unwatchState = this.$watch(
+      () => this.modelStore.modelState,
+      () => this.processStateChanged()
+    );
+    this._unwatchRunning = this.$watch(
+      () => this.modelStore.isRunning,
+      (val) => { this.rt_running = val; }
+    );
 
   },
 };  

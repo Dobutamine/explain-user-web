@@ -318,6 +318,7 @@ import { explain } from 'src/boot/explain';
 import { defineComponent } from 'vue'
 import { useUserStore } from 'src/stores/user';
 import { useStateStore } from 'src/stores/state';
+import { useModelStore } from 'src/stores/model';
 import NumericsComponent from "src/components/NumericsComponent.vue";
 import ModelEditor from "src/components/ModelEditorComponent.vue"
 import TimeBasedChartComponent from 'src/components/TimeBasedChartComponent.vue';
@@ -344,11 +345,13 @@ export default defineComponent({
   setup() {
     const state = useStateStore();
     const user = useUserStore();
+    const modelStore = useModelStore();
     let monitor_redraw = 1;
 
     return {
       state,
       user,
+      modelStore,
       monitor_redraw
     }
   },
@@ -515,10 +518,10 @@ export default defineComponent({
     }
   },
   beforeUnmount() {
-    this.$bus.off("reset", this.updateWatchlist)
-    this.$bus.off("model_ready", this.modelReady)
+    this.$bus.off("reset", this.modelReady)
     this.$bus.off("redraw_monitors", this.redrawMonitors)
     this.$bus.off("sprite_tapped", this.onDiagramTap)
+    if (this._unwatchReady) this._unwatchReady()
   },
   mounted() {
     // return if the user is not logged in
@@ -534,7 +537,10 @@ export default defineComponent({
     this.screen_height = "height: " + h + "px; background: black";
 
     // if the mode is ready prepare
-    this.$bus.on("model_ready", this.modelReady)
+    this._unwatchReady = this.$watch(
+      () => this.modelStore.isReady,
+      (val) => { if (val) this.modelReady() }
+    )
 
     // if the models resets make sure the watchlist is up to date
     this.$bus.on("reset", this.modelReady)
