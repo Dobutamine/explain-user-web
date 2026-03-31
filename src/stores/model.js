@@ -61,6 +61,14 @@ export const useModelStore = defineStore("model", {
       explain.on("prop_value", (payload) => {
         this.propValue = payload;
       });
+
+      explain.on("error", (payload) => {
+        this.error = payload;
+      });
+    },
+
+    clearError() {
+      this.error = null;
     },
   },
 });

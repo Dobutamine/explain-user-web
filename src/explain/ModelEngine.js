@@ -68,106 +68,111 @@ let rtSlowInterval = 1.0;
 let rtSlowCounter = 0.0;
 let rtClock = null;
 
-// set up the endpoints for reuqests from the main thread
+// set up the endpoints for requests from the main thread
 self.onmessage = (e) => {
-  switch (e.data.type) {
-    case "GET": // retrieve a resource
-      switch (e.data.message) {
-        case "state":
-          get_model_state();
-          break;
-        case "data":
-          get_model_data();
-          break;
-        case "data_slow":
-          get_model_data_slow();
-          break;
-        case "property_value":
-          get_property(e.data.payload);
-          break;
-        case "model_props":
-          get_model_props(e.data.payload);
-          break;
-        case "model_types":
-            get_model_types(e.data.payload);
+  try {
+    switch (e.data.type) {
+      case "GET": // retrieve a resource
+        switch (e.data.message) {
+          case "state":
+            get_model_state();
             break;
-        case "modeltype_interface":
-            get_modeltype_interface(e.data.payload);
+          case "data":
+            get_model_data();
             break;
-        case "model_interface":
-          get_model_interface(e.data.payload);
-          break;
-        case "blood_composition":
-          get_blood_composition(e.data.payload);
-          break;
-      }
-      break;
-    case "PUT": // update a resource
-      switch (e.data.message) {
-        case "sample_interval":
-          _get_data_collector()?.set_sample_interval(e.data.payload);
-          break;
-        case "sample_interval_slow":
-          _get_data_collector()?.set_sample_interval_slow(e.data.payload);
-          break;
-        case "property_value":
-          console.log("ModelEngine: task scheduler request: ", e.data.payload )
-          set_property(_normalize_payload(e.data.payload));
-          break;
-      }
-      break;
-    case "POST": // create a new resource
-      switch (e.data.message) {
-        case "build":
-          console.log("ModelEngine: received new model definition.")
-          model_initialized = build(_normalize_payload(e.data.payload));
-          break;
-        case "start":
-          console.log("ModelEngine: realtime model started.")
-          start();
-          break;
-        case "stop":
-          console.log("ModelEngine: realtime model stopped.")
-          stop()
-          break;
-        case "calc":
-          console.log(`ModelEngine: calculating ${e.data.payload} seconds.`)
-          calculate(e.data.payload);
-          break;
-        case "call":
-          console.log("ModelEngine: calling model a specific function", e.data.payload )
-          call_function(_normalize_payload(e.data.payload));
-          break;
-        case "add":
-          add_model_to_engine(e.data.payload);
-          break;
-        case "save":
-          save_state();
-          break;
-        case "watch":
-          watch_props(e.data.payload);
-          break;
-        case "watch_slow":
-          watch_props_slow(e.data.payload);
-          break;
-      }
-      break;
-    case "DELETE": // remove a resource
-      switch (e.data.message) {
-        case "remove":
-          remove_model_from_engine(e.data.payload)
-          break;
-        case "watchlist":
-          clear_watchlist();
-          break;
-        case "watchlist_slow":
-          clear_watchlist_slow();
-          break;
-      }
-      break;
-    default:
-      console.log(`ModelEngine: invalid API request ${e.data.type}`)
-      break;
+          case "data_slow":
+            get_model_data_slow();
+            break;
+          case "property_value":
+            get_property(e.data.payload);
+            break;
+          case "model_props":
+            get_model_props(e.data.payload);
+            break;
+          case "model_types":
+              get_model_types(e.data.payload);
+              break;
+          case "modeltype_interface":
+              get_modeltype_interface(e.data.payload);
+              break;
+          case "model_interface":
+            get_model_interface(e.data.payload);
+            break;
+          case "blood_composition":
+            get_blood_composition(e.data.payload);
+            break;
+        }
+        break;
+      case "PUT": // update a resource
+        switch (e.data.message) {
+          case "sample_interval":
+            _get_data_collector()?.set_sample_interval(e.data.payload);
+            break;
+          case "sample_interval_slow":
+            _get_data_collector()?.set_sample_interval_slow(e.data.payload);
+            break;
+          case "property_value":
+            console.log("ModelEngine: task scheduler request: ", e.data.payload )
+            set_property(_normalize_payload(e.data.payload));
+            break;
+        }
+        break;
+      case "POST": // create a new resource
+        switch (e.data.message) {
+          case "build":
+            console.log("ModelEngine: received new model definition.")
+            model_initialized = build(_normalize_payload(e.data.payload));
+            break;
+          case "start":
+            console.log("ModelEngine: realtime model started.")
+            start();
+            break;
+          case "stop":
+            console.log("ModelEngine: realtime model stopped.")
+            stop()
+            break;
+          case "calc":
+            console.log(`ModelEngine: calculating ${e.data.payload} seconds.`)
+            calculate(e.data.payload);
+            break;
+          case "call":
+            console.log("ModelEngine: calling model a specific function", e.data.payload )
+            call_function(_normalize_payload(e.data.payload));
+            break;
+          case "add":
+            add_model_to_engine(e.data.payload);
+            break;
+          case "save":
+            save_state();
+            break;
+          case "watch":
+            watch_props(e.data.payload);
+            break;
+          case "watch_slow":
+            watch_props_slow(e.data.payload);
+            break;
+        }
+        break;
+      case "DELETE": // remove a resource
+        switch (e.data.message) {
+          case "remove":
+            remove_model_from_engine(e.data.payload)
+            break;
+          case "watchlist":
+            clear_watchlist();
+            break;
+          case "watchlist_slow":
+            clear_watchlist_slow();
+            break;
+        }
+        break;
+      default:
+        console.log(`ModelEngine: invalid API request ${e.data.type}`)
+        break;
+    }
+  } catch (err) {
+    console.error("ModelEngine: unhandled error in message handler:", err);
+    _send_error(`Unhandled error processing ${e.data.type} ${e.data.message}: ${err.message}`, err);
   }
 };
 
@@ -215,22 +220,32 @@ const build = function (model_definition) {
 
     // if the component model was found then instantiate a model
     if (model_class) {
-      // instantiate the new component and give it a name, pass the model type and a reference to the whole model
-      let new_sub_model = new model_class(
-        model,
-        sub_model_def.name,
-        sub_model_def.model_type
-      );
-      // add the new component to the model object
-      model.models[sub_model_def.name] = new_sub_model;
-      
-      // copy the model interface object
       try {
-      model.models[sub_model_def.name].model_interface = [
-        ...model_class.model_interface,
-      ];
+        // instantiate the new component and give it a name, pass the model type and a reference to the whole model
+        let new_sub_model = new model_class(
+          model,
+          sub_model_def.name,
+          sub_model_def.model_type
+        );
+        // add the new component to the model object
+        model.models[sub_model_def.name] = new_sub_model;
+
+        // copy the model interface object
+        try {
+          model.models[sub_model_def.name].model_interface = [
+            ...model_class.model_interface,
+          ];
+        } catch (e) {
+          console.log("ModelEngine: model interface copy error: ", sub_model_def.name, sub_model_def.model_type);
+        }
       } catch (e) {
-        console.log("ModelEngine: model interface copy error: ", sub_model_def.name, sub_model_def.model_type);
+        errors += 1;
+        console.error("ModelEngine: model instantiation error: ", sub_model_def.name, e);
+        _send({
+          type: "status",
+          message: "ERROR: failed to instantiate " + sub_model_def.name + " (" + sub_model_def.model_type + ")",
+          payload: [],
+        });
       }
 
     } else {
@@ -614,8 +629,8 @@ const _model_step = function () {
       try {
         model_component.step_model();
       } catch(e) {
-        console.log("Step model error: ", model_component.name);
-        console.log(e)
+        console.error("Step model error: ", model_component.name, e);
+        _send_error(`step_model error in ${model_component.name}: ${e.message}`, e);
       }
     } else {
       model_component.step_model();
@@ -645,21 +660,30 @@ const save_state = function() {
 
 // define the local model functions
 const _model_step_rt = function () {
-  // so the rt_interval determines how often the model is calculated
-  const noOfSteps = rtInterval / model.modeling_stepsize;
-  for (let i = 0; i < noOfSteps; i++) {
-    _model_step();
-  }
+  try {
+    // so the rt_interval determines how often the model is calculated
+    const noOfSteps = rtInterval / model.modeling_stepsize;
+    for (let i = 0; i < noOfSteps; i++) {
+      _model_step();
+    }
 
-  // get model data
-  _get_model_data_rt();
+    // get model data
+    _get_model_data_rt();
 
-  // get slow model data
-  if (rtSlowCounter > rtSlowInterval) {
-    rtSlowCounter = 0;
-    _get_model_data_rt_slow();
+    // get slow model data
+    if (rtSlowCounter > rtSlowInterval) {
+      rtSlowCounter = 0;
+      _get_model_data_rt_slow();
+    }
+    rtSlowCounter += rtInterval;
+  } catch (err) {
+    // Stop the realtime loop to prevent repeated failures
+    clearInterval(rtClock);
+    rtClock = null;
+    console.error("ModelEngine: fatal error in realtime loop:", err);
+    _send_error(`Fatal error in realtime loop: ${err.message}`, err);
+    _send({ type: "rt_stop", message: "", payload: [] });
   }
-  rtSlowCounter += rtInterval;
 };
 
 const _get_model_data_rt = function () {
@@ -688,4 +712,15 @@ const _get_model_data_rt_slow = function () {
 
 const _send = function (message) {
   postMessage(message);
+};
+
+const _send_error = function (message, err) {
+  postMessage({
+    type: "error",
+    message: message,
+    payload: {
+      error: err?.message || String(err),
+      stack: err?.stack || null,
+    },
+  });
 };

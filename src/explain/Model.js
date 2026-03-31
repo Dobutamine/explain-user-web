@@ -44,6 +44,14 @@ export default class Model extends ModelEmitter {
     // spin up a new model engine worker thread
     this.modelEngine = new Worker(new URL("./ModelEngine.js", import.meta.url), { type: "module" });
 
+    // catch unhandled worker errors (syntax errors, import failures, etc.)
+    this.modelEngine.onerror = (event) => {
+      const message = event.message || "Unknown worker error";
+      console.error("Model worker error:", message, event);
+      this.error_message = message;
+      this.emit("error", { message, error: message, stack: null });
+    };
+
     // set up a listener for messages from the model engine
     this.receive();
   }
@@ -143,6 +151,11 @@ export default class Model extends ModelEmitter {
         case "state_saved":
           this.savedState = this._processModelState({...e.data.payload});
           this.emit("state_saved");
+          break;
+        case "error":
+          this.error_message = e.data.message;
+          console.error("Model engine error:", e.data.message, e.data.payload);
+          this.emit("error", { message: e.data.message, ...e.data.payload });
           break;
         default:
           console.log("Unknown message type received from model engine");
