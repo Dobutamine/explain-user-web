@@ -146,7 +146,9 @@ export const useStateStore = defineStore("state", {
         const url = `${apiUrl}/api/states/update_state?token=${token}`;
         console.log("Saving state to server with user: " + userName.toLowerCase());
         console.log("Saving state to server with name: " + this.name);
-        console.log("State protected: " + this.protected);
+        if (!this.shared_category) {
+          this.shared_category = "General";
+        }
         let response = await fetch(url, {
           method: "POST",
           headers: {

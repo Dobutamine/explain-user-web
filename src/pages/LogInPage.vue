@@ -194,6 +194,7 @@ export default {
       this.errorText = "";
     },
     LoadDefaultState() {
+      console.log(`Loading default state "${this.user.defaultState}" for user ${this.user.name} from server...`)
       this.state.getStateFromServer(this.general.apiUrl, this.user.name, this.user.defaultState, this.user.token);
     },
     LoadSharedState(sharedStateName) {
@@ -268,7 +269,10 @@ export default {
             console.log(`Shared default state loaded from server and renamed to "${this.state.name}"`)
             explain.build(this.state.model_definition);
             this.default = true;
+            this.state.user = this.user.name
             this.state.saved = false;
+            this.state.shared = false;
+            this.state.protected = false;
             this.user.defaultState = this.state.name
             this.user.updateUser(this.general.apiUrl, this.user.token)
             this.$router.push("/explain");
