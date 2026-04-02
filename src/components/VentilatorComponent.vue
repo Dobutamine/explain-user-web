@@ -5,9 +5,6 @@
     </div>
     <!-- chart -->
     <div>
-      <div v-if="!show_loops">
-        <div class="q-mt-sm row text-overline justify-center">pressure (cmh2o)</div>
-      </div>
     <div v-if="isEnabled" class="q-mt-xs text-overline justify-center q-gutter-xs row">
         <div v-if="ventilator_running">
           <q-btn-toggle class="q-ml-sm" v-model="show_loops" color="grey-9" size="xs" text-color="white"
@@ -16,52 +13,36 @@
               { label: 'LOOPS', value: true },
             ]" />
         </div>
-        <div v-if="ventilator_running">
+        <div v-if="ventilator_running && !show_loops">
           <q-btn-toggle class="q-ml-sm" v-model="curve_param" color="grey-9" size="xs" text-color="white"
             toggle-color="primary" :options="[
               { label: 'PRES', value: 'pres' },
               { label: 'FLOW', value: 'flow' },
               { label: 'VOL', value: 'vol' },
-            ]" @update:model-value="toggleCurveParam" />
+            ]" />
+        </div>
+        <div v-if="ventilator_running && show_loops">
+          <q-btn-toggle class="q-ml-sm" v-model="loop_preset" color="grey-9" size="xs" text-color="white"
+            toggle-color="primary" :options="[
+              { label: 'PV', value: 'PV LOOP' },
+              { label: 'VF', value: 'VF LOOP' },
+              { label: 'SPONT', value: 'PV SPONT' },
+            ]" />
         </div>
     </div>
 
-      <div class="q-mr-sm">
-        <Line v-if="isEnabled && !show_loops" ref="myVentTest" id="my-chart-vent-pres" :options="chartOptions"
-          :data="chartData" style="max-height: 250px;" />
-      </div>
+      <RealtimeChart v-if="isEnabled && !show_loops && ventilator_running"
+        :alive="alive && !show_loops"
+        :model-properties="realtimeModelProperties"
+        :default-autoscale="true"
+        :show-controls="true" />
 
     </div>
 
-    <XYChartComponent v-if="isEnabled && show_loops" :alive="show_loops" title="" :presets="presets_loops"
-      :load-preset="true"></XYChartComponent>
-
-    <div v-if="isEnabled && ventilator_running && graph_control" class="q-mt-xs text-overline justify-center q-gutter-xs row">
-      <div>
-        <q-toggle v-if="autoscaleEnabled" v-model="autoscale" dense size="xs" label="autoscale" 
-        @update:model-value="toggleAutoscaling" />
-      </div>
-      <div>
-        <q-toggle class="q-ml-sm" v-model="state.configuration.chart_hires" dense label="hi-res" size="sm"
-          @update:model-value="toggleHires" />
-      </div>
-      </div>
-      <div v-if="isEnabled && ventilator_running && graph_control" class="q-mt-sm text-overline justify-center q-gutter-xs row">
-      <div>
-        <q-input v-if="!show_loops && !autoscale" class="q-ml-sm" @update:model-value="autoscaling"
-          v-model.number="y_min" type="number" label="y min" filled dense min="-100" max="100" hide-bottom-space/>
-      </div>
-      <div>
-        <q-input v-if="!show_loops && !autoscale" class="q-ml-sm" @update:model-value="autoscaling"
-          v-model.number="y_max" type="number" label="y max" filled dense min="-100" max="100" hide-bottom-space/>
-      </div>
-      <div>
-        <q-input v-if="!show_loops && !state.configuration.chart_hires" class="q-ml-sm"
-          v-model.number="rtWindow" type="number" label="time" filled dense min="1" max="30" hide-bottom-space
-          @update:model-value="updateRtWindow" />
-      </div>
-    </div>
-
+    <LoopChart v-if="isEnabled && show_loops && ventilator_running"
+      :alive="alive && show_loops"
+      :model-properties="loopModelProperties"
+      :default-autoscale="true" />
 
     <div v-if="isEnabled" class="q-mt-xs text-overline justify-center q-gutter-xs row">
         <div>
@@ -72,15 +53,12 @@
             </q-toggle>
         </div>
         <div>
-          <q-toggle v-model="spont_breathing" class="q-ml-sm q-mr-sm" left-label size="xs" dense 
+          <q-toggle v-model="spont_breathing" class="q-ml-sm q-mr-sm" left-label size="xs" dense
               @update:model-value="toggle_spont_breathing">
               <q-icon name="fa-solid fa-lungs" size="xs"></q-icon>
               <q-tooltip>Spontaneous breathing on/off</q-tooltip>
           </q-toggle>
         </div>
-          <div v-if="ventilator_running">
-            <q-toggle v-model="graph_control" class="q-ml-sm" left-label dense size="sm"><q-icon name="fa-solid fa-chart-simple" size="xs"></q-icon><q-tooltip>chart options</q-tooltip></q-toggle>
-          </div>
       </div>
       <div v-if="isEnabled" class="q-mt-xs text-overline justify-center q-gutter-xs row">
         <div v-if="ventilator_running">
@@ -185,12 +163,7 @@
         :min="0" :max="100" :step="1" dense stack-label type="number" style="font-size: 14px; width: 120px;"
         class="q-mr-sm text-center" squared>
       </q-input>
-
-
     </div>
-
-
-
 
   </q-card>
 </template>
@@ -199,97 +172,44 @@
 import { useStateStore } from "src/stores/state";
 import { useModelStore } from "src/stores/model";
 import { explain } from "../boot/explain";
-import { Bar, Line, Scatter } from 'vue-chartjs'
-import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, PointElement, LineElement } from 'chart.js'
-import { shallowRef } from 'vue'
-import * as Stat from "simple-statistics";
-import XYChartComponent from "./XYChartComponent.vue";
+import RealtimeChart from "./RealtimeChart.vue";
+import LoopChart from "./LoopChart.vue";
 
-ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, PointElement, LineElement)
 export default {
   setup() {
     const state = useStateStore()
-
-    // make the chartdata reactive
-    let chartData = shallowRef({
-      labels: [],
-      backgroundColor: '#888888',
-      datasets: [{
-        data: [],
-        borderColor: 'rgb(192, 0, 0)',
-        borderWidth: 2,
-        pointStyle: false
-      }],
-    })
-
-    let chartOptions = shallowRef({
-      responsive: true,
-      animation: false,
-      spanGaps: true,
-      showLine: true,
-      plugins: {
-        legend: {
-          display: false
-        }
-      },
-      datasets: {
-        line: {
-          pointRadius: 0 // disable for all `'line'` datasets
-        }
-      },
-      scales: {
-        x: {
-          display: false,
-          grid: {
-            color: '#444444'
-          },
-          border: {
-            display: false
-          }
-        },
-        y: {
-          grid: {
-            color: '#333333'
-          },
-          border: {
-            display: false
-          }
-        }
-      }
-    })
-
     const modelStore = useModelStore()
 
     return {
       state,
       modelStore,
-      chartData,
-      chartOptions
     }
-
   },
   props: {
     alive: Boolean
   },
   components: {
-    Bar,
-    Line,
-    Scatter,
-    XYChartComponent
+    RealtimeChart,
+    LoopChart
+  },
+  computed: {
+    realtimeModelProperties() {
+      return [`Ventilator.${this.curve_param}`]
+    },
+    loopModelProperties() {
+      const presets = {
+        "PV LOOP": ["Ventilator.pres", "Ventilator.vol"],
+        "VF LOOP": ["Ventilator.vol", "Ventilator.flow"],
+        "PV SPONT": ["THORAX.pres", "THORAX.vol"]
+      }
+      return presets[this.loop_preset] || presets["PV LOOP"]
+    }
   },
   data() {
     return {
       ventilator_running: false,
       spont_breathing: true,
-      presetsEnabled: true,
-      showPresets: false,
-      show_summary: false,
       show_loops: false,
-      rtWindow: 3,
-      rtWindowValidated: 3,
-      analysisEnabled: true,
-      autoscaleEnabled: true,
-      autoscale: true,
       isEnabled: true,
       et_tube_diameter: 3.5,
       et_tube_length: 110,
@@ -305,66 +225,15 @@ export default {
       humidity: 100,
       trigger_perc: 6.0,
       mode: "PC",
-      x_min: 2,
-      x_max: 15.0,
-      y_min: 0,
-      y_max: 25,
-      multipliersEnabled: true,
-      scaling: false,
-      chart1_factor: 1.0,
-      exportEnabled: true,
       title: "MECHANICAL VENTILATOR",
-      selectedModel1: "Ventilator",
-      selectedProp1: "pres",
-      p1: "Ventilator.pres",
-      p1_max: 0.0,
-      p1_min: 0.0,
-      p1_sd: 0.0,
-      p1_mean: 0.0,
-      p1_permin: 0.0,
-      p1_perbeat: 0.0,
-      seconds: 0,
-      x_axis: [],
-      y1_axis: [],
-      redrawInterval: 0.015,
-      redrawTimer: 0.0,
-      presets: {
-        "vent": ["Ventilator.pres"]
-      },
-      presets_loops: {
-        "PV LOOP": ["Ventilator.pres", "Ventilator.vol"],
-        "VF LOOP": ["Ventilator.vol", "Ventilator.flow"],
-        "PV SPONT": ["THORAX.pres", "THORAX.vol"]
-      },
       update_model: true,
       curve_param: "pres",
-      graph_control: false
+      loop_preset: "PV LOOP"
     };
   },
   methods: {
     toggleVentilator() {
       explain.callModelFunction("Ventilator.switch_ventilator", [this.ventilator_running])
-    },
-    toggleCurveParam() {
-      if (this.curve_param == "pres") {
-        this.p1 = "Ventilator.pres"
-      }
-      if (this.curve_param == "flow") {
-        this.p1 = "Ventilator.flow"
-      }
-      if (this.curve_param == "vol") {
-        this.p1 = "Ventilator.vol"
-      }
-
-    },
-    toggleHires() {
-      if (this.state.configuration.chart_hires) {
-        this.rtWindow = 1.0
-        explain.setSampleInterval(0.0015)
-      } else {
-        this.rtWindow = 3.0
-        explain.setSampleInterval(0.005)
-      }
     },
     toggle_spont_breathing() {
       if (this.update_model) {
@@ -405,9 +274,6 @@ export default {
         explain.callModelFunction("Ventilator.set_humidity", [parseFloat(this.humidity / 100.0)])
       }
     },
-    update_() {
-      explain.callModelFunction("Ventilator.set_ventilator_v", [this._map_cmh2o, this._freq, this._amplitude_cmh2o, this._bias_flow])
-    },
     update_ventilator_setttings() {
       if (this.update_model) {
 
@@ -420,8 +286,6 @@ export default {
             if (this.ventilator_running) {
               explain.callModelFunction("Ventilator.set_pc", [this.pip_cmh2o, this.peep_cmh2o, this.freq, this.insp_time, this.insp_flow])
             }
-            // this.spont_breathing = false
-            // this.toggle_spont_breathing()
             break;
           case "PRVC":
             if (!this.ventilator_running) {
@@ -466,198 +330,6 @@ export default {
         explain.callModelFunction("Ventilator.switch_ventilator", [true])
       }
     },
-    clearProps() {
-      this.p1 = "Ventilator.pres"
-      this.selectedModel1 = "Ventilator"
-      this.selectedProp1 = "pres"
-    },
-    toggleFactors() {
-      if (!this.scaling) {
-        this.chart1_factor = 1.0
-      }
-    },
-    updateRtWindow() {
-      if (this.rtWindow < 1.0) {
-        this.rtWindow = 1.0
-      }
-      if (this.rtWindow > 10.0) {
-        this.rtWindow = 10.0
-      }
-
-      this.rtWindowValidated = this.rtWindow
-
-    },
-    resetAnalysis() {
-      this.p1_max = 0.0
-      this.p1_min = 0.0
-      this.p1_sd = 0.0
-      this.p1_mean = 0.0
-      this.p1_permin = 0.0
-      this.p1_perbeat = 0.0
-    },
-    analyzeDataRt() {
-      if (this.p1 !== '') {
-        this.p1_max = Stat.max(this.y1_axis).toFixed(4)
-        this.p1_min = Stat.min(this.y1_axis).toFixed(4)
-        this.p1_sd = Stat.standardDeviation(this.y1_axis).toFixed(4)
-        this.p1_mean = Stat.mean(this.y1_axis).toFixed(4)
-        this.p1_permin = Stat.sum(this.y1_axis).toFixed(4)
-        this.p1_perbeat = 0.0
-      }
-
-    },
-    analyzeData() {
-      this.resetAnalysis()
-      let param1 = []
-      if (this.p1 !== '') {
-        param1 = explain.modelData.map((item) => { return item[this.p1] * this.chart1_factor; });
-        this.p1_max = Stat.max(param1).toFixed(4)
-        this.p1_min = Stat.min(param1).toFixed(4)
-        this.p1_sd = Stat.standardDeviation(param1).toFixed(4)
-        this.p1_mean = Stat.mean(param1).toFixed(4)
-        this.p1_permin = Stat.sum(param1).toFixed(4)
-        this.p1_perbeat = 0.0
-      }
-
-    },
-    toggleAutoscaling() {
-      const myChart = this.$refs.myVentTest.chart
-      this.y_max = parseInt(myChart.data.datasets[0].data.reduce((max, current) => (current > max ? current : max), -Infinity))
-      this.y_min = parseInt(myChart.data.datasets[0].data.reduce((min, current) => (current < min ? current : min), Infinity))
-      this.autoscaling()
-    },
-    autoscaling() {
-      if (!this.autoscale) {
-        this.chartOptions = {
-          responsive: true,
-          animation: false,
-          spanGaps: true,
-          showLine: true,
-          plugins: {
-            legend: {
-              display: false
-            }
-          },
-          datasets: {
-            line: {
-              pointRadius: 0 // disable for all `'line'` datasets
-            }
-          },
-          scales: {
-            x: {
-              display: false
-            },
-            y: {
-              min: this.y_min,
-              max: this.y_max,
-              grid: {
-                color: '#333333'
-              },
-            }
-          }
-        }
-      } else {
-        this.chartOptions = {
-          responsive: true,
-          animation: false,
-          spanGaps: true,
-          showLine: true,
-          plugins: {
-            legend: {
-              display: false
-            }
-          },
-          datasets: {
-            line: {
-              pointRadius: 0 // disable for all `'line'` datasets
-            }
-          },
-          scales: {
-            x: {
-              display: false
-            },
-            y: {
-              grid: {
-                color: '#333333'
-              },
-            }
-          }
-        }
-      }
-
-
-    },
-    dataUpdateSlow() {
-      if (this.alive && this.ventilator_running) {}
-    },
-    dataUpdateRt() {
-      if (this.alive && this.ventilator_running && !this.show_loops) {
-        // update is every 0.015 ms and the data is sampled with 0.005 ms resolution (so 3 data points per 0.015 sec = 200 datapoints per second)
-        for (let i = 0; i < explain.modelData.length; i++) {
-          this.y1_axis.push(explain.modelData[i][this.p1] * this.chart1_factor)
-          this.x_axis.push(this.seconds)
-          this.seconds += 0.005;
-        }
-
-        if (this.x_axis.length > this.rtWindowValidated * 200.0) {
-          let too_many = this.x_axis.length - (this.rtWindowValidated * 200.0)
-          this.x_axis.splice(0, too_many)
-          this.y1_axis.splice(0, too_many)
-        }
-
-        if (this.redrawTimer > this.redrawInterval) {
-
-          this.redrawTimer = 0;
-          const myChart = this.$refs.myVentTest.chart
-          myChart.data.labels = this.x_axis
-          myChart.data.datasets[0].data = [...this.y1_axis]
-          requestAnimationFrame(() => {
-            myChart.update()
-          })
-
-          if (this.show_summary) {
-            this.analyzeDataRt()
-          }
-
-        }
-        this.redrawTimer += 0.015
-      }
-    },
-    toggleSummary() {
-      if (this.show_summary) {
-        this.analyzeData()
-      }
-
-    },
-    dataUpdate() {
-
-      let data_set_pres = {}
-      if (this.p1 !== '') {
-        this.y1_axis = explain.modelData.map((item) => { return item[this.p1] * this.chart1_factor; });
-        data_set_pres = {
-          data: this.y1_axis,
-          borderColor: 'rgb(192, 0, 0)',
-          borderWidth: 1,
-          pointStyle: false
-        }
-      }
-
-      this.x_axis = [...Array(this.y1_axis.length).keys()]
-
-      this.chartData = {
-        labels: this.x_axis,
-        datasets: [data_set_pres]
-      }
-
-      if (this.show_summary) {
-        this.analyzeDataRt()
-      }
-      // prepare for realtime analysis
-      this.seconds = 0
-      this.x_axis = []
-      this.y1_axis = []
-
-    },
     processModelState() {
       if (explain.modelState.models) {
         this.ventilator_running = explain.modelState.models["Ventilator"].is_enabled
@@ -682,34 +354,22 @@ export default {
     }
   },
   beforeUnmount() {
-    explain.off("rtf", this._onRtf);
-    explain.off("rts", this._onRts);
-    explain.off("data", this._onData);
     if (this._unwatchState) this._unwatchState()
   },
   mounted() {
-    this._onRtf = () => { if (this.ventilator_running) { this.dataUpdateRt() }};
-    this._onRts = () => { if (this.ventilator_running) { this.dataUpdateSlow() }};
-    this._onData = () => { if (this.ventilator_running) this.dataUpdate()};
-    explain.on("rtf", this._onRtf);
-    explain.on("rts", this._onRts);
-    explain.on("data", this._onData);
     this._unwatchState = this.$watch(
       () => this.modelStore.modelState,
       () => this.processModelState()
     )
 
     explain.watchModelProps([
-      "Ventilator.pres", 
-      "Ventilator.flow", 
-      "Ventilator.vol", 
-      "Ventilator.co2", 
-      "Ventilator.etco2", 
+      "Ventilator.pres",
+      "Ventilator.flow",
+      "Ventilator.vol",
+      "Ventilator.co2",
+      "Ventilator.etco2",
       "Breathing.breathing_enabled"
     ])
-
-    // check whether hires is enabled
-    this.toggleHires()
   },
 };
 </script>

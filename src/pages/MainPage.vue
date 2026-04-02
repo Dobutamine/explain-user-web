@@ -133,11 +133,6 @@
               <q-tooltip>animation</q-tooltip>
             </q-tab> -->
 
-            <q-tab name="heart">
-              <q-icon name="fa-solid fa-heart" size="xs"></q-icon>
-              <q-tooltip>cath lab</q-tooltip>
-            </q-tab>
-
 
             <q-tab name="time_chart">
               <q-icon name="fa-solid fa-chart-line" size="xs"></q-icon>
@@ -201,17 +196,6 @@
               </q-scroll-area>
             </q-tab-panel>
 
-            <q-tab-panel name="heart">
-              <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
-                right: '5px',
-                borderRadius: '5px',
-                background: 'black',
-                width: '5px',
-                opacity: 0.5
-              }">
-                <HeartComponent :alive="heart_alive"></HeartComponent>
-              </q-scroll-area>
-            </q-tab-panel>
 
             <q-tab-panel name="loop_chart">
               <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
@@ -321,10 +305,7 @@ import { useStateStore } from 'src/stores/state';
 import { useModelStore } from 'src/stores/model';
 import NumericsComponent from "src/components/NumericsComponent.vue";
 import ModelEditor from "src/components/ModelEditorComponent.vue"
-import TimeBasedChartComponent from 'src/components/TimeBasedChartComponent.vue';
 import VentilatorComponent from 'src/components/VentilatorComponent.vue';
-import XYChartComponent from 'src/components/XYChartComponent.vue';
-import HeartComponent from 'src/components/HeartComponent.vue';
 import DiagramComponent from 'src/components/DiagramComponent.vue';
 import NiceController from 'src/components/NiceController.vue';
 import BigNumbersComponent from 'src/components/BigNumbersComponent.vue';
@@ -360,10 +341,7 @@ export default defineComponent({
     BigNumbersComponent,
     ModelEditor,
     ModelBuilderComponent,
-    TimeBasedChartComponent,
     VentilatorComponent,
-    XYChartComponent,
-    HeartComponent,
     DiagramComponent,
     NiceController,
     DiagramEditorComponent,
@@ -385,7 +363,6 @@ export default defineComponent({
       tab_right: "numerics",
       chart_alive: true,
       ventilator_alive: true,
-      heart_alive: false,
       ecls_alive:true,
       xy_alive: true,
       loop_alive: true,
@@ -407,7 +384,6 @@ export default defineComponent({
         case "animation":
           this.animation_alive = true
           this.ventilator_alive = false
-          this.heart_alive = false
           this.chart_alive = false
           this.xy_alive = false
           this.diagram_alive = false
@@ -415,7 +391,6 @@ export default defineComponent({
         case "ventilator":
           this.animation_alive = false
           this.ventilator_alive = true
-          this.heart_alive = false
           this.chart_alive = false
           this.xy_alive = false
           this.diagram_alive = false
@@ -424,15 +399,6 @@ export default defineComponent({
           this.animation_alive = false
           this.ecls_alive = true
           this.ventilator_alive = false
-          this.heart_alive = false
-          this.chart_alive = false
-          this.xy_alive = false
-          this.diagram_alive = false
-          break;
-        case "heart":
-          this.animation_alive = false
-          this.ventilator_alive = false
-          this.heart_alive = true
           this.chart_alive = false
           this.xy_alive = false
           this.diagram_alive = false
@@ -440,7 +406,6 @@ export default defineComponent({
         case "time_chart":
           this.animation_alive = false
           this.ventilator_alive = false
-          this.heart_alive = false
           this.chart_alive = true
           this.xy_alive = false
           this.loop_alive = false
@@ -449,7 +414,6 @@ export default defineComponent({
         case "xy_chart":
           this.animation_alive = false
           this.ventilator_alive = false
-          this.heart_alive = false
           this.chart_alive = false
           this.xy_alive = true
           this.loop_alive = false
@@ -458,7 +422,6 @@ export default defineComponent({
         case "loop_chart":
           this.animation_alive = false
           this.ventilator_alive = false
-          this.heart_alive = false
           this.chart_alive = false
           this.xy_alive = false
           this.loop_alive = true
@@ -467,7 +430,6 @@ export default defineComponent({
         case "diagram":
           this.animation_alive = false
           this.ventilator_alive = false
-          this.heart_alive = false
           this.chart_alive = false
           this.xy_alive = false
           this.loop_alive = false
@@ -476,7 +438,6 @@ export default defineComponent({
         case "placenta":
           this.animation_alive = false
           this.ventilator_alive = false
-          this.heart_alive = false
           this.chart_alive = false
           this.xy_alive = false
           this.loop_alive = false

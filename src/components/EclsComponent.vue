@@ -181,7 +181,6 @@
   import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, PointElement, LineElement } from 'chart.js'
   import { shallowRef } from 'vue'
   import * as Stat from "simple-statistics";
-  import XYChartComponent from "./XYChartComponent.vue";
   
   ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, PointElement, LineElement)
   export default {
@@ -266,7 +265,6 @@
       Bar,
       Line,
       Scatter,
-      XYChartComponent
     },
     data() {
       return {
