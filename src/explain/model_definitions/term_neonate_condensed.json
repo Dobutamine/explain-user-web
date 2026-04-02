@@ -1,0 +1,403 @@
+{
+    "RAIVCI": {
+        "name": "RAIVCI",
+        "description": "timevarying elastance model of the right atrium",
+        "is_enabled": true,
+        "u_vol": 0,
+        "el_min": 2346,
+        "el_max": 6104,
+        "el_k": 0,
+        "vol": 0.0012
+        },
+    "RASVC": {
+        "name": "RASVC",
+        "description": "timevarying elastance model of the right atrium",
+        "u_vol": 0,
+        "el_min": 2346,
+        "el_max": 6104,
+        "el_k": 0,
+        "vol": 0.0012
+        },
+    "RV": {
+        "name": "RV",
+        "description": "timevarying elastance model of the right ventricle",
+        "is_enabled": true,
+        "model_type": "HeartChamber",
+        "components": {},
+        "u_vol": 0.004,
+        "el_min": 1079,
+        "el_max": 22200,
+        "el_k": 0,
+        "vol": 0.0082
+        },
+    "PA": {
+        "name": "PA",
+        "description": "model of the pulmonary artery",
+        "model_type": "BloodVessel",
+        "u_vol": 0.0022,
+        "el_base": 6000,
+        "el_k": 0,
+        "vol": 0.0079
+        },
+    "PAAL": {
+        "name": "PAAL",
+        "description": "model of the pulmonary arterioles of the left lung",
+        "model_type": "BloodVessel",
+        "u_vol": 0.0005,
+        "el_base": 8000,
+        "el_k": 0,
+        "vol": 0.0029
+        },
+    "PAAR": {
+        "name": "PAAR",
+        "description": "capacitance model of the pulmonary arterioles of the right lung",
+        "model_type": "BloodVessel",
+        "u_vol": 0.0005,
+        "el_base": 8000,
+        "el_k": 0,
+        "vol": 0.0029
+        },
+    "LL": {
+        "name": "LL",
+        "description": "model of the capillary blood compartment of the left lung",
+        "model_type": "BloodVessel",
+        "u_vol": 0.00124,
+        "el_base": 4380,
+        "el_k": 0,
+        "vol": 0.0037
+        },
+    "RL": {
+            "name": "RL",
+            "description": "model of the capillary blood compartment of the right lung",
+            "model_type": "BloodVessel",
+            "u_vol": 0.00124,
+            "el_base": 4380,
+            "el_k": 0,
+            "vol": 0.0037
+          },
+    "PV": {
+        "name": "PV",
+        "description": "model of the pulmonary veins",
+        "model_type": "BloodVessel",
+        "u_vol": 0.00563,
+        "el_base": 4517,
+        "el_k": 0,
+        "vol": 0.0079       
+        },
+    "LA": {
+        "name": "LA",
+        "description": "timevarying elastance model of the left atrium",
+        "is_enabled": true,
+        "u_vol": 0,
+        "el_min": 1173,
+        "el_max": 3053,
+        "el_k": 0,
+        "vol": 0.0048
+        },
+    "LV": {
+        "name": "LV",
+        "description": "timevarying elastance model of the left ventricle",
+        "is_enabled": true,
+        "model_type": "HeartChamber",
+        "components": {},
+        "u_vol": 0.000733,
+        "el_min": 1137,
+        "el_max": 27200,
+        "el_k": 0,
+        "vol": 0.0067
+        },
+    "AA": {
+        "name": "AA",
+        "description": "capacitance model of the ascending aorta",
+        "model_type": "BloodVessel",
+        "u_vol": 0.0033,
+        "el_base": 21000,
+        "el_k": 0,
+        "vol": 0.0062
+        },
+    "COR": {
+        "name": "COR",
+        "description": "timevarying elastance model of the coronaries",
+        "model_type": "BloodTimeVaryingElastance",
+        "u_vol": 0.00028,
+        "el_min": 30000,
+        "el_max": 90000,
+        "el_k": 0,
+        "vol": 0.00076
+        },
+    "AAR": {
+        "name": "AAR",
+        "description": "model of the aortic arch",
+        "model_type": "BloodVessel",
+        "u_vol": 0.0035,
+        "el_base": 21000,
+        "el_k": 0,
+        "vol": 0.0064
+        },
+    "AD": {
+        "name": "AD",
+        "description": "capacitance model of the descending aorta",
+        "model_type": "BloodVessel",
+        "u_vol": 0.01969,
+        "el_base": 21000,
+        "el_k": 0,
+        "vol": 0.0223
+        },
+    "RLB": {
+        "name": "RLB",
+        "description": "capacitance model of the blood compartment of the lower body",
+        "model_type": "BloodVessel",
+        "u_vol": 0.0011,
+        "el_base": 10000,
+        "el_k": 0,
+        "vol": 0.00477
+        },
+    "KID_ART": {
+        "name": "KID_ART",
+        "description": "arteriole of KID",
+        "model_type": "BloodVessel",
+        "u_vol": 0.00011,
+        "el_base": 100000,
+        "el_k": 0,
+        "vol": 0.0005
+      },
+    "KID_CAP": {
+        "name": "KID_CAP",
+        "description": "capillaries of KID",
+        "model_type": "BloodVessel",
+        "u_vol": 0.000605,
+        "el_base": 66666,
+        "el_k": 0,
+        "vol": 0.00115
+      },
+    "KID_VEN": {
+        "name": "KID_VEN",
+        "description": "venules of KID",
+        "model_type": "BloodVessel",
+        "u_vol": 0.000385,
+        "el_base": 13333,
+        "el_k": 0,
+        "vol": 0.00308
+        },
+    "INT": {
+        "name": "INT",
+        "description": "model of the blood compartment of the intestines",
+        "is_enabled": true,
+        "model_type": "BloodVessel",
+        "u_vol": 0.0011,
+        "el_base": 10000,
+        "el_k": 0,
+        "vol": 0.00477
+        },
+    "LS_ART": {
+        "name": "LS_ART",
+        "description": "arteriole of LS",
+        "model_type": "BloodVessel",
+        "u_vol": 0.00011,
+        "el_base": 100000,
+        "el_k": 0,
+        "pres_ext": 0,
+        "vol": 0.000505
+      },
+    "LS_CAP": {
+        "name": "LS_CAP",
+        "description": "capillaries of LS",
+        "model_type": "BloodVessel",
+        "u_vol": 0.000605,
+        "el_base": 66666,
+        "el_k": 0,
+        "vol": 0.00115
+      },
+    "LS_VEN": {
+        "name": "LS_VEN",
+        "description": "venules of LS",
+        "model_type": "BloodVessel",
+        "u_vol": 0.000385,
+        "el_base": 13333,
+        "el_k": 0,
+        "vol": 0.00308
+      },
+    "VLB": {
+        "name": "VLB",
+        "description": "model of the extrathoracic venous blood compartment of the lower body",
+        "is_enabled": true,
+        "model_type": "BloodVessel",
+        "components": {},
+        "u_vol": 0.083,
+        "el_base": 1500,
+        "el_k": 0,
+        "vol": 0.08588
+        },
+    "IVCI": {
+        "name": "IVCI",
+        "description": "model of the intrathoracic part of the inferior vena cava",
+        "is_enabled": true,
+        "model_type": "BloodVessel",
+        "components": {},
+        "u_vol": 0.0162,
+        "el_base": 777,
+        "el_k": 0,
+        "vol": 0.02512
+        },
+    "RUB": {
+        "name": "RUB",
+        "description": "model of the blood compartment of the upper body",
+        "model_type": "BloodVessel",
+        "u_vol": 0.0011,
+        "el_base": 10000,
+        "el_k": 0,
+        "vol": 0.003659
+        },
+    "BR": {
+        "name": "BR",
+        "description": "model of the blood compartment of the brain",
+        "model_type": "BloodVessel",
+        "u_vol": 0.0011,
+        "el_base": 10000,
+        "el_k": 0,
+        "vol": 0.0034868
+    },
+    "VUB": {
+        "name": "VUB",
+        "description": "model of the extrathoracic venous blood compartment of the upper body",
+        "model_type": "BloodVessel",
+        "u_vol": 0.0432,
+        "el_base": 2500,
+        "el_k": 0,
+        "vol": 0.04475
+        },
+    "SVC": {
+        "name": "SVC",
+        "description": "model of the superior vena cava",
+        "model_type": "BloodVessel",
+        "u_vol": 0.0108,
+        "el_base": 1000,
+        "el_k": 0,
+        "vol": 0.017481
+        },
+    "DA": {
+        "name": "DA",
+        "description": "blood capacitance model of the ductus arteriosus",
+        "model_type": "BloodCapacitance",
+        "u_vol": 0,
+        "el_base": 30000,
+        "el_k": 0,
+        "vol": 0.00193
+    },
+    "PERICARDIUM": {
+        "name": "PERICARDIUM",
+        "description": "container model of the pericardium",
+        "model_type": "Container",
+        "u_vol": 0,
+        "el_base": 10,
+        "el_k": 1,
+        "contained_components": [
+            "RAIVCI",
+            "RASVC",
+            "RV",
+            "LA",
+            "LV",
+            "COR"
+        ]
+        },
+    "THORAX": {
+        "name": "THORAX",
+        "description": "container model the thoracic rib cage",
+        "model_type": "Container",
+        "u_vol": 0.267,
+        "el_base": 50,
+        "el_k": 0,
+        "contained_components": [
+            "ALL",
+            "ALR",
+            "IVCI",
+            "SVC",
+            "PERICARDIUM",
+            "AA",
+            "AAR",
+            "PA",
+            "PV",
+            "LL",
+            "RL",
+            "PAAL",
+            "PAAR"
+        ]
+        },
+    "MOUTH": {
+        "name": "MOUTH",
+        "description": "capacitance model of the air at the mouth",
+        "model_type": "GasCapacitance",
+        "u_vol": 1000000000,
+        "el_base": 10,
+        "el_k": 0,
+        "fixed_composition": true,
+        "vol": 1000000000,
+        "pres_atm": 760,
+        "target_temp": 20,
+        "fo2": 0.207,
+        "fco2": 0.000387,
+        "fn2": 0.78,
+        "fother": 0,
+        "fh2o": 0.01161,
+        "temp": 20,
+        "humidity": 0.5
+        },
+    "DS": {
+        "name": "DS",
+        "description": "capacitance model of the dead space",
+        "model_type": "GasCapacitance",
+        "u_vol": 0.0051,
+        "el_base": 5585,
+        "el_k": 0,
+        "fixed_composition": false,
+        "vol": 0.00506,
+        "pres_atm": 760,
+        "target_temp": 32,
+        "fo2": 0.15560693727764882,
+        "fco2": 0.041197790333382764,
+        "fn2": 0.7890062224733426,
+        "fother": 0,
+        "fh2o": 0.014189049915625812,
+        "temp": 34.58785618908886,
+        "humidity": 1
+        },
+    "ALL": {
+        "name": "ALL",
+        "description": "gas capacitance model of the alveolar space of the left lung",
+        "is_enabled": true,
+        "model_type": "GasCapacitance",
+        "components": {},
+        "u_vol": 0.04,
+        "el_base": 186,
+        "el_k": 0,
+        "fixed_composition": false,
+        "vol": 0.05539,
+        "pres_atm": 760,
+        "target_temp": 37,
+        "fo2": 0.15192604242563418,
+        "fco2": 0.04418716444317353,
+        "fn2": 0.7899780313424065,
+        "fother": 0,
+        "fh2o": 0.013908761788785818,
+        "temp": 36.30740761002609,
+        "humidity": 1
+        },
+    "ALR": {
+        "name": "ALR",
+        "description": "gas capacitance model of the alveolar space of the right lung",
+        "model_type": "GasCapacitance",
+        "u_vol": 0.04,
+        "el_base": 186,
+        "el_k": 0,
+        "fixed_composition": false,
+        "vol": 0.05539,
+        "target_temp": 37,
+        "fo2": 0.15192604242563418,
+        "fco2": 0.04418716444317353,
+        "fn2": 0.7899780313424065,
+        "fother": 0,
+        "fh2o": 0.013908761788785818,
+        "temp": 36.30740761002609,
+        "humidity": 1
+        }
+}
