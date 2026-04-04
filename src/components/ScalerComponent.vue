@@ -4,10 +4,7 @@
       {{ title }}
     </div>
 
-      <!-- calculated weight -->
-      <div class="text-overline text-center q-mt-sm">
-        weight: {{ calculated_weight.toFixed(3) }} kg
-      </div>
+
 
     <div v-if="isEnabled">
       <!-- PRESETS
@@ -16,6 +13,38 @@
         <q-btn label="28w Preterm" color="purple" size="sm" dense @click="applyPreset(PRETERM_28W)" />
         <q-btn label="TERM" color="grey-7" size="sm" dense @click="resetAll" />
       </div> -->
+
+      <!-- TARGET WEIGHT -->
+      <div class="text-overline text-center q-mt-sm">TARGET WEIGHT</div>
+      <div class="text-overline justify-center items-center q-gutter-xs row q-mt-xs">
+        <q-input v-model.number="target_weight" color="green" hide-hint filled
+          label="kg" dense stack-label type="number" :step="0.1"
+          style="font-size: 14px; width: 80px;" class="text-center" squared/>
+        <q-btn label="APPLY" color="green" size="sm" dense @click="applyTargetWeight" style="width: 70px;" />
+      </div>
+            <!-- calculated weight -->
+      <div class="text-overline text-center q-mt-sm">
+        current weight: {{ calculated_weight.toFixed(3) }} kg
+      </div>
+                <div class="text-overline justify-center q-gutter-sm row q-mt-sm q-mb-md">
+        <q-btn
+          label=" FIXATE FACTORS "
+          color="red-10"
+          size="sm"
+          dense
+          @click="incorporate"
+        />
+        <q-btn
+          label="RESET FACTORS"
+          color="grey-7"
+          size="sm"
+          dense
+          @click="resetAll"
+        />
+      </div>
+
+
+
 
       <!-- BLOOD -->
       <q-separator class="q-mt-md" />
@@ -177,30 +206,15 @@
       <!-- add/remove volume -->
       <q-separator class="q-mt-md" />
       <div class="text-overline text-center q-mt-md">CHANGE BLOOD VOLUME (ml)</div>
-      <div class="text-overline justify-center q-gutter-xs row q-mt-xs">
+      <div class="text-overline justify-center items-center q-gutter-xs row q-mt-xs">
         <q-input v-model.number="add_volume_ml" color="blue" hide-hint filled
           label="ml" dense stack-label type="number" :step="1"
           style="font-size: 14px; width: 80px;" class="text-center" squared />
-        <q-btn label="ADD" color="blue" size="sm" dense @click="addVolume" />
-        <q-btn label="REMOVE" color="red-7" size="sm" dense @click="removeVolume" />
+        <q-btn label="ADD" color="blue" size="sm" dense @click="addVolume" style="width: 70px;" />
+        <q-btn label="REMOVE" color="red-7" size="sm" dense @click="removeVolume" style="width: 70px;" />
       </div>
 
-      <div class="text-overline justify-center q-gutter-sm row q-mt-md q-mb-md">
-        <q-btn
-          label="INCORPORATE FACTORS"
-          color="blue-grey"
-          size="sm"
-          dense
-          @click="incorporate"
-        />
-        <q-btn
-          label="RESET FACTORS"
-          color="grey-7"
-          size="sm"
-          dense
-          @click="resetAll"
-        />
-      </div>
+
     </div>
   </q-card>
 </template>
@@ -251,6 +265,7 @@ export default {
       map_max: 100,
       heart_rate_ref: 110,
       add_volume_ml: 10,
+      target_weight: 3.545,
     };
   },
   computed: {
@@ -285,6 +300,20 @@ export default {
       this.map_set = preset.br_map_set;
       this.map_max = preset.br_map_max;
       explain.scaleModel("preset", preset);
+    },
+    applyTargetWeight() {
+      const vol_factor = this.target_weight / this.baseline_weight;
+      this.blood_vol = vol_factor;
+      this.lung_vol = vol_factor;
+      this.heart_vol = vol_factor;
+      this.thorax_uvol = vol_factor;
+      this.pericardium_uvol = vol_factor;
+      explain.scaleModel("blood_volumes", vol_factor);
+      explain.scaleModel("lung_volumes", vol_factor);
+      explain.scaleModel("heart_volumes", vol_factor);
+      explain.scaleModel("thorax_uvol", vol_factor);
+      explain.scaleModel("pericardium_uvol", vol_factor);
+      explain.scaleModel("weight", this.target_weight);
     },
     applyAnsMap() {
       this._debounce("_ans_timer", () => {
