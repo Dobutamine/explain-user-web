@@ -20,6 +20,7 @@
 import * as models from "./ModelIndex";
 import DataCollector from "./helpers/DataCollector";
 import TaskScheduler from "./helpers/TaskScheduler";
+import ModelScaler from "./helpers/ModelScaler";
 import { calc_blood_composition } from "./component_models/BloodComposition";
 
 // store all imported models in a list to be able to instantiate them dynamically
@@ -144,6 +145,9 @@ self.onmessage = (e) => {
             break;
           case "save":
             save_state();
+            break;
+          case "scale":
+            scale_model(e.data.payload);
             break;
           case "watch":
             watch_props(e.data.payload);
@@ -293,6 +297,9 @@ const build = function (model_definition) {
 
     // add a task scheduler instance to the model object
     model["TaskScheduler"] = new TaskScheduler(model);
+
+    // add a model scaler instance to the model object
+    model["ModelScaler"] = new ModelScaler(model);
   }
 
   if (errors > 0) {
@@ -621,6 +628,96 @@ const get_blood_composition = function (model_name) {
   }
 }
 
+const scale_model = function (payload) {
+  if (!model_initialized || !model.ModelScaler) {
+    _send({
+      type: "status",
+      message: "ERROR: model not initialized.",
+      payload: [],
+    });
+    return;
+  }
+  try {
+    const { group, factor } = payload;
+    console.log(`ModelEngine: scaling ${group} by factor ${factor}`);
+    switch (group) {
+      // blood
+      case "blood_volumes":
+        model.ModelScaler.scale_blood_volumes(factor);
+        break;
+      case "blood_elastances":
+        model.ModelScaler.scale_blood_elastances(factor);
+        break;
+      case "blood_resistances":
+        model.ModelScaler.scale_blood_resistances(factor);
+        break;
+      // lung
+      case "lung_volumes":
+        model.ModelScaler.scale_lung_volumes(factor);
+        break;
+      case "lung_elastances":
+        model.ModelScaler.scale_lung_elastances(factor);
+        break;
+      case "lung_resistances":
+        model.ModelScaler.scale_lung_resistances(factor);
+        break;
+      // heart
+      case "heart_volumes":
+        model.ModelScaler.scale_heart_volumes(factor);
+        break;
+      case "heart_el_min":
+        model.ModelScaler.scale_heart_el_min(factor);
+        break;
+      case "heart_el_max":
+        model.ModelScaler.scale_heart_el_max(factor);
+        break;
+      case "heart_resistances":
+        model.ModelScaler.scale_heart_resistances(factor);
+        break;
+      // containers
+      case "thorax_uvol":
+        model.ModelScaler.scale_thorax_uvol(factor);
+        break;
+      case "pericardium_uvol":
+        model.ModelScaler.scale_pericardium_uvol(factor);
+        break;
+      // utility
+      case "weight":
+        model.weight = factor;
+        break;
+      case "add_volume":
+        model.ModelScaler.add_volume(factor);
+        break;
+      case "preset": {
+        const preset = factor;
+        model.ModelScaler.apply_preset(preset);
+        if (preset.weight) model.weight = preset.weight;
+        if (preset.heart_rate_ref) model.models["Heart"].heart_rate_ref = preset.heart_rate_ref;
+        if (preset.br_map_min !== undefined) model.models["BR_MAP"].min_value = preset.br_map_min;
+        if (preset.br_map_set !== undefined) model.models["BR_MAP"].set_value = preset.br_map_set;
+        if (preset.br_map_max !== undefined) model.models["BR_MAP"].max_value = preset.br_map_max;
+        break;
+      }
+      case "incorporate":
+        model.ModelScaler.incorporate();
+        break;
+      case "reset":
+        model.ModelScaler.reset();
+        model.weight = 3.545;
+        break;
+    }
+    get_model_state();
+    _send({
+      type: "status",
+      message: `${group} scaled by factor ${factor}`,
+      payload: [],
+    });
+  } catch (e) {
+    console.error("ModelEngine: scaling error:", e);
+    _send_error(`Scaling error: ${e.message}`, e);
+  }
+};
+
 const _model_step = function () {
   // iterate over all models
   for (const model_name in model.models) {
@@ -643,7 +740,6 @@ const _model_step = function () {
 
   // do the tasks
   _get_task_scheduler()?.run_tasks();
-
 
   // increase the model clock
   model.model_time_total += model.modeling_stepsize;

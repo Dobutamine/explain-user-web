@@ -515,6 +515,19 @@ export default class Model extends ModelEmitter {
   }
 
   /**
+   * Scale a specific parameter group by a factor.
+   * @param {string} group One of: "volumes", "unstressed_volumes", "elastances", "resistances", "reset"
+   * @param {number} factor Scale factor (1.0 = no change, 0.5 = half, 2.0 = double)
+   */
+  scaleModel(group, factor = 1.0) {
+    this.send({
+      type: "POST",
+      message: "scale",
+      payload: { group, factor },
+    });
+  }
+
+  /**
    * Remove transient helpers and local-only objects from a model state snapshot
    * so that it can be serialized or displayed cleanly.
    * @param {Object} model_state Raw state object returned by the engine.
@@ -524,6 +537,7 @@ export default class Model extends ModelEmitter {
     // transfrom the modelstate object to a serializable object by removing the helper objects
     delete model_state["DataCollector"];
     delete model_state["TaskScheduler"];
+    delete model_state["ModelScaler"];
     // remove the ncc counters
     for (const key in model_state) {
       if (key.startsWith("ncc")) {

@@ -28,6 +28,8 @@
             </q-tab>
             <q-tab name="model_builder"><q-icon name="fa-solid fa-pen-to-square" size="xs"></q-icon><q-tooltip>model builder</q-tooltip>
             </q-tab>
+            <q-tab name="scaler"><q-icon name="fa-solid fa-weight-scale" size="xs"></q-icon><q-tooltip>model scaler</q-tooltip>
+            </q-tab>
 
           </q-tabs>
           <q-tab-panels v-model="tab_left" keep-alive style="background-color: black">
@@ -89,6 +91,18 @@
                 opacity: 1.0
               }">
               <ModelBuilderComponent title="MODEL BUILDER"></ModelBuilderComponent>
+              </q-scroll-area>
+            </q-tab-panel>
+
+            <q-tab-panel name="scaler">
+              <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
+                right: '5px',
+                borderRadius: '5px',
+                background: 'black',
+                width: '5px',
+                opacity: 0.5
+              }">
+                <ScalerComponent></ScalerComponent>
               </q-scroll-area>
             </q-tab-panel>
 
@@ -317,6 +331,7 @@ import AnimationEditor from 'src/components/AnimationEditor.vue';
 import ModelBuilderComponent from 'src/components/ModelBuilderComponent.vue';
 import ControllerComponent from 'src/components/ControllerComponent.vue';
 import DemoComponent from 'src/components/DemoComponent.vue';
+import ScalerComponent from 'src/components/ScalerComponent.vue';
 import NumericsEditor from 'src/components/NumericsEditor.vue';
 import RealtimeChart from 'src/components/RealtimeChart.vue';
 import LoopChart from 'src/components/LoopChart.vue';
@@ -353,7 +368,8 @@ export default defineComponent({
     NumericsEditor,
     RealtimeChart,
     LoopChart,
-    DemoComponent
+    DemoComponent,
+    ScalerComponent
 
   },
   data() {
