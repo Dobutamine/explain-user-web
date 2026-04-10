@@ -94,7 +94,7 @@ export class BloodPump extends BloodCapacitance {
     this._outlet = this._model_engine.models[this.outlet];
 
     // calculate the recoil pressure
-    this.pres_in = this._el_k * Math.pow(this.vol - this._u_vol, 2) + this._el * (this.vol - this._u_vol);
+    this.pres_in = this.el_k_step * Math.pow(this.vol - this.u_vol_step, 2) + this.el_step * (this.vol - this.u_vol_step);
 
     // calculate the total pressure by incorporating the external pressures
     this.pres = this.pres_in + this.pres_ext + this.pres_cc + this.pres_mus;

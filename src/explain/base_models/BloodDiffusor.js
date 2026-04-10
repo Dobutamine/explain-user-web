@@ -143,6 +143,16 @@ export class BloodDiffusor extends BaseModelClass {
     this.dif_co2_factor_ps = 1.0; // persistent diffusion factor for co2 (unitless)
     this.dif_solutes_factor_ps = 1.0; // persistent diffusion factor for solutes (unitless)
 
+    // scaling factors
+    this.dif_o2_factor_scaling = 1.0; // scaling factor for the o2 diffusion factor (unitless)
+    this.dif_co2_factor_scaling = 1.0; // scaling factor for the co2 diffusion factor (unitless)
+    this.dif_solutes_factor_scaling = 1.0; // scaling factor for the solute diffusion factor (unitless)
+  
+    // dependent properties
+    this.dif_o2_step = 0.0; // state variable for the o2 diffusion (mmol)
+    this.dif_co2_step = 0.0; // state variable for the co2 diffusion (mmol)
+    this.dif_solutes_step = {}; // state variable for the solute diffusion (mmol)
+
     // local variables
     this._comp_blood1 = null; // reference to the first blood-containing model
     this._comp_blood2 = null; // reference to the second blood-containing model
@@ -158,20 +168,23 @@ export class BloodDiffusor extends BaseModelClass {
     calc_blood_composition(this._comp_blood2);
 
     // incorporate the factors
-    const _dif_o2 = this.dif_o2 
+    this.dif_o2_step = this.dif_o2 
         + (this.dif_o2_factor - 1) * this.dif_o2
         + (this.dif_o2_factor_ps - 1) * this.dif_o2;
+        + (this.dif_o2_factor_scaling - 1) * this.dif_o2; // apply scaling factor to the diffusion factor
 
-    const _dif_co2 = this.dif_co2
+    this.dif_co2_step = this.dif_co2
         + (this.dif_co2_factor - 1) * this.dif_co2
         + (this.dif_co2_factor_ps - 1) * this.dif_co2;
+        + (this.dif_co2_factor_scaling - 1) * this.dif_co2; // apply scaling factor to the diffusion factor
 
-    const _dif_solutes_factor = this.dif_solutes_factor
+    this.dif_solutes_step = this.dif_solutes_factor
         + (this.dif_solutes_factor - 1) * this.dif_solutes_factor
         + (this.dif_solutes_factor_ps - 1) * this.dif_solutes_factor;
+        + (this.dif_solutes_factor_scaling - 1) * this.dif_solutes_factor; // apply scaling factor to the diffusion factor
 
     // diffuse the gases, where diffusion is partial pressure-driven
-    let do2 = (this._comp_blood1.po2 - this._comp_blood2.po2) * _dif_o2 * this._t;
+    let do2 = (this._comp_blood1.po2 - this._comp_blood2.po2) * this.dif_o2_step * this._t;
 
     // update the concentrations
     if (!this._comp_blood1.fixed_composition) {
@@ -181,7 +194,7 @@ export class BloodDiffusor extends BaseModelClass {
       this._comp_blood2.to2 = (this._comp_blood2.to2 * this._comp_blood2.vol + do2) / this._comp_blood2.vol;
     }
 
-    let dco2 = (this._comp_blood1.pco2 - this._comp_blood2.pco2) * _dif_co2 * this._t;
+    let dco2 = (this._comp_blood1.pco2 - this._comp_blood2.pco2) * this.dif_co2_step * this._t;
     // update the concentrations
     if (!this._comp_blood1.fixed_composition) {
       this._comp_blood1.tco2 = (this._comp_blood1.tco2 * this._comp_blood1.vol - dco2) / this._comp_blood1.vol;
@@ -192,7 +205,7 @@ export class BloodDiffusor extends BaseModelClass {
 
     // diffuse the solutes, where the diffusion is concentration gradient-driven
     Object.keys(this.dif_solutes).forEach((sol) => {
-      let dif = this.dif_solutes[sol] * _dif_solutes_factor;
+      let dif = this.dif_solutes[sol] * this.dif_solutes_step[sol];
       let dsol = (this._comp_blood1.solutes[sol] - this._comp_blood2.solutes[sol]) * dif * this._t;
       // update the concentration
       if (!this._comp_blood1.fixed_composition) {

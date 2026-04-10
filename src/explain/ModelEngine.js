@@ -642,8 +642,8 @@ const scale_model = function (payload) {
     console.log(`ModelEngine: scaling ${group} by factor ${factor}`);
     switch (group) {
       // blood
-      case "blood_volumes":
-        model.ModelScaler.scale_blood_volumes(factor);
+      case "blood_u_vol":
+        model.ModelScaler.scale_blood_u_vol(factor);
         break;
       case "blood_elastances":
         model.ModelScaler.scale_blood_elastances(factor);
@@ -652,8 +652,8 @@ const scale_model = function (payload) {
         model.ModelScaler.scale_blood_resistances(factor);
         break;
       // lung
-      case "lung_volumes":
-        model.ModelScaler.scale_lung_volumes(factor);
+      case "lung_u_vol":
+        model.ModelScaler.scale_lung_u_vol(factor);
         break;
       case "lung_elastances":
         model.ModelScaler.scale_lung_elastances(factor);
@@ -662,8 +662,8 @@ const scale_model = function (payload) {
         model.ModelScaler.scale_lung_resistances(factor);
         break;
       // heart
-      case "heart_volumes":
-        model.ModelScaler.scale_heart_volumes(factor);
+      case "heart_u_vol":
+        model.ModelScaler.scale_heart_u_vol(factor);
         break;
       case "heart_el_min":
         model.ModelScaler.scale_heart_el_min(factor);

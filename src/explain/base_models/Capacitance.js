@@ -112,6 +112,11 @@ export class Capacitance extends BaseModelClass {
     this.el_base_factor_ps = 1.0; // persistent elastance factor (unitless)
     this.el_k_factor_ps = 1.0; // persistent elastance factor (unitless)
 
+    // scaling factors
+    this.u_vol_factor_scaling = 1.0;
+    this.el_base_factor_scaling = 1.0;
+    this.el_k_factor_scaling = 1.0;
+
     // initialize dependent properties
     this.vol = 0.0; // volume v(t) (L)
     this.pres = 0.0; // pressure p1(t) (mmHg)
@@ -119,29 +124,48 @@ export class Capacitance extends BaseModelClass {
     this.pres_tm = 0.0; // transmural pressure (mmHg)
 
     // local variables
-    this._el = 0.0; // calculated elastance (mmHg/L)
-    this._u_vol = 0.0; // calculated unstressed volume (L)
-    this._el_k = 0.0; // calculated elastance non-linear k (unitless)
+    this.el_step = 0.0; // calculated elastance (mmHg/L)
+    this.u_vol_step = 0.0; // calculated unstressed volume (L)
+    this.el_k_step = 0.0; // calculated elastance non-linear k (unitless)
   }
 
   // this routine is called in every model step by the ModelEngine Class
   calc_model() {
+    // if a capacitance is externally managed we do not want to incorporate the peristent and non persistent factors in the elastance and unstressed volume calculations, 
+    // because this is done by the parent model (e.g. BloodVessel)
+    if (this.is_externally_managed) {
+      this.el_base_factor = 1.0;
+      this.el_k_factor = 1.0;
+      this.u_vol_factor = 1.0;
+
+      this.el_base_factor_ps = 1.0;
+      this.el_k_factor_ps = 1.0;
+      this.u_vol_factor_ps = 1.0;
+
+      this.el_base_factor_scaling = 1.0;
+      this.el_k_factor_scaling = 1.0;
+      this.u_vol_factor_scaling = 1.0;
+    }
+
     // first calculate the current elastances and volumes
     this.calc_elastances();
     this.calc_volumes();
     // then calculate the pressure
     this.calc_pressure();
+
   }
 
   calc_elastances() {
     // calculate the elastance and non-linear elastance incorparting the factors
-    this._el = this.el_base 
+    this.el_step = this.el_base 
         + (this.el_base_factor - 1) * this.el_base
         + (this.el_base_factor_ps - 1) * this.el_base
+        + (this.el_base_factor_scaling - 1) * this.el_base
 
-    this._el_k = this.el_k 
+    this.el_k_step = this.el_k 
         + (this.el_k_factor - 1) * this.el_k
         + (this.el_k_factor_ps - 1) * this.el_k
+        + (this.el_k_factor_scaling - 1) * this.el_k
 
     // reset the non persistent factors
     this.el_base_factor = 1.0;
@@ -150,9 +174,10 @@ export class Capacitance extends BaseModelClass {
 
   calc_volumes() {
     // calculate the unstressed volume incorporating the factors
-    this._u_vol = this.u_vol 
+    this.u_vol_step = this.u_vol 
         + (this.u_vol_factor - 1) * this.u_vol
         + (this.u_vol_factor_ps - 1) * this.u_vol
+        + (this.u_vol_factor_scaling - 1) * this.u_vol
 
     // reset the non persistent factors
     this.u_vol_factor = 1.0;
@@ -160,7 +185,7 @@ export class Capacitance extends BaseModelClass {
   
   calc_pressure() {
     // calculate the recoil pressure
-    this.pres_in = this._el_k * Math.pow(this.vol - this._u_vol, 2) + this._el * (this.vol - this._u_vol);
+    this.pres_in = this.el_k_step * Math.pow(this.vol - this.u_vol_step, 2) + this.el_step * (this.vol - this.u_vol_step);
 
     // calculate the transmural pressure
     this.pres_tm = this.pres_in - this.pres_ext;

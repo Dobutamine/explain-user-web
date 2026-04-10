@@ -44,6 +44,14 @@ export class BloodVessel extends BloodCapacitance {
       readonly: false,
       caption: "enabled",
     },
+     {
+      target: "is_externally_managed",
+      type: "boolean",
+      build_prop: true,
+      edit_mode: "basic",
+      readonly: false,
+      caption: "externally managed",
+    },
     {
       edit_mode: "basic",
       caption: "no flow allowed",
@@ -199,6 +207,7 @@ export class BloodVessel extends BloodCapacitance {
     this.ans_sens = 0.0; // sensitivity of this blood vessel for autonomic control. 0.0 is no effect, 1.0 is full effect
     this.ans_activity = 1.0; // ans activity factor (unitless)
     this.pump_rpm = 0.0; // pump rotations per minute (unitless)
+    this.is_externally_managed = false; // flag to indicate whether this component is externally managed (e.g. by an MVU)
 
     // non-persistent property factors. These factors reset to 1.0 after each model step
     this.r_factor = 1.0; // non-persistent resistance factor
@@ -210,6 +219,11 @@ export class BloodVessel extends BloodCapacitance {
     this.r_k_factor_ps = 1.0; // persistent non-linear coefficient factor
     this.l_factor_ps = 1.0; // persistent inertance factor
 
+    // scaling factors for the properties
+    this.r_factor_scaling = 1.0; // scaling factor for the resistance factor
+    this.r_k_factor_scaling = 1.0;
+    this.l_factor_scaling = 1.0;
+
     // initialize dependent properties
     this.flow = 0.0; // flow f(t) (L/s)
     this.flow_forward = 0.0; // forward flow from the input blood vessels (L/s)
@@ -219,10 +233,10 @@ export class BloodVessel extends BloodCapacitance {
 
     // local properties
     this._resistors = {}; // list of connectors for this blood vessel
-    this._r_for = 1000;  // calculated forward resistance (mmHg/L*s)
-    this._r_back = 1000; // calculated backward resistance (mmHg/L*s)
-    this._r_k = 0; // calculated non-linear resistance factor (unitless)
-    this._l = 0.0; // calculated intertance (mmHg*s^2/L)
+    this.r_for_step = 1000;  // calculated forward resistance (mmHg/L*s)
+    this.r_back_step = 1000; // calculated backward resistance (mmHg/L*s)
+    this.r_k_step = 0; // calculated non-linear resistance factor (unitless)
+    this.l_step = 0.0; // calculated intertance (mmHg*s^2/L)
   }
 
   // override the parent class method
@@ -234,6 +248,8 @@ export class BloodVessel extends BloodCapacitance {
     this.inputs.forEach((inputName) => { 
       // check whether the resistor already exists (in case of a saved state)
       if (this._model_engine.models.hasOwnProperty(inputName + "_" + this.name)) {
+        // make sure the is externally managed property is set to true for this resistor
+        this._model_engine.models[inputName + "_" + this.name].is_externally_managed = true;
         this._resistors[inputName + "_" + this.name] = this._model_engine.models[inputName + "_" + this.name];
         return; // if so, do not create a new resistor
       }
@@ -253,7 +269,8 @@ export class BloodVessel extends BloodCapacitance {
         { key: "no_flow", value: this.no_flow },
         { key: "no_back_flow", value: this.no_back_flow },
         { key: "comp_from", value: inputName },
-        { key: "comp_to", value: this.name }
+        { key: "comp_to", value: this.name },
+        { key: "is_externally_managed", value: true },
       ]
       // initialize the resistor with the arguments
       res.init_model(args);
@@ -267,32 +284,52 @@ export class BloodVessel extends BloodCapacitance {
   }
   
   calc_model() {
+    // if a vessel is externally managed we do not want to incorporate the peristent and non persistent factors in the resistance 
+    // and elastance calculations, because this is done by the parent model (e.g. MVU)
+
+    if (this.is_externally_managed) {
+      this.el_base_factor = 1.0;
+      this.el_k_factor = 1.0;
+      this.u_vol_factor = 1.0;
+
+      this.r_factor = 1.0;
+      this.r_k_factor = 1.0;
+      this.l_factor = 1.0;
+
+      this.el_base_factor_scaling = 1.0;
+      this.el_k_factor_scaling = 1.0;
+      this.u_vol_factor_scaling = 1.0;
+      this.r_factor_scaling = 1.0;
+      this.r_k_factor_scaling = 1.0;
+      this.l_factor_scaling = 1.0;
+
+      this.el_base_factor_ps = 1.0;
+      this.el_k_factor_ps = 1.0;
+      this.u_vol_factor_ps = 1.0;
+      
+      this.r_factor_ps = 1.0;
+      this.r_k_factor_ps = 1.0;
+      this.l_factor_ps = 1.0;
+    }
+      
     // call this class specific calculation methods
     this.calc_resistances();
     this.calc_elastances();
     this.calc_inertances();
 
-    this.r_current = this._r_for
-    this.el_current = this._el
-
     // update the associated resistors
     Object.values(this._resistors).forEach((resistor) => {
       resistor.is_enabled = this.is_enabled;
-      resistor.r_for = this._r_for
-      resistor.r_back = this._r_back
-      resistor.r_k = this._r_k
+      resistor.r_for = this.r_for_step
+      resistor.r_back = this.r_back_step
+      resistor.r_k = this.r_k_step
 
-      //resistor.no_back_flow = this.no_back_flow
+      resistor.no_back_flow = this.no_back_flow
       resistor.no_flow = this.no_flow
       resistor.p1_ext = this.p1_ext
       resistor.p2_ext = this.p2_ext
 
-      resistor.l = this._l
-      resistor.r_factor = this.r_factor
-      resistor.r_factor_ps = this.r_factor_ps
-      resistor.r_k_factor = this.r_k_factor
-      resistor.l_factor = this.l_factor
-      resistor.l_factor_ps = this.l_factor_ps
+      resistor.l = this.l_step
     })
 
     // call parent class methods
@@ -301,6 +338,10 @@ export class BloodVessel extends BloodCapacitance {
 
     // get the flows from the resistors
     this.get_flows();
+
+    // store the current forward resistance and elastance
+    this.r_current = this.r_for_step
+    this.el_current = this.el_step
   }
 
   get_flows() {
@@ -328,30 +369,37 @@ export class BloodVessel extends BloodCapacitance {
 
   calc_inertances() {
     // calulate the inertance depending on the ans activity and the elastance-resistance coupling factor
-    this._l = this.l
+    this.l_step = this.l
       + (this.l_factor - 1) * this.l
       + (this.l_factor_ps - 1) * this.l
+      + (this.l_factor_scaling - 1) * this.l; // apply scaling factor to the inertance factor
+
 
     // reset the non persistent factors
     this.l_factor = 1.0;
   }
 
   calc_resistances() {
+    this.ans_activity = 1;
     // calculate the resistances depending on the ans acitvity and resistance property factors
-    this._r_for = this.r_for 
+    this.r_for_step = this.r_for 
       + (this.r_factor - 1) * this.r_for
       + (this.r_factor_ps - 1) * this.r_for
       + (this.ans_activity - 1) * this.r_for * this.ans_sens
+      + (this.r_factor_scaling - 1) * this.r_for; // apply scaling factor to the resistance factor
 
-    this._r_back = this.r_back
+    this.r_back_step = this.r_back
       + (this.r_factor - 1) * this.r_back
       + (this.r_factor_ps - 1) * this.r_back
       + (this.ans_activity - 1) * this.r_back * this.ans_sens
+      + (this.r_factor_scaling - 1) * this.r_back; // apply scaling factor to the resistance factor
 
-    this._r_k = this.r_k 
+    this.r_k_step = this.r_k
       + (this.r_k_factor - 1) * this.r_k
       + (this.r_k_factor_ps - 1) * this.r_k
-
+      + (this.ans_activity - 1) * this.r_k * this.ans_sens
+      + (this.r_k_factor_scaling - 1) * this.r_k; // apply scaling factor to the non-linear resistance coefficient
+  
      // reset the non persistent factors
     this.r_factor = 1.0;
     this.r_k_factor = 1.0;
@@ -366,17 +414,19 @@ export class BloodVessel extends BloodCapacitance {
     let _r_ps_elas_factor = Math.pow(this.r_factor_ps, this.alpha)
 
     // calculate the elastance factors depending on the ans activity and the elastance factors
-    this._el = this.el_base 
+    this.el_step = this.el_base 
         + (this.el_base_factor - 1) * this.el_base
         + (this.el_base_factor_ps - 1) * this.el_base
         + (_r_elas_factor - 1) * this.el_base
         + (_r_ps_elas_factor - 1) * this.el_base
         + (_ans_elas_factor - 1) * this.el_base * this.ans_sens
+        + (this.el_base_factor_scaling - 1) * this.el_base; // apply scaling factor to the elastance factor
 
     // calculate the elastance factors depending on the ans activity and the elastance factors
-    this._el_k = this.el_k 
+    this.el_k_step = this.el_k 
         + (this.el_k_factor - 1) * this.el_k
         + (this.el_k_factor_ps - 1) * this.el_k
+        + (this.el_k_factor_scaling - 1) * this.el_k; // apply scaling factor to the non-linear elastance factor
 
     // reset the non persistent factors
     this.el_base_factor = 1.0;

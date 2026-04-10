@@ -131,6 +131,14 @@ export class Resistor extends BaseModelClass {
       caption: "inertance factor",
       target: "l_factor_ps",
       type: "factor"
+    },
+    {
+      target: "is_externally_managed",
+      type: "boolean",
+      build_prop: false,
+      edit_mode: "basic",
+      readonly: true,
+      caption: "externally managed",
     }
   ]
 
@@ -150,6 +158,7 @@ export class Resistor extends BaseModelClass {
     this.p1_ext = 0.0; // external pressure on the inlet (mmHg)
     this.p2_ext = 0.0; // external pressure on the outlet (mmHg)
     this.fixed_composition = false;
+    this.is_externally_managed = false; // flags whether this resistor is managed by a parent model (e.g. BloodVessel)
 
     // non-persistent property factors. These factors reset to 1.0 after each model step
     this.r_factor = 1.0; // non-persistent resistance factor
@@ -161,21 +170,44 @@ export class Resistor extends BaseModelClass {
     this.r_k_factor_ps = 1.0; // persistent non-linear coefficient factor
     this.l_factor_ps = 1.0; // persistent inertance factor
 
+    // scaling factors
+    this.r_factor_scaling = 1.0; // scaling factor for the resistance
+    this.r_k_factor_scaling = 1.0; // scaling factor for the non-linear coefficient
+    this.l_factor_scaling = 1.0; // scaling factor for the inertance
+
     // initialize dependent properties
     this.flow = 0.0;  // flow f(t) (L/s)
 
+    
     // local variables
     this._comp_from = {}; // holds a reference to the upstream component
     this._comp_to = {}; // holds a reference to the downstream component
-    this._r_for = 1000;  // calculated forward resistance (mmHg/L*s)
-    this._r_back = 1000; // calculated backward resistance (mmHg/L*s)
-    this._r_k = 0; // calculated non-linear resistance factor (unitless)
-    this._l = 0.0; // calculated intertance (mmHg*s^2/L)
+    this.r_for_step = 1000;  // calculated forward resistance (mmHg/L*s)
+    this.r_back_step = 1000; // calculated backward resistance (mmHg/L*s)
+    this.r_k_step = 0; // calculated non-linear resistance factor (unitless)
+    this.l_step = 0.0; // calculated intertance (mmHg*s^2/L)
     this._prev_flow = 0.0; // flow from previous model step (L/s)
   }
 
   // this routine is called in every model step by the ModelEngine Class
   calc_model() {
+    // if a resistor is externally managed we do not want to incorporate the peristent and non persistent factors 
+    // in the resistance and inertance calculations, because this is done by the parent model (e.g. BloodVessel)
+    
+    if (this.is_externally_managed) {
+      this.r_factor = 1.0;
+      this.r_k_factor = 1.0;
+      this.l_factor = 1.0;
+
+      this.r_factor_scaling = 1.0;
+      this.r_k_factor_scaling = 1.0;
+      this.l_factor_scaling = 1.0;
+      
+      this.r_factor_ps = 1.0;
+      this.r_k_factor_ps = 1.0;
+      this.l_factor_ps = 1.0;
+    }
+
     // find the up- and downstream components and store the references
     this._comp_from = this._model_engine.models[this.comp_from];
     this._comp_to = this._model_engine.models[this.comp_to];
@@ -188,22 +220,28 @@ export class Resistor extends BaseModelClass {
 
     // calculate the flow
     this.calc_flow();
+
+    // store the current forward resistance
+    this.r_current = this._r_for;
   }
 
   // calculate resistance
   calc_resistance() {
        // incorporate all factors influencing this resistor
-       this._r_for = this.r_for 
+       this.r_for_step = this.r_for 
           + (this.r_factor - 1) * this.r_for
           + (this.r_factor_ps - 1) * this.r_for
+          + (this.r_factor_scaling - 1) * this.r_for; // apply scaling factor to the forward resistance
 
-       this._r_back = this.r_back 
+       this.r_back_step = this.r_back 
           + (this.r_factor - 1) * this.r_back
           + (this.r_factor_ps - 1) * this.r_back
+          + (this.r_factor_scaling - 1) * this.r_back; // apply scaling factor to the backward resistance
 
-       this._r_k = this.r_k 
+       this.r_k_step = this.r_k 
           + (this.r_k_factor - 1) * this.r_k
           + (this.r_k_factor_ps - 1) * this.r_k
+          + (this.r_k_factor_scaling - 1) * this.r_k; // apply scaling factor to the non-linear coefficient
 
       // reset the non persistent factors
       this.r_factor = 1.0;
@@ -212,9 +250,10 @@ export class Resistor extends BaseModelClass {
 
   calc_inertance() {
     // calculate the inertance
-    this._l = this.l 
+    this.l_step = this.l 
       + (this.l_factor - 1) * this.l
-      + (this.l_factor_ps - 1) * this.l;
+      + (this.l_factor_ps - 1) * this.l
+      + (this.l_factor_scaling - 1) * this.l; // apply scaling factor to the inertance
 
       // reset the non persistent factors
       this.l_factor = 1.0;
@@ -242,7 +281,7 @@ export class Resistor extends BaseModelClass {
     // calculate the forward flow between two components
     if (_p1_t >= _p2_t) {
       // calculate the forward flow
-      this.flow = (_p1_t - _p2_t - this._r_k * Math.pow(this.flow, 2) - this._l * (this.flow - this._prev_flow)) / this._r_for;
+      this.flow = (_p1_t - _p2_t - this.r_k_step * Math.pow(this.flow, 2) - this.l_step * (this.flow - this._prev_flow)) / this.r_for_step;
 
       // update the volumes of the connected components but do not remove the volume which could not be removed from the upstream component (to prevent volume loss)
       const vol_not_removed = this._comp_from.volume_out(this.flow * this._t);
@@ -258,7 +297,7 @@ export class Resistor extends BaseModelClass {
     // calculate the backward flow between two components
     if (_p1_t < _p2_t && !this.no_back_flow) {
       // calculate the backward flow
-      this.flow = (_p1_t - _p2_t + this._r_k * Math.pow(this.flow, 2) + this._l * (this.flow - this._prev_flow)) / this._r_back;
+      this.flow = (_p1_t - _p2_t + this.r_k_step * Math.pow(this.flow, 2) + this.l_step * (this.flow - this._prev_flow)) / this.r_back_step;
 
       // update the volumes of the connected components but do not remove the volume which could not be removed from the upstream component (to prevent volume loss)
       let vol_not_removed = this._comp_to.volume_out(-this.flow * this._t);

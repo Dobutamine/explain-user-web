@@ -196,6 +196,7 @@ export class Heart extends BaseModelClass {
     this.ans_activity = 1.0; // ans activity simulating B-adrenergic effect on contractility and relaxation
     this.ans_activity_hr = 1.0; // heart rate factor of the autonomic nervous system
     this.hr_factor = 1.0; // heart rate factor
+    this.hr_override = false; // when set to true the heart rate is fixed on the reference heart rate, ignoring the influence of the factors
     this.hr_mob_factor = 1.0; // heart rate factor of the myocardial oxygen balance model
     this.hr_temp_factor = 1.0; // heart rate factor of the temperature (not implemented yet)
     this.hr_drug_factor = 1.0; // heart rate factor of the drug model (not implemented yet)
@@ -476,6 +477,9 @@ export class Heart extends BaseModelClass {
       (this.hr_temp_factor - 1.0) * this.heart_rate_ref +
       (this.hr_drug_factor - 1.0) * this.heart_rate_ref;
 
+    if (this.hr_override) {
+      this.heart_rate = this.heart_rate_ref;
+    }
     // calculate qtc time depending on heart rate
     this.cqt_time = this.calc_qtc(this.heart_rate);
 

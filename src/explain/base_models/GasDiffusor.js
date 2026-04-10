@@ -134,9 +134,19 @@ export class GasDiffusor extends BaseModelClass {
     this.dif_co2_factor_ps = 1.0; // persistent diffusion factor for co2 (unitless)
     this.dif_n2_factor_ps = 1.0; // persistent diffusion factor for n2 (unitless)
 
+    // scaling factors. These factors are persistent and do not reset, but they are applied as scaling factors to the diffusion factors, meaning that they apply to the total diffusion factor after applying the non-persistent and persistent factors
+    this.dif_o2_factor_scaling = 1.0;
+    this.dif_co2_factor_scaling = 1.0;
+    this.dif_n2_factor_scaling = 1.0;
+    this.dif_other_factor_scaling = 1.0;
+
     // local variables
     this._comp_gas1 = null; // reference to the first gas-containing model
     this._comp_gas2 = null; // reference to the second gas-containing model
+    this.dif_o2_step = 0.0; // state variable for the o2 diffusion (mmol)
+    this.dif_co2_step = 0.0; // state variable for the co2 diffusion (mmol)
+    this.dif_n2_step = 0.0; // state variable for the n2 diffusion (mmol)
+    this.dif_other_step = 0.0; // state variable for the other gasses diffusion (mmol)
   }
 
   calc_model() {
@@ -149,40 +159,44 @@ export class GasDiffusor extends BaseModelClass {
     calc_gas_composition(this._comp_gas2);
 
     // incorporate the factors
-    const _dif_o2 = this.dif_o2 
+    this.dif_o2_step = this.dif_o2 
         + (this.dif_o2_factor - 1) * this.dif_o2
         + (this.dif_o2_factor_ps - 1) * this.dif_o2;
+        + (this.dif_o2_factor_scaling - 1) * this.dif_o2; // apply scaling factor to the diffusion factor
 
-    const _dif_co2 = this.dif_co2
+    this.dif_co2_step = this.dif_co2
         + (this.dif_co2_factor - 1) * this.dif_co2
         + (this.dif_co2_factor_ps - 1) * this.dif_co2;
+        + (this.dif_co2_factor_scaling - 1) * this.dif_co2; // apply scaling factor to the diffusion factor
 
-    const _dif_n2 = this.dif_n2
+    this.dif_n2_step = this.dif_n2
         + (this.dif_n2_factor - 1) * this.dif_n2
         + (this.dif_n2_factor_ps - 1) * this.dif_n2;
+        + (this.dif_n2_factor_scaling - 1) * this.dif_n2; // apply scaling factor to the diffusion factor
     
-    const _dif_other = this.dif_other
+    this.dif_other_step = this.dif_other
         + (this.dif_other_factor - 1) * this.dif_other
         + (this.dif_other_factor_ps - 1) * this.dif_other;
+        + (this.dif_other_factor_scaling - 1) * this.dif_other; // apply scaling factor to the diffusion factor
 
     // diffuse the gases, where diffusion is partial pressure-driven
-    let do2 = (this._comp_gas1.po2 - this._comp_gas2.po2) * _dif_o2 * this._t;
+    let do2 = (this._comp_gas1.po2 - this._comp_gas2.po2) * this.dif_o2_step * this._t;
 
     // update the concentrations
     this._comp_gas1.co2 = (this._comp_gas1.co2 * this._comp_gas1.vol - do2) / this._comp_gas1.vol;
     this._comp_gas2.co2 = (this._comp_gas2.co2 * this._comp_gas2.vol + do2) / this._comp_gas2.vol;
 
-    let dco2 = (this._comp_gas1.pco2 - this._comp_gas2.pco2) * _dif_co2 * this._t;
+    let dco2 = (this._comp_gas1.pco2 - this._comp_gas2.pco2) * this.dif_co2_step * this._t;
     // update the concentrations
     this._comp_gas1.cco2 = (this._comp_gas1.cco2 * this._comp_gas1.vol - dco2) / this._comp_gas1.vol;
     this._comp_gas2.cco2 = (this._comp_gas2.cco2 * this._comp_gas2.vol + dco2) / this._comp_gas2.vol;
 
-    let dn2 = (this._comp_gas1.pn2 - this._comp_gas2.pn2) * _dif_n2 * this._t;
+    let dn2 = (this._comp_gas1.pn2 - this._comp_gas2.pn2) * this.dif_n2_step * this._t;
     // update the concentrations
     this._comp_gas1.cn2 = (this._comp_gas1.cn2 * this._comp_gas1.vol - dn2) / this._comp_gas1.vol;
     this._comp_gas2.cn2 = (this._comp_gas2.cn2 * this._comp_gas2.vol + dn2) / this._comp_gas2.vol;
 
-    let dother = (this._comp_gas1.pother - this._comp_gas2.pother) * _dif_other * this._t;
+    let dother = (this._comp_gas1.pother - this._comp_gas2.pother) * this.dif_other_step * this._t;
     // update the concentrations
     this._comp_gas1.cother = (this._comp_gas1.cother * this._comp_gas1.vol - dother) / this._comp_gas1.vol;
     this._comp_gas2.cother = (this._comp_gas2.cother * this._comp_gas2.vol + dother) / this._comp_gas2.vol;

@@ -203,6 +203,14 @@ export class MicroVascularUnit extends BaseModelClass {
     this.el_base_factor_ps = 1.0; // persistent elastance factor (unitless)
     this.el_k_factor_ps = 1.0; // persistent elastance factor (unitless)
 
+    // scaling factors
+    this.r_factor_scaling = 1.0; // scaling factor for the resistance factor (unitless)
+    this.r_k_factor_scaling = 1.0; // scaling factor for the non-linear resistance factor (unitless)
+    this.l_factor_scaling = 1.0; // scaling factor for the inertance factor (unitless)
+    this.el_base_factor_scaling = 1.0; // scaling factor for the elastance factor (unitless)
+    this.el_k_factor_scaling = 1.0; // scaling factor for the elastance non-linear factor (unitless)
+    this.u_vol_factor_scaling = 1.0; // scaling factor for the unstressed volume factor (unitless)
+
     // -----------------------------------------------
     // dependent properties
     // -----------------------------------------------
@@ -217,35 +225,32 @@ export class MicroVascularUnit extends BaseModelClass {
     // -----------------------------------------------
     // local properties
     // -----------------------------------------------
-    this._el = 0.0; // calculated elastance (mmHg/L)
-    this._el_art = 0.0; // calculated elastance in the arterioles (mmHg/L)
-    this._el_cap = 0.0; // calculated elastance in the capillaries (mmHg/L)
-    this._el_ven = 0.0; // calculated elastance in the venules (mmHg/L)
+    this.el_step = 0.0; // calculated elastance (mmHg/L)
+    this.el_art = 0.0; // calculated elastance in the arterioles (mmHg/L)
+    this.el_cap = 0.0; // calculated elastance in the capillaries (mmHg/L)
+    this.el_ven = 0.0; // calculated elastance in the venules (mmHg/L)
 
-    this._r_for = 1000; // calculated forward resistance (mmHg/L*s)
-    this._r_back = 1000; // calculated backward resistance (mmHg/L*s)
-    this._r_k = 0.0; // calculated non-linear resistance factor (unitless)
+    this.r_for_step = 1000; // calculated forward resistance (mmHg/L*s)
+    this.r_back_step = 1000; // calculated backward resistance (mmHg/L*s)
+    this.r_k_step = 0.0; // calculated non-linear resistance factor (unitless)
+    this.r_for_art = 0.0; // calculated resistance in the arterioles (mmHg/L*s)
+    this.r_back_art = 0.0; // calculated resistance in the arterioles (mmHg/L*s)
+    this.r_for_cap = 0.0; // calculated resistance in the capillaries (mmHg/L*s)
+    this.r_back_cap = 0.0; // calculated resistance in the capillaries (mmHg/L*s)
+    this.r_for_ven = 0.0; // calculated resistance in the venules (mmHg/L*s)
+    this.r_back_ven = 0.0; // calculated resistance in the venules (mmHg/L*s)
 
-    this._r_for_art = 0.0; // calculated resistance in the arterioles (mmHg/L*s)
-    this._r_back_art = 0.0; // calculated resistance in the arterioles (mmHg/L*s)
-    
-    this._r_for_cap = 0.0; // calculated resistance in the capillaries (mmHg/L*s)
-    this._r_back_cap = 0.0; // calculated resistance in the capillaries (mmHg/L*s)
-    
-    this._r_for_ven = 0.0; // calculated resistance in the venules (mmHg/L*s)
-    this._r_back_ven = 0.0; // calculated resistance in the venules (mmHg/L*s)
+    this.l_step = 0.0; // calculated intertance (mmHg*s^2/L)
 
-    this._l = 0.0; // calculated intertance (mmHg*s^2/L)
+    this.u_vol_step = 0.0; // calculated unstressed volume (L)
+    this.u_vol_art = 0.0; // calculated unstressed volume in the arterioles (L)
+    this.u_vol_cap = 0.0; // calculated unstressed volume in the capillaries (L)
+    this.u_vol_ven = 0.0; // calculated unstressed volume in the venules (L)
 
-    this._u_vol = 0.0; // calculated unstressed volume (L)
-    this._u_vol_art = 0.0; // calculated unstressed volume in the arterioles (L)
-    this._u_vol_cap = 0.0; // calculated unstressed volume in the capillaries (L)
-    this._u_vol_ven = 0.0; // calculated unstressed volume in the venules (L)
-
-    this._el_k = 0.0; // calculated elastance non-linear k (unitless)
-    this._el_k_art = 0.0; // calculated elastance non-linear k in the arterioles (unitless)
-    this._el_k_cap = 0.0; // calculated elastance non-linear k in the capillaries (unitless)
-    this._el_k_ven = 0.0; // calculated elastance non-linear k in the venules (unitless)
+    this.el_k_step = 0.0; // calculated elastance non-linear k (unitless)
+    this.el_k_art = 0.0; // calculated elastance non-linear k in the arterioles (unitless)
+    this.el_k_cap = 0.0; // calculated elastance non-linear k in the capillaries (unitless)
+    this.el_k_ven = 0.0; // calculated elastance non-linear k in the venules (unitless)
   }
 
   init_model(args={}) {
@@ -270,7 +275,7 @@ export class MicroVascularUnit extends BaseModelClass {
         { key: "model_type", value: "BloodVessel" },
         { key: "vol", value: this.vol * this.vol_dist.art},
         { key: "u_vol", value: this.u_vol * this.vol_dist.art},
-        { key: "el_base", value: this._el_art },
+        { key: "el_base", value: this.el_art },
         { key: "el_k", value: this.el_k * this.el_dist.art },
         { key: "inputs", value: this.inputs },
         { key: "r_for", value: this.r_for * this.res_dist.art },
@@ -290,6 +295,8 @@ export class MicroVascularUnit extends BaseModelClass {
       // add the arteriole to the model engine
       this._model_engine.models[this.name + "_ART"] = this.components.art;
     }
+    // flag that this component is managed by the MVU
+    this.components.art.is_externally_managed = true;
 
     // initialize the capillary part of the network
     let args_cap = [
@@ -299,7 +306,7 @@ export class MicroVascularUnit extends BaseModelClass {
         { key: "model_type", value: "BloodVessel" },
         { key: "vol", value: this.vol * this.vol_dist.cap},
         { key: "u_vol", value: this.u_vol * this.vol_dist.cap},
-        { key: "el_base", value: this._el_cap },
+        { key: "el_base", value: this.el_cap },
         { key: "el_k", value: this.el_k * this.el_dist.cap },
         { key: "inputs", value: [this.name + "_ART"] },
         { key: "r_for", value: this.r_for * this.res_dist.cap },
@@ -318,7 +325,9 @@ export class MicroVascularUnit extends BaseModelClass {
       this.components.cap.init_model(args_cap);
       // add the capillary to the model engine
       this._model_engine.models[this.name + "_CAP"] = this.components.cap;
-  }
+    }
+    // flag that this component is managed by the MVU
+    this.components.cap.is_externally_managed = true;
 
     // initialize the venule part of the network
     let args_ven = [
@@ -328,7 +337,7 @@ export class MicroVascularUnit extends BaseModelClass {
         { key: "model_type", value: "BloodVessel" },
         { key: "vol", value: this.vol * this.vol_dist.ven},
         { key: "u_vol", value: this.u_vol * this.vol_dist.ven},
-        { key: "el_base", value: this._el_ven},
+        { key: "el_base", value: this.el_ven},
         { key: "el_k", value: this.el_k * this.el_dist.ven },
         { key: "inputs", value: [this.name + "_CAP"] },
         { key: "r_for", value: this.r_for * this.res_dist.ven },
@@ -349,6 +358,8 @@ export class MicroVascularUnit extends BaseModelClass {
       // add the venule to the model engine
       this._model_engine.models[this.name + "_VEN"] = this.components.ven;
     }
+    // flag that this component is managed by the MVU
+    this.components.ven.is_externally_managed = true;
   }
 
   calc_model() {
@@ -372,36 +383,36 @@ export class MicroVascularUnit extends BaseModelClass {
     this.calc_volume();
 
     // update the components with the calculated properties
-    this.components.art.el_base = this._el_art;
-    this.components.cap.el_base = this._el_cap;
-    this.components.ven.el_base = this._el_ven;
+    this.components.art.el_base = this.el_art;
+    this.components.cap.el_base = this.el_cap;
+    this.components.ven.el_base = this.el_ven;
 
-    this.components.art.el_k = this._el_k_art;
-    this.components.cap.el_k = this._el_k_cap;
-    this.components.ven.el_k = this._el_k_ven;
+    this.components.art.el_k = this.el_k_art;
+    this.components.cap.el_k = this.el_k_cap;
+    this.components.ven.el_k = this.el_k_ven;
 
-    this.components.art.r_for = this._r_for_art;
-    this.components.art.r_back = this._r_back_art;
-    this.components.art.r_k = this._r_k;
+    this.components.art.r_for = this.r_for_art;
+    this.components.art.r_back = this.r_back_art;
+    this.components.art.r_k = this.r_k_step;
  
-    this.components.cap.r_for = this._r_for_cap;
-    this.components.cap.r_back = this._r_back_cap;
-    this.components.cap.r_k = this._r_k;
+    this.components.cap.r_for = this.r_for_cap;
+    this.components.cap.r_back = this.r_back_cap;
+    this.components.cap.r_k = this.r_k_step;
 
-    this.components.ven.r_for = this._r_for_ven;
-    this.components.ven.r_back = this._r_back_ven;
-    this.components.ven.r_k = this._r_k;
+    this.components.ven.r_for = this.r_for_ven;
+    this.components.ven.r_back = this.r_back_ven;
+    this.components.ven.r_k = this.r_k_step;
 
-    this.components.art.u_vol = this._u_vol_art;
-    this.components.art.l = this._l;
+    this.components.art.u_vol = this.u_vol_art;
+    this.components.art.l = this.l_step;
     this.components.art.no_flow = this.no_flow;
 
-    this.components.cap.u_vol = this._u_vol_cap;
-    this.components.cap.l = this._l;
+    this.components.cap.u_vol = this.u_vol_cap;
+    this.components.cap.l = this.l_step;
     this.components.cap.no_flow = this.no_flow;
 
-    this.components.ven.u_vol = this._u_vol_ven;
-    this.components.ven.l = this._l;
+    this.components.ven.u_vol = this.u_vol_ven;
+    this.components.ven.l = this.l_step;
     this.components.ven.no_flow = this.no_flow;
 
     // get the pressures and flows from the components
@@ -432,27 +443,30 @@ export class MicroVascularUnit extends BaseModelClass {
 
   calc_resistance() {
     // calculate the resistances depending on the ans acitvity and resistance property factors
-    this._r_for = this.r_for 
+    this.r_for_step = this.r_for 
       + (this.r_factor - 1) * this.r_for
       + (this.r_factor_ps - 1) * this.r_for
+      + (this.r_factor_scaling - 1) * this.r_for; // apply scaling factor to the resistance factor
 
-    this._r_back = this.r_back
+    this.r_back_step = this.r_back
       + (this.r_factor - 1) * this.r_back
       + (this.r_factor_ps - 1) * this.r_back
+      + (this.r_factor_scaling - 1) * this.r_back; // apply scaling factor to the resistance factor
 
-    this._r_k = this.r_k 
+    this.r_k_step = this.r_k
       + (this.r_k_factor - 1) * this.r_k
-      + (this.r_k_factor_ps - 1) * this.r_k;
+      + (this.r_k_factor_ps - 1) * this.r_k
+      + (this.r_k_factor_scaling - 1) * this.r_k; // apply scaling factor to the non-linear resistance coefficient
 
     // distribute the resistance to the different parts of the MVU
-    this._r_for_art = this._r_for * this.res_dist.art;
-    this._r_back_art = this._r_back * this.res_dist.art;
+    this.r_for_art = this.r_for_step * this.res_dist.art;
+    this.r_back_art = this.r_back_step * this.res_dist.art;
 
-    this._r_for_cap = this._r_for * this.res_dist.cap;
-    this._r_back_cap = this._r_back * this.res_dist.cap;
+    this.r_for_cap = this.r_for_step * this.res_dist.cap;
+    this.r_back_cap = this.r_back_step * this.res_dist.cap;
 
-    this._r_for_ven = this._r_for * this.res_dist.ven;
-    this._r_back_ven = this._r_back * this.res_dist.ven;
+    this.r_for_ven = this.r_for_step * this.res_dist.ven;
+    this.r_back_ven = this.r_back_step * this.res_dist.ven;
 
     // reset the non persistent factors
     this.r_factor = 1.0;
@@ -461,18 +475,20 @@ export class MicroVascularUnit extends BaseModelClass {
   }
 
   calc_elastance() {
-    // calculate the elastance factors depending on the ans activity and the elastance factors
-    this._el = this.el_base 
+    // calculate the elastance factors depending on the elastance factors
+    this.el_step = this.el_base 
         + (this.el_base_factor - 1) * this.el_base
         + (this.el_base_factor_ps - 1) * this.el_base
+        + (this.el_base_factor_scaling - 1) * this.el_base; // apply scaling factor to the elastance factor
 
     // calculate the elastance distribution across the art, ven and cap
-    this.calc_elastance_dist(this._el, this.el_dist);
+    this.calc_elastance_dist(this.el_step, this.el_dist);
 
-    // calculate the elastance factors depending on the ans activity and the elastance factors
-    this._el_k = this.el_k 
+    // calculate the elastance factors depending on the elastance factors
+    this.el_k_step = this.el_k 
         + (this.el_k_factor - 1) * this.el_k
         + (this.el_k_factor_ps - 1) * this.el_k
+        + (this.el_k_factor_scaling - 1) * this.el_k; // apply scaling factor to the elastance non-linear factor
 
     // reset the non persistent factors
     this.el_base_factor = 1.0;
@@ -493,23 +509,24 @@ export class MicroVascularUnit extends BaseModelClass {
 
     // For 75% of the inverse-sum:
     //   1/el_art = 75 * unit  →  el_art = 1 / (75 * unit)
-    this._el_art = 1 / (el_dist.art * 100 * unit);
+    this.el_art = 1 / (el_dist.art * 100 * unit);
 
     // For 15% of the inverse-sum:
     //   1/el_cap = 15 * unit →  el_cap = 1 / (15 * unit)
-    this._el_cap = 1 / (el_dist.cap * 100 * unit);
+    this.el_cap = 1 / (el_dist.cap * 100 * unit);
 
     // For 10% of the inverse-sum:
     //   1/el_ven = 10 * unit →  el_ven = 1 / (10 * unit)
-    this._el_ven = 1 / (el_dist.ven * 100 * unit);
+    this.el_ven = 1 / (el_dist.ven * 100 * unit);
 
   }
 
   calc_inertance() {
     // calulate the inertance depending on the ans activity and the elastance-resistance coupling factor
-    this._l = this.l
+    this.l_step = this.l
       + (this.l_factor - 1) * this.l
       + (this.l_factor_ps - 1) * this.l
+      + (this.l_factor_scaling - 1) * this.l; // apply scaling factor to the inertance factor
 
     // reset the non persistent factors
     this.l_factor = 1.0;
@@ -517,14 +534,15 @@ export class MicroVascularUnit extends BaseModelClass {
 
   calc_volume() {
     // calculate the unstressed volume incorporating the factors
-    this._u_vol = this.u_vol 
+    this.u_vol_step = this.u_vol 
         + (this.u_vol_factor - 1) * this.u_vol
         + (this.u_vol_factor_ps - 1) * this.u_vol
+        + (this.u_vol_factor_scaling - 1) * this.u_vol; // apply scaling factor to the unstressed volume factor
 
     // distribute the unstressed volume to the different parts of the MVU
-    this._u_vol_art = this._u_vol * this.vol_dist.art;
-    this._u_vol_cap = this._u_vol * this.vol_dist.cap;
-    this._u_vol_ven = this._u_vol * this.vol_dist.ven;
+    this.u_vol_art = this.u_vol_step * this.vol_dist.art;
+    this.u_vol_cap = this.u_vol_step * this.vol_dist.cap;
+    this.u_vol_ven = this.u_vol_step * this.vol_dist.ven;
 
     // reset the non persistent factors
     this.u_vol_factor = 1.0;

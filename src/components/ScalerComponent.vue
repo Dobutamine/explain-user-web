@@ -7,12 +7,24 @@
 
 
     <div v-if="isEnabled">
-      <!-- PRESETS
-      <div class="text-overline text-center q-mt-sm">PRESETS</div>
-      <div class="text-overline justify-center q-gutter-xs row q-mt-xs">
-        <q-btn label="28w Preterm" color="purple" size="sm" dense @click="applyPreset(PRETERM_28W)" />
-        <q-btn label="TERM" color="grey-7" size="sm" dense @click="resetAll" />
-      </div> -->
+      <!-- SCALING PREPARATION -->
+      <q-separator class="q-mt-xs" />
+      <div class="text-overline text-center q-mt-sm">SCALING PREPARATION</div>
+      <div class="q-px-sm q-mt-sm">
+        <q-toggle  v-model="baroreflex_on" label="baroreflex MAP (ANS)" dense
+          color="primary" @update:model-value="toggleBaroreflex" />
+        <q-toggle class="q-mt-sm" v-model="metabolism_on" label="metabolism (VO2)" dense
+          color="primary" @update:model-value="toggleMetabolism" />
+        <q-toggle class="q-mt-sm" v-model="mob_on" label="mob (myocardial O2 balance)" dense
+          color="primary" @update:model-value="toggleMob" />
+        <q-toggle class="q-mt-sm" v-model="gasex_on" label="gas exchange (LL + RL)" dense
+          color="primary" @update:model-value="toggleGasExchange" />
+        <q-toggle class="q-mt-sm" v-model="breathing_on" label="spontaneous breathing" dense
+          color="primary" @update:model-value="toggleBreathing" />
+        <q-toggle class="q-mt-sm" v-model="hr_override_on" label="heart rate override" dense
+          color="primary" @update:model-value="toggleHrOverride" />
+
+      </div>
 
       <!-- TARGET WEIGHT -->
       <div class="text-overline text-center q-mt-sm">TARGET WEIGHT</div>
@@ -43,8 +55,14 @@
         />
       </div>
 
-
-
+      <!-- heart rate -->
+      <q-separator class="q-mt-md" />
+      <div class="text-overline text-center q-mt-md">HEARTRATE REFERENCE</div>
+      <div class="text-overline justify-center q-gutter-xs row q-mt-xs">
+        <q-input v-model.number="heart_rate_ref" @update:model-value="applyHeartRate" color="red" hide-hint filled
+          label="heart rate ref (bpm)" dense stack-label type="number" :step="1"
+          style="font-size: 14px; width: 160px;" class="text-center" squared />
+      </div>
 
       <!-- BLOOD -->
       <q-separator class="q-mt-md" />
@@ -56,7 +74,7 @@
             show-value font-size="12px"
             v-model="blood_vol" size="60px" :min="0.1" :max="5.0" :step="0.01"
             :thickness="0.22" color="teal" track-color="grey-3"
-            @update:model-value="apply('blood_volumes', blood_vol)"
+            @update:model-value="apply('blood_u_vol', blood_vol)"
           >{{ blood_vol.toFixed(2) }}</q-knob>
         </div>
         <div class="q-mr-sm text-center">
@@ -89,7 +107,7 @@
             show-value font-size="12px"
             v-model="heart_vol" size="60px" :min="0.1" :max="5.0" :step="0.01"
             :thickness="0.22" color="red" track-color="grey-3"
-            @update:model-value="apply('heart_volumes', heart_vol)"
+            @update:model-value="apply('heart_u_vol', heart_vol)"
           >{{ heart_vol.toFixed(2) }}</q-knob>
         </div>
         <div class="q-mr-sm text-center">
@@ -131,7 +149,7 @@
             show-value font-size="12px"
             v-model="lung_vol" size="60px" :min="0.1" :max="5.0" :step="0.01"
             :thickness="0.22" color="light-blue" track-color="grey-3"
-            @update:model-value="apply('lung_volumes', lung_vol)"
+            @update:model-value="apply('lung_u_vol', lung_vol)"
           >{{ lung_vol.toFixed(2) }}</q-knob>
         </div>
         <div class="q-mr-sm text-center">
@@ -195,13 +213,6 @@
           style="font-size: 14px; width: 80px;" class="text-center" squared />
       </div>
 
-      <!-- heart rate -->
-      <div class="text-overline text-center q-mt-md">HEARTRATE REFERENCE</div>
-      <div class="text-overline justify-center q-gutter-xs row q-mt-xs">
-        <q-input v-model.number="heart_rate_ref" @update:model-value="applyHeartRate" color="red" hide-hint filled
-          label="heart rate ref (bpm)" dense stack-label type="number" :step="1"
-          style="font-size: 14px; width: 160px;" class="text-center" squared />
-      </div>
 
       <!-- add/remove volume -->
       <q-separator class="q-mt-md" />
@@ -224,9 +235,9 @@ import { useModelStore } from "src/stores/model";
 import { explain } from "../boot/explain";
 
 const PRETERM_28W = {
-  blood_vol: 0.282, blood_el: 2.66, blood_res: 2.10,
-  lung_vol: 0.282, lung_el: 3.7, lung_res: 1.5,
-  heart_vol: 0.282, heart_el_min: 2.52, heart_el_max: 2.66, heart_res: 1.0,
+  blood_u_vol: 0.282, blood_el: 2.66, blood_res: 2.10,
+  lung_u_vol: 0.282, lung_el: 3.7, lung_res: 1.5,
+  heart_u_vol: 0.282, heart_el_min: 2.52, heart_el_max: 2.66, heart_res: 1.0,
   thorax_uvol: 0.282, pericardium_uvol: 0.282,
   weight: 1.0, heart_rate_ref: 145,
   br_map_min: 15, br_map_set: 32, br_map_max: 65,
@@ -266,6 +277,13 @@ export default {
       heart_rate_ref: 110,
       add_volume_ml: 10,
       target_weight: 3.545,
+      // scaling preparation toggles
+      breathing_on: true,
+      gasex_on: true,
+      metabolism_on: true,
+      baroreflex_on: true,
+      mob_on: true,
+      hr_override_on: false,
     };
   },
   computed: {
@@ -274,22 +292,41 @@ export default {
     },
   },
   methods: {
+    toggleBreathing(val) {
+      explain.setPropValue("Breathing.breathing_enabled", val, 0);
+    },
+    toggleGasExchange(val) {
+      explain.setPropValue("GASEX_LL.is_enabled", val, 0);
+      explain.setPropValue("GASEX_RL.is_enabled", val, 0);
+    },
+    toggleMetabolism(val) {
+      explain.setPropValue("Metabolism.met_active", val, 0);
+    },
+    toggleBaroreflex(val) {
+      explain.setPropValue("Ans.ans_active", val, 0);
+    },
+    toggleMob(val) {
+      explain.setPropValue("Mob.mob_active", val, 0);
+    },
+    toggleHrOverride(val) {
+      explain.setPropValue("Heart.hr_override", val, 0);
+    },
     apply(group, factor) {
       this._debounce(`_t_${group}`, () => {
         explain.scaleModel(group, factor);
-        if (group === "blood_volumes") {
+        if (group === "blood_u_vol") {
           explain.scaleModel("weight", this.calculated_weight);
         }
       });
     },
     applyPreset(preset) {
-      this.blood_vol = preset.blood_vol;
+      this.blood_vol = preset.blood_u_vol;
       this.blood_el = preset.blood_el;
       this.blood_res = preset.blood_res;
-      this.lung_vol = preset.lung_vol;
+      this.lung_vol = preset.lung_u_vol;
       this.lung_el = preset.lung_el;
       this.lung_res = preset.lung_res;
-      this.heart_vol = preset.heart_vol;
+      this.heart_vol = preset.heart_u_vol;
       this.heart_el_min = preset.heart_el_min;
       this.heart_el_max = preset.heart_el_max;
       this.heart_res = preset.heart_res;
@@ -303,14 +340,16 @@ export default {
     },
     applyTargetWeight() {
       const vol_factor = this.target_weight / this.baseline_weight;
+      // only set volume knobs
       this.blood_vol = vol_factor;
       this.lung_vol = vol_factor;
       this.heart_vol = vol_factor;
       this.thorax_uvol = vol_factor;
       this.pericardium_uvol = vol_factor;
-      explain.scaleModel("blood_volumes", vol_factor);
-      explain.scaleModel("lung_volumes", vol_factor);
-      explain.scaleModel("heart_volumes", vol_factor);
+      // only send u_vol scale commands to the engine
+      explain.scaleModel("blood_u_vol", vol_factor);
+      explain.scaleModel("lung_u_vol", vol_factor);
+      explain.scaleModel("heart_u_vol", vol_factor);
       explain.scaleModel("thorax_uvol", vol_factor);
       explain.scaleModel("pericardium_uvol", vol_factor);
       explain.scaleModel("weight", this.target_weight);

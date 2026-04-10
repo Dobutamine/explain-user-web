@@ -530,10 +530,10 @@ export default {
 
       return {
         n: values.length,
-        min: min.toFixed(3),
-        max: max.toFixed(3),
-        mean: mean.toFixed(3),
-        sd: sd.toFixed(3),
+        min: min.toFixed(6),
+        max: max.toFixed(6),
+        mean: mean.toFixed(6),
+        sd: sd.toFixed(6),
       };
     },
     updateStatistics() {

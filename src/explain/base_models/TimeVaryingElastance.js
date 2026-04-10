@@ -124,6 +124,12 @@ export class TimeVaryingElastance extends BaseModelClass {
     this.el_max_factor_ps = 1.0; // non-persistent maximal elastance factor step (unitless)
     this.el_k_factor_ps = 1.0; // non-persistent elastance factor step (unitless)
 
+    // scaling factors. These factors are persistent and do not reset
+    this.u_vol_factor_scaling = 1.0; // scaling factor for the unstressed volume (unitless)
+    this.el_min_factor_scaling = 1.0; // scaling factor for the minimal elastance (unitless)
+    this.el_max_factor_scaling = 1.0; // scaling factor for the maximal elastance (unitless)
+    this.el_k_factor_scaling = 1.0; // scaling factor for the elastance non-linearity (unitless)
+
     // initialize dependent properties
     this.vol = 0.0; // volume v(t) (L)
     this.pres = 0.0; // pressure p1(t) (mmHg)
@@ -131,14 +137,32 @@ export class TimeVaryingElastance extends BaseModelClass {
     this.pres_tm = 0.0; // transmural pressure (mmHg)
 
     // local properties
-    this._el_min = 0.0; // calculated minimal elastance (mmHg/L)
-    this._el_max = 0.0; // calculated minimal elastance (mmHg/L)
-    this._u_vol = 0.0; // calculated unstressed volume (L)
-    this._el_k = 0.0; // calculated elastance non-linear k (unitless)
+    this.el_min_step = 0.0; // calculated minimal elastance (mmHg/L)
+    this.el_max_step = 0.0; // calculated maximal elastance (mmHg/L)
+    this.u_vol_step = 0.0; // calculated unstressed volume (L)
+    this.el_k_step = 0.0; // calculated elastance non-linear k (unitless)
   }
 
   // this routine is called in every model step by the ModelEngine Class
   calc_model() {
+    // if this model is externally managed, reset the factors to 1.0 to avoid unintended changes in the elastance and unstressed volume
+    if (this.is_externally_managed) {
+      this.el_min_factor = 1.0;
+      this.el_max_factor = 1.0;
+      this.el_k_factor = 1.0;
+      this.u_vol_factor = 1.0;
+
+      this.el_min_factor_scaling = 1.0;
+      this.el_max_factor_scaling = 1.0;
+      this.el_k_factor_scaling = 1.0;
+      this.u_vol_factor_scaling = 1.0;
+
+      this.el_min_factor_ps = 1.0;
+      this.el_max_factor_ps = 1.0;
+      this.el_k_factor_ps = 1.0;
+      this.u_vol_factor_ps = 1.0;
+    }
+
     // calculate the elastances and volumes
     this.calc_elastances();
     this.calc_volumes();
@@ -148,21 +172,24 @@ export class TimeVaryingElastance extends BaseModelClass {
 
   calc_elastances() {    
     // calculate the elastances and non-linear elastance incorparting the factors
-    this._el_min = this.el_min 
+    this.el_min_step = this.el_min 
         + (this.el_min_factor - 1) * this.el_min
         + (this.el_min_factor_ps - 1) * this.el_min
+        + (this.el_min_factor_scaling - 1) * this.el_min; // apply scaling factor to the elastance factor
     
-    this._el_max = this.el_max 
+    this.el_max_step = this.el_max 
         + (this.el_max_factor - 1) * this.el_max
         + (this.el_max_factor_ps - 1) * this.el_max
+        + (this.el_max_factor_scaling - 1) * this.el_max; // apply scaling factor to the elastance factor
 
-    this._el_k = this.el_k 
+    this.el_k_step = this.el_k 
         + (this.el_k_factor - 1) * this.el_k
         + (this.el_k_factor_ps - 1) * this.el_k
+        + (this.el_k_factor_scaling - 1) * this.el_k; // apply scaling factor to the elastance factor
 
     // make sure that el_max is not smaller than el_min
-    if (this._el_max < this._el_min) {
-      this._el_max = this._el_min;
+    if (this.el_max_step < this.el_min_step) {
+      this.el_max_step = this.el_min_step;
     }
     
     // reset the non persistent factors
@@ -173,9 +200,10 @@ export class TimeVaryingElastance extends BaseModelClass {
 
   calc_volumes() {
     // calculate the unstressed volume incorporating the factors
-    this._u_vol = this.u_vol 
+    this.u_vol_step = this.u_vol 
         + (this.u_vol_factor - 1) * this.u_vol
         + (this.u_vol_factor_ps - 1) * this.u_vol
+        + (this.u_vol_factor_scaling - 1) * this.u_vol; // apply scaling factor to the unstressed volume
 
     // reset the non persistent factors
     this.u_vol_factor = 1.0;
@@ -183,8 +211,8 @@ export class TimeVaryingElastance extends BaseModelClass {
 
   calc_pressure() {
     // calculate the recoil pressure
-    let p_ms = (this.vol - this._u_vol) * this._el_max;
-    let p_ed = this._el_k * Math.pow(this.vol - this._u_vol, 2) + this._el_min * (this.vol - this._u_vol);
+    let p_ms = (this.vol - this.u_vol_step) * this.el_max_step;
+    let p_ed = this.el_k_step * Math.pow(this.vol - this.u_vol_step, 2) + this.el_min_step * (this.vol - this.u_vol_step);
 
     // calculate the current recoil pressure
     this.pres_in = (p_ms - p_ed) * this.act_factor + p_ed;

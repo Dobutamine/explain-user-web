@@ -102,6 +102,10 @@ export class GasExchanger extends BaseModelClass {
     this.dif_o2_factor_ps = 1.0; // factor modifying the oxygen diffusion constant
     this.dif_co2_factor_ps = 1.0; // factor modifying the carbon diffusion constant
 
+    // scaling factor
+    this.dif_o2_factor_scaling = 1.0; // scaling factor for the oxygen diffusion constant
+    this.dif_co2_factor_scaling = 1.0; // scaling factor for the carbon diffusion constant
+    
     // dependent properties
     this.flux_o2 = 0.0; // oxygen flux (mmol)
     this.flux_co2 = 0.0; // carbon dioxide flux (mmol)
@@ -109,6 +113,8 @@ export class GasExchanger extends BaseModelClass {
     // local variables
     this._blood = null; // reference to the blood component
     this._gas = null; // reference to the gas component
+    this.dif_o2_step = 0.0; // state variable for the o2 diffusion (mmol)
+    this.dif_co2_step = 0.0; // state variable for the co2 diffusion (mmol)
   }
 
   calc_model() {
@@ -133,17 +139,19 @@ export class GasExchanger extends BaseModelClass {
     if (this._blood.vol === 0.0) return;
 
     // incorporate the factors
-    const _dif_o2 = this.dif_o2 
+    this.dif_o2_step = this.dif_o2 
         + (this.dif_o2_factor - 1) * this.dif_o2
-        + (this.dif_o2_factor_ps - 1) * this.dif_o2;
+        + (this.dif_o2_factor_ps - 1) * this.dif_o2
+        + (this.dif_o2_factor_scaling - 1) * this.dif_o2; // apply scaling factor to the diffusion factor
 
-    const _dif_co2 = this.dif_co2 
+    this.dif_co2_step = this.dif_co2 
         + (this.dif_co2_factor - 1) * this.dif_co2
-        + (this.dif_co2_factor_ps - 1) * this.dif_co2;
+        + (this.dif_co2_factor_ps - 1) * this.dif_co2
+        + (this.dif_co2_factor_scaling - 1) * this.dif_co2; // apply scaling factor to the diffusion factor
 
 
     // calculate the O2 flux from the blood to the gas compartment
-    this.flux_o2 = (po2_blood - po2_gas) * _dif_o2 * this._t;
+    this.flux_o2 = (po2_blood - po2_gas) * this.dif_o2_step * this._t;
 
     // calculate the new O2 concentrations of the gas and blood compartments
     let new_to2_blood = (to2_blood * this._blood.vol - this.flux_o2) / this._blood.vol;
@@ -153,7 +161,7 @@ export class GasExchanger extends BaseModelClass {
     if (new_co2_gas < 0) new_co2_gas = 0.0;
 
     // calculate the CO2 flux from the blood to the gas compartment
-    this.flux_co2 = (pco2_blood - pco2_gas) * _dif_co2 * this._t;
+    this.flux_co2 = (pco2_blood - pco2_gas) * this.dif_co2_step * this._t;
 
     // calculate the new CO2 concentrations of the gas and blood compartments
     let new_tco2_blood = (tco2_blood * this._blood.vol - this.flux_co2) / this._blood.vol;

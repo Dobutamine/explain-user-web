@@ -5,7 +5,17 @@ import { Capacitance } from "../base_models/Capacitance";
 export class BloodCapacitance extends Capacitance {
   // static properties
   static model_type = "BloodCapacitance";
-  
+  static model_interface = [
+    {
+      target: "model_type",
+      type: "string",
+      build_prop: false,
+      edit_mode: "basic",
+      readonly: true,
+      caption: "model type",
+    }
+  ];
+
   constructor(model_ref, name = "") {
     // call the parent constructor
     super(model_ref, name);
