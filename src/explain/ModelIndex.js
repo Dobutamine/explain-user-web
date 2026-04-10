@@ -17,7 +17,6 @@ export { BloodPump } from "./component_models/BloodPump";
 export { Fluids } from "./component_models/Fluids";
 
 export { HeartValve } from "./component_models/HeartValve";
-export { MicroVascularUnit } from "./component_models/MicroVascularUnit";
 export { Placenta } from "./component_models/Placenta";
 export { Shunts } from "./component_models/Shunts";
 export { Pda } from "./component_models/Pda";

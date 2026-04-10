@@ -195,7 +195,6 @@ export class BloodVessel extends BloodCapacitance {
     this.alpha = 0.0; // determines relation between resistance change and elastance change. Veins/venules: 0.75, arterioles: 0.63, large arteries: 0.5
     this.ans_sens = 0.0; // sensitivity of this blood vessel for autonomic control. 0.0 is no effect, 1.0 is full effect
     this.ans_activity = 1.0; // ans activity factor (unitless)
-    this.pump_rpm = 0.0; // pump rotations per minute (unitless)
 
     // non-persistent property factors. These factors reset to 1.0 after each model step
     this.r_factor = 1.0; // non-persistent resistance factor
@@ -204,6 +203,7 @@ export class BloodVessel extends BloodCapacitance {
     // persistent property factors. These factors are persistent and do not reset
     this.r_factor_ps = 1.0; // persistent resistance factor
     this.r_k_factor_ps = 1.0; // persistent non-linear coefficient factor
+    this.r_el_coupling_factor_ps = 1.0; // persistent resistance-elastance coupling factor
 
     // scaling factors for the properties
     this.r_factor_scaling = 1.0; // scaling factor for the resistance factor
@@ -333,8 +333,8 @@ export class BloodVessel extends BloodCapacitance {
       + (this.r_k_factor_ps - 1) * this.r_k
       + (this.ans_activity - 1) * this.r_k * this.ans_sens
       + (this.r_k_factor_scaling - 1) * this.r_k; // apply scaling factor to the non-linear resistance coefficient
-  
-     // reset the non persistent factors
+
+    // reset the non persistent factors
     this.r_factor = 1.0;
     this.r_k_factor = 1.0;
   }
@@ -343,18 +343,20 @@ export class BloodVessel extends BloodCapacitance {
     // calculate the change in elastance depending on the ans activity and the elastance-resistance coupling factor alpha
     let _ans_elas_factor = Math.pow(this.ans_activity, this.alpha)
 
-    // calculate the change in elastance depending on the ans activity and the elastance-resistance coupling factor alpha
+    // calculate the change in elastance depending on the resistance factors and the elastance-resistance coupling factor alpha
     let _r_elas_factor = Math.pow(this.r_factor, this.alpha)
     let _r_ps_elas_factor = Math.pow(this.r_factor_ps, this.alpha)
+    let _r_el_coupling_factor_ps = Math.pow(this.r_el_coupling_factor_ps, this.alpha) // coupling factor for the persistent resistance-elastance coupling factor
 
     // calculate the elastance factors depending on the ans activity and the elastance factors
-    this.el_eff = this.el_base 
+    this.el_eff = this.el_base
         + (this.el_base_factor - 1) * this.el_base
         + (this.el_base_factor_ps - 1) * this.el_base
         + (_r_elas_factor - 1) * this.el_base
         + (_r_ps_elas_factor - 1) * this.el_base
+        + (_r_el_coupling_factor_ps - 1) * this.el_base
         + (_ans_elas_factor - 1) * this.el_base * this.ans_sens
-        + (this.el_base_factor_scaling - 1) * this.el_base; // apply scaling factor to the elastance factor
+        + (this.el_base_factor_scaling - 1) * this.el_base;
 
     // calculate the elastance factors depending on the ans activity and the elastance factors
     this.el_k_eff = this.el_k 

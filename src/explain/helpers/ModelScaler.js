@@ -1,24 +1,10 @@
 // ModelScaler provides granular factor-based controls for scaling
-// model parameters by subsystem: blood, lung, heart, and containers.
+// model parameters by subsystem: blood, heart, lung, and containers.
 // A factor of 1.0 means no change, 0.5 means half, 2.0 means double.
 //
-// The scaler uses the dedicated *_factor_scaling properties on each model,
-// which form a third tier separate from non-persistent factors (reset each step)
-// and persistent factors (_ps, used by ANS/Heart/etc.).
-
-// Blood vascular types (volumes, elastances, built-in resistances)
-const BLOOD_TYPES = new Set([
-  "BloodCapacitance",
-  "BloodVessel",
-  "MicroVascularUnit",
-  "BloodTimeVaryingElastance"
-]);
-
-// Gas/lung types (volumes, elastances)
-const GAS_TYPES = new Set(["GasCapacitance"]);
-
-// Heart types (volumes, elastances)
-const HEART_TYPES = new Set(["HeartChamber"]);
+// Each scaling group targets a predefined list of component names rather
+// than scanning all models by type. This makes scaling explicit and
+// predictable. The lists can be customized via the config object.
 
 // Components belonging to external devices — exclude from scaling
 const DEVICE_PREFIXES = ["VENT_", "ECLS_"];
@@ -30,186 +16,203 @@ function _is_device(name) {
   return false;
 }
 
-// Check if a Resistor model connects to a model of a given type set
-function _resistor_connects_to(comp, models, typeSet) {
-  const from = models[comp.comp_from];
-  const to = models[comp.comp_to];
-  return (from && typeSet.has(from.model_type)) ||
-         (to && typeSet.has(to.model_type));
-}
+// Default component name lists per scaling group.
+// These match the term_neonate model definition.
+const DEFAULT_CONFIG = {
+  blood: {
+    // components whose u_vol_factor_scaling is set by scale_blood_u_vol
+    u_vol: [
+      // large arteries
+      "AA", "AAR", "AD",
+      // pulmonary arteries
+      "PA", "PAAL", "PAAR",
+      // pulmonary veins
+      "PV",
+      // systemic veins
+      "IVCI", "SVC", "VLB", "VUB", "RLB", "RUB",
+      // ductus arteriosus
+      "DA",
+      // coronaries
+      "COR",
+      // microvascular units (distribute to sub-components internally)
+      "BR", "INT", "KID", "LL", "LS", "RL",
+      // placental
+      "PL_FETAL", "PL_UMB_ART", "PL_UMB_VEN",
+    ],
+
+    // components whose el_base_factor_scaling is set by scale_blood_elastances
+    el_base: [
+      "AA", "AAR", "AD",
+      "PA", "PAAL", "PAAR",
+      "PV",
+      "IVCI", "SVC", "VLB", "VUB", "RLB", "RUB",
+      "DA",
+      "COR",
+      "BR", "INT", "KID", "LL", "LS", "RL",
+      "PL_FETAL", "PL_UMB_ART", "PL_UMB_VEN",
+    ],
+
+    // components whose r_factor_scaling is set by scale_blood_resistances
+    // includes BloodVessels, MVUs, and standalone Resistors in the blood circuit
+    resistance: [
+      // blood vessels with built-in resistance
+      "AA", "AAR", "AD",
+      "PA", "PAAL", "PAAR",
+      "PV",
+      "IVCI", "SVC", "VLB", "VUB", "RLB", "RUB",
+      // microvascular units
+      "BR", "INT", "KID", "LL", "LS", "RL",
+      // placental vessels
+      "PL_FETAL", "PL_UMB_ART", "PL_UMB_VEN",
+      // standalone resistors: venous return
+      "IVCI_RAIVCI", "SVC_RASVC", "PV_LA",
+      // standalone resistors: coronary
+      "COR_RAIVCI", "COR_RASVC",
+      // standalone resistors: atrial
+      "RAIVCI_RASVC"
+    ],
+  },
+
+  heart: {
+    // heart chamber components
+    u_vol: ["LA", "LV", "RAIVCI", "RASVC", "RV"],
+    el_min: ["LA", "LV", "RAIVCI", "RASVC", "RV"],
+    el_max: ["LA", "LV", "RAIVCI", "RASVC", "RV"],
+
+    // heart valve resistors
+    resistance: [
+      "LA_LV",        // mitral valve
+      "LV_AA",        // aortic valve
+      "RV_PA",        // pulmonary valve
+      "RAIVCI_RV",    // tricuspid valve (IVC portion)
+      "RASVC_RV",     // tricuspid valve (SVC portion)
+    ],
+  },
+
+  lung: {
+    // gas capacitance components (airway side)
+    u_vol: ["ALL", "ALR", "DS", "MOUTH"],
+    el_base: ["ALL", "ALR", "DS", "MOUTH"],
+
+    // airway resistors
+    resistance: ["MOUTH_DS", "DS_ALL", "DS_ALR"],
+  },
+
+  // container components
+  thorax: ["THORAX"],
+  pericardium: ["PERICARDIUM"],
+};
 
 export default class ModelScaler {
-  constructor(model) {
+  constructor(model, config = null) {
     this._model = model;
+    this._config = config || JSON.parse(JSON.stringify(DEFAULT_CONFIG));
 
-    // blood factors
-    this._prev_blood_u_vol = 1.0;
-    this._prev_blood_el = 1.0;
-    this._prev_blood_res = 1.0;
+    // tracking previous factor values for delta calculation
+    this._prev = {
+      blood_u_vol: 1.0,
+      blood_el: 1.0,
+      blood_res: 1.0,
+      lung_u_vol: 1.0,
+      lung_el: 1.0,
+      lung_res: 1.0,
+      heart_u_vol: 1.0,
+      heart_el_min: 1.0,
+      heart_el_max: 1.0,
+      heart_res: 1.0,
+      thorax_uvol: 1.0,
+      pericardium_uvol: 1.0,
+    };
+  }
 
-    // lung factors
-    this._prev_lung_u_vol = 1.0;
-    this._prev_lung_el = 1.0;
-    this._prev_lung_res = 1.0;
-
-    // heart factors
-    this._prev_heart_u_vol = 1.0;
-    this._prev_heart_el_min = 1.0;
-    this._prev_heart_el_max = 1.0;
-    this._prev_heart_res = 1.0;
-
-    // container factors
-    this._prev_thorax_uvol = 1.0;
-    this._prev_pericardium_uvol = 1.0;
+  // Apply a scaling delta to a specific factor property on a list of named components
+  _apply(names, prop, delta) {
+    for (const name of names) {
+      const comp = this._model.models[name];
+      if (comp && comp[prop] !== undefined) {
+        comp[prop] *= delta;
+      }
+    }
   }
 
   // --- BLOOD ---
 
   scale_blood_u_vol(factor) {
-    const delta = factor / this._prev_blood_u_vol;
-    for (const [name, comp] of Object.entries(this._model.models)) {
-      if (_is_device(name)) continue;
-      if (comp.is_externally_managed) continue;
-      if (BLOOD_TYPES.has(comp.model_type)) {
-        if (comp.u_vol_factor_scaling !== undefined) comp.u_vol_factor_scaling *= delta;
-      }
-    }
-    this._prev_blood_u_vol = factor;
+    const delta = factor / this._prev.blood_u_vol;
+    this._apply(this._config.blood.u_vol, "u_vol_factor_scaling", delta);
+    this._prev.blood_u_vol = factor;
   }
 
   scale_blood_elastances(factor) {
-    const delta = factor / this._prev_blood_el;
-    for (const [name, comp] of Object.entries(this._model.models)) {
-      if (_is_device(name)) continue;
-      if (comp.is_externally_managed) continue;
-      if (BLOOD_TYPES.has(comp.model_type)) {
-        if (comp.el_base_factor_scaling !== undefined) comp.el_base_factor_scaling *= delta;
-        if (comp.el_min_factor_scaling !== undefined) comp.el_min_factor_scaling *= delta;
-        if (comp.el_max_factor_scaling !== undefined) comp.el_max_factor_scaling *= delta;
-      }
-    }
-    this._prev_blood_el = factor;
+    const delta = factor / this._prev.blood_el;
+    this._apply(this._config.blood.el_base, "el_base_factor_scaling", delta);
+    this._prev.blood_el = factor;
   }
 
   scale_blood_resistances(factor) {
-    const delta = factor / this._prev_blood_res;
-    for (const [name, comp] of Object.entries(this._model.models)) {
-      if (_is_device(name)) continue;
-      // BloodVessel and MicroVascularUnit have built-in r_factor_scaling
-      if ((comp.model_type === "BloodVessel" || comp.model_type === "MicroVascularUnit") && !comp.is_externally_managed) {
-        if (comp.r_factor_scaling !== undefined) comp.r_factor_scaling *= delta;
-      }
-      // Standalone Resistors connecting to blood types
-      // but not to heart chambers or gas capacitances (handled by their own scalers)
-      if (comp.model_type === "Resistor" &&
-          !_resistor_connects_to(comp, this._model.models, GAS_TYPES)) {
-        if (comp.r_factor_scaling !== undefined) comp.r_factor_scaling *= delta;
-      }
-    }
-    this._prev_blood_res = factor;
+    const delta = factor / this._prev.blood_res;
+    this._apply(this._config.blood.resistance, "r_factor_scaling", delta);
+    this._prev.blood_res = factor;
   }
 
   // --- LUNG ---
 
   scale_lung_u_vol(factor) {
-    const delta = factor / this._prev_lung_u_vol;
-    for (const [name, comp] of Object.entries(this._model.models)) {
-      if (_is_device(name)) continue;
-      if (GAS_TYPES.has(comp.model_type)) {
-        if (comp.u_vol_factor_scaling !== undefined) comp.u_vol_factor_scaling *= delta;
-      }
-    }
-    this._prev_lung_u_vol = factor;
+    const delta = factor / this._prev.lung_u_vol;
+    this._apply(this._config.lung.u_vol, "u_vol_factor_scaling", delta);
+    this._prev.lung_u_vol = factor;
   }
 
   scale_lung_elastances(factor) {
-    const delta = factor / this._prev_lung_el;
-    for (const [name, comp] of Object.entries(this._model.models)) {
-      if (_is_device(name)) continue;
-      if (GAS_TYPES.has(comp.model_type)) {
-        if (comp.el_base_factor_scaling !== undefined) comp.el_base_factor_scaling *= delta;
-      }
-    }
-    this._prev_lung_el = factor;
+    const delta = factor / this._prev.lung_el;
+    this._apply(this._config.lung.el_base, "el_base_factor_scaling", delta);
+    this._prev.lung_el = factor;
   }
 
-  // Scale airway resistances: Resistor models connected to GasCapacitance
-
   scale_lung_resistances(factor) {
-    const delta = factor / this._prev_lung_res;
-    for (const [name, comp] of Object.entries(this._model.models)) {
-      if (_is_device(name)) continue;
-      if (comp.model_type === "Resistor" &&
-          _resistor_connects_to(comp, this._model.models, GAS_TYPES)) {
-        if (comp.r_factor_scaling !== undefined) comp.r_factor_scaling *= delta;
-      }
-    }
-    this._prev_lung_res = factor;
+    const delta = factor / this._prev.lung_res;
+    this._apply(this._config.lung.resistance, "r_factor_scaling", delta);
+    this._prev.lung_res = factor;
   }
 
   // --- HEART ---
 
   scale_heart_u_vol(factor) {
-    const delta = factor / this._prev_heart_u_vol;
-    for (const comp of Object.values(this._model.models)) {
-      if (comp.model_type === "HeartChamber") {
-        if (comp.u_vol_factor_scaling !== undefined) comp.u_vol_factor_scaling *= delta;
-      }
-    }
-    this._prev_heart_u_vol = factor;
+    const delta = factor / this._prev.heart_u_vol;
+    this._apply(this._config.heart.u_vol, "u_vol_factor_scaling", delta);
+    this._prev.heart_u_vol = factor;
   }
 
   scale_heart_el_min(factor) {
-    const delta = factor / this._prev_heart_el_min;
-    for (const comp of Object.values(this._model.models)) {
-      if (comp.model_type === "HeartChamber") {
-        if (comp.el_min_factor_scaling !== undefined) comp.el_min_factor_scaling *= delta;
-      }
-    }
-    this._prev_heart_el_min = factor;
+    const delta = factor / this._prev.heart_el_min;
+    this._apply(this._config.heart.el_min, "el_min_factor_scaling", delta);
+    this._prev.heart_el_min = factor;
   }
 
   scale_heart_el_max(factor) {
-    const delta = factor / this._prev_heart_el_max;
-    for (const comp of Object.values(this._model.models)) {
-      if (comp.model_type === "HeartChamber") {
-        if (comp.el_max_factor_scaling !== undefined) comp.el_max_factor_scaling *= delta;
-      }
-    }
-    this._prev_heart_el_max = factor;
+    const delta = factor / this._prev.heart_el_max;
+    this._apply(this._config.heart.el_max, "el_max_factor_scaling", delta);
+    this._prev.heart_el_max = factor;
   }
 
-  // Scale heart resistances: Resistor models connected to HeartChamber
-
   scale_heart_resistances(factor) {
-    const delta = factor / this._prev_heart_res;
-    for (const comp of Object.values(this._model.models)) {
-      if (comp.model_type === "Resistor" &&
-          _resistor_connects_to(comp, this._model.models, HEART_TYPES)) {
-        if (comp.r_factor_scaling !== undefined) comp.r_factor_scaling *= delta;
-      }
-    }
-    this._prev_heart_res = factor;
+    const delta = factor / this._prev.heart_res;
+    this._apply(this._config.heart.resistance, "r_factor_scaling", delta);
+    this._prev.heart_res = factor;
   }
 
   // --- CONTAINERS ---
 
   scale_thorax_uvol(factor) {
-    const delta = factor / this._prev_thorax_uvol;
-    const thorax = this._model.models["THORAX"];
-    if (thorax && thorax.u_vol_factor_scaling !== undefined) {
-      thorax.u_vol_factor_scaling *= delta;
-    }
-    this._prev_thorax_uvol = factor;
+    const delta = factor / this._prev.thorax_uvol;
+    this._apply(this._config.thorax, "u_vol_factor_scaling", delta);
+    this._prev.thorax_uvol = factor;
   }
 
   scale_pericardium_uvol(factor) {
-    const delta = factor / this._prev_pericardium_uvol;
-    const peri = this._model.models["PERICARDIUM"];
-    if (peri && peri.u_vol_factor_scaling !== undefined) {
-      peri.u_vol_factor_scaling *= delta;
-    }
-    this._prev_pericardium_uvol = factor;
+    const delta = factor / this._prev.pericardium_uvol;
+    this._apply(this._config.pericardium, "u_vol_factor_scaling", delta);
+    this._prev.pericardium_uvol = factor;
   }
 
   // --- PRESETS ---
@@ -275,72 +278,56 @@ export default class ModelScaler {
   // scaling factors to 1.0. After this, the model state reflects the scaled
   // values as its new baseline.
 
+  _bake(names, base_prop, factor_prop) {
+    for (const name of names) {
+      const comp = this._model.models[name];
+      if (!comp) continue;
+      const f = comp[factor_prop];
+      if (f !== undefined && f !== 1.0) {
+        comp[base_prop] *= f;
+        comp[factor_prop] = 1.0;
+      }
+    }
+  }
+
+  _bake_resistance(names) {
+    for (const name of names) {
+      const comp = this._model.models[name];
+      if (!comp) continue;
+      const f = comp.r_factor_scaling;
+      if (f !== undefined && f !== 1.0) {
+        comp.r_for *= f;
+        comp.r_back *= f;
+        comp.r_factor_scaling = 1.0;
+      }
+    }
+  }
+
   incorporate() {
-    for (const [name, comp] of Object.entries(this._model.models)) {
-      if (_is_device(name)) continue;
-      if (comp.is_externally_managed) continue;
+    // bake blood scaling factors
+    this._bake(this._config.blood.u_vol, "u_vol", "u_vol_factor_scaling");
+    this._bake(this._config.blood.el_base, "el_base", "el_base_factor_scaling");
+    this._bake_resistance(this._config.blood.resistance);
 
-      // bake unstressed volume scaling
-      if (comp.u_vol !== undefined && comp.u_vol_factor_scaling !== undefined && comp.u_vol_factor_scaling !== 1.0) {
-        comp.u_vol *= comp.u_vol_factor_scaling;
-        comp.u_vol_factor_scaling = 1.0;
-      }
+    // bake lung scaling factors
+    this._bake(this._config.lung.u_vol, "u_vol", "u_vol_factor_scaling");
+    this._bake(this._config.lung.el_base, "el_base", "el_base_factor_scaling");
+    this._bake_resistance(this._config.lung.resistance);
 
-      // bake elastance baseline scaling (Capacitance, BloodVessel, MVU, GasCapacitance)
-      if (comp.el_base !== undefined && comp.el_base_factor_scaling !== undefined && comp.el_base_factor_scaling !== 1.0) {
-        comp.el_base *= comp.el_base_factor_scaling;
-        comp.el_base_factor_scaling = 1.0;
-      }
+    // bake heart scaling factors
+    this._bake(this._config.heart.u_vol, "u_vol", "u_vol_factor_scaling");
+    this._bake(this._config.heart.el_min, "el_min", "el_min_factor_scaling");
+    this._bake(this._config.heart.el_max, "el_max", "el_max_factor_scaling");
+    this._bake_resistance(this._config.heart.resistance);
 
-      // bake elastance non-linear k scaling
-      if (comp.el_k !== undefined && comp.el_k_factor_scaling !== undefined && comp.el_k_factor_scaling !== 1.0) {
-        comp.el_k *= comp.el_k_factor_scaling;
-        comp.el_k_factor_scaling = 1.0;
-      }
+    // bake container scaling factors
+    this._bake(this._config.thorax, "u_vol", "u_vol_factor_scaling");
+    this._bake(this._config.pericardium, "u_vol", "u_vol_factor_scaling");
 
-      // bake el_min scaling (TimeVaryingElastance / HeartChamber)
-      if (comp.el_min !== undefined && comp.el_min_factor_scaling !== undefined && comp.el_min_factor_scaling !== 1.0) {
-        comp.el_min *= comp.el_min_factor_scaling;
-        comp.el_min_factor_scaling = 1.0;
-      }
-
-      // bake el_max scaling (TimeVaryingElastance / HeartChamber)
-      if (comp.el_max !== undefined && comp.el_max_factor_scaling !== undefined && comp.el_max_factor_scaling !== 1.0) {
-        comp.el_max *= comp.el_max_factor_scaling;
-        comp.el_max_factor_scaling = 1.0;
-      }
-
-      // bake resistance scaling (BloodVessel, MVU)
-      if (comp.r_for !== undefined && comp.r_factor_scaling !== undefined && comp.r_factor_scaling !== 1.0) {
-        comp.r_for *= comp.r_factor_scaling;
-        comp.r_back *= comp.r_factor_scaling;
-        comp.r_factor_scaling = 1.0;
-      }
+    // reset all tracking
+    for (const key of Object.keys(this._prev)) {
+      this._prev[key] = 1.0;
     }
-
-    // also bake standalone Resistor models
-    for (const [name, comp] of Object.entries(this._model.models)) {
-      if (_is_device(name)) continue;
-      if (comp.model_type === "Resistor" && comp.r_factor_scaling !== undefined && comp.r_factor_scaling !== 1.0) {
-        comp.r_for *= comp.r_factor_scaling;
-        comp.r_back *= comp.r_factor_scaling;
-        comp.r_factor_scaling = 1.0;
-      }
-    }
-
-    // reset all scaler tracking since factors are now absorbed
-    this._prev_blood_u_vol = 1.0;
-    this._prev_blood_el = 1.0;
-    this._prev_blood_res = 1.0;
-    this._prev_lung_u_vol = 1.0;
-    this._prev_lung_el = 1.0;
-    this._prev_lung_res = 1.0;
-    this._prev_heart_u_vol = 1.0;
-    this._prev_heart_el_min = 1.0;
-    this._prev_heart_el_max = 1.0;
-    this._prev_heart_res = 1.0;
-    this._prev_thorax_uvol = 1.0;
-    this._prev_pericardium_uvol = 1.0;
   }
 
   // --- UTILITY ---
