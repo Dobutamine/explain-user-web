@@ -145,24 +145,6 @@ export class TimeVaryingElastance extends BaseModelClass {
 
   // this routine is called in every model step by the ModelEngine Class
   calc_model() {
-    // if this model is externally managed, reset the factors to 1.0 to avoid unintended changes in the elastance and unstressed volume
-    if (this.is_externally_managed) {
-      this.el_min_factor = 1.0;
-      this.el_max_factor = 1.0;
-      this.el_k_factor = 1.0;
-      this.u_vol_factor = 1.0;
-
-      this.el_min_factor_scaling = 1.0;
-      this.el_max_factor_scaling = 1.0;
-      this.el_k_factor_scaling = 1.0;
-      this.u_vol_factor_scaling = 1.0;
-
-      this.el_min_factor_ps = 1.0;
-      this.el_max_factor_ps = 1.0;
-      this.el_k_factor_ps = 1.0;
-      this.u_vol_factor_ps = 1.0;
-    }
-
     // calculate the elastances and volumes
     this.calc_elastances();
     this.calc_volumes();

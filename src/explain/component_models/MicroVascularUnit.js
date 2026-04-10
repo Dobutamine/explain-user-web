@@ -376,6 +376,11 @@ export class MicroVascularUnit extends BaseModelClass {
     this.components.cap.ans_activity = _ans_activity;
     this.components.ven.ans_activity = _ans_activity;
 
+    // update the ans sensivity of the components according to the settings
+    this.components.art.ans_sens = this.ans_sens_settings.art;
+    this.components.cap.ans_sens = this.ans_sens_settings.cap;
+    this.components.ven.ans_sens = this.ans_sens_settings.ven;
+
     // calculate the resistance, elastance and inertance
     this.calc_resistance();
     this.calc_elastance();

@@ -131,24 +131,10 @@ export class Container extends BaseModelClass {
   }
 
   calc_model() {
-    // if this container is externally managed, reset all factors to 1.0 to prevent changes to the model behavior from the factors
-    if (this.is_externally_managed) {
-      this.el_base_factor = 1.0;
-      this.el_k_factor = 1.0;
-      this.u_vol_factor = 1.0;
-
-      this.el_base_factor_scaling = 1.0;
-      this.el_k_factor_scaling = 1.0;
-      this.u_vol_factor_scaling = 1.0;
-
-      this.el_base_factor_ps = 1.0;
-      this.el_k_factor_ps = 1.0;
-      this.u_vol_factor_ps = 1.0;
-    }
-
     // first calculate the current elastances and volumes
     this.calc_elastances();
     this.calc_volumes();
+    
     // then calculate the pressure
     this.calc_pressure();
   }

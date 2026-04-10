@@ -131,28 +131,11 @@ export class Capacitance extends BaseModelClass {
 
   // this routine is called in every model step by the ModelEngine Class
   calc_model() {
-    // if a capacitance is externally managed we do not want to incorporate the peristent and non persistent factors in the elastance and unstressed volume calculations, 
-    // because this is done by the parent model (e.g. BloodVessel)
-    if (this.is_externally_managed) {
-      this.el_base_factor = 1.0;
-      this.el_k_factor = 1.0;
-      this.u_vol_factor = 1.0;
-
-      this.el_base_factor_ps = 1.0;
-      this.el_k_factor_ps = 1.0;
-      this.u_vol_factor_ps = 1.0;
-
-      this.el_base_factor_scaling = 1.0;
-      this.el_k_factor_scaling = 1.0;
-      this.u_vol_factor_scaling = 1.0;
-    }
-
     // first calculate the current elastances and volumes
     this.calc_elastances();
     this.calc_volumes();
     // then calculate the pressure
     this.calc_pressure();
-
   }
 
   calc_elastances() {

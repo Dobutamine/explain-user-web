@@ -158,7 +158,6 @@ export class Resistor extends BaseModelClass {
     this.p1_ext = 0.0; // external pressure on the inlet (mmHg)
     this.p2_ext = 0.0; // external pressure on the outlet (mmHg)
     this.fixed_composition = false;
-    this.is_externally_managed = false; // flags whether this resistor is managed by a parent model (e.g. BloodVessel)
 
     // non-persistent property factors. These factors reset to 1.0 after each model step
     this.r_factor = 1.0; // non-persistent resistance factor
@@ -178,7 +177,6 @@ export class Resistor extends BaseModelClass {
     // initialize dependent properties
     this.flow = 0.0;  // flow f(t) (L/s)
 
-    
     // local variables
     this._comp_from = {}; // holds a reference to the upstream component
     this._comp_to = {}; // holds a reference to the downstream component
@@ -191,23 +189,6 @@ export class Resistor extends BaseModelClass {
 
   // this routine is called in every model step by the ModelEngine Class
   calc_model() {
-    // if a resistor is externally managed we do not want to incorporate the peristent and non persistent factors 
-    // in the resistance and inertance calculations, because this is done by the parent model (e.g. BloodVessel)
-    
-    if (this.is_externally_managed) {
-      this.r_factor = 1.0;
-      this.r_k_factor = 1.0;
-      this.l_factor = 1.0;
-
-      this.r_factor_scaling = 1.0;
-      this.r_k_factor_scaling = 1.0;
-      this.l_factor_scaling = 1.0;
-      
-      this.r_factor_ps = 1.0;
-      this.r_k_factor_ps = 1.0;
-      this.l_factor_ps = 1.0;
-    }
-
     // find the up- and downstream components and store the references
     this._comp_from = this._model_engine.models[this.comp_from];
     this._comp_to = this._model_engine.models[this.comp_to];

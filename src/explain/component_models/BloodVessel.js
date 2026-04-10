@@ -207,7 +207,6 @@ export class BloodVessel extends BloodCapacitance {
     this.ans_sens = 0.0; // sensitivity of this blood vessel for autonomic control. 0.0 is no effect, 1.0 is full effect
     this.ans_activity = 1.0; // ans activity factor (unitless)
     this.pump_rpm = 0.0; // pump rotations per minute (unitless)
-    this.is_externally_managed = false; // flag to indicate whether this component is externally managed (e.g. by an MVU)
 
     // non-persistent property factors. These factors reset to 1.0 after each model step
     this.r_factor = 1.0; // non-persistent resistance factor
@@ -248,8 +247,6 @@ export class BloodVessel extends BloodCapacitance {
     this.inputs.forEach((inputName) => { 
       // check whether the resistor already exists (in case of a saved state)
       if (this._model_engine.models.hasOwnProperty(inputName + "_" + this.name)) {
-        // make sure the is externally managed property is set to true for this resistor
-        this._model_engine.models[inputName + "_" + this.name].is_externally_managed = true;
         this._resistors[inputName + "_" + this.name] = this._model_engine.models[inputName + "_" + this.name];
         return; // if so, do not create a new resistor
       }
@@ -270,7 +267,6 @@ export class BloodVessel extends BloodCapacitance {
         { key: "no_back_flow", value: this.no_back_flow },
         { key: "comp_from", value: inputName },
         { key: "comp_to", value: this.name },
-        { key: "is_externally_managed", value: true },
       ]
       // initialize the resistor with the arguments
       res.init_model(args);
@@ -284,34 +280,6 @@ export class BloodVessel extends BloodCapacitance {
   }
   
   calc_model() {
-    // if a vessel is externally managed we do not want to incorporate the peristent and non persistent factors in the resistance 
-    // and elastance calculations, because this is done by the parent model (e.g. MVU)
-
-    if (this.is_externally_managed) {
-      this.el_base_factor = 1.0;
-      this.el_k_factor = 1.0;
-      this.u_vol_factor = 1.0;
-
-      this.r_factor = 1.0;
-      this.r_k_factor = 1.0;
-      this.l_factor = 1.0;
-
-      this.el_base_factor_scaling = 1.0;
-      this.el_k_factor_scaling = 1.0;
-      this.u_vol_factor_scaling = 1.0;
-      this.r_factor_scaling = 1.0;
-      this.r_k_factor_scaling = 1.0;
-      this.l_factor_scaling = 1.0;
-
-      this.el_base_factor_ps = 1.0;
-      this.el_k_factor_ps = 1.0;
-      this.u_vol_factor_ps = 1.0;
-      
-      this.r_factor_ps = 1.0;
-      this.r_k_factor_ps = 1.0;
-      this.l_factor_ps = 1.0;
-    }
-      
     // call this class specific calculation methods
     this.calc_resistances();
     this.calc_elastances();
@@ -380,7 +348,6 @@ export class BloodVessel extends BloodCapacitance {
   }
 
   calc_resistances() {
-    this.ans_activity = 1;
     // calculate the resistances depending on the ans acitvity and resistance property factors
     this.r_for_step = this.r_for 
       + (this.r_factor - 1) * this.r_for
