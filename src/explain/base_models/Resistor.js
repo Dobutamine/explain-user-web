@@ -176,14 +176,14 @@ export class Resistor extends BaseModelClass {
 
     // initialize dependent properties
     this.flow = 0.0;  // flow f(t) (L/s)
-
+    
     // local variables
     this._comp_from = {}; // holds a reference to the upstream component
     this._comp_to = {}; // holds a reference to the downstream component
-    this.r_for_step = 1000;  // calculated forward resistance (mmHg/L*s)
-    this.r_back_step = 1000; // calculated backward resistance (mmHg/L*s)
-    this.r_k_step = 0; // calculated non-linear resistance factor (unitless)
-    this.l_step = 0.0; // calculated intertance (mmHg*s^2/L)
+    this.r_for_eff = 1000;  // calculated forward resistance (mmHg/L*s)
+    this.r_back_eff = 1000; // calculated backward resistance (mmHg/L*s)
+    this.r_k_eff = 0; // calculated non-linear resistance factor (unitless)
+    this.l_eff = 0.0; // calculated intertance (mmHg*s^2/L)
     this._prev_flow = 0.0; // flow from previous model step (L/s)
   }
 
@@ -209,17 +209,17 @@ export class Resistor extends BaseModelClass {
   // calculate resistance
   calc_resistance() {
        // incorporate all factors influencing this resistor
-       this.r_for_step = this.r_for 
+       this.r_for_eff = this.r_for 
           + (this.r_factor - 1) * this.r_for
           + (this.r_factor_ps - 1) * this.r_for
           + (this.r_factor_scaling - 1) * this.r_for; // apply scaling factor to the forward resistance
 
-       this.r_back_step = this.r_back 
+       this.r_back_eff = this.r_back 
           + (this.r_factor - 1) * this.r_back
           + (this.r_factor_ps - 1) * this.r_back
           + (this.r_factor_scaling - 1) * this.r_back; // apply scaling factor to the backward resistance
 
-       this.r_k_step = this.r_k 
+       this.r_k_eff = this.r_k 
           + (this.r_k_factor - 1) * this.r_k
           + (this.r_k_factor_ps - 1) * this.r_k
           + (this.r_k_factor_scaling - 1) * this.r_k; // apply scaling factor to the non-linear coefficient
@@ -231,7 +231,7 @@ export class Resistor extends BaseModelClass {
 
   calc_inertance() {
     // calculate the inertance
-    this.l_step = this.l 
+    this.l_eff = this.l 
       + (this.l_factor - 1) * this.l
       + (this.l_factor_ps - 1) * this.l
       + (this.l_factor_scaling - 1) * this.l; // apply scaling factor to the inertance
@@ -262,7 +262,7 @@ export class Resistor extends BaseModelClass {
     // calculate the forward flow between two components
     if (_p1_t >= _p2_t) {
       // calculate the forward flow
-      this.flow = (_p1_t - _p2_t - this.r_k_step * Math.pow(this.flow, 2) - this.l_step * (this.flow - this._prev_flow)) / this.r_for_step;
+      this.flow = (_p1_t - _p2_t - this.r_k_eff * Math.pow(this.flow, 2) - this.l_eff * (this.flow - this._prev_flow)) / this.r_for_eff;
 
       // update the volumes of the connected components but do not remove the volume which could not be removed from the upstream component (to prevent volume loss)
       const vol_not_removed = this._comp_from.volume_out(this.flow * this._t);
@@ -278,7 +278,7 @@ export class Resistor extends BaseModelClass {
     // calculate the backward flow between two components
     if (_p1_t < _p2_t && !this.no_back_flow) {
       // calculate the backward flow
-      this.flow = (_p1_t - _p2_t + this.r_k_step * Math.pow(this.flow, 2) + this.l_step * (this.flow - this._prev_flow)) / this.r_back_step;
+      this.flow = (_p1_t - _p2_t + this.r_k_eff * Math.pow(this.flow, 2) + this.l_eff * (this.flow - this._prev_flow)) / this.r_back_eff;
 
       // update the volumes of the connected components but do not remove the volume which could not be removed from the upstream component (to prevent volume loss)
       let vol_not_removed = this._comp_to.volume_out(-this.flow * this._t);

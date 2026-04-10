@@ -44,14 +44,6 @@ export class BloodVessel extends BloodCapacitance {
       readonly: false,
       caption: "enabled",
     },
-     {
-      target: "is_externally_managed",
-      type: "boolean",
-      build_prop: true,
-      edit_mode: "basic",
-      readonly: false,
-      caption: "externally managed",
-    },
     {
       edit_mode: "basic",
       caption: "no flow allowed",
@@ -197,8 +189,6 @@ export class BloodVessel extends BloodCapacitance {
     this.r_back = 1.0; // backward flow resistance Rb (mmHg*s/l )
     this.r_k = 0.0; // non-linear resistance coefficient K1 (unitless)
     this.l = 0.0; // intertance L (mmHg*s^2/L)
-    this.comp_from = ""; // holds the name of the upstream component
-    this.comp_to = ""; // holds the name of the downstream component
     this.no_flow = false; // flags whether flow is allowed across this resistor
     this.no_back_flow = false; // flags whether backflow is allowed across this resistor
     this.p1_ext = 0.0; // external pressure on the inlet (mmHg)
@@ -220,22 +210,23 @@ export class BloodVessel extends BloodCapacitance {
 
     // scaling factors for the properties
     this.r_factor_scaling = 1.0; // scaling factor for the resistance factor
-    this.r_k_factor_scaling = 1.0;
-    this.l_factor_scaling = 1.0;
+    this.r_k_factor_scaling = 1.0; // scaling factor for the non-linear coefficient factor
+    this.l_factor_scaling = 1.0; // scaling factor for the inertance factor
 
     // initialize dependent properties
     this.flow = 0.0; // flow f(t) (L/s)
     this.flow_forward = 0.0; // forward flow from the input blood vessels (L/s)
     this.flow_backward = 0.0; // backward flow to the input blood vessels (L/s)
-    this.r_current = 0.0;
-    this.el_current = 0.0;
+
+    // state variables to store the current resistance and elastance values
+    this.r_for_eff = 1000;  // calculated forward resistance (mmHg/L*s)
+    this.r_back_eff = 1000; // calculated backward resistance (mmHg/L*s)
+    this.r_k_eff = 0; // calculated non-linear resistance factor (unitless)
+    this.l_eff = 0.0; // calculated intertance (mmHg*s^2/L)
 
     // local properties
     this._resistors = {}; // list of connectors for this blood vessel
-    this.r_for_step = 1000;  // calculated forward resistance (mmHg/L*s)
-    this.r_back_step = 1000; // calculated backward resistance (mmHg/L*s)
-    this.r_k_step = 0; // calculated non-linear resistance factor (unitless)
-    this.l_step = 0.0; // calculated intertance (mmHg*s^2/L)
+
   }
 
   // override the parent class method
@@ -288,16 +279,16 @@ export class BloodVessel extends BloodCapacitance {
     // update the associated resistors
     Object.values(this._resistors).forEach((resistor) => {
       resistor.is_enabled = this.is_enabled;
-      resistor.r_for = this.r_for_step
-      resistor.r_back = this.r_back_step
-      resistor.r_k = this.r_k_step
+      resistor.r_for = this.r_for_eff
+      resistor.r_back = this.r_back_eff
+      resistor.r_k = this.r_k_eff
 
       resistor.no_back_flow = this.no_back_flow
       resistor.no_flow = this.no_flow
       resistor.p1_ext = this.p1_ext
       resistor.p2_ext = this.p2_ext
 
-      resistor.l = this.l_step
+      resistor.l = this.l_eff
     })
 
     // call parent class methods
@@ -306,10 +297,6 @@ export class BloodVessel extends BloodCapacitance {
 
     // get the flows from the resistors
     this.get_flows();
-
-    // store the current forward resistance and elastance
-    this.r_current = this.r_for_step
-    this.el_current = this.el_step
   }
 
   get_flows() {
@@ -337,7 +324,7 @@ export class BloodVessel extends BloodCapacitance {
 
   calc_inertances() {
     // calulate the inertance depending on the ans activity and the elastance-resistance coupling factor
-    this.l_step = this.l
+    this.l_eff = this.l
       + (this.l_factor - 1) * this.l
       + (this.l_factor_ps - 1) * this.l
       + (this.l_factor_scaling - 1) * this.l; // apply scaling factor to the inertance factor
@@ -349,19 +336,19 @@ export class BloodVessel extends BloodCapacitance {
 
   calc_resistances() {
     // calculate the resistances depending on the ans acitvity and resistance property factors
-    this.r_for_step = this.r_for 
+    this.r_for_eff = this.r_for 
       + (this.r_factor - 1) * this.r_for
       + (this.r_factor_ps - 1) * this.r_for
       + (this.ans_activity - 1) * this.r_for * this.ans_sens
       + (this.r_factor_scaling - 1) * this.r_for; // apply scaling factor to the resistance factor
 
-    this.r_back_step = this.r_back
+    this.r_back_eff = this.r_back
       + (this.r_factor - 1) * this.r_back
       + (this.r_factor_ps - 1) * this.r_back
       + (this.ans_activity - 1) * this.r_back * this.ans_sens
       + (this.r_factor_scaling - 1) * this.r_back; // apply scaling factor to the resistance factor
 
-    this.r_k_step = this.r_k
+    this.r_k_eff = this.r_k
       + (this.r_k_factor - 1) * this.r_k
       + (this.r_k_factor_ps - 1) * this.r_k
       + (this.ans_activity - 1) * this.r_k * this.ans_sens
@@ -381,7 +368,7 @@ export class BloodVessel extends BloodCapacitance {
     let _r_ps_elas_factor = Math.pow(this.r_factor_ps, this.alpha)
 
     // calculate the elastance factors depending on the ans activity and the elastance factors
-    this.el_step = this.el_base 
+    this.el_eff = this.el_base 
         + (this.el_base_factor - 1) * this.el_base
         + (this.el_base_factor_ps - 1) * this.el_base
         + (_r_elas_factor - 1) * this.el_base
@@ -390,7 +377,7 @@ export class BloodVessel extends BloodCapacitance {
         + (this.el_base_factor_scaling - 1) * this.el_base; // apply scaling factor to the elastance factor
 
     // calculate the elastance factors depending on the ans activity and the elastance factors
-    this.el_k_step = this.el_k 
+    this.el_k_eff = this.el_k 
         + (this.el_k_factor - 1) * this.el_k
         + (this.el_k_factor_ps - 1) * this.el_k
         + (this.el_k_factor_scaling - 1) * this.el_k; // apply scaling factor to the non-linear elastance factor

@@ -37,27 +37,27 @@ export class HeartChamber extends TimeVaryingElastance {
     //  β-adrenergic receptors dominate in the myocardium
     
     // ans influences ANS diastolic function B1 receptor activation -> lusitropic effect
-    this.el_min_step = this.el_min
+    this.el_min_eff = this.el_min
         + (this.el_min_factor - 1) * this.el_min
         + (this.el_min_factor_ps - 1) * this.el_min
         + (this.el_min_factor_scaling - 1) * this.el_min
         - (this.ans_activity - 1) * this.el_min * this.ans_sens
 
     // ans influences ANS systolic function B1 receptor activation -> positive intropic effect
-    this.el_max_step = this.el_max
+    this.el_max_eff = this.el_max
         + (this.el_max_factor - 1) * this.el_max
         + (this.el_max_factor_ps - 1) * this.el_max
         + (this.el_max_factor_scaling - 1) * this.el_max
         + (this.ans_activity - 1) * this.el_max * this.ans_sens
 
-    this.el_k_step = this.el_k
+    this.el_k_eff = this.el_k
         + (this.el_k_factor - 1) * this.el_k
         + (this.el_k_factor_ps - 1) * this.el_k
         + (this.el_k_factor_scaling - 1) * this.el_k
 
     // make sure that el_max is not smaller than el_min
-    if (this.el_max_step < this.el_min_step) {
-      this.el_max_step = this.el_min_step;
+    if (this.el_max_eff < this.el_min_eff) {
+      this.el_max_eff = this.el_min_eff;
     }
 
     // reset the non persistent factors

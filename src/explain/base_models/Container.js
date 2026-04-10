@@ -125,9 +125,9 @@ export class Container extends BaseModelClass {
     this.pres_tm = 0.0; // transmural pressure (mmHg)
 
     // local variables
-    this.el_step = 0.0; // calculated elastance (mmHg/L)
-    this.u_vol_step = 0.0; // calculated unstressed volume (L)
-    this.el_k_step = 0.0; // calculated elastance non-linear k (unitless)
+    this.el_eff = 0.0; // calculated elastance (mmHg/L)
+    this.u_vol_eff = 0.0; // calculated unstressed volume (L)
+    this.el_k_eff = 0.0; // calculated elastance non-linear k (unitless)
   }
 
   calc_model() {
@@ -141,12 +141,12 @@ export class Container extends BaseModelClass {
 
   calc_elastances() {
     // calculate the elastance and non-linear elastance incorparting the factors
-    this.el_step = this.el_base 
+    this.el_eff = this.el_base 
         + (this.el_base_factor - 1) * this.el_base
         + (this.el_base_factor_ps - 1) * this.el_base
         + (this.el_base_factor_scaling - 1) * this.el_base;
 
-    this.el_k_step = this.el_k 
+    this.el_k_eff = this.el_k 
         + (this.el_k_factor - 1) * this.el_k
         + (this.el_k_factor_ps - 1) * this.el_k
         + (this.el_k_factor_scaling - 1) * this.el_k;
@@ -166,7 +166,7 @@ export class Container extends BaseModelClass {
     });
     
     // calculate the unstressed volume incorporating the factors
-    this.u_vol_step = this.u_vol 
+    this.u_vol_eff = this.u_vol 
         + (this.u_vol_factor - 1) * this.u_vol
         + (this.u_vol_factor_ps - 1) * this.u_vol
         + (this.u_vol_factor_scaling - 1) * this.u_vol;
@@ -177,7 +177,7 @@ export class Container extends BaseModelClass {
 
   calc_pressure() {
     // calculate the recoil pressure
-    this.pres_in = this.el_k_step * Math.pow(this.vol - this.u_vol_step, 2) + this.el_step * (this.vol - this.u_vol_step);
+    this.pres_in = this.el_k_eff * Math.pow(this.vol - this.u_vol_eff, 2) + this.el_eff * (this.vol - this.u_vol_eff);
 
     // calculate the transmural pressure
     this.pres_tm = this.pres_in - this.pres_ext;
