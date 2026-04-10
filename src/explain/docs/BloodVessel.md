@@ -29,10 +29,9 @@ Each model step executes in this order:
 
 1. **`calc_resistances()`** -- compute effective forward, backward, and non-linear resistances
 2. **`calc_elastances()`** -- compute effective elastance with ANS and resistance-elastance coupling
-3. **`calc_inertances()`** -- compute effective inertance
-4. **Update resistors** -- push the calculated values to all internal `Resistor` objects
-5. **`calc_volumes()`** -- compute effective unstressed volume (inherited from Capacitance)
-6. **`calc_pressure()`** -- compute recoil, transmural, and total pressure (inherited from Capacitance)
+3. **Update resistors** -- push the calculated values to all internal `Resistor` objects
+4. **`calc_volumes()`** -- compute effective unstressed volume (inherited from Capacitance)
+5. **`calc_pressure()`** -- compute recoil, transmural, and total pressure (inherited from Capacitance)
 7. **`get_flows()`** -- sum forward and backward flows from all internal resistors
 
 ## Properties
@@ -47,7 +46,6 @@ Each model step executes in this order:
 | `r_for` | mmHg·s/L | Forward flow resistance |
 | `r_back` | mmHg·s/L | Backward flow resistance |
 | `r_k` | unitless | Non-linear resistance coefficient. Adds flow-dependent resistance |
-| `l` | mmHg·s²/L | Inertance. Opposes changes in flow (blood inertia) |
 | `inputs` | string[] | Names of upstream components (a Resistor is created for each) |
 | `alpha` | 0-1 | Resistance-elastance coupling factor (see ANS section) |
 | `ans_sens` | 0-1 | Sensitivity to ANS activity. 0 = no effect, 1 = full effect |
@@ -73,7 +71,6 @@ Each model step executes in this order:
 | `r_for_eff` | mmHg·s/L | Effective forward resistance this step (after all factors) |
 | `r_back_eff` | mmHg·s/L | Effective backward resistance this step |
 | `r_k_eff` | unitless | Effective non-linear resistance coefficient |
-| `l_eff` | mmHg·s²/L | Effective inertance |
 | `el_eff` | mmHg/L | Effective elastance (from Capacitance) |
 | `u_vol_eff` | L | Effective unstressed volume (from Capacitance) |
 
@@ -97,7 +94,6 @@ value_eff = base
 | `u_vol_factor` | `u_vol` |
 | `r_factor` | `r_for`, `r_back` |
 | `r_k_factor` | `r_k` |
-| `l_factor` | `l` |
 
 These are set by other models during a step (e.g., the breathing model applying intrathoracic pressure effects) and automatically reset to 1.0 after use.
 
@@ -110,7 +106,6 @@ These are set by other models during a step (e.g., the breathing model applying 
 | `u_vol_factor_ps` | `u_vol` |
 | `r_factor_ps` | `r_for`, `r_back` |
 | `r_k_factor_ps` | `r_k` |
-| `l_factor_ps` | `l` |
 
 These persist across steps and are used by controllers like the ANS or Heart model to apply ongoing physiological modulation.
 
@@ -123,7 +118,6 @@ These persist across steps and are used by controllers like the ANS or Heart mod
 | `u_vol_factor_scaling` | `u_vol` |
 | `r_factor_scaling` | `r_for`, `r_back` |
 | `r_k_factor_scaling` | `r_k` |
-| `l_factor_scaling` | `l` |
 
 These are used exclusively by the `ModelScaler` for weight-based or manual scaling. Having a dedicated tier means scaling does not interfere with physiological factors in tier 2. The `ModelScaler.incorporate()` method can bake scaling factors into the base properties and reset them to 1.0.
 

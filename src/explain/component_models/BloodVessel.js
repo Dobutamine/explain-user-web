@@ -188,7 +188,6 @@ export class BloodVessel extends BloodCapacitance {
     this.r_for = 1.0; // forward flow resistance Rf (mmHg*s/l)
     this.r_back = 1.0; // backward flow resistance Rb (mmHg*s/l )
     this.r_k = 0.0; // non-linear resistance coefficient K1 (unitless)
-    this.l = 0.0; // intertance L (mmHg*s^2/L)
     this.no_flow = false; // flags whether flow is allowed across this resistor
     this.no_back_flow = false; // flags whether backflow is allowed across this resistor
     this.p1_ext = 0.0; // external pressure on the inlet (mmHg)
@@ -201,17 +200,14 @@ export class BloodVessel extends BloodCapacitance {
     // non-persistent property factors. These factors reset to 1.0 after each model step
     this.r_factor = 1.0; // non-persistent resistance factor
     this.r_k_factor = 1.0; // non-persistent non-linear coefficient factor
-    this.l_factor = 1.0; // non-persistent inertance factor
 
     // persistent property factors. These factors are persistent and do not reset
     this.r_factor_ps = 1.0; // persistent resistance factor
     this.r_k_factor_ps = 1.0; // persistent non-linear coefficient factor
-    this.l_factor_ps = 1.0; // persistent inertance factor
 
     // scaling factors for the properties
     this.r_factor_scaling = 1.0; // scaling factor for the resistance factor
     this.r_k_factor_scaling = 1.0; // scaling factor for the non-linear coefficient factor
-    this.l_factor_scaling = 1.0; // scaling factor for the inertance factor
 
     // initialize dependent properties
     this.flow = 0.0; // flow f(t) (L/s)
@@ -222,7 +218,6 @@ export class BloodVessel extends BloodCapacitance {
     this.r_for_eff = 1000;  // calculated forward resistance (mmHg/L*s)
     this.r_back_eff = 1000; // calculated backward resistance (mmHg/L*s)
     this.r_k_eff = 0; // calculated non-linear resistance factor (unitless)
-    this.l_eff = 0.0; // calculated intertance (mmHg*s^2/L)
 
     // local properties
     this._resistors = {}; // list of connectors for this blood vessel
@@ -274,7 +269,6 @@ export class BloodVessel extends BloodCapacitance {
     // call this class specific calculation methods
     this.calc_resistances();
     this.calc_elastances();
-    this.calc_inertances();
 
     // update the associated resistors
     Object.values(this._resistors).forEach((resistor) => {
@@ -287,8 +281,6 @@ export class BloodVessel extends BloodCapacitance {
       resistor.no_flow = this.no_flow
       resistor.p1_ext = this.p1_ext
       resistor.p2_ext = this.p2_ext
-
-      resistor.l = this.l_eff
     })
 
     // call parent class methods
@@ -320,18 +312,6 @@ export class BloodVessel extends BloodCapacitance {
     
     // calculate the net flow through this blood vessel
     this.flow = this.flow_forward - this.flow_backward;
-  }
-
-  calc_inertances() {
-    // calulate the inertance depending on the ans activity and the elastance-resistance coupling factor
-    this.l_eff = this.l
-      + (this.l_factor - 1) * this.l
-      + (this.l_factor_ps - 1) * this.l
-      + (this.l_factor_scaling - 1) * this.l; // apply scaling factor to the inertance factor
-
-
-    // reset the non persistent factors
-    this.l_factor = 1.0;
   }
 
   calc_resistances() {

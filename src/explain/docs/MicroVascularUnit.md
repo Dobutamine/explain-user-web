@@ -44,7 +44,6 @@ If components already exist in the model engine (e.g., when loading from a saved
 | `r_for` | mmHg·s/L | Total forward resistance |
 | `r_back` | mmHg·s/L | Total backward resistance |
 | `r_k` | unitless | Non-linear resistance coefficient |
-| `l` | mmHg·s^2/L | Inertance |
 | `inputs` | string[] | Upstream components (connected to the ART sub-component) |
 | `ans_sens` | 0-1 | Overall ANS sensitivity of the MVU |
 | `no_flow` | boolean | Block all flow |
@@ -99,7 +98,6 @@ If components already exist in the model engine (e.g., when loading from a saved
 | `el_eff` | mmHg/L | Effective total elastance |
 | `el_k_eff` | unitless | Effective non-linear elastance coefficient |
 | `u_vol_eff` | L | Effective total unstressed volume |
-| `l_eff` | mmHg·s^2/L | Effective inertance |
 | `r_for_art/cap/ven` | mmHg·s/L | Distributed forward resistance per component |
 | `r_back_art/cap/ven` | mmHg·s/L | Distributed backward resistance per component |
 | `el_art/cap/ven` | mmHg/L | Distributed elastance per component |
@@ -111,9 +109,9 @@ The MVU has its own set of factors (independent of the sub-components, which hav
 
 | Tier | Factors | Purpose |
 |---|---|---|
-| Non-persistent | `u_vol_factor`, `el_base_factor`, `el_k_factor`, `r_factor`, `r_k_factor`, `l_factor` | Transient effects, reset each step |
-| Persistent (`_ps`) | `u_vol_factor_ps`, `el_base_factor_ps`, `el_k_factor_ps`, `r_factor_ps`, `r_k_factor_ps`, `l_factor_ps` | Ongoing physiological modulation |
-| Scaling (`_scaling`) | `u_vol_factor_scaling`, `el_base_factor_scaling`, `el_k_factor_scaling`, `r_factor_scaling`, `r_k_factor_scaling`, `l_factor_scaling` | ModelScaler weight/manual scaling |
+| Non-persistent | `u_vol_factor`, `el_base_factor`, `el_k_factor`, `r_factor`, `r_k_factor` | Transient effects, reset each step |
+| Persistent (`_ps`) | `u_vol_factor_ps`, `el_base_factor_ps`, `el_k_factor_ps`, `r_factor_ps`, `r_k_factor_ps` | Ongoing physiological modulation |
+| Scaling (`_scaling`) | `u_vol_factor_scaling`, `el_base_factor_scaling`, `el_k_factor_scaling`, `r_factor_scaling`, `r_k_factor_scaling` | ModelScaler weight/manual scaling |
 
 ## Calculation cycle (`calc_model`)
 
@@ -121,9 +119,8 @@ The MVU has its own set of factors (independent of the sub-components, which hav
 2. **ANS modulation**: compute effective ANS activity scaled by `ans_sens`, pass to sub-components along with per-component `ans_sens_settings`
 3. **`calc_resistance()`** -- compute total effective resistance, distribute to art/cap/ven by `res_dist`
 4. **`calc_elastance()`** -- compute total effective elastance, distribute to art/cap/ven by `el_dist` using inverse-compliance formula
-5. **`calc_inertance()`** -- compute effective inertance (shared across all components)
-6. **`calc_volume()`** -- compute total effective unstressed volume, distribute to art/cap/ven by `vol_dist`
-7. **Push to sub-components** -- set `el_base`, `r_for`, `r_back`, `u_vol`, `l`, etc. on each BloodVessel
+5. **`calc_volume()`** -- compute total effective unstressed volume, distribute to art/cap/ven by `vol_dist`
+6. **Push to sub-components** -- set `el_base`, `r_for`, `r_back`, `u_vol`, etc. on each BloodVessel
 8. **Read from sub-components** -- collect pressures, flows, total volume, and blood composition from the capillary component
 
 ## Elastance distribution formula
