@@ -151,8 +151,8 @@ export class Resistor extends BaseModelClass {
     this.r_k_factor_ps = 1.0; // persistent non-linear coefficient factor
 
     // scaling factors
-    this.r_factor_scaling = 1.0; // scaling factor for the resistance
-    this.r_k_factor_scaling = 1.0; // scaling factor for the non-linear coefficient
+    this.r_factor_scaling_ps = 1.0; // persistent scaling factor for the resistance
+    this.r_k_factor_scaling_ps = 1.0; // persistent scaling factor for the non-linear coefficient
 
     // initialize dependent properties
     this.flow = 0.0;  // flow f(t) (L/s)
@@ -177,9 +177,6 @@ export class Resistor extends BaseModelClass {
 
     // calculate the flow
     this.calc_flow();
-
-    // store the current forward resistance
-    this.r_current = this._r_for;
   }
 
   // calculate resistance
@@ -188,17 +185,17 @@ export class Resistor extends BaseModelClass {
        this.r_for_eff = this.r_for 
           + (this.r_factor - 1) * this.r_for
           + (this.r_factor_ps - 1) * this.r_for
-          + (this.r_factor_scaling - 1) * this.r_for; // apply scaling factor to the forward resistance
+          + (this.r_factor_scaling_ps - 1) * this.r_for; // apply scaling factor to the forward resistance
 
        this.r_back_eff = this.r_back 
           + (this.r_factor - 1) * this.r_back
           + (this.r_factor_ps - 1) * this.r_back
-          + (this.r_factor_scaling - 1) * this.r_back; // apply scaling factor to the backward resistance
+          + (this.r_factor_scaling_ps - 1) * this.r_back; // apply scaling factor to the backward resistance
 
        this.r_k_eff = this.r_k 
           + (this.r_k_factor - 1) * this.r_k
           + (this.r_k_factor_ps - 1) * this.r_k
-          + (this.r_k_factor_scaling - 1) * this.r_k; // apply scaling factor to the non-linear coefficient
+          + (this.r_k_factor_scaling_ps - 1) * this.r_k; // apply scaling factor to the non-linear coefficient
 
       // reset the non persistent factors
       this.r_factor = 1.0;

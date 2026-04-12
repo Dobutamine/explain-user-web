@@ -22,62 +22,87 @@ const DEFAULT_CONFIG = {
   blood: {
     // components whose u_vol_factor_scaling is set by scale_blood_u_vol
     u_vol: [
-      // large arteries
-      "AA", "AAR", "AD",
       // pulmonary arteries
       "PA", "PAAL", "PAAR",
+      // pumonary arterioles
+      "LL_ART", "RL_ART",
+      // pulmnary capilaries
+      "LL_CAP", "RL_CAP",
+      // pulomonary venules
+      "LL_VEN", "RL_VEN",
       // pulmonary veins
       "PV",
-      // systemic veins
+      // systemic arteries
+      "AA", "AAR", "AD",
+      // systemic arterioles
+      "INT_ART", "KID_ART", "LS_ART", "BR_ART",
+      // systemic capillaries
+      "INT_CAP", "KID_CAP", "LS_CAP", "BR_CAP",
+      // stsemic venules
+      "INT_VEN", "KID_VEN", "LS_VEN", "BR_VEN",
+      // large veins and venous return
       "IVCI", "SVC", "VLB", "VUB", "RLB", "RUB",
-      // ductus arteriosus
-      "DA",
-      // coronaries
-      "COR",
-      // microvascular units (distribute to sub-components internally)
-      "BR", "INT", "KID", "LL", "LS", "RL",
-      // placental
-      "PL_FETAL", "PL_UMB_ART", "PL_UMB_VEN",
+      // ductus arteriosus and coronary
+      "DA", "COR"
     ],
-
     // components whose el_base_factor_scaling is set by scale_blood_elastances
     el_base: [
-      "AA", "AAR", "AD",
+      // pulmonary arteries
       "PA", "PAAL", "PAAR",
+      // pumonary arterioles
+      "LL_ART", "RL_ART",
+      // pulmnary capilaries
+      "LL_CAP", "RL_CAP",
+      // pulomonary venules
+      "LL_VEN", "RL_VEN",
+      // pulmonary veins
       "PV",
+      // systemic arteries
+      "AA", "AAR", "AD",
+      // systemic arterioles
+      "INT_ART", "KID_ART", "LS_ART", "BR_ART",
+      // systemic capillaries
+      "INT_CAP", "KID_CAP", "LS_CAP", "BR_CAP",
+      // stsemic venules
+      "INT_VEN", "KID_VEN", "LS_VEN", "BR_VEN",
+      // large veins and venous return
       "IVCI", "SVC", "VLB", "VUB", "RLB", "RUB",
-      "DA",
-      "COR",
-      "BR", "INT", "KID", "LL", "LS", "RL",
-      "PL_FETAL", "PL_UMB_ART", "PL_UMB_VEN",
+      // ductus arteriosus and coronary
+      "DA", "COR"
     ],
-
-    // components whose r_factor_scaling is set by scale_blood_resistances
-    // includes BloodVessels, MVUs, and standalone Resistors in the blood circuit
     resistance: [
-      // blood vessels with built-in resistance
-      "AA", "AAR", "AD",
+      // pulmonary arteries
       "PA", "PAAL", "PAAR",
+      // pumonary arterioles
+      "LL_ART", "RL_ART",
+      // pulmnary capilaries
+      "LL_CAP", "RL_CAP",
+      // pulomonary venules
+      "LL_VEN", "RL_VEN",
+      // pulmonary veins
       "PV",
+      // systemic arteries
+      "AA", "AAR", "AD",
+      // systemic arterioles
+      "INT_ART", "KID_ART", "LS_ART", "BR_ART",
+      // systemic capillaries
+      "INT_CAP", "KID_CAP", "LS_CAP", "BR_CAP",
+      // stsemic venules
+      "INT_VEN", "KID_VEN", "LS_VEN", "BR_VEN",
+      // large veins and venous return
       "IVCI", "SVC", "VLB", "VUB", "RLB", "RUB",
-      // microvascular units
-      "BR", "INT", "KID", "LL", "LS", "RL",
-      // placental vessels
-      "PL_FETAL", "PL_UMB_ART", "PL_UMB_VEN",
-      // standalone resistors: venous return
-      "IVCI_RAIVCI", "SVC_RASVC", "PV_LA",
-      // standalone resistors: coronary
-      "COR_RAIVCI", "COR_RASVC",
-      // standalone resistors: atrial
-      "RAIVCI_RASVC"
+      // ductus arteriosus and coronary
+      "DA",
+      // standalone resistors
+       "IVCI_RAIVC", "SVC_RASVC", "PV_LA", "PV_RAIVC", "PV_RASVC"
     ],
   },
 
   heart: {
     // heart chamber components
-    u_vol: ["LA", "LV", "RAIVCI", "RASVC", "RV"],
-    el_min: ["LA", "LV", "RAIVCI", "RASVC", "RV"],
-    el_max: ["LA", "LV", "RAIVCI", "RASVC", "RV"],
+    u_vol: ["LA", "LV", "RAIVCI", "RASVC", "RV", "COR"],
+    el_min: ["LA", "LV", "RAIVCI", "RASVC", "RV", "COR"],
+    el_max: ["LA", "LV", "RAIVCI", "RASVC", "RV", "COR"],
 
     // heart valve resistors
     resistance: [
@@ -86,13 +111,16 @@ const DEFAULT_CONFIG = {
       "RV_PA",        // pulmonary valve
       "RAIVCI_RV",    // tricuspid valve (IVC portion)
       "RASVC_RV",     // tricuspid valve (SVC portion)
+      "LV_PA",        // aortic valve in TGA
+      "RV_AA",        // pulonary valve in TGA
+      "COR_RA",       // coronary flow resistor
     ],
   },
 
   lung: {
     // gas capacitance components (airway side)
-    u_vol: ["ALL", "ALR", "DS", "MOUTH"],
-    el_base: ["ALL", "ALR", "DS", "MOUTH"],
+    u_vol: ["ALL", "ALR", "DS"],
+    el_base: ["ALL", "ALR", "DS"],
 
     // airway resistors
     resistance: ["MOUTH_DS", "DS_ALL", "DS_ALR"],
@@ -110,6 +138,10 @@ export default class ModelScaler {
 
     // tracking previous factor values for delta calculation
     this._prev = {
+      vol_blood: 1.0,
+      vol_lung: 1.0,
+      vol_thorax: 1.0,
+      vol_pericardium: 1.0,
       blood_u_vol: 1.0,
       blood_el: 1.0,
       blood_res: 1.0,
@@ -133,6 +165,54 @@ export default class ModelScaler {
         comp[prop] *= delta;
       }
     }
+  }
+
+  // --- VOLUME SCALING ---
+
+  // Scale vol and u_vol_factor_scaling on a list of named components
+  _scale_vol(names, delta) {
+    for (const name of names) {
+      const comp = this._model.models[name];
+      if (!comp) continue;
+      if (comp.vol !== undefined) {
+        comp.vol *= delta;
+      }
+      if (comp.u_vol_factor_scaling !== undefined) {
+        comp.u_vol_factor_scaling *= delta;
+      }
+    }
+  }
+
+  // Scale all volumes (blood, heart, lung, thorax, pericardium)
+  scale_volume(factor) {
+    this.scale_volume_blood(factor);
+    this.scale_volume_lung(factor);
+    this.scale_volume_thorax(factor);
+    this.scale_volume_pericardium(factor);
+  }
+
+  scale_volume_blood(factor) {
+    const delta = factor / this._prev.vol_blood;
+    this._scale_vol([...this._config.blood.u_vol, ...this._config.heart.u_vol], delta);
+    this._prev.vol_blood = factor;
+  }
+
+  scale_volume_lung(factor) {
+    const delta = factor / this._prev.vol_lung;
+    this._scale_vol(this._config.lung.u_vol, delta);
+    this._prev.vol_lung = factor;
+  }
+
+  scale_volume_thorax(factor) {
+    const delta = factor / this._prev.vol_thorax;
+    this._scale_vol(this._config.thorax, delta);
+    this._prev.vol_thorax = factor;
+  }
+
+  scale_volume_pericardium(factor) {
+    const delta = factor / this._prev.vol_pericardium;
+    this._scale_vol(this._config.pericardium, delta);
+    this._prev.vol_pericardium = factor;
   }
 
   // --- BLOOD ---
@@ -219,6 +299,11 @@ export default class ModelScaler {
 
   apply_preset(preset) {
     this.reset();
+    if (preset.volume) this.scale_volume(preset.volume);
+    if (preset.vol_blood) this.scale_volume_blood(preset.vol_blood);
+    if (preset.vol_lung) this.scale_volume_lung(preset.vol_lung);
+    if (preset.vol_thorax) this.scale_volume_thorax(preset.vol_thorax);
+    if (preset.vol_pericardium) this.scale_volume_pericardium(preset.vol_pericardium);
     if (preset.blood_u_vol) this.scale_blood_u_vol(preset.blood_u_vol);
     if (preset.blood_el) this.scale_blood_elastances(preset.blood_el);
     if (preset.blood_res) this.scale_blood_resistances(preset.blood_res);
@@ -340,6 +425,10 @@ export default class ModelScaler {
   }
 
   reset() {
+    this.scale_volume_blood(1.0);
+    this.scale_volume_lung(1.0);
+    this.scale_volume_thorax(1.0);
+    this.scale_volume_pericardium(1.0);
     this.scale_blood_u_vol(1.0);
     this.scale_blood_elastances(1.0);
     this.scale_blood_resistances(1.0);

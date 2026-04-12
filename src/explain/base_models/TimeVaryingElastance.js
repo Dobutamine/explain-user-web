@@ -119,16 +119,16 @@ export class TimeVaryingElastance extends BaseModelClass {
     this.el_k_factor = 1.0; // non-persistent elastance factor step (unitless)
 
     // persistent property factors. These factors are persistent and do not reset
-    this.u_vol_factor_ps = 1.0; // non-persistent unstressed volume factor step (unitless)
-    this.el_min_factor_ps = 1.0; // non-persistent minimal elastance factor step (unitless)
-    this.el_max_factor_ps = 1.0; // non-persistent maximal elastance factor step (unitless)
-    this.el_k_factor_ps = 1.0; // non-persistent elastance factor step (unitless)
+    this.u_vol_factor_ps = 1.0; // persistent unstressed volume factor (unitless)
+    this.el_min_factor_ps = 1.0; // persistent minimal elastance factor (unitless)
+    this.el_max_factor_ps = 1.0; // persistent maximal elastance factor (unitless)
+    this.el_k_factor_ps = 1.0; // persistent elastance factor (unitless)
 
     // scaling factors. These factors are persistent and do not reset
-    this.u_vol_factor_scaling = 1.0; // scaling factor for the unstressed volume (unitless)
-    this.el_min_factor_scaling = 1.0; // scaling factor for the minimal elastance (unitless)
-    this.el_max_factor_scaling = 1.0; // scaling factor for the maximal elastance (unitless)
-    this.el_k_factor_scaling = 1.0; // scaling factor for the elastance non-linearity (unitless)
+    this.u_vol_factor_scaling_ps = 1.0; // persistent scaling factor for the unstressed volume (unitless)
+    this.el_min_factor_scaling_ps = 1.0; // persistent scaling factor for the minimal elastance (unitless)
+    this.el_max_factor_scaling_ps = 1.0; // persistent scaling factor for the maximal elastance (unitless)
+    this.el_k_factor_scaling_ps = 1.0; // persistent scaling factor for the elastance non-linearity (unitless)
 
     // initialize dependent properties
     this.vol = 0.0; // volume v(t) (L)
@@ -157,17 +157,17 @@ export class TimeVaryingElastance extends BaseModelClass {
     this.el_min_eff = this.el_min 
         + (this.el_min_factor - 1) * this.el_min
         + (this.el_min_factor_ps - 1) * this.el_min
-        + (this.el_min_factor_scaling - 1) * this.el_min; // apply scaling factor to the elastance factor
+        + (this.el_min_factor_scaling_ps - 1) * this.el_min; // apply scaling factor to the elastance factor
     
     this.el_max_eff = this.el_max 
         + (this.el_max_factor - 1) * this.el_max
         + (this.el_max_factor_ps - 1) * this.el_max
-        + (this.el_max_factor_scaling - 1) * this.el_max; // apply scaling factor to the elastance factor
+        + (this.el_max_factor_scaling_ps - 1) * this.el_max; // apply scaling factor to the elastance factor
 
     this.el_k_eff = this.el_k 
         + (this.el_k_factor - 1) * this.el_k
         + (this.el_k_factor_ps - 1) * this.el_k
-        + (this.el_k_factor_scaling - 1) * this.el_k; // apply scaling factor to the elastance factor
+        + (this.el_k_factor_scaling_ps - 1) * this.el_k; // apply scaling factor to the elastance factor
 
     // make sure that el_max is not smaller than el_min
     if (this.el_max_eff < this.el_min_eff) {
@@ -185,7 +185,7 @@ export class TimeVaryingElastance extends BaseModelClass {
     this.u_vol_eff = this.u_vol 
         + (this.u_vol_factor - 1) * this.u_vol
         + (this.u_vol_factor_ps - 1) * this.u_vol
-        + (this.u_vol_factor_scaling - 1) * this.u_vol; // apply scaling factor to the unstressed volume
+        + (this.u_vol_factor_scaling_ps - 1) * this.u_vol; // apply scaling factor to the unstressed volume
 
     // reset the non persistent factors
     this.u_vol_factor = 1.0;

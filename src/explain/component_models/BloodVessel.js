@@ -203,11 +203,10 @@ export class BloodVessel extends BloodCapacitance {
     // persistent property factors. These factors are persistent and do not reset
     this.r_factor_ps = 1.0; // persistent resistance factor
     this.r_k_factor_ps = 1.0; // persistent non-linear coefficient factor
-    this.r_el_coupling_factor_ps = 1.0; // persistent resistance-elastance coupling factor
 
     // scaling factors for the properties
-    this.r_factor_scaling = 1.0; // scaling factor for the resistance factor
-    this.r_k_factor_scaling = 1.0; // scaling factor for the non-linear coefficient factor
+    this.r_factor_scaling_ps = 1.0; // scaling factor for the resistance factor
+    this.r_k_factor_scaling_ps = 1.0; // scaling factor for the non-linear coefficient factor
 
     // initialize dependent properties
     this.flow = 0.0; // flow f(t) (L/s)
@@ -316,24 +315,24 @@ export class BloodVessel extends BloodCapacitance {
 
   calc_resistances() {
     // calculate the resistances depending on the ans acitvity and resistance property factors
-    this.r_for_eff = this.r_for 
+    this.r_for_eff = this.r_for
       + (this.r_factor - 1) * this.r_for
       + (this.r_factor_ps - 1) * this.r_for
+      + (this.r_factor_scaling_ps - 1) * this.r_for
       + (this.ans_activity - 1) * this.r_for * this.ans_sens
-      + (this.r_factor_scaling - 1) * this.r_for; // apply scaling factor to the resistance factor
 
     this.r_back_eff = this.r_back
       + (this.r_factor - 1) * this.r_back
       + (this.r_factor_ps - 1) * this.r_back
+      + (this.r_factor_scaling_ps - 1) * this.r_back
       + (this.ans_activity - 1) * this.r_back * this.ans_sens
-      + (this.r_factor_scaling - 1) * this.r_back; // apply scaling factor to the resistance factor
 
     this.r_k_eff = this.r_k
       + (this.r_k_factor - 1) * this.r_k
       + (this.r_k_factor_ps - 1) * this.r_k
+      + (this.r_k_factor_scaling_ps - 1) * this.r_k
       + (this.ans_activity - 1) * this.r_k * this.ans_sens
-      + (this.r_k_factor_scaling - 1) * this.r_k; // apply scaling factor to the non-linear resistance coefficient
-
+      
     // reset the non persistent factors
     this.r_factor = 1.0;
     this.r_k_factor = 1.0;
@@ -346,23 +345,24 @@ export class BloodVessel extends BloodCapacitance {
     // calculate the change in elastance depending on the resistance factors and the elastance-resistance coupling factor alpha
     let _r_elas_factor = Math.pow(this.r_factor, this.alpha)
     let _r_ps_elas_factor = Math.pow(this.r_factor_ps, this.alpha)
-    let _r_el_coupling_factor_ps = Math.pow(this.r_el_coupling_factor_ps, this.alpha) // coupling factor for the persistent resistance-elastance coupling factor
+    let _r_scaling_elas_factor = Math.pow(this.r_factor_scaling_ps, this.alpha) // coupling factor for the persistent resistance-elastance coupling factor
 
     // calculate the elastance factors depending on the ans activity and the elastance factors
     this.el_eff = this.el_base
         + (this.el_base_factor - 1) * this.el_base
         + (this.el_base_factor_ps - 1) * this.el_base
+        + (this.el_base_factor_scaling_ps - 1) * this.el_base
         + (_r_elas_factor - 1) * this.el_base
         + (_r_ps_elas_factor - 1) * this.el_base
-        + (_r_el_coupling_factor_ps - 1) * this.el_base
+        + (_r_scaling_elas_factor - 1) * this.el_base
         + (_ans_elas_factor - 1) * this.el_base * this.ans_sens
-        + (this.el_base_factor_scaling - 1) * this.el_base;
+        
 
     // calculate the elastance factors depending on the ans activity and the elastance factors
     this.el_k_eff = this.el_k 
         + (this.el_k_factor - 1) * this.el_k
         + (this.el_k_factor_ps - 1) * this.el_k
-        + (this.el_k_factor_scaling - 1) * this.el_k; // apply scaling factor to the non-linear elastance factor
+        + (this.el_k_factor_scaling_ps - 1) * this.el_k
 
     // reset the non persistent factors
     this.el_base_factor = 1.0;

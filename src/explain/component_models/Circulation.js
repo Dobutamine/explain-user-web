@@ -140,12 +140,19 @@ export class Circulation extends BaseModelClass {
     // -----------------------------------------------
     this.heart_chambers = [];           // list of all heart chambers
     this.coronaries = [];               // list of all coronary models
+    
     this.systemic_arteries = [];        // list of systemic arteries
-    this.systemic_veins = [];           // list of systemic veins
+    this.systemic_arterioles = [];       // list of systemic arterioles
     this.systemic_capillaries = [];     // list of systemic capillaries 
+    this.systemic_venules = [];        // list of systemic venules
+    this.systemic_veins = [];           // list of systemic veins
+    
     this.pulmonary_arteries = [];       // list of pulmonary arteries
-    this.pulmonary_veins = [];          // list of pulmonary veins 
+    this.pulmonary_arterioles = [];     // list of pulmonary arterioles
     this.pulmonary_capillaries = [];    // list of pulmonary capillaries
+    this.pulmonary_venules = [];        // list of pulmonary venules
+    this.pulmonary_veins = [];          // list of pulmonary veins 
+    
     this.ans_activity = 1.0;            // ans influence on circulation (1.0 = no effect)
     this.svr_factor = 1.0;              // factor influencing the systemic vascular resistance
     this.pvr_factor = 1.0;              // factor influencing the pulmonary vascular resistance
@@ -163,10 +170,10 @@ export class Circulation extends BaseModelClass {
     this.heart_blood_volume_perc = 0.0; // percentage of total blood volume in heart (%)
 
     // local properties
-    this._combined_list = [];
-    this._syst_models = []
-    this._pulm_art_models = []
-    this._syst_art_models = []
+    this._bloodvessel_list = [];
+    this._systemic_bloodvessel_list = [];
+    this._pulmonary_bloodvessel_list = [];
+
     this.prev_ans_activity = 0.0;
     this.prev_svr_factor = 1.0;
     this.prev_pvr_factor = 1.0;
@@ -178,27 +185,33 @@ export class Circulation extends BaseModelClass {
   init_model(args = {}) {
     super.init_model(args);
 
-    // build a combined list of all circulation models
-    this._combined_list = [
+    // build a list of all blood vessel models for easy access
+    this._bloodvessel_list = [
       ...this.systemic_arteries, 
+      ...this.systemic_arterioles,
       ...this.systemic_capillaries,
+      ...this.systemic_venules,
       ...this.systemic_veins,
       ...this.pulmonary_arteries,
+      ...this.pulmonary_arterioles,
       ...this.pulmonary_capillaries,
+      ...this.pulmonary_venules,
       ...this.pulmonary_veins
     ]
 
-    // build a list of all systemic models
-    this._syst_models = [
+    this._systemic_bloodvessel_list = [
       ...this.systemic_arteries, 
+      ...this.systemic_arterioles,
       ...this.systemic_capillaries,
+      ...this.systemic_venules,
       ...this.systemic_veins
     ]
 
-    // build a llist of all pulmonary models
-    this._pulm_models = [
+    this._pulmonary_bloodvessel_list = [
       ...this.pulmonary_arteries,
+      ...this.pulmonary_arterioles,
       ...this.pulmonary_capillaries,
+      ...this.pulmonary_venules,
       ...this.pulmonary_veins
     ]
 
@@ -209,18 +222,19 @@ export class Circulation extends BaseModelClass {
     if (this._update_counter > this._update_interval) {
       this._update_counter = 0.0;
 
-      // BloodVessels (and MicroVascular Units) expose an ans_activity and an ans_sensitivity parameter which control the amount of vasoreactivity. 
+      // BloodVessels expose an ans_activity and an ans_sensitivity parameter which control the amount of vasoreactivity. 
       // The ciruclation model has an ans_activity parameter which can be set by an ANS effector and this ans_activity parameter is 
       // set on all BloodVessels and MicroVascular units of the circulation.
 
       // update the ans influence on the circulation if the influence has changed
-      if (this.prev_ans_activity != this.ans_activity) {
-        this._combined_list.forEach(model => {
-          // update the models
-          this._model_engine.models[model].ans_activity = this.ans_activity;
-          // store current value
-          this.prev_ans_activity = this.ans_activity
-        })
+      if (this.prev_ans_activity !== this.ans_activity) {
+        for (const name of this._bloodvessel_list) {
+          const m = this._model_engine.models[name];
+          if (m && m.ans_activity !== undefined) {
+            m.ans_activity = this.ans_activity;
+          }
+        }
+        this.prev_ans_activity = this.ans_activity;
       }
 
       if (this.prev_svr_factor !== this.svr_factor) {
@@ -243,7 +257,7 @@ export class Circulation extends BaseModelClass {
   }
 
   set_svr_factor(new_svr_factor) {
-    this.systemic_capillaries.forEach(syst_model_name => {
+    this.systemic_arterioles.forEach(syst_model_name => {
       // get a reference to the model
       let m = this._model_engine.models[syst_model_name]
       // get the current r_factor from the model
@@ -266,7 +280,7 @@ export class Circulation extends BaseModelClass {
   }
 
   set_pvr_factor(new_pvr_factor) {
-    this.pulmonary_capillaries.forEach(pulm_model_name => {
+    this.pulmonary_arterioles.forEach(pulm_model_name => {
       // get a reference to the model
       let m = this._model_engine.models[pulm_model_name]
       // get the current r_factor from the model
@@ -296,28 +310,24 @@ export class Circulation extends BaseModelClass {
     this.pulm_blood_volume = 0.0;
     this.heart_blood_volume = 0.0;
 
-    this._syst_models.forEach(model => {
-      if (this._model_engine.models[model].is_enabled) {
-        this.syst_blood_volume += this._model_engine.models[model].vol
-      }
+    this._systemic_bloodvessel_list.forEach(name => {
+      const m = this._model_engine.models[name];
+      if (m.vol && m.is_enabled) this.syst_blood_volume += m.vol;
     })
 
-    this.heart_chambers.forEach(model => {
-      if (this._model_engine.models[model].is_enabled) {
-        this.heart_blood_volume += this._model_engine.models[model].vol
-      }
+    this.heart_chambers.forEach(name => {
+      const m = this._model_engine.models[name];
+      if (m.vol && m.is_enabled) this.heart_blood_volume += m.vol;
     })
 
-    this.coronaries.forEach(model => {
-      if (this._model_engine.models[model].is_enabled) {
-        this.syst_blood_volume += this._model_engine.models[model].vol
-      }
+    this.coronaries.forEach(name => {
+      const m = this._model_engine.models[name];
+      if (m.vol && m.is_enabled) this.syst_blood_volume += m.vol;
     })
 
-    this._pulm_models.forEach(model => {
-      if (this._model_engine.models[model].is_enabled) {
-        this.pulm_blood_volume += this._model_engine.models[model].vol
-      }
+    this._pulmonary_bloodvessel_list.forEach(name => {
+      const m = this._model_engine.models[name];
+      if (m.vol && m.is_enabled) this.pulm_blood_volume += m.vol;
     })
 
     this.total_blood_volume = this.syst_blood_volume + this.pulm_blood_volume + this.heart_blood_volume
