@@ -202,6 +202,7 @@ const build = function (model_definition) {
   // clear the current model object
   model = {
     models: {},
+    scaler_config: {},
     ncc_atrial: 0,
     ncc_ventricular: 0,
     ncc_breathing_insp: 0,
@@ -299,7 +300,7 @@ const build = function (model_definition) {
     model["TaskScheduler"] = new TaskScheduler(model);
 
     // add a model scaler instance to the model object
-    model["ModelScaler"] = new ModelScaler(model);
+    model["ModelScaler"] = new ModelScaler(model, model.scaler_config);
   }
 
   if (errors > 0) {
