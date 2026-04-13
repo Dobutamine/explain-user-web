@@ -42,7 +42,16 @@ export class Circulation extends BaseModelClass {
       edit_mode: "extra",
       build_prop: true,
       readonly: false,
-      options: ["BloodVessel", "MicroVascularUnit"]
+      options: ["BloodVessel"]
+    },
+    {
+      caption: "systemic arterioles",
+      target: "systemic_arterioles",
+      type: "multiple-list",
+      edit_mode: "extra",
+      build_prop: true,
+      readonly: false,
+      options: ["BloodVessel"]
     },
     {
       caption: "systemic capillaries",
@@ -51,7 +60,16 @@ export class Circulation extends BaseModelClass {
       edit_mode: "extra",
       build_prop: true,
       readonly: false,
-      options: ["BloodVessel", "MicroVascularUnit"]
+      options: ["BloodVessel"]
+    },
+    {
+      caption: "systemic venules",
+      target: "systemic_venules",
+      type: "multiple-list",
+      edit_mode: "extra",
+      build_prop: true,
+      readonly: false,
+      options: ["BloodVessel"]
     },
     {
       caption: "systemic veins",
@@ -60,7 +78,7 @@ export class Circulation extends BaseModelClass {
       edit_mode: "extra",
       build_prop: true,
       readonly: false,
-      options: ["BloodVessel", "MicroVascularUnit"]
+      options: ["BloodVessel"]
     },
     {
       caption: "pulmonary arteries",
@@ -69,7 +87,16 @@ export class Circulation extends BaseModelClass {
       edit_mode: "extra",
       build_prop: true,
       readonly: false,
-      options: ["BloodVessel", "MicroVascularUnit"]
+      options: ["BloodVessel"]
+    },
+    {
+      caption: "pulmonary arterioles",
+      target: "pulmonary_arterioles",
+      type: "multiple-list",
+      edit_mode: "extra",
+      build_prop: true,
+      readonly: false,
+      options: ["BloodVessel"]
     },
     {
       caption: "pulmonary capillaries",
@@ -78,7 +105,16 @@ export class Circulation extends BaseModelClass {
       edit_mode: "extra",
       build_prop: true,
       readonly: false,
-      options: ["BloodVessel", "MicroVascularUnit"]
+      options: ["BloodVessel"]
+    },
+    {
+      caption: "pulmonary venules",
+      target: "pulmonary_venules",
+      type: "multiple-list",
+      edit_mode: "extra",
+      build_prop: true,
+      readonly: false,
+      options: ["BloodVessel"]
     },
     {
       caption: "pulmonary veins",
@@ -87,43 +123,43 @@ export class Circulation extends BaseModelClass {
       edit_mode: "extra",
       build_prop: true,
       readonly: false,
-      options: ["BloodVessel", "MicroVascularUnit"]
+      options: ["BloodVessel"]
     },
     {
-      caption: "svr factor",
-      target: "svr_factor",
+      caption: "svr factor (arterioles)",
+      target: "svr_factor_art",
       type: "factor",
-      delta: 0.01,
-      rounding: 2,
-      ll: -5.0,
-      ul: 5.0
+      delta: 0.1,
+      rounding: 1,
+      ll: -10.0,
+      ul: 10.0
     },
     {
-      caption: "pvr factor",
-      target: "pvr_factor",
+      caption: "svr factor (venules)",
+      target: "svr_factor_ven",
       type: "factor",
-      delta: 0.01,
-      rounding: 2,
-      ll: -5.0,
-      ul: 5
+      delta: 0.1,
+      rounding: 1,
+      ll: -10.0,
+      ul: 10.0
     },
     {
-      caption: "add fluid",
-      type: "function",
-      target: "add_volume",
-      edit_mode: "basic",
-      build_prop: false,
-      readonly: false,
-      args: [
-        {
-          caption: "volume (ml)",
-          target: "default_volume",
-          type: "number",
-          factor: 1.0,
-          delta: 0.1,
-          rounding: 1
-        }
-      ]
+      caption: "pvr factor (arterioles)",
+      target: "pvr_factor_art",
+      type: "factor",
+      delta: 0.1,
+      rounding: 1,
+      ll: -10.0,
+      ul: 10.0
+    },
+     {
+      caption: "pvr factor (venules)",
+      target: "pvr_factor_ven",
+      type: "factor",
+      delta: 0.1,
+      rounding: 1,
+      ll: -10.0,
+      ul: 10.0
     }
   ]
 
@@ -154,8 +190,10 @@ export class Circulation extends BaseModelClass {
     this.pulmonary_veins = [];          // list of pulmonary veins 
     
     this.ans_activity = 1.0;            // ans influence on circulation (1.0 = no effect)
-    this.svr_factor = 1.0;              // factor influencing the systemic vascular resistance
-    this.pvr_factor = 1.0;              // factor influencing the pulmonary vascular resistance
+    this.svr_factor_art = 1.0;          // factor influencing the systemic arteriolar vascular resistance
+    this.svr_factor_ven = 1.0;          // factor influencing the systemic venular vascular resistance
+    this.pvr_factor_art = 1.0;          // factor influencing the pulmonary arteriolar vascular resistance
+    this.pvr_factor_ven = 1.0;          // factor influencing the pulmonary venular vascular resistance
 
 
     // -----------------------------------------------
@@ -175,8 +213,10 @@ export class Circulation extends BaseModelClass {
     this._pulmonary_bloodvessel_list = [];
 
     this.prev_ans_activity = 0.0;
-    this.prev_svr_factor = 1.0;
-    this.prev_pvr_factor = 1.0;
+    this.prev_svr_factor_art = 1.0;
+    this.prev_svr_factor_ven = 1.0;
+    this.prev_pvr_factor_art = 1.0;
+    this.prev_pvr_factor_ven = 1.0;
     this._update_interval = 0.015;      // update interval (s)
     this._update_counter = 0.0;         // update interval counter (s)
     this._update_interval_slow = 1.0;      // update interval (s)
@@ -237,15 +277,27 @@ export class Circulation extends BaseModelClass {
         this.prev_ans_activity = this.ans_activity;
       }
 
-      if (this.prev_svr_factor !== this.svr_factor) {
-        this.set_svr_factor(this.svr_factor)
-        this.prev_svr_factor = this.svr_factor
+      if (this.prev_svr_factor_art !== this.svr_factor_art) {
+        this.set_svr_factor_art(this.svr_factor_art)
+        this.prev_svr_factor_art = this.svr_factor_art
+      }
+      
+      if (this.prev_svr_factor_ven !== this.svr_factor_ven) {
+        this.set_svr_factor_ven(this.svr_factor_ven)
+        this.prev_svr_factor_ven = this.svr_factor_ven
       }
 
-      if (this.prev_pvr_factor !== this.pvr_factor) {
-        this.set_pvr_factor(this.pvr_factor)
-        this.prev_pvr_factor = this.pvr_factor
+      if (this.prev_pvr_factor_art !== this.pvr_factor_art) {
+        this.set_pvr_factor_art(this.pvr_factor_art)
+        this.prev_pvr_factor_art = this.pvr_factor_art
       }
+
+      if (this.prev_pvr_factor_ven !== this.pvr_factor_ven) {
+        this.set_pvr_factor_ven(this.pvr_factor_ven)
+        this.prev_pvr_factor_ven = this.pvr_factor_ven
+      }
+
+
     }
 
     this._update_counter_slow += this._t;
@@ -256,7 +308,7 @@ export class Circulation extends BaseModelClass {
     }
   }
 
-  set_svr_factor(new_svr_factor) {
+  set_svr_factor_art(new_svr_factor) {
     this.systemic_arterioles.forEach(syst_model_name => {
       // get a reference to the model
       let m = this._model_engine.models[syst_model_name]
@@ -264,7 +316,7 @@ export class Circulation extends BaseModelClass {
       let f_ps = m.r_factor_ps;
       // as this is a presistent resistance factor which cumulates all effects from different models we can't just add the new factor
       // we have to add the difference 
-      let delta_svr = new_svr_factor - this.prev_svr_factor
+      let delta_svr = new_svr_factor - this.prev_svr_factor_art
       // add the increase/decrease in factor
       f_ps += delta_svr;
       // guard against negative values
@@ -275,11 +327,34 @@ export class Circulation extends BaseModelClass {
       // transfer the factor
       m.r_factor_ps = f_ps
       // store the new svr factor
-      this.svr_factor = new_svr_factor
+      this.svr_factor_art = new_svr_factor
     })
   }
 
-  set_pvr_factor(new_pvr_factor) {
+  set_svr_factor_ven(new_svr_factor) {
+    this.systemic_venules.forEach(syst_model_name => {
+      // get a reference to the model
+      let m = this._model_engine.models[syst_model_name]
+      // get the current r_factor from the model
+      let f_ps = m.r_factor_ps;
+      // as this is a presistent resistance factor which cumulates all effects from different models we can't just add the new factor
+      // we have to add the difference 
+      let delta_svr = new_svr_factor - this.prev_svr_factor_ven
+      // add the increase/decrease in factor
+      f_ps += delta_svr;
+      // guard against negative values
+      if (f_ps < 0) {
+        new_svr_factor = -f_ps
+        f_ps = 0;
+      }
+      // transfer the factor
+      m.r_factor_ps = f_ps
+      // store the new svr factor
+      this.svr_factor_ven = new_svr_factor
+    })
+  }
+
+  set_pvr_factor_art(new_pvr_factor) {
     this.pulmonary_arterioles.forEach(pulm_model_name => {
       // get a reference to the model
       let m = this._model_engine.models[pulm_model_name]
@@ -287,7 +362,7 @@ export class Circulation extends BaseModelClass {
       let f_ps = m.r_factor_ps;
       // as this is a presistent resistance factor which cumulates all effects from different models we can't just add the new factor
       // we have to add the difference 
-      let delta_pvr = new_pvr_factor - this.prev_pvr_factor
+      let delta_pvr = new_pvr_factor - this.prev_pvr_factor_art
       // add the increase/decrease in factor
       f_ps += delta_pvr;
       // guard against negative values
@@ -298,8 +373,32 @@ export class Circulation extends BaseModelClass {
       //console.log(`Setting PVR factor for model ${pulm_model_name} to ${f_ps} (delta: ${delta_pvr})`)
       // transfer the factor
       m.r_factor_ps = f_ps
-      // store the new svr factor
-      this.pvr_factor = new_pvr_factor
+      // store the new pvr factor for arterioles
+      this.pvr_factor_art = new_pvr_factor
+    })
+  }
+
+  set_pvr_factor_ven(new_pvr_factor) {
+    this.pulmonary_venules.forEach(pulm_model_name => {
+      // get a reference to the model
+      let m = this._model_engine.models[pulm_model_name]
+      // get the current r_factor from the model
+      let f_ps = m.r_factor_ps;
+      // as this is a presistent resistance factor which cumulates all effects from different models we can't just add the new factor
+      // we have to add the difference 
+      let delta_pvr = new_pvr_factor - this.prev_pvr_factor_ven
+      // add the increase/decrease in factor
+      f_ps += delta_pvr;
+      // guard against negative values
+      if (f_ps < 0) {
+        new_pvr_factor = -f_ps
+        f_ps = 0;
+      }
+      //console.log(`Setting PVR factor for model ${pulm_model_name} to ${f_ps} (delta: ${delta_pvr})`)
+      // transfer the factor
+      m.r_factor_ps = f_ps
+      // store the new pvr factor for venules
+      this.pvr_factor_ven = new_pvr_factor
     })
   }
 

@@ -40,13 +40,6 @@
       </div>
                 <div class="text-overline justify-center q-gutter-sm row q-mt-sm q-mb-md">
         <q-btn
-          label=" FIXATE FACTORS "
-          color="red-10"
-          size="sm"
-          dense
-          @click="incorporate"
-        />
-        <q-btn
           label="RESET FACTORS"
           color="grey-7"
           size="sm"
@@ -74,7 +67,7 @@
             show-value font-size="12px"
             v-model="blood_vol" size="60px" :min="0.1" :max="5.0" :step="0.01"
             :thickness="0.22" color="teal" track-color="grey-3"
-            @update:model-value="apply('blood_u_vol', blood_vol)"
+            @update:model-value="apply('blood_volume', blood_vol)"
           >{{ blood_vol.toFixed(2) }}</q-knob>
         </div>
         <div class="q-mr-sm text-center">
@@ -107,7 +100,7 @@
             show-value font-size="12px"
             v-model="heart_vol" size="60px" :min="0.1" :max="5.0" :step="0.01"
             :thickness="0.22" color="red" track-color="grey-3"
-            @update:model-value="apply('heart_u_vol', heart_vol)"
+            @update:model-value="apply('heart_volume', heart_vol)"
           >{{ heart_vol.toFixed(2) }}</q-knob>
         </div>
         <div class="q-mr-sm text-center">
@@ -149,7 +142,7 @@
             show-value font-size="12px"
             v-model="lung_vol" size="60px" :min="0.1" :max="5.0" :step="0.01"
             :thickness="0.22" color="light-blue" track-color="grey-3"
-            @update:model-value="apply('lung_u_vol', lung_vol)"
+            @update:model-value="apply('lung_volume', lung_vol)"
           >{{ lung_vol.toFixed(2) }}</q-knob>
         </div>
         <div class="q-mr-sm text-center">
@@ -182,7 +175,7 @@
             show-value font-size="10px"
             v-model="thorax_uvol" size="60px" :min="0.1" :max="5.0" :step="0.01"
             :thickness="0.22" color="orange" track-color="grey-3"
-            @update:model-value="apply('thorax_uvol', thorax_uvol)"
+            @update:model-value="apply('thorax_volume', thorax_uvol)"
           >{{ thorax_uvol.toFixed(2) }}</q-knob>
           <div :style="{ fontSize: '10px' }">u_vol</div>
         </div>
@@ -192,7 +185,7 @@
             show-value font-size="10px"
             v-model="pericardium_uvol" size="60px" :min="0.1" :max="5.0" :step="0.01"
             :thickness="0.22" color="orange" track-color="grey-3"
-            @update:model-value="apply('pericardium_uvol', pericardium_uvol)"
+            @update:model-value="apply('pericardium_volume', pericardium_uvol)"
           >{{ pericardium_uvol.toFixed(2) }}</q-knob>
           <div :style="{ fontSize: '10px' }">u_vol</div>
         </div>
@@ -234,15 +227,6 @@
 import { useModelStore } from "src/stores/model";
 import { explain } from "../boot/explain";
 
-const PRETERM_28W = {
-  blood_u_vol: 0.282, blood_el: 2.66, blood_res: 2.10,
-  lung_u_vol: 0.282, lung_el: 3.7, lung_res: 1.5,
-  heart_u_vol: 0.282, heart_el_min: 2.52, heart_el_max: 2.66, heart_res: 1.0,
-  thorax_uvol: 0.282, pericardium_uvol: 0.282,
-  weight: 1.0, heart_rate_ref: 145,
-  br_map_min: 15, br_map_set: 32, br_map_max: 65,
-};
-
 export default {
   setup() {
     const modelStore = useModelStore();
@@ -253,7 +237,6 @@ export default {
       title: "MODEL SCALER",
       isEnabled: true,
       baseline_weight: 3.545,
-      PRETERM_28W,
       // blood
       blood_vol: 1.0,
       blood_el: 1.0,
@@ -313,30 +296,44 @@ export default {
     },
     apply(group, factor) {
       this._debounce(`_t_${group}`, () => {
-        explain.scaleModel(group, factor);
-        if (group === "blood_u_vol") {
-          explain.scaleModel("weight", this.calculated_weight);
+        if (group === "blood_volume") {
+          explain.scaleModel("blood_volume", factor);
         }
+        if (group === "heart_volume") {
+          explain.scaleModel("heart_volume", factor);
+        }
+        if (group === "lung_volume") {
+          explain.scaleModel("lung_volume", factor);
+        }
+        if (group === "thorax_volume") {
+          explain.scaleModel("thorax_volume", factor);
+        }
+        if (group === "pericardium_volume") {
+          explain.scaleModel("pericardium_volume", factor);
+        }
+        if (group === "blood_elastances") {
+            explain.scaleModel("blood_elastances", factor);
+          }
+        if (group === "blood_resistances") {
+            explain.scaleModel("blood_resistances", factor);
+          }
+        if (group === "lung_elastances") {
+            explain.scaleModel("lung_elastances", factor);
+          }
+        if (group === "lung_resistances") {
+            explain.scaleModel("lung_resistances", factor);
+          }
+        if (group === "heart_el_min") {
+            explain.scaleModel("heart_el_min", factor);
+          }
+        if (group === "heart_el_max") {
+            explain.scaleModel("heart_el_max", factor);
+          }
+        if (group === "heart_resistances") {
+            explain.scaleModel("heart_resistances", factor);  
+        }
+
       });
-    },
-    applyPreset(preset) {
-      this.blood_vol = preset.blood_u_vol;
-      this.blood_el = preset.blood_el;
-      this.blood_res = preset.blood_res;
-      this.lung_vol = preset.lung_u_vol;
-      this.lung_el = preset.lung_el;
-      this.lung_res = preset.lung_res;
-      this.heart_vol = preset.heart_u_vol;
-      this.heart_el_min = preset.heart_el_min;
-      this.heart_el_max = preset.heart_el_max;
-      this.heart_res = preset.heart_res;
-      this.thorax_uvol = preset.thorax_uvol;
-      this.pericardium_uvol = preset.pericardium_uvol;
-      this.heart_rate_ref = preset.heart_rate_ref;
-      this.map_min = preset.br_map_min;
-      this.map_set = preset.br_map_set;
-      this.map_max = preset.br_map_max;
-      explain.scaleModel("preset", preset);
     },
     applyTargetWeight() {
       const vol_factor = this.target_weight / this.baseline_weight;
@@ -346,12 +343,13 @@ export default {
       this.heart_vol = vol_factor;
       this.thorax_uvol = vol_factor;
       this.pericardium_uvol = vol_factor;
-      // only send u_vol scale commands to the engine
-      explain.scaleModel("blood_u_vol", vol_factor);
-      explain.scaleModel("lung_u_vol", vol_factor);
-      explain.scaleModel("heart_u_vol", vol_factor);
-      explain.scaleModel("thorax_uvol", vol_factor);
-      explain.scaleModel("pericardium_uvol", vol_factor);
+      
+      // send volume scale commands to the engine
+      explain.scaleModel("blood_volume", vol_factor);
+      explain.scaleModel("lung_volume", vol_factor);
+      explain.scaleModel("heart_volume", vol_factor);
+      explain.scaleModel("thorax_volume", vol_factor);
+      explain.scaleModel("pericardium_volume", vol_factor);
       explain.scaleModel("weight", this.target_weight);
     },
     applyAnsMap() {
@@ -375,21 +373,6 @@ export default {
     _debounce(timerKey, fn) {
       clearTimeout(this[timerKey]);
       this[timerKey] = setTimeout(fn, 500);
-    },
-    incorporate() {
-      explain.scaleModel("incorporate");
-      this.blood_vol = 1.0;
-      this.blood_el = 1.0;
-      this.blood_res = 1.0;
-      this.lung_vol = 1.0;
-      this.lung_el = 1.0;
-      this.lung_res = 1.0;
-      this.heart_vol = 1.0;
-      this.heart_el_min = 1.0;
-      this.heart_el_max = 1.0;
-      this.heart_res = 1.0;
-      this.thorax_uvol = 1.0;
-      this.pericardium_uvol = 1.0;
     },
     resetAll() {
       this.blood_vol = 1.0;

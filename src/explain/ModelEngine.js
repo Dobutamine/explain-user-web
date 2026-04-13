@@ -641,10 +641,23 @@ const scale_model = function (payload) {
     const { group, factor } = payload;
     console.log(`ModelEngine: scaling ${group} by factor ${factor}`);
     switch (group) {
-      // blood
-      case "blood_u_vol":
-        model.ModelScaler.scale_blood_u_vol(factor);
+      // volume scaling (scales actual vol + u_vol_factor_scaling)
+      case "blood_volume":
+        model.ModelScaler.scale_blood_volume(factor);
         break;
+      case "heart_volume":
+        model.ModelScaler.scale_heart_volume(factor);
+        break;
+      case "lung_volume":
+        model.ModelScaler.scale_lung_volume(factor);
+        break;
+      case "thorax_volume":
+        model.ModelScaler.scale_thorax_volume(factor);
+        break;
+      case "pericardium_volume":
+        model.ModelScaler.scale_pericardium_volume(factor);
+        break;
+      // blood
       case "blood_elastances":
         model.ModelScaler.scale_blood_elastances(factor);
         break;
@@ -652,9 +665,6 @@ const scale_model = function (payload) {
         model.ModelScaler.scale_blood_resistances(factor);
         break;
       // lung
-      case "lung_u_vol":
-        model.ModelScaler.scale_lung_u_vol(factor);
-        break;
       case "lung_elastances":
         model.ModelScaler.scale_lung_elastances(factor);
         break;
@@ -662,9 +672,6 @@ const scale_model = function (payload) {
         model.ModelScaler.scale_lung_resistances(factor);
         break;
       // heart
-      case "heart_u_vol":
-        model.ModelScaler.scale_heart_u_vol(factor);
-        break;
       case "heart_el_min":
         model.ModelScaler.scale_heart_el_min(factor);
         break;
@@ -675,11 +682,11 @@ const scale_model = function (payload) {
         model.ModelScaler.scale_heart_resistances(factor);
         break;
       // containers
-      case "thorax_uvol":
-        model.ModelScaler.scale_thorax_uvol(factor);
+      case "thorax_elastances":
+        model.ModelScaler.scale_thorax_elastances(factor);
         break;
-      case "pericardium_uvol":
-        model.ModelScaler.scale_pericardium_uvol(factor);
+      case "pericardium_elastances":
+        model.ModelScaler.scale_pericardium_elastances(factor);
         break;
       // utility
       case "weight":
@@ -687,19 +694,6 @@ const scale_model = function (payload) {
         break;
       case "add_volume":
         model.ModelScaler.add_volume(factor);
-        break;
-      case "preset": {
-        const preset = factor;
-        model.ModelScaler.apply_preset(preset);
-        if (preset.weight) model.weight = preset.weight;
-        if (preset.heart_rate_ref) model.models["Heart"].heart_rate_ref = preset.heart_rate_ref;
-        if (preset.br_map_min !== undefined) model.models["BR_MAP"].min_value = preset.br_map_min;
-        if (preset.br_map_set !== undefined) model.models["BR_MAP"].set_value = preset.br_map_set;
-        if (preset.br_map_max !== undefined) model.models["BR_MAP"].max_value = preset.br_map_max;
-        break;
-      }
-      case "incorporate":
-        model.ModelScaler.incorporate();
         break;
       case "reset":
         model.ModelScaler.reset();
