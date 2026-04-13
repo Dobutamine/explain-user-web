@@ -696,6 +696,9 @@ const scale_model = function (payload) {
       case "add_volume":
         model.ModelScaler.add_volume(factor);
         break;
+      case "incorporate":
+        model.ModelScaler.incorporate();
+        break;
       case "reset":
         model.ModelScaler.reset();
         model.weight = 3.545;

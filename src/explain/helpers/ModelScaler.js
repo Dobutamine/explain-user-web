@@ -140,6 +140,72 @@ export default class ModelScaler {
     this._prev.pericardium_el = factor;
   }
 
+  // --- INCORPORATE ---
+
+  // Bake all scaling factors into base properties, then reset factors to 1.0
+  incorporate() {
+    // bake u_vol factors
+    const u_vol_groups = [
+      ...this._config.blood.volume,
+      ...this._config.heart.volume,
+      ...this._config.lung.volume,
+      ...this._config.thorax,
+      ...this._config.pericardium,
+    ];
+    this._bake(u_vol_groups, "u_vol", "u_vol_factor_scaling_ps");
+
+    // bake el_base factors
+    const el_base_groups = [
+      ...this._config.blood.el_base,
+      ...this._config.lung.el_base,
+      ...this._config.thorax,
+      ...this._config.pericardium,
+    ];
+    this._bake(el_base_groups, "el_base", "el_base_factor_scaling_ps");
+
+    // bake heart el_min and el_max factors
+    this._bake(this._config.heart.el_min, "el_min", "el_min_factor_scaling_ps");
+    this._bake(this._config.heart.el_max, "el_max", "el_max_factor_scaling_ps");
+
+    // bake resistance factors
+    const res_groups = [
+      ...this._config.blood.resistance,
+      ...this._config.lung.resistance,
+      ...this._config.heart.resistance,
+    ];
+    this._bake_resistance(res_groups);
+
+    // reset all tracking
+    for (const key of Object.keys(this._prev)) {
+      this._prev[key] = 1.0;
+    }
+  }
+
+  _bake(names, base_prop, factor_prop) {
+    for (const name of names) {
+      const comp = this._model.models[name];
+      if (!comp) continue;
+      const f = comp[factor_prop];
+      if (f !== undefined && f !== 1.0) {
+        comp[base_prop] *= f;
+        comp[factor_prop] = 1.0;
+      }
+    }
+  }
+
+  _bake_resistance(names) {
+    for (const name of names) {
+      const comp = this._model.models[name];
+      if (!comp) continue;
+      const f = comp.r_factor_scaling_ps;
+      if (f !== undefined && f !== 1.0) {
+        if (comp.r_for !== undefined) comp.r_for *= f;
+        if (comp.r_back !== undefined) comp.r_back *= f;
+        comp.r_factor_scaling_ps = 1.0;
+      }
+    }
+  }
+
   // --- UTILITY ---
 
   add_volume(vol_liters) {

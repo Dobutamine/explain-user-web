@@ -40,6 +40,13 @@
       </div>
                 <div class="text-overline justify-center q-gutter-sm row q-mt-sm q-mb-md">
         <q-btn
+          label="FIXATE FACTORS"
+          color="red-10"
+          size="sm"
+          dense
+          @click="incorporate"
+        />
+        <q-btn
           label="RESET FACTORS"
           color="grey-7"
           size="sm"
@@ -397,6 +404,23 @@ export default {
     removeVolume() {
       const vol_liters = -(Math.abs(this.add_volume_ml) / 1000.0);
       explain.scaleModel("add_volume", vol_liters);
+    },
+    incorporate() {
+      explain.scaleModel("incorporate");
+      this.blood_vol = 1.0;
+      this.blood_el = 1.0;
+      this.blood_res = 1.0;
+      this.lung_vol = 1.0;
+      this.lung_el = 1.0;
+      this.lung_res = 1.0;
+      this.heart_vol = 1.0;
+      this.heart_el_min = 1.0;
+      this.heart_el_max = 1.0;
+      this.heart_res = 1.0;
+      this.thorax_uvol = 1.0;
+      this.thorax_el = 1.0;
+      this.pericardium_uvol = 1.0;
+      this.pericardium_el = 1.0;
     },
     _debounce(timerKey, fn) {
       clearTimeout(this[timerKey]);
