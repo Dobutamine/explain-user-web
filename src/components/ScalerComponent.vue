@@ -189,6 +189,26 @@
           >{{ pericardium_uvol.toFixed(2) }}</q-knob>
           <div :style="{ fontSize: '10px' }">u_vol</div>
         </div>
+        <div class="q-mr-sm text-center">
+          <div>chest stiff</div>
+          <q-knob
+            show-value font-size="10px"
+            v-model="thorax_el" size="60px" :min="0.1" :max="5.0" :step="0.01"
+            :thickness="0.22" color="orange" track-color="grey-3"
+            @update:model-value="apply('thorax_elastances', thorax_el)"
+          >{{ thorax_el.toFixed(2) }}</q-knob>
+          <div :style="{ fontSize: '10px' }">el_base</div>
+        </div>
+        <div class="q-mr-sm text-center">
+          <div>peri stiff</div>
+          <q-knob
+            show-value font-size="10px"
+            v-model="pericardium_el" size="60px" :min="0.1" :max="5.0" :step="0.01"
+            :thickness="0.22" color="orange" track-color="grey-3"
+            @update:model-value="apply('pericardium_elastances', pericardium_el)"
+          >{{ pericardium_el.toFixed(2) }}</q-knob>
+          <div :style="{ fontSize: '10px' }">el_base</div>
+        </div>
       </div>
 
       <!-- BR_MAP ANS afferent controls -->
@@ -252,7 +272,9 @@ export default {
       heart_res: 1.0,
       // containers
       thorax_uvol: 1.0,
+      thorax_el: 1.0,
       pericardium_uvol: 1.0,
+      pericardium_el: 1.0,
       // ANS / heart rate
       map_min: 25,
       map_set: 50,
@@ -330,7 +352,13 @@ export default {
             explain.scaleModel("heart_el_max", factor);
           }
         if (group === "heart_resistances") {
-            explain.scaleModel("heart_resistances", factor);  
+            explain.scaleModel("heart_resistances", factor);
+        }
+        if (group === "thorax_elastances") {
+            explain.scaleModel("thorax_elastances", factor);
+        }
+        if (group === "pericardium_elastances") {
+            explain.scaleModel("pericardium_elastances", factor);
         }
 
       });
@@ -386,7 +414,9 @@ export default {
       this.heart_el_max = 1.0;
       this.heart_res = 1.0;
       this.thorax_uvol = 1.0;
+      this.thorax_el = 1.0;
       this.pericardium_uvol = 1.0;
+      this.pericardium_el = 1.0;
       this.heart_rate_ref = 110;
       this.map_min = 25;
       this.map_set = 50;

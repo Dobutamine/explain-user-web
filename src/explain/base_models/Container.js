@@ -114,9 +114,9 @@ export class Container extends BaseModelClass {
     this.el_k_factor_ps = 1.0; // persistent elastance factor (unitless)
 
     // scaling factors. These factors are persistent and do not reset, but they also scale the effect of the other factors instead of being added to them
-    this.u_vol_factor_scaling = 1.0;
-    this.el_base_factor_scaling = 1.0;
-    this.el_k_factor_scaling = 1.0;
+    this.u_vol_factor_scaling_ps = 1.0;
+    this.el_base_factor_scaling_ps = 1.0;
+    this.el_k_factor_scaling_ps = 1.0;
 
     // initialize dependent properties
     this.vol = 0.0; // volume v(t) (L)
@@ -144,12 +144,12 @@ export class Container extends BaseModelClass {
     this.el_eff = this.el_base 
         + (this.el_base_factor - 1) * this.el_base
         + (this.el_base_factor_ps - 1) * this.el_base
-        + (this.el_base_factor_scaling - 1) * this.el_base;
+        + (this.el_base_factor_scaling_ps - 1) * this.el_base;
 
     this.el_k_eff = this.el_k 
         + (this.el_k_factor - 1) * this.el_k
         + (this.el_k_factor_ps - 1) * this.el_k
-        + (this.el_k_factor_scaling - 1) * this.el_k;
+        + (this.el_k_factor_scaling_ps - 1) * this.el_k;
 
     // reset the non persistent factors
     this.el_base_factor = 1.0;
@@ -169,7 +169,7 @@ export class Container extends BaseModelClass {
     this.u_vol_eff = this.u_vol 
         + (this.u_vol_factor - 1) * this.u_vol
         + (this.u_vol_factor_ps - 1) * this.u_vol
-        + (this.u_vol_factor_scaling - 1) * this.u_vol;
+        + (this.u_vol_factor_scaling_ps - 1) * this.u_vol;
 
     // reset the non persistent factors
     this.u_vol_factor = 1.0;
