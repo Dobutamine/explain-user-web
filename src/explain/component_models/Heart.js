@@ -300,7 +300,7 @@ export class Heart extends BaseModelClass {
     this.prev_relax_factor_right = 1.0;
 
     this.prev_pc_el_factor = 1.0;
-    this._hr_counter = 0;
+    this._hr_counter = 1;
     this._hr_factor = 1;
     
     this._update_counter_factors = 0.0;
