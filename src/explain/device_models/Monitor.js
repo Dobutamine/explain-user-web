@@ -313,7 +313,8 @@ export class Monitor extends BaseModelClass {
       this._qrs_interval_counter_factor += 1;
       this.calc_avg_heartrate(this.heart_rate_btb)
     }
-
+    this.heart_rate = this.heart_rate_btb;
+    
     // measure the interval between breaths
     if (this._rr_update_counter > 0.015) {
       this._rr_update_counter = 0.0;

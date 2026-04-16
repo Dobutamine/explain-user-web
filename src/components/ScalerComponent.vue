@@ -26,19 +26,10 @@
 
       </div>
 
-      <!-- TARGET WEIGHT -->
-      <div class="text-overline text-center q-mt-sm">TARGET WEIGHT</div>
-      <div class="text-overline justify-center items-center q-gutter-xs row q-mt-xs">
-        <q-input v-model.number="target_weight" color="green" hide-hint filled
-          label="kg" dense stack-label type="number" :step="0.1"
-          style="font-size: 14px; width: 80px;" class="text-center" squared/>
-        <q-btn label="APPLY" color="green" size="sm" dense @click="applyTargetWeight" style="width: 70px;" />
-      </div>
-            <!-- calculated weight -->
-      <div class="text-overline text-center q-mt-sm">
-        current weight: {{ calculated_weight.toFixed(3) }} kg
-      </div>
-                <div class="text-overline justify-center q-gutter-sm row q-mt-sm q-mb-md">
+      
+      <div class="text-overline justify-left q-gutter-sm row q-ml-xs q-mt-sm q-mb-md">
+                <q-toggle v-model="invert_prep" label="toggle all" dense small
+          color="danger" @update:model-value="invertAllPrep" />
         <q-btn
           label="FIXATE FACTORS"
           color="red-10"
@@ -64,12 +55,12 @@
           style="font-size: 14px; width: 160px;" class="text-center" squared />
       </div>
 
-      <!-- BLOOD -->
+      <!-- BLOOD VOLUME -->
       <q-separator class="q-mt-md" />
       <div class="text-overline text-center q-mt-sm">BLOOD VESSELS</div>
       <div class="text-overline justify-center q-gutter-sm row q-mt-xs">
         <div class="q-mr-sm text-center">
-          <div>volume</div>
+          <div>total volume</div>
           <q-knob
             show-value font-size="12px"
             v-model="blood_vol" size="60px" :min="0.1" :max="5.0" :step="0.01"
@@ -77,23 +68,69 @@
             @update:model-value="apply('blood_volume', blood_vol)"
           >{{ blood_vol.toFixed(2) }}</q-knob>
         </div>
+      </div>
+
+      <!-- PULMONARY VESSELS -->
+      <div class="text-overline text-center q-mt-sm">PULMONARY VESSELS</div>
+      <div class="text-overline justify-center q-gutter-sm row q-mt-xs">
         <div class="q-mr-sm text-center">
           <div>stiffness</div>
           <q-knob
             show-value font-size="12px"
-            v-model="blood_el" size="60px" :min="0.1" :max="5.0" :step="0.01"
-            :thickness="0.22" color="teal" track-color="grey-3"
-            @update:model-value="apply('blood_elastances', blood_el)"
-          >{{ blood_el.toFixed(2) }}</q-knob>
+            v-model="pulm_el" size="60px" :min="0.1" :max="5.0" :step="0.01"
+            :thickness="0.22" color="purple" track-color="grey-3"
+            @update:model-value="apply('pulmonary_elastances', pulm_el)"
+          >{{ pulm_el.toFixed(2) }}</q-knob>
         </div>
         <div class="q-mr-sm text-center">
           <div>resistance</div>
           <q-knob
             show-value font-size="12px"
-            v-model="blood_res" size="60px" :min="0.1" :max="5.0" :step="0.01"
+            v-model="pulm_res" size="60px" :min="0.1" :max="5.0" :step="0.01"
+            :thickness="0.22" color="purple" track-color="grey-3"
+            @update:model-value="apply('pulmonary_resistances', pulm_res)"
+          >{{ pulm_res.toFixed(2) }}</q-knob>
+        </div>
+        <div class="q-mr-sm text-center">
+          <div>u_vol</div>
+          <q-knob
+            show-value font-size="12px"
+            v-model="pulm_uvol" size="60px" :min="0.1" :max="5.0" :step="0.01"
+            :thickness="0.22" color="purple" track-color="grey-3"
+            @update:model-value="apply('pulmonary_u_vol', pulm_uvol)"
+          >{{ pulm_uvol.toFixed(2) }}</q-knob>
+        </div>
+      </div>
+
+      <!-- SYSTEMIC VESSELS -->
+      <div class="text-overline text-center q-mt-sm">SYSTEMIC VESSELS</div>
+      <div class="text-overline justify-center q-gutter-sm row q-mt-xs">
+        <div class="q-mr-sm text-center">
+          <div>stiffness</div>
+          <q-knob
+            show-value font-size="12px"
+            v-model="sys_el" size="60px" :min="0.1" :max="5.0" :step="0.01"
             :thickness="0.22" color="teal" track-color="grey-3"
-            @update:model-value="apply('blood_resistances', blood_res)"
-          >{{ blood_res.toFixed(2) }}</q-knob>
+            @update:model-value="apply('systemic_elastances', sys_el)"
+          >{{ sys_el.toFixed(2) }}</q-knob>
+        </div>
+        <div class="q-mr-sm text-center">
+          <div>resistance</div>
+          <q-knob
+            show-value font-size="12px"
+            v-model="sys_res" size="60px" :min="0.1" :max="5.0" :step="0.01"
+            :thickness="0.22" color="teal" track-color="grey-3"
+            @update:model-value="apply('systemic_resistances', sys_res)"
+          >{{ sys_res.toFixed(2) }}</q-knob>
+        </div>
+        <div class="q-mr-sm text-center">
+          <div>u_vol</div>
+          <q-knob
+            show-value font-size="12px"
+            v-model="sys_uvol" size="60px" :min="0.1" :max="5.0" :step="0.01"
+            :thickness="0.22" color="teal" track-color="grey-3"
+            @update:model-value="apply('systemic_u_vol', sys_uvol)"
+          >{{ sys_uvol.toFixed(2) }}</q-knob>
         </div>
       </div>
 
@@ -111,24 +148,6 @@
           >{{ heart_vol.toFixed(2) }}</q-knob>
         </div>
         <div class="q-mr-sm text-center">
-          <div>diastole</div>
-          <q-knob
-            show-value font-size="10px"
-            v-model="heart_el_min" size="60px" :min="0.1" :max="5.0" :step="0.01"
-            :thickness="0.22" color="red" track-color="grey-3"
-            @update:model-value="apply('heart_el_min', heart_el_min)"
-          >{{ heart_el_min.toFixed(2) }}</q-knob>
-        </div>
-        <div class="q-mr-sm text-center">
-          <div>contractility</div>
-          <q-knob
-            show-value font-size="10px"
-            v-model="heart_el_max" size="60px" :min="0.1" :max="5.0" :step="0.01"
-            :thickness="0.22" color="red" track-color="grey-3"
-            @update:model-value="apply('heart_el_max', heart_el_max)"
-          >{{ heart_el_max.toFixed(2) }}</q-knob>
-        </div>
-        <div class="q-mr-sm text-center">
           <div>valve res</div>
           <q-knob
             show-value font-size="12px"
@@ -136,6 +155,70 @@
             :thickness="0.22" color="red" track-color="grey-3"
             @update:model-value="apply('heart_resistances', heart_res)"
           >{{ heart_res.toFixed(2) }}</q-knob>
+        </div>
+      </div>
+
+      <!-- LEFT HEART -->
+      <div class="text-overline text-center q-mt-sm">LEFT HEART</div>
+      <div class="text-overline justify-center q-gutter-sm row q-mt-xs">
+        <div class="q-mr-sm text-center">
+          <div>el min</div>
+          <q-knob
+            show-value font-size="10px"
+            v-model="left_heart_el_min" size="60px" :min="0.1" :max="5.0" :step="0.01"
+            :thickness="0.22" color="red-10" track-color="grey-3"
+            @update:model-value="apply('left_heart_el_min', left_heart_el_min)"
+          >{{ left_heart_el_min.toFixed(2) }}</q-knob>
+        </div>
+        <div class="q-mr-sm text-center">
+          <div>el max</div>
+          <q-knob
+            show-value font-size="10px"
+            v-model="left_heart_el_max" size="60px" :min="0.1" :max="5.0" :step="0.01"
+            :thickness="0.22" color="red-10" track-color="grey-3"
+            @update:model-value="apply('left_heart_el_max', left_heart_el_max)"
+          >{{ left_heart_el_max.toFixed(2) }}</q-knob>
+        </div>
+        <div class="q-mr-sm text-center">
+          <div>u_vol</div>
+          <q-knob
+            show-value font-size="10px"
+            v-model="left_heart_uvol" size="60px" :min="0.1" :max="5.0" :step="0.01"
+            :thickness="0.22" color="red-10" track-color="grey-3"
+            @update:model-value="apply('left_heart_u_vol', left_heart_uvol)"
+          >{{ left_heart_uvol.toFixed(2) }}</q-knob>
+        </div>
+      </div>
+
+      <!-- RIGHT HEART -->
+      <div class="text-overline text-center q-mt-sm">RIGHT HEART</div>
+      <div class="text-overline justify-center q-gutter-sm row q-mt-xs">
+        <div class="q-mr-sm text-center">
+          <div>el min</div>
+          <q-knob
+            show-value font-size="10px"
+            v-model="right_heart_el_min" size="60px" :min="0.1" :max="5.0" :step="0.01"
+            :thickness="0.22" color="deep-orange" track-color="grey-3"
+            @update:model-value="apply('right_heart_el_min', right_heart_el_min)"
+          >{{ right_heart_el_min.toFixed(2) }}</q-knob>
+        </div>
+        <div class="q-mr-sm text-center">
+          <div>el max</div>
+          <q-knob
+            show-value font-size="10px"
+            v-model="right_heart_el_max" size="60px" :min="0.1" :max="5.0" :step="0.01"
+            :thickness="0.22" color="deep-orange" track-color="grey-3"
+            @update:model-value="apply('right_heart_el_max', right_heart_el_max)"
+          >{{ right_heart_el_max.toFixed(2) }}</q-knob>
+        </div>
+        <div class="q-mr-sm text-center">
+          <div>u_vol</div>
+          <q-knob
+            show-value font-size="10px"
+            v-model="right_heart_uvol" size="60px" :min="0.1" :max="5.0" :step="0.01"
+            :thickness="0.22" color="deep-orange" track-color="grey-3"
+            @update:model-value="apply('right_heart_u_vol', right_heart_uvol)"
+          >{{ right_heart_uvol.toFixed(2) }}</q-knob>
         </div>
       </div>
 
@@ -268,6 +351,14 @@ export default {
       blood_vol: 1.0,
       blood_el: 1.0,
       blood_res: 1.0,
+      // pulmonary
+      pulm_el: 1.0,
+      pulm_res: 1.0,
+      pulm_uvol: 1.0,
+      // systemic
+      sys_el: 1.0,
+      sys_res: 1.0,
+      sys_uvol: 1.0,
       // lung
       lung_vol: 1.0,
       lung_el: 1.0,
@@ -277,6 +368,14 @@ export default {
       heart_el_min: 1.0,
       heart_el_max: 1.0,
       heart_res: 1.0,
+      // left heart
+      left_heart_el_min: 1.0,
+      left_heart_el_max: 1.0,
+      left_heart_uvol: 1.0,
+      // right heart
+      right_heart_el_min: 1.0,
+      right_heart_el_max: 1.0,
+      right_heart_uvol: 1.0,
       // containers
       thorax_uvol: 1.0,
       thorax_el: 1.0,
@@ -290,6 +389,7 @@ export default {
       add_volume_ml: 10,
       target_weight: 3.545,
       // scaling preparation toggles
+      invert_prep: false,
       breathing_on: true,
       gasex_on: true,
       metabolism_on: true,
@@ -304,6 +404,20 @@ export default {
     },
   },
   methods: {
+    invertAllPrep() {
+      this.baroreflex_on = !this.baroreflex_on;
+      this.metabolism_on = !this.metabolism_on;
+      this.mob_on = !this.mob_on;
+      this.gasex_on = !this.gasex_on;
+      this.breathing_on = !this.breathing_on;
+      this.hr_override_on = !this.hr_override_on;
+      this.toggleBaroreflex(this.baroreflex_on);
+      this.toggleMetabolism(this.metabolism_on);
+      this.toggleMob(this.mob_on);
+      this.toggleGasExchange(this.gasex_on);
+      this.toggleBreathing(this.breathing_on);
+      this.toggleHrOverride(this.hr_override_on);
+    },
     toggleBreathing(val) {
       explain.setPropValue("Breathing.breathing_enabled", val, 0);
     },
@@ -346,6 +460,24 @@ export default {
         if (group === "blood_resistances") {
             explain.scaleModel("blood_resistances", factor);
           }
+        if (group === "pulmonary_elastances") {
+            explain.scaleModel("pulmonary_elastances", factor);
+          }
+        if (group === "pulmonary_resistances") {
+            explain.scaleModel("pulmonary_resistances", factor);
+          }
+        if (group === "pulmonary_u_vol") {
+            explain.scaleModel("pulmonary_u_vol", factor);
+          }
+        if (group === "systemic_elastances") {
+            explain.scaleModel("systemic_elastances", factor);
+          }
+        if (group === "systemic_resistances") {
+            explain.scaleModel("systemic_resistances", factor);
+          }
+        if (group === "systemic_u_vol") {
+            explain.scaleModel("systemic_u_vol", factor);
+          }
         if (group === "lung_elastances") {
             explain.scaleModel("lung_elastances", factor);
           }
@@ -360,6 +492,24 @@ export default {
           }
         if (group === "heart_resistances") {
             explain.scaleModel("heart_resistances", factor);
+        }
+        if (group === "left_heart_el_min") {
+            explain.scaleModel("left_heart_el_min", factor);
+        }
+        if (group === "left_heart_el_max") {
+            explain.scaleModel("left_heart_el_max", factor);
+        }
+        if (group === "left_heart_u_vol") {
+            explain.scaleModel("left_heart_u_vol", factor);
+        }
+        if (group === "right_heart_el_min") {
+            explain.scaleModel("right_heart_el_min", factor);
+        }
+        if (group === "right_heart_el_max") {
+            explain.scaleModel("right_heart_el_max", factor);
+        }
+        if (group === "right_heart_u_vol") {
+            explain.scaleModel("right_heart_u_vol", factor);
         }
         if (group === "thorax_elastances") {
             explain.scaleModel("thorax_elastances", factor);
@@ -410,6 +560,12 @@ export default {
       this.blood_vol = 1.0;
       this.blood_el = 1.0;
       this.blood_res = 1.0;
+      this.pulm_el = 1.0;
+      this.pulm_res = 1.0;
+      this.pulm_uvol = 1.0;
+      this.sys_el = 1.0;
+      this.sys_res = 1.0;
+      this.sys_uvol = 1.0;
       this.lung_vol = 1.0;
       this.lung_el = 1.0;
       this.lung_res = 1.0;
@@ -417,6 +573,12 @@ export default {
       this.heart_el_min = 1.0;
       this.heart_el_max = 1.0;
       this.heart_res = 1.0;
+      this.left_heart_el_min = 1.0;
+      this.left_heart_el_max = 1.0;
+      this.left_heart_uvol = 1.0;
+      this.right_heart_el_min = 1.0;
+      this.right_heart_el_max = 1.0;
+      this.right_heart_uvol = 1.0;
       this.thorax_uvol = 1.0;
       this.thorax_el = 1.0;
       this.pericardium_uvol = 1.0;
@@ -430,6 +592,12 @@ export default {
       this.blood_vol = 1.0;
       this.blood_el = 1.0;
       this.blood_res = 1.0;
+      this.pulm_el = 1.0;
+      this.pulm_res = 1.0;
+      this.pulm_uvol = 1.0;
+      this.sys_el = 1.0;
+      this.sys_res = 1.0;
+      this.sys_uvol = 1.0;
       this.lung_vol = 1.0;
       this.lung_el = 1.0;
       this.lung_res = 1.0;
@@ -437,11 +605,17 @@ export default {
       this.heart_el_min = 1.0;
       this.heart_el_max = 1.0;
       this.heart_res = 1.0;
+      this.left_heart_el_min = 1.0;
+      this.left_heart_el_max = 1.0;
+      this.left_heart_uvol = 1.0;
+      this.right_heart_el_min = 1.0;
+      this.right_heart_el_max = 1.0;
+      this.right_heart_uvol = 1.0;
       this.thorax_uvol = 1.0;
       this.thorax_el = 1.0;
       this.pericardium_uvol = 1.0;
       this.pericardium_el = 1.0;
-      this.heart_rate_ref = 110;
+      this.heart_rate_ref = 70;
       this.map_min = 25;
       this.map_set = 50;
       this.map_max = 100;

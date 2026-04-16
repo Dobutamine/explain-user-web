@@ -665,6 +665,26 @@ const scale_model = function (payload) {
       case "blood_resistances":
         model.ModelScaler.scale_blood_resistances(factor);
         break;
+      // pulmonary
+      case "pulmonary_elastances":
+        model.ModelScaler.scale_pulmonary_elastances(factor);
+        break;
+      case "pulmonary_resistances":
+        model.ModelScaler.scale_pulmonary_resistances(factor);
+        break;
+      case "pulmonary_u_vol":
+        model.ModelScaler.scale_pulmonary_u_vol(factor);
+        break;
+      // systemic
+      case "systemic_elastances":
+        model.ModelScaler.scale_systemic_elastances(factor);
+        break;
+      case "systemic_resistances":
+        model.ModelScaler.scale_systemic_resistances(factor);
+        break;
+      case "systemic_u_vol":
+        model.ModelScaler.scale_systemic_u_vol(factor);
+        break;
       // lung
       case "lung_elastances":
         model.ModelScaler.scale_lung_elastances(factor);
@@ -678,6 +698,24 @@ const scale_model = function (payload) {
         break;
       case "heart_el_max":
         model.ModelScaler.scale_heart_el_max(factor);
+        break;
+      case "left_heart_el_min":
+        model.ModelScaler.scale_left_heart_el_min(factor);
+        break;
+      case "left_heart_el_max":
+        model.ModelScaler.scale_left_heart_el_max(factor);
+        break;
+      case "left_heart_u_vol":
+        model.ModelScaler.scale_left_heart_u_vol(factor);
+        break;
+      case "right_heart_el_min":
+        model.ModelScaler.scale_right_heart_el_min(factor);
+        break;
+      case "right_heart_el_max":
+        model.ModelScaler.scale_right_heart_el_max(factor);
+        break;
+      case "right_heart_u_vol":
+        model.ModelScaler.scale_right_heart_u_vol(factor);
         break;
       case "heart_resistances":
         model.ModelScaler.scale_heart_resistances(factor);

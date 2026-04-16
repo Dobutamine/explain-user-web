@@ -20,10 +20,22 @@ export default class ModelScaler {
       pericardium_vol: 1.0,
       blood_el: 1.0,
       blood_res: 1.0,
+      pulm_el: 1.0,
+      pulm_res: 1.0,
+      pulm_uvol: 1.0,
+      sys_el: 1.0,
+      sys_res: 1.0,
+      sys_uvol: 1.0,
       lung_el: 1.0,
       lung_res: 1.0,
       heart_el_min: 1.0,
       heart_el_max: 1.0,
+      left_heart_el_min: 1.0,
+      left_heart_el_max: 1.0,
+      left_heart_uvol: 1.0,
+      right_heart_el_min: 1.0,
+      right_heart_el_max: 1.0,
+      right_heart_uvol: 1.0,
       heart_res: 1.0,
       thorax_el: 1.0,
       pericardium_el: 1.0,
@@ -99,6 +111,40 @@ export default class ModelScaler {
     this._prev.blood_res = factor;
   }
 
+  // --- PULMONARY ---
+
+  scale_pulmonary_elastances(factor) {
+    this._apply(this._config.blood_pulmonary.el_base, "el_base_factor_scaling_ps", factor);
+    this._prev.pulm_el = factor;
+  }
+
+  scale_pulmonary_resistances(factor) {
+    this._apply(this._config.blood_pulmonary.resistance, "r_factor_scaling_ps", factor);
+    this._prev.pulm_res = factor;
+  }
+
+  scale_pulmonary_u_vol(factor) {
+    this._apply(this._config.blood_pulmonary.el_base, "u_vol_factor_scaling_ps", factor);
+    this._prev.pulm_uvol = factor;
+  }
+
+  // --- SYSTEMIC ---
+
+  scale_systemic_elastances(factor) {
+    this._apply(this._config.blood_systemic.el_base, "el_base_factor_scaling_ps", factor);
+    this._prev.sys_el = factor;
+  }
+
+  scale_systemic_resistances(factor) {
+    this._apply(this._config.blood_systemic.resistance, "r_factor_scaling_ps", factor);
+    this._prev.sys_res = factor;
+  }
+
+  scale_systemic_u_vol(factor) {
+    this._apply(this._config.blood_systemic.el_base, "u_vol_factor_scaling_ps", factor);
+    this._prev.sys_uvol = factor;
+  }
+
   // --- LUNG ---
 
   scale_lung_elastances(factor) {
@@ -121,6 +167,40 @@ export default class ModelScaler {
   scale_heart_el_max(factor) {
     this._apply(this._config.heart.el_max, "el_max_factor_scaling_ps", factor);
     this._prev.heart_el_max = factor;
+  }
+
+  // --- LEFT HEART ---
+
+  scale_left_heart_el_min(factor) {
+    this._apply(this._config.heart_left.el_min, "el_min_factor_scaling_ps", factor);
+    this._prev.left_heart_el_min = factor;
+  }
+
+  scale_left_heart_el_max(factor) {
+    this._apply(this._config.heart_left.el_max, "el_max_factor_scaling_ps", factor);
+    this._prev.left_heart_el_max = factor;
+  }
+
+  scale_left_heart_u_vol(factor) {
+    this._apply(this._config.heart_left.el_min, "u_vol_factor_scaling_ps", factor);
+    this._prev.left_heart_uvol = factor;
+  }
+
+  // --- RIGHT HEART ---
+
+  scale_right_heart_el_min(factor) {
+    this._apply(this._config.heart_right.el_min, "el_min_factor_scaling_ps", factor);
+    this._prev.right_heart_el_min = factor;
+  }
+
+  scale_right_heart_el_max(factor) {
+    this._apply(this._config.heart_right.el_max, "el_max_factor_scaling_ps", factor);
+    this._prev.right_heart_el_max = factor;
+  }
+
+  scale_right_heart_u_vol(factor) {
+    this._apply(this._config.heart_right.el_min, "u_vol_factor_scaling_ps", factor);
+    this._prev.right_heart_uvol = factor;
   }
 
   scale_heart_resistances(factor) {
@@ -157,6 +237,8 @@ export default class ModelScaler {
     // bake el_base factors
     const el_base_groups = [
       ...this._config.blood.el_base,
+      ...this._config.blood_pulmonary.el_base,
+      ...this._config.blood_systemic.el_base,
       ...this._config.lung.el_base,
       ...this._config.thorax,
       ...this._config.pericardium,
@@ -170,6 +252,8 @@ export default class ModelScaler {
     // bake resistance factors
     const res_groups = [
       ...this._config.blood.resistance,
+      ...this._config.blood_pulmonary.resistance,
+      ...this._config.blood_systemic.resistance,
       ...this._config.lung.resistance,
       ...this._config.heart.resistance,
     ];
@@ -225,11 +309,25 @@ export default class ModelScaler {
     this.scale_blood_elastances(1.0);
     this.scale_blood_resistances(1.0);
 
+    this.scale_pulmonary_elastances(1.0);
+    this.scale_pulmonary_resistances(1.0);
+    this.scale_pulmonary_u_vol(1.0);
+
+    this.scale_systemic_elastances(1.0);
+    this.scale_systemic_resistances(1.0);
+    this.scale_systemic_u_vol(1.0);
+
     this.scale_lung_elastances(1.0);
     this.scale_lung_resistances(1.0);
 
     this.scale_heart_el_min(1.0);
     this.scale_heart_el_max(1.0);
+    this.scale_left_heart_el_min(1.0);
+    this.scale_left_heart_el_max(1.0);
+    this.scale_left_heart_u_vol(1.0);
+    this.scale_right_heart_el_min(1.0);
+    this.scale_right_heart_el_max(1.0);
+    this.scale_right_heart_u_vol(1.0);
     this.scale_heart_resistances(1.0);
 
     this.scale_thorax_elastances(1.0);
