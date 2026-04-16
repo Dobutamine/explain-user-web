@@ -385,7 +385,7 @@ export default {
       map_min: 25,
       map_set: 50,
       map_max: 100,
-      heart_rate_ref: 110,
+      heart_rate_ref: 70,
       add_volume_ml: 10,
       target_weight: 3.545,
       // scaling preparation toggles

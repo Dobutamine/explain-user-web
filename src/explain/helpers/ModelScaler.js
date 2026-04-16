@@ -227,7 +227,11 @@ export default class ModelScaler {
     // bake u_vol factors
     const u_vol_groups = [
       ...this._config.blood.volume,
+      ...this._config.blood_pulmonary.el_base,
+      ...this._config.blood_systemic.el_base,
       ...this._config.heart.volume,
+      ...this._config.heart_left.el_min,
+      ...this._config.heart_right.el_min,
       ...this._config.lung.volume,
       ...this._config.thorax,
       ...this._config.pericardium,
