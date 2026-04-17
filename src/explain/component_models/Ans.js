@@ -122,14 +122,14 @@ export class Ans extends BaseModelClass {
       // switch through all components
       Object.keys(this.components).forEach(component => 
         {
-          this._model_engine.models[component].is_enabled = this.ans_active;
+          this._model_engine.models[component].ans_active = this.ans_active;
         }
       );
 
       // calculate the necessary blood compositions
       this.blood_composition_models.forEach(model => {
         let m = this._model_engine.models[model];
-        if (m.is_enabled) {
+        if (m.ans_active) {
           calc_blood_composition(m);
         }
       });

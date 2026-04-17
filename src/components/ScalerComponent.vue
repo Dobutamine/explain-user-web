@@ -11,8 +11,8 @@
       <q-separator class="q-mt-xs" />
       <div class="text-overline text-center q-mt-sm">SCALING PREPARATION</div>
       <div class="q-px-sm q-mt-sm">
-        <q-toggle  v-model="baroreflex_on" label="baroreflex MAP (ANS)" dense
-          color="primary" @update:model-value="toggleBaroreflex" />
+        <q-toggle  v-model="ans_on" label="Autonomic Nervous System (ANS)" dense
+          color="primary" @update:model-value="toggleAns" />
         <q-toggle class="q-mt-sm" v-model="metabolism_on" label="metabolism (VO2)" dense
           color="primary" @update:model-value="toggleMetabolism" />
         <q-toggle class="q-mt-sm" v-model="mob_on" label="mob (myocardial O2 balance)" dense
@@ -393,7 +393,7 @@ export default {
       breathing_on: true,
       gasex_on: true,
       metabolism_on: true,
-      baroreflex_on: true,
+      ans_on: true,
       mob_on: true,
       hr_override_on: false,
     };
@@ -405,13 +405,13 @@ export default {
   },
   methods: {
     invertAllPrep() {
-      this.baroreflex_on = !this.baroreflex_on;
+      this.ans_on = !this.ans_on;
       this.metabolism_on = !this.metabolism_on;
       this.mob_on = !this.mob_on;
       this.gasex_on = !this.gasex_on;
       this.breathing_on = !this.breathing_on;
       this.hr_override_on = !this.hr_override_on;
-      this.toggleBaroreflex(this.baroreflex_on);
+      this.toggleAns(this.ans_on);
       this.toggleMetabolism(this.metabolism_on);
       this.toggleMob(this.mob_on);
       this.toggleGasExchange(this.gasex_on);
@@ -428,7 +428,7 @@ export default {
     toggleMetabolism(val) {
       explain.setPropValue("Metabolism.met_active", val, 0);
     },
-    toggleBaroreflex(val) {
+    toggleAns(val) {
       explain.setPropValue("Ans.ans_active", val, 0);
     },
     toggleMob(val) {

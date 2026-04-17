@@ -113,7 +113,8 @@ export class AnsAfferent extends BaseModelClass {
     this.set_value = 0.0; // setpoint of the input (firing rate is 0.5)
     this.max_value = 0.0; // maximum of the input (firing rate is 1.0)
     this.time_constant = 1.0; // time constant of the firing rate change (s)
-
+    this.ans_active = true; // whether the afferent is active and can influence the efferents
+    
     // Initialize dependent properties
     this.input_value = 0.0; // input value
     this.firing_rate = 0.0; // normalized receptor firing rate (0 - 1)

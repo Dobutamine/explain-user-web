@@ -80,6 +80,7 @@ export class AnsEfferent extends BaseModelClass {
     this.effect_at_max_firing_rate = 0.0; // effect size at average input firing rate of 1.0
     this.effect_at_min_firing_rate = 0.0; // effect size at average input firing rate of 0.0
     this.tc = 0.0; // time constant of the effect change (s)
+    this.ans_active = true; // whether the efferent is active and can be influenced by the afferents
 
     // Initialize dependent parameters
     this.firing_rate = 0.0; // firing rate (unitless)
@@ -111,6 +112,12 @@ export class AnsEfferent extends BaseModelClass {
         effector = 1.0 + ((this.effect_at_max_firing_rate - 1.0) / 0.5) * (this.firing_rate - 0.5);
       } else {
         effector = this.effect_at_min_firing_rate + ((1.0 - this.effect_at_min_firing_rate) / 0.5) * this.firing_rate;
+      }
+
+      // If the ANS is not active, set the effector to 1.0 (no effect)
+      if (!this.ans_active) {
+        effector = 1.0;
+        this.effector = 1.0;
       }
 
       // Incorporate the time constant for the effector change
