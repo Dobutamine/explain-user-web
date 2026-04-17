@@ -112,7 +112,7 @@ export class AnsAfferent extends BaseModelClass {
     this.min_value = 0.0; // minimum of the input (firing rate is 0.0)
     this.set_value = 0.0; // setpoint of the input (firing rate is 0.5)
     this.max_value = 0.0; // maximum of the input (firing rate is 1.0)
-    this.time_constant = 1.0; // time constant of the firing rate change (s)
+    this.tc = 1.0; // time constant of the firing rate change (s)
     this.ans_active = true; // whether the afferent is active and can influence the efferents
     
     // Initialize dependent properties
@@ -160,7 +160,7 @@ export class AnsAfferent extends BaseModelClass {
       const _new_firing_rate = this._set_firing_rate + this._gain * _activation;
 
       // Incorporate the time constant to calculate the firing rate
-      this.firing_rate = this._update_interval * ((1.0 / this.time_constant) * (-this.firing_rate + _new_firing_rate)) + this.firing_rate;
+      this.firing_rate = this._update_interval * ((1.0 / this.tc) * (-this.firing_rate + _new_firing_rate)) + this.firing_rate;
 
       // apply the firing rate to the effector
       this.efferents.forEach((effector) => {
