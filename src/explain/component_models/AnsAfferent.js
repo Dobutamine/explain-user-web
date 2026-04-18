@@ -69,7 +69,7 @@ export class AnsAfferent extends BaseModelClass {
     },
     {
       caption: "timeconstant (s)",
-      target: "time_constant",
+      target: "tc",
       type: "number",
       edit_mode: "basic",
       build_prop: true,

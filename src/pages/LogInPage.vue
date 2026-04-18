@@ -194,8 +194,17 @@ export default {
       this.errorText = "";
     },
     LoadDefaultState() {
-      console.log(`Loading default state "${this.user.defaultState}" for user ${this.user.name} from server...`)
-      this.state.getStateFromServer(this.general.apiUrl, this.user.name, this.user.defaultState, this.user.token);
+      if (this.general.loadFromDisk) {
+        console.log(`Loading model definition "${this.general.diskModelDefinition}" from disk...`);
+        this.state.name = this.general.diskModelDefinition;
+        this.state.user = this.user.name;
+        this.state.saved = false;
+        this.state.default = false;
+        explain.load(this.general.diskModelDefinition);
+      } else {
+        console.log(`Loading default state "${this.user.defaultState}" for user ${this.user.name} from server...`)
+        this.state.getStateFromServer(this.general.apiUrl, this.user.name, this.user.defaultState, this.user.token);
+      }
     },
     LoadSharedState(sharedStateName) {
       this.state.getSharedStateFromServer(this.general.apiUrl, this.user.name, sharedStateName, this.user.token);
@@ -210,6 +219,9 @@ export default {
   },
   beforeUnmount() {
     this.log_in();
+    if (this._onDiskModelReady) {
+      explain.off("model_ready", this._onDiskModelReady);
+    }
   },
   mounted() {
     this.$q.dark.set(true);
@@ -282,6 +294,24 @@ export default {
         });
       }
     });
+
+    // handle model_ready for disk-load path
+    this._onDiskModelReady = () => {
+      if (this.general.loadFromDisk && this.$route.path !== "/explain") {
+        this.state.model_definition = explain.modelDefinition;
+        // populate other state fields from the loaded file if present
+        const fileData = explain.loadedFileData;
+        if (fileData) {
+          if (fileData.diagram_definition) this.state.diagram_definition = fileData.diagram_definition;
+          if (fileData.animation_definition) this.state.animation_definition = fileData.animation_definition;
+          if (fileData.configuration) this.state.configuration = fileData.configuration;
+          if (fileData.events) this.state.events = fileData.events;
+        }
+        this.state.saved = false;
+        this.$router.push("/explain");
+      }
+    };
+    explain.on("model_ready", this._onDiskModelReady);
 
     this.$bus.on("registered", () => {
       this.newUserEntry = false;

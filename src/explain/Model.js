@@ -62,10 +62,9 @@ export default class Model extends ModelEmitter {
    */
   load(definition_name) {
     console.log(`Model: Loading modeling definition: '${definition_name}'.`)
-    const path = "/model_definitions/" + definition_name + ".json";
-    const absoluteUrl = new URL(path, import.meta.url);
+    const url = "/model_definitions/" + definition_name + ".json";
 
-    fetch(absoluteUrl)
+    fetch(url)
       .then((response) => {
         if (!response.ok) {
           throw new Error(
@@ -75,7 +74,11 @@ export default class Model extends ModelEmitter {
         return response.json();
       })
       .then((jsonData) => {
-        this.build(jsonData);
+        // store the full file data for the state store to pick up
+        this.loadedFileData = jsonData;
+        // unwrap model_definition if the file has that wrapper
+        const definition = jsonData.model_definition || jsonData;
+        this.build(definition);
       })
       .catch((error) => {
         console.error("Error: ", error);

@@ -9,6 +9,30 @@
 // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js
 
 const { configure } = require("quasar/wrappers");
+const fs = require("fs");
+const path = require("path");
+
+// Vite plugin that generates an index.json manifest of model definition files
+// in public/model_definitions/ on dev server start and when files change.
+function modelDefinitionsIndexPlugin() {
+  const dir = path.resolve(__dirname, "public/model_definitions");
+  function generate() {
+    if (!fs.existsSync(dir)) return;
+    const files = fs.readdirSync(dir)
+      .filter((f) => f.endsWith(".json") && f !== "index.json")
+      .map((f) => f.replace(".json", ""))
+      .sort();
+    fs.writeFileSync(path.join(dir, "index.json"), JSON.stringify(files, null, 2));
+  }
+  return {
+    name: "model-definitions-index",
+    buildStart() { generate(); },
+    configureServer(server) {
+      // regenerate when files change in public/model_definitions
+      fs.watch(dir, () => generate());
+    },
+  };
+}
 
 module.exports = configure(function (/* ctx */) {
   return {
@@ -63,9 +87,9 @@ module.exports = configure(function (/* ctx */) {
       // extendViteConf (viteConf) {},
       // viteVuePluginOptions: {},
 
-      // vitePlugins: [
-      //   [ 'package-name', { ..options.. } ]
-      // ]
+      vitePlugins: [
+        modelDefinitionsIndexPlugin()
+      ]
     },
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#devServer

@@ -54,6 +54,9 @@ export class Monitor extends BaseModelClass {
     this.aa_cor = "AA_COR"; // name of the connector connecting the aorta to the coronaries
     this.aa_brain = "AA_BR"; // name of the connector connecting the aorta to the brain
     this.ad_kid = "AD_KID_ART"; // name of the connector connecting the descending aorta to the kidneys
+    this.ad_ls = "AD_LS"; // name of the connector connecting the liver and splachnic
+    this.ad_int = "AD_INT"; // name of the connector connecting the intestines
+    this.ad_rlb = "AD_RLB"; // name of the connector connecting the rest of the body
     this.ivc_ra = "IVCI_RAIVCI"; // name of the connector connecting the inferior vena cava to the right atrium
     this.svc_ra = "SVC_RASVC"; // name of the connector connecting the superior vena cava to the right atrium
     this.thorax = "THORAX"; // name of the thorax model
@@ -158,6 +161,9 @@ export class Monitor extends BaseModelClass {
     this._aa_cor = null; // reference to the coronaries to right atrium connector
     this._aa_br = null; // reference to the ascending aorta to brain connector
     this._ad_kid = null; // reference to the descending aorta to kidneys connector
+    this._ad_ls = null; // reference to the descending aorta to liver and splachnic connector
+    this._ad_int = null; // reference to the descending aorta to intestines connector
+    this._ad_rlb = null; // reference to the descending aorta to rest of the body connector
     this._ad_umb_art = null; // reference to the umbilical artery connector
     this._umb_ven_ivci = null ;// reference to the umbilical vein connector
     this._fo_ivci = null; // reference to the foramen ovale
@@ -191,6 +197,9 @@ export class Monitor extends BaseModelClass {
     this._svc_flow_counter = 0.0;
     this._brain_flow_counter = 0.0;
     this._kid_flow_counter = 0.0;
+    this._ls_flow_counter = 0.0;
+    this._int_flow_counter = 0.0;
+    this._rlb_flow_counter = 0.0;
     this._da_flow_counter = 0.0;
     this._fo_ivci_flow_counter = 0.0;
     this._fo_svc_flow_counter = 0.0;
@@ -250,6 +259,9 @@ export class Monitor extends BaseModelClass {
     this._aa_cor = this._model_engine.models[this.aa_cor] ?? null;
     this._aa_br = this._model_engine.models[this.aa_brain] ?? null;
     this._ad_kid = this._model_engine.models[this.ad_kid] ?? null;
+    this._ad_ls = this._model_engine.models[this.ad_ls] ?? null;
+    this._ad_int = this._model_engine.models[this.ad_int] ?? null;
+    this._ad_rlb = this._model_engine.models[this.ad_rlb] ?? null;
     this._da = this._model_engine.models[this.da] ?? null;
     this._fo_ivci = this._model_engine.models[this.fo_ivci] ?? null;
     this._fo_svc = this._model_engine.models[this.fo_svc] ?? null;
@@ -450,6 +462,21 @@ export class Monitor extends BaseModelClass {
         this.do2_lb = this.kid_flow * 4 * this._ad.to2 * 22.4;
       }
 
+      if (this._ad_ls) {
+        this.ls_flow = (this._ls_flow_counter / this._beats_time) * 60.0;
+        this._ls_flow_counter = 0.0;
+      }
+
+      if (this._ad_int) {
+        this.int_flow = (this._int_flow_counter / this._beats_time) * 60.0;
+        this._int_flow_counter = 0.0;
+      }
+
+      if (this._ad_rlb) {
+        this.rlb_flow = (this._rlb_flow_counter / this._beats_time) * 60.0;
+        this._rlb_flow_counter = 0.0;
+      }
+
       if (this._da) {
         this.da_flow = (this._da_flow_counter / this._beats_time) * 60.0;
         this._da_flow_counter = 0.0;
@@ -550,6 +577,9 @@ export class Monitor extends BaseModelClass {
     this._svc_flow_counter += this._svc_ra ? this._svc_ra.flow * this._t : 0.0;
     this._brain_flow_counter += this._aa_br ? this._aa_br.flow * this._t : 0.0;
     this._kid_flow_counter += this._ad_kid ? this._ad_kid.flow * this._t : 0.0;
+    this._ls_flow_counter += this._ad_ls ? this._ad_ls.flow * this._t : 0.0;
+    this._int_flow_counter += this._ad_int ? this._ad_int.flow * this._t : 0.0;
+    this._rlb_flow_counter += this._ad_rlb ? this._ad_rlb.flow * this._t : 0.0;
     this._da_flow_counter += this._da ? this._da.flow * this._t : 0.0;
     this._fo_ivci_flow_counter += this._fo_ivci ? this._fo_ivci.flow * this._t : 0.0;
     this._fo_svc_flow_counter += this._fo_svc ? this._fo_svc.flow * this._t : 0.0;

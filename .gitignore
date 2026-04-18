@@ -34,3 +34,6 @@ yarn-error.log*
 
 # ignore the yarn config file as it is local
 .yarn/install-state.gz
+
+# Auto-generated model definitions index
+public/model_definitions/index.json

@@ -3,8 +3,7 @@
     <q-header class="bg-indigo-10 text-white headerCustomStyle" height-hint="68">
       <q-toolbar>
         <q-img v-if="user.loggedIn" src="explain-labs-logo.svg" style="width: 100px"/>
-        <q-toolbar-title class="text-overline">
-
+        <q-toolbar-title class="text-overline text-center">
         </q-toolbar-title>
 
         <div v-if="user.loggedIn" class="text-overline q-ml-sm">
@@ -13,6 +12,8 @@
         <div v-if="user.admin" class="text-overline q-ml-sm">
           <b>(admin) </b>
         </div>
+        <q-btn v-if="user.loggedIn" size="sm" dense color="indigo-10" class="q-ml-sm q-pl-sm q-pr-sm"
+          icon="fa-solid fa-gear" @click="openSettings"><q-tooltip>settings</q-tooltip></q-btn>
         <q-btn v-if="user.loggedIn" size="sm" dense color="indigo-10" class="q-ml-sm q-pl-sm q-pr-sm"
           icon="fa-solid fa-right-from-bracket" @click="logOut"><q-tooltip>log out</q-tooltip></q-btn>
         <q-btn v-if="user.admin" size="sm" dense color="indigo-10" class="q-ml-sm q-pl-sm q-pr-sm"
@@ -99,6 +100,26 @@
       </q-dialog>
 
 
+      <q-dialog v-model="showSettingsDialog" transition-show="slide-up" transition-hide="slide-down">
+        <q-card dark style="min-width: 350px;">
+          <q-card-section>
+            <div class="text-h6">Settings</div>
+          </q-card-section>
+
+          <q-card-section class="q-pt-none">
+            <q-toggle v-model="settingsLoadFromDisk" label="Load model definition from disk" dense
+              color="primary" @update:model-value="general.setLoadFromDisk(settingsLoadFromDisk)" />
+            <q-select v-if="settingsLoadFromDisk" v-model="settingsDiskModel"
+              :options="availableModelDefinitions" label="Model definition file" filled dense
+              class="q-mt-sm" @update:model-value="general.setDiskModelDefinition(settingsDiskModel)" />
+          </q-card-section>
+
+          <q-card-actions>
+            <q-btn flat label="Close" color="primary" size="sm" v-close-popup />
+          </q-card-actions>
+        </q-card>
+      </q-dialog>
+
     </q-page-container>
 
     <q-footer class="bg-grey-8 text-white footerCustomStyle">
@@ -106,6 +127,8 @@
         <q-toolbar-title class="text-overline">
           <div>{{ statusMessage }}</div>
         </q-toolbar-title>
+
+        <span v-if="general.loadFromDisk" class="text-overline q-mr-lg" style="color: #ffffff; font-weight: bold;">** LOCAL EDIT MODE **</span>
 
         <div v-if="!state.protected" class="text-overline" @click="renameState">
           <b>{{ state.name }} </b>
@@ -180,6 +203,7 @@ import { useStateStore } from 'src/stores/state';
 import { useModelStore } from 'src/stores/model';
 import { explain } from 'src/boot/explain';
 
+
 export default defineComponent({
   name: 'MainLayout',
 
@@ -231,7 +255,11 @@ export default defineComponent({
       current_model_definition: 'baseline_neonate',
       state_destination: "server",
       state_format: "json",
-      first_run: true
+      first_run: true,
+      showSettingsDialog: false,
+      settingsLoadFromDisk: JSON.parse(localStorage.getItem("loadFromDisk") || "false"),
+      settingsDiskModel: localStorage.getItem("diskModelDefinition") || "term_neonate_clean",
+      availableModelDefinitions: []
     }
   },
   methods: {
@@ -508,6 +536,14 @@ export default defineComponent({
     },
     onUploadState() {
       this.upload_no_dialog()
+    },
+    openSettings() {
+      // fetch the list of available model definitions from public/model_definitions/
+      fetch("/model_definitions/index.json")
+        .then((r) => r.json())
+        .then((list) => { this.availableModelDefinitions = list; })
+        .catch(() => { this.availableModelDefinitions = []; });
+      this.showSettingsDialog = true;
     }
   },
   beforeUnmount() {
