@@ -10,18 +10,18 @@
       <!-- SCALING PREPARATION -->
       <q-separator class="q-mt-xs" />
       <div class="text-overline text-center q-mt-sm">SCALING PREPARATION</div>
-      <div class="q-px-sm q-mt-sm">
+      <div class="q-px-sm q-mt-sm column items-start">  
         <q-toggle  v-model="ans_on" label="Autonomic Nervous System (ANS)" dense
           color="primary" @update:model-value="toggleAns" />
-        <q-toggle class="q-mt-sm" v-model="metabolism_on" label="metabolism (VO2)" dense
+        <q-toggle class="q-mt-sm" v-model="metabolism_on" label="Metabolism (VO2)" dense
           color="primary" @update:model-value="toggleMetabolism" />
-        <q-toggle class="q-mt-sm" v-model="mob_on" label="mob (myocardial O2 balance)" dense
+        <q-toggle class="q-mt-sm" v-model="mob_on" label="Myocardial O2 Balance (MOB)" dense
           color="primary" @update:model-value="toggleMob" />
-        <q-toggle class="q-mt-sm" v-model="gasex_on" label="gas exchange (LL + RL)" dense
+        <q-toggle class="q-mt-sm" v-model="gasex_on" label="Gas Exchange (LL + RL)" dense
           color="primary" @update:model-value="toggleGasExchange" />
-        <q-toggle class="q-mt-sm" v-model="breathing_on" label="spontaneous breathing" dense
+        <q-toggle class="q-mt-sm" v-model="breathing_on" label="Spontaneous Breathing" dense
           color="primary" @update:model-value="toggleBreathing" />
-        <q-toggle class="q-mt-sm" v-model="hr_override_on" label="heart rate override" dense
+        <q-toggle class="q-mt-sm" v-model="hr_override_on" label="Heart Rate Override" dense
           color="primary" @update:model-value="toggleHrOverride" />
 
       </div>
