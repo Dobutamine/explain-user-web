@@ -12,7 +12,7 @@
         <div v-if="user.admin" class="text-overline q-ml-sm">
           <b>(admin) </b>
         </div>
-        <q-btn v-if="user.loggedIn" size="sm" dense color="indigo-10" class="q-ml-sm q-pl-sm q-pr-sm"
+        <q-btn v-if="user.admin" size="sm" dense color="indigo-10" class="q-ml-sm q-pl-sm q-pr-sm"
           icon="fa-solid fa-gear" @click="openSettings"><q-tooltip>settings</q-tooltip></q-btn>
         <q-btn v-if="user.loggedIn" size="sm" dense color="indigo-10" class="q-ml-sm q-pl-sm q-pr-sm"
           icon="fa-solid fa-right-from-bracket" @click="logOut"><q-tooltip>log out</q-tooltip></q-btn>
@@ -145,7 +145,7 @@
           <div>{{ statusMessage }}</div>
         </q-toolbar-title>
 
-        <span v-if="general.loadFromDisk" class="text-overline q-mr-lg" style="color: #ffffff; font-weight: bold;">** LOCAL EDIT MODE **</span>
+        <span v-if="user.admin && general.loadFromDisk" class="text-overline q-mr-lg" style="color: #ffffff; font-weight: bold;">** LOCAL EDIT MODE **</span>
 
         <div v-if="!state.protected" class="text-overline" @click="renameState">
           <b>{{ state.name }} </b>
@@ -183,7 +183,7 @@
           @click="saveState">
           <q-tooltip> save model state to server </q-tooltip></q-btn>
 
-        <q-btn v-if="general.loadFromDisk" flat round dense size="sm" icon="fa-solid fa-floppy-disk" color="amber" class="q-mr-sm"
+        <q-btn v-if="user.admin && general.loadFromDisk" flat round dense size="sm" icon="fa-solid fa-floppy-disk" color="amber" class="q-mr-sm"
           @click="saveStateToDisk">
           <q-tooltip> save model definition to disk </q-tooltip></q-btn>
 

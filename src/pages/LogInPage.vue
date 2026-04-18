@@ -194,7 +194,7 @@ export default {
       this.errorText = "";
     },
     LoadDefaultState() {
-      if (this.general.loadFromDisk) {
+      if (this.user.admin && this.general.loadFromDisk) {
         console.log(`Loading model definition "${this.general.diskModelDefinition}" from disk...`);
         this.state.name = this.general.diskModelDefinition;
         this.state.user = this.user.name;
