@@ -120,6 +120,23 @@
         </q-card>
       </q-dialog>
 
+      <q-dialog v-model="showSaveToDiskPopUp" persistent transition-show="slide-up" transition-hide="slide-down">
+        <q-card dark style="min-width: 350px;">
+          <q-card-section>
+            <div class="text-h6">Save model definition to disk</div>
+          </q-card-section>
+
+          <q-card-section class="q-pt-none">
+            <q-input v-model="saveToDiskName" label="file name" filled dense @keyup.enter="confirmSaveToDisk" />
+          </q-card-section>
+
+          <q-card-actions>
+            <q-btn flat label="Cancel" color="primary" size="sm" v-close-popup />
+            <q-btn flat label="Save" color="primary" size="sm" @click="confirmSaveToDisk" />
+          </q-card-actions>
+        </q-card>
+      </q-dialog>
+
     </q-page-container>
 
     <q-footer class="bg-grey-8 text-white footerCustomStyle">
@@ -165,6 +182,10 @@
         <q-btn v-if="user.name !== 'demo-user'" flat round dense size="sm" icon="fa-solid fa-upload" color="white" class="q-mr-sm q-ml-sm"
           @click="saveState">
           <q-tooltip> save model state to server </q-tooltip></q-btn>
+
+        <q-btn v-if="general.loadFromDisk" flat round dense size="sm" icon="fa-solid fa-floppy-disk" color="amber" class="q-mr-sm"
+          @click="saveStateToDisk">
+          <q-tooltip> save model definition to disk </q-tooltip></q-btn>
 
 
         <!-- <q-btn flat round dense size="sm" icon="fa-brands fa-js" color="white" class="q-mr-sm"
@@ -259,7 +280,9 @@ export default defineComponent({
       showSettingsDialog: false,
       settingsLoadFromDisk: JSON.parse(localStorage.getItem("loadFromDisk") || "false"),
       settingsDiskModel: localStorage.getItem("diskModelDefinition") || "term_neonate_clean",
-      availableModelDefinitions: []
+      availableModelDefinitions: [],
+      showSaveToDiskPopUp: false,
+      saveToDiskName: ""
     }
   },
   methods: {
@@ -466,6 +489,8 @@ export default defineComponent({
     stateSaved() {
       if (this.state_destination === "server") {
         this.uploadStateToServer()
+      } else if (this.state_destination === "disk") {
+        this.uploadStateToDisk()
       } else {
         this.downloadStateToLocal()
       }
@@ -536,6 +561,47 @@ export default defineComponent({
     },
     onUploadState() {
       this.upload_no_dialog()
+    },
+    saveStateToDisk() {
+      this.stopRt();
+      this.saveToDiskName = this.state.name || this.general.diskModelDefinition;
+      this.showSaveToDiskPopUp = true;
+    },
+    confirmSaveToDisk() {
+      if (!this.saveToDiskName || !this.saveToDiskName.trim()) return;
+      this.saveToDiskName = this.saveToDiskName.trim();
+      this.showSaveToDiskPopUp = false;
+      this.state_destination = "disk";
+      explain.saveModelState();
+    },
+    async uploadStateToDisk() {
+      const name = this.saveToDiskName;
+      const data = {
+        name: name,
+        user: this.state.user,
+        description: this.state.description,
+        diagram_definition: this.state.diagram_definition,
+        animation_definition: this.state.animation_definition,
+        model_definition: explain.savedState,
+        configuration: this.state.configuration,
+        events: this.state.events,
+      };
+      try {
+        const response = await fetch("/api/save-model-definition", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, data }),
+        });
+        const result = await response.json();
+        if (result.result) {
+          this.state.saved = true;
+          this.statusMessage = "STATUS: model definition saved to disk.";
+        } else {
+          this.statusMessage = "STATUS: ERROR saving to disk - " + (result.error || "unknown error");
+        }
+      } catch (e) {
+        this.statusMessage = "STATUS: ERROR saving to disk - " + e.message;
+      }
     },
     openSettings() {
       // fetch the list of available model definitions from public/model_definitions/
