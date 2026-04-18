@@ -2,7 +2,7 @@ import { PIXI } from "src/boot/pixi.js";
 
 export default class Pump {
   type = "Pump";
-  picto = "pump.png"
+  picto = "gfx/pump.png"
   pixiApp = {};
   key = "";
   label = "";

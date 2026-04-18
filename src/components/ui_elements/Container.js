@@ -2,7 +2,7 @@ import { PIXI } from "src/boot/pixi.js";
 
 export default class Container {
   type = "Container";
-  picto = "container.png";
+  picto = "gfx/container.png";
   pixiApp = {};
   key = "";
   label = "";

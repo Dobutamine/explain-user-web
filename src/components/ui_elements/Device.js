@@ -2,7 +2,7 @@ import { PIXI } from "src/boot/pixi.js";
 
 export default class Device {
   type = "Device";
-  picto = "general.png";
+  picto = "gfx/general.png";
   pixiApp = {};
   key = "";
   label = "";

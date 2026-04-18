@@ -530,20 +530,20 @@ export default {
       ],
       diagramComponentNames: [],
       pictos: [
-        "arrow.png",
-        "container.png",
-        "exchanger.png",
-        "gas_container.png",
-        "general.png",
-        "lung.png",
-        "placenta.png",
-        "premature-baby-CPAP.png",
-        "pump.png",
-        "term-baby-ventilator.png",
-        "thoracic_cage.png",
-        "trachea.png",
-        "ventilator.png",
-        "vessel.png"
+        "gfx/arrow.png",
+        "gfx/container.png",
+        "gfx/exchanger.png",
+        "gfx/gas_container.png",
+        "gfx/general.png",
+        "gfx/lung.png",
+        "gfx/placenta.png",
+        "gfx/premature-baby-CPAP.png",
+        "gfx/pump.png",
+        "gfx/term-baby-ventilator.png",
+        "gfx/thoracic_cage.png",
+        "gfx/trachea.png",
+        "gfx/ventilator.png",
+        "gfx/vessel.png"
       ],
       rebuild_event: null,
       statusMessage: "",
@@ -746,7 +746,7 @@ export default {
       // component type specific default settings
       switch (compType) {
         case "Compartment":
-          this.compPicto = "container.png"
+          this.compPicto = "gfx/container.png"
           this.compSpritePosType = "arc"
           this.compLabelSize = 10;
           this.compAnimatedBy = "vol"
@@ -755,7 +755,7 @@ export default {
           this.compDbcFroms = this.findDiagramComponents(["Compartment", "Pump"]);
           this.compDbcTos = this.findDiagramComponents(["Compartment", "Pump"]);
           this.compAnimatedBy = "flow"
-          this.compPicto = "container.png"
+          this.compPicto = "gfx/container.png"
           this.compPathType = "arc"
           this.compSpriteScaleX = 1.0;
           this.compSpriteScaleY = 2.0;
@@ -766,29 +766,29 @@ export default {
           this.compDbcFroms = this.findDiagramComponents(["Compartment", "Pump"]);
           this.compDbcTos = this.findDiagramComponents(["Compartment", "Pump"]);
           this.compAnimatedBy = "flow"
-          this.compPicto = "arrow.png"
+          this.compPicto = "gfx/arrow.png"
           this.compSpriteScaleX = 1.0;
           this.compSpriteScaleY = 2.0;
           break;
         case "Container":
           this.compDbcFroms = this.findDiagramComponents(["Compartment", "Pump", "Container", "Device"]);
           this.compDbcTos = this.findDiagramComponents(["Compartment", "Pump", "Container", "Device"]);
-          this.compPicto = "container.png"
+          this.compPicto = "gfx/container.png"
           this.compAnimatedBy = "vol"
           this.compTinting = false;
           break;
         case "Device":
-          this.compPicto = "general.png"
+          this.compPicto = "gfx/general.png"
           this.compAnimatedBy = "none"
           break;
         case "Pump":
           this.compDbcFroms = this.findDiagramComponents(["Connector", "Valve"]);
           this.compDbcTos = this.findDiagramComponents(["Connector", "Valve"]);
-          this.compPicto = "pump.png"
+          this.compPicto = "gfx/pump.png"
           this.compAnimatedBy = "vol"
           break;
         case "Exchanger":
-          this.compPicto = "exchanger.png"
+          this.compPicto = "gfx/exchanger.png"
           this.compAnimatedBy = "o2"
           break;
       }
@@ -936,7 +936,7 @@ export default {
       switch (this.compType) {
         case "Compartment":
           // define the general compartment graphic
-          this.compPicto = "container.png";
+          this.compPicto = "gfx/container.png";
           // list of the possible explain models this Compartment can hold
           models = [
             "Capacitance", 
@@ -952,7 +952,7 @@ export default {
           break;
         case "Connector":
           // define the general compartment graphic
-          this.compPicto = "container.png";
+          this.compPicto = "gfx/container.png";
           // list of the possible explain models this Compartment can hold
           models = [
             "Resistor",
@@ -961,20 +961,20 @@ export default {
           break;
         case "Pump":
           // define the general compartment graphic
-          this.compPicto = "container.png";
+          this.compPicto = "gfx/container.png";
           // list of the possible explain models this Compartment can hold
           models = ["BloodPump"];
           break;
         case "Container":
-          this.compPicto = "container.png";
+          this.compPicto = "gfx/container.png";
           models = ["Container"];
           break;
         case "Exchanger":
-          this.compPicto = "container.png";
+          this.compPicto = "gfx/container.png";
           models = ["GasExchanger", "BloodDiffusor", "GasDiffusor"];
           break;
         case "Device":
-          this.compPicto = "container.png";
+          this.compPicto = "gfx/container.png";
           models = [];
           break;
       }

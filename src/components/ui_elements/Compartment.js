@@ -2,7 +2,7 @@ import { PIXI } from "src/boot/pixi.js";
 
 export default class Compartment {
   type = "Compartment";
-  picto = "container.png";
+  picto = "gfx/container.png";
   pixiApp = {};
   key = "";
   label = "";

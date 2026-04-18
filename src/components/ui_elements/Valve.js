@@ -2,7 +2,7 @@ import { PIXI } from "src/boot/pixi.js";
 
 export default class Valve {
   type = "Valve";
-  picto = "arrow.png";
+  picto = "gfx/arrow.png";
   pixiApp = {};
   key = "";
   label = "";

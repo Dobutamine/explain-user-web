@@ -2,7 +2,7 @@ import { PIXI } from "src/boot/pixi.js";
 
 export default class Exchanger {
   type = "Exchanger";
-  picto = "exchanger.png"
+  picto = "gfx/exchanger.png"
   pixiApp = {};
   key = "";
   label = "";
