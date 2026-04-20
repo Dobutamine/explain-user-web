@@ -8452,8 +8452,8 @@
                 "r_k_eff": 0
               }
             },
-            "u_vol": 0.15,
-            "el_base": 265.95238095238096,
+            "u_vol": 0.130,
+            "el_base": 250,
             "el_k": 0,
             "pres_ext": 0,
             "fixed_composition": false,
@@ -8502,8 +8502,8 @@
             "description": "gas capacitance model of the alveolar space of the left lung",
             "is_enabled": true,
             "model_type": "GasCapacitance",
-            "u_vol": 0.84,
-            "el_base": 8.857142857142856,
+            "u_vol": 0.85,
+            "el_base": 11,
             "el_k": 0,
             "pres_ext": -2.7446640880289266,
             "fixed_composition": false,
@@ -8552,8 +8552,8 @@
             "description": "gas capacitance model of the alveolar space of the right lung",
             "is_enabled": true,
             "model_type": "GasCapacitance",
-            "u_vol": 0.84,
-            "el_base": 8.857142857142856,
+            "u_vol": 0.85,
+            "el_base": 11,
             "el_k": 0,
             "pres_ext": -2.7446640880289266,
             "fixed_composition": false,
@@ -8602,8 +8602,8 @@
             "description": "container model the thoracic rib cage",
             "is_enabled": true,
             "model_type": "Container",
-            "u_vol": 5.5,
-            "el_base": 3,
+            "u_vol": 4.5,
+            "el_base": 6.9,
             "el_k": 0,
             "pres_ext": 0,
             "vol_extra": 0,
@@ -10594,15 +10594,42 @@
           "ALL",
           "ALR",
           "DS"
-        ],
-        "el_base": [
-          "ALL",
-          "ALR",
+        ]
+      },
+      "airway": {
+        "u_vol": [
           "DS"
         ],
-        "resistance": [
-          "MOUTH_DS",
+        "el_base": [
+          "DS"
+        ],
+        "resistance_upper": [
+          "MOUTH_DS"
+        ],
+        "resistance_lower": [
           "DS_ALL",
+          "DS_ALR"
+        ]
+      },
+      "left_lung": {
+        "u_vol": [
+          "ALL"
+        ],
+        "el_base": [
+          "ALL"
+        ],
+        "resistance": [
+          "DS_ALL"
+        ]
+      },
+      "right_lung": {
+        "u_vol": [
+          "ALR"
+        ],
+        "el_base": [
+          "ALR"
+        ],
+        "resistance": [
           "DS_ALR"
         ]
       },

@@ -26,8 +26,16 @@ export default class ModelScaler {
       sys_el: 1.0,
       sys_res: 1.0,
       sys_uvol: 1.0,
-      lung_el: 1.0,
-      lung_res: 1.0,
+      airway_el: 1.0,
+      airway_uvol: 1.0,
+      airway_upper_res: 1.0,
+      airway_lower_res: 1.0,
+      left_lung_el: 1.0,
+      left_lung_res: 1.0,
+      left_lung_uvol: 1.0,
+      right_lung_el: 1.0,
+      right_lung_res: 1.0,
+      right_lung_uvol: 1.0,
       heart_el_min: 1.0,
       heart_el_max: 1.0,
       left_heart_el_min: 1.0,
@@ -145,16 +153,60 @@ export default class ModelScaler {
     this._prev.sys_uvol = factor;
   }
 
-  // --- LUNG ---
+  // --- AIRWAY (dead space + conducting airways) ---
 
-  scale_lung_elastances(factor) {
-    this._apply(this._config.lung.el_base, "el_base_factor_scaling_ps", factor);
-    this._prev.lung_el = factor;
+  scale_airway_elastances(factor) {
+    this._apply(this._config.airway.el_base, "el_base_factor_scaling_ps", factor);
+    this._prev.airway_el = factor;
   }
 
-  scale_lung_resistances(factor) {
-    this._apply(this._config.lung.resistance, "r_factor_scaling_ps", factor);
-    this._prev.lung_res = factor;
+  scale_airway_u_vol(factor) {
+    this._apply(this._config.airway.u_vol, "u_vol_factor_scaling_ps", factor);
+    this._prev.airway_uvol = factor;
+  }
+
+  scale_airway_upper_resistances(factor) {
+    this._apply(this._config.airway.resistance_upper, "r_factor_scaling_ps", factor);
+    this._prev.airway_upper_res = factor;
+  }
+
+  scale_airway_lower_resistances(factor) {
+    this._apply(this._config.airway.resistance_lower, "r_factor_scaling_ps", factor);
+    this._prev.airway_lower_res = factor;
+  }
+
+  // --- LEFT LUNG ---
+
+  scale_left_lung_elastances(factor) {
+    this._apply(this._config.left_lung.el_base, "el_base_factor_scaling_ps", factor);
+    this._prev.left_lung_el = factor;
+  }
+
+  scale_left_lung_resistances(factor) {
+    this._apply(this._config.left_lung.resistance, "r_factor_scaling_ps", factor);
+    this._prev.left_lung_res = factor;
+  }
+
+  scale_left_lung_u_vol(factor) {
+    this._apply(this._config.left_lung.u_vol, "u_vol_factor_scaling_ps", factor);
+    this._prev.left_lung_uvol = factor;
+  }
+
+  // --- RIGHT LUNG ---
+
+  scale_right_lung_elastances(factor) {
+    this._apply(this._config.right_lung.el_base, "el_base_factor_scaling_ps", factor);
+    this._prev.right_lung_el = factor;
+  }
+
+  scale_right_lung_resistances(factor) {
+    this._apply(this._config.right_lung.resistance, "r_factor_scaling_ps", factor);
+    this._prev.right_lung_res = factor;
+  }
+
+  scale_right_lung_u_vol(factor) {
+    this._apply(this._config.right_lung.u_vol, "u_vol_factor_scaling_ps", factor);
+    this._prev.right_lung_uvol = factor;
   }
 
   // --- HEART ---
@@ -321,8 +373,18 @@ export default class ModelScaler {
     this.scale_systemic_resistances(1.0);
     this.scale_systemic_u_vol(1.0);
 
-    this.scale_lung_elastances(1.0);
-    this.scale_lung_resistances(1.0);
+    this.scale_airway_elastances(1.0);
+    this.scale_airway_u_vol(1.0);
+    this.scale_airway_upper_resistances(1.0);
+    this.scale_airway_lower_resistances(1.0);
+
+    this.scale_left_lung_elastances(1.0);
+    this.scale_left_lung_resistances(1.0);
+    this.scale_left_lung_u_vol(1.0);
+
+    this.scale_right_lung_elastances(1.0);
+    this.scale_right_lung_resistances(1.0);
+    this.scale_right_lung_u_vol(1.0);
 
     this.scale_heart_el_min(1.0);
     this.scale_heart_el_max(1.0);

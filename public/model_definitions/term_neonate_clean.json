@@ -6047,15 +6047,42 @@
           "ALL",
           "ALR",
           "DS"
-        ],
-        "el_base": [
-          "ALL",
-          "ALR",
+        ]
+      },
+      "airway": {
+        "u_vol": [
           "DS"
         ],
-        "resistance": [
-          "MOUTH_DS",
+        "el_base": [
+          "DS"
+        ],
+        "resistance_upper": [
+          "MOUTH_DS"
+        ],
+        "resistance_lower": [
           "DS_ALL",
+          "DS_ALR"
+        ]
+      },
+      "left_lung": {
+        "u_vol": [
+          "ALL"
+        ],
+        "el_base": [
+          "ALL"
+        ],
+        "resistance": [
+          "DS_ALL"
+        ]
+      },
+      "right_lung": {
+        "u_vol": [
+          "ALR"
+        ],
+        "el_base": [
+          "ALR"
+        ],
+        "resistance": [
           "DS_ALR"
         ]
       },

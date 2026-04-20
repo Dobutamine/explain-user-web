@@ -29,7 +29,7 @@
       "LEFT_LUNG": {
         "type": "Compartment",
         "label": "",
-        "picto": "gfx/lung.png",
+        "picto": "lung.png",
         "enabled": true,
         "models": [
           "ALL"
@@ -78,7 +78,7 @@
       "RIGHT_LUNG": {
         "type": "Compartment",
         "label": "",
-        "picto": "gfx/lung.png",
+        "picto": "lung.png",
         "enabled": true,
         "models": [
           "ALR"
@@ -150,7 +150,7 @@
       "LV": {
         "type": "Compartment",
         "label": "LV",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "LV"
@@ -199,7 +199,7 @@
       "RLB": {
         "type": "Compartment",
         "label": "RLB",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "RLB"
@@ -248,7 +248,7 @@
       "LL": {
         "type": "Compartment",
         "label": "LL",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "LL_CAP",
@@ -299,7 +299,7 @@
       "LPA": {
         "type": "Compartment",
         "label": "LPA",
-        "picto": "gfx/general.png",
+        "picto": "general.png",
         "enabled": true,
         "models": [
           "PAAL"
@@ -348,7 +348,7 @@
       "PA": {
         "type": "Compartment",
         "label": "PA",
-        "picto": "gfx/general.png",
+        "picto": "general.png",
         "enabled": true,
         "models": [
           "PA"
@@ -397,7 +397,7 @@
       "RV": {
         "type": "Compartment",
         "label": "RV",
-        "picto": "gfx/general.png",
+        "picto": "general.png",
         "enabled": true,
         "models": [
           "RV"
@@ -446,7 +446,7 @@
       "PV": {
         "type": "Compartment",
         "label": "PV",
-        "picto": "gfx/general.png",
+        "picto": "general.png",
         "enabled": true,
         "models": [
           "PV"
@@ -495,7 +495,7 @@
       "LA": {
         "type": "Compartment",
         "label": "LA",
-        "picto": "gfx/general.png",
+        "picto": "general.png",
         "enabled": true,
         "models": [
           "LA"
@@ -544,7 +544,7 @@
       "AA": {
         "type": "Compartment",
         "label": "AA",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "AA"
@@ -593,7 +593,7 @@
       "AAR": {
         "type": "Compartment",
         "label": "AAR",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "AAR"
@@ -642,7 +642,7 @@
       "AD": {
         "type": "Compartment",
         "label": "AD",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "AD"
@@ -691,7 +691,7 @@
       "VLB": {
         "type": "Compartment",
         "label": "VLB",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "VLB"
@@ -740,7 +740,7 @@
       "IVCI": {
         "type": "Compartment",
         "label": "IVCI",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "IVCI"
@@ -789,7 +789,7 @@
       "PV_LA": {
         "type": "Connector",
         "label": "",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "PV_LA"
@@ -838,7 +838,7 @@
       "LL_PV": {
         "type": "Connector",
         "label": "",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "LL_VEN_PV"
@@ -887,7 +887,7 @@
       "LPA_LL": {
         "type": "Connector",
         "label": "",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "PAAL_LL_ART"
@@ -936,7 +936,7 @@
       "PA_LPA": {
         "type": "Connector",
         "label": "",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "PA_PAAL"
@@ -985,7 +985,7 @@
       "RV_PA": {
         "type": "Connector",
         "label": "",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "RV_PA"
@@ -1034,7 +1034,7 @@
       "IVCI_RA": {
         "type": "Connector",
         "label": "",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "IVCI_RAIVCI"
@@ -1083,7 +1083,7 @@
       "VLB_IVCI": {
         "type": "Connector",
         "label": "",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "VLB_IVCI"
@@ -1132,7 +1132,7 @@
       "RLB_VLB": {
         "type": "Connector",
         "label": "",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "RLB_VLB"
@@ -1181,7 +1181,7 @@
       "AD_RLB": {
         "type": "Connector",
         "label": "",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "AD_RLB"
@@ -1230,7 +1230,7 @@
       "AAR_AD": {
         "type": "Connector",
         "label": "",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "AAR_AD"
@@ -1279,7 +1279,7 @@
       "AA_AAR": {
         "type": "Connector",
         "label": "",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "AA_AAR"
@@ -1328,7 +1328,7 @@
       "LV_AA": {
         "type": "Connector",
         "label": "",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "LV_AA"
@@ -1377,7 +1377,7 @@
       "LA_LV": {
         "type": "Connector",
         "label": "",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "LA_LV"
@@ -1426,7 +1426,7 @@
       "RL": {
         "type": "Compartment",
         "label": "RL",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "RL_CAP",
@@ -1477,7 +1477,7 @@
       "RPA": {
         "type": "Compartment",
         "label": "RPA",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "PAAR"
@@ -1526,7 +1526,7 @@
       "PA_RPA": {
         "type": "Connector",
         "label": "",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "PA_PAAR"
@@ -1575,7 +1575,7 @@
       "RPA_RL": {
         "type": "Connector",
         "label": "",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "PAAR_RL_ART"
@@ -1624,7 +1624,7 @@
       "RL_PV": {
         "type": "Connector",
         "label": "",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "RL_VEN_PV"
@@ -1673,7 +1673,7 @@
       "KID": {
         "type": "Compartment",
         "label": "KID",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "KID_CAP",
@@ -1724,7 +1724,7 @@
       "INT": {
         "type": "Compartment",
         "label": "INT",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "INT_CAP",
@@ -1775,7 +1775,7 @@
       "LS": {
         "type": "Compartment",
         "label": "LS",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "LS_CAP",
@@ -1826,7 +1826,7 @@
       "AD_KID": {
         "type": "Connector",
         "label": "",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "AD_KID_ART"
@@ -1875,7 +1875,7 @@
       "AD_INT": {
         "type": "Connector",
         "label": "",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "AD_INT_ART"
@@ -1924,7 +1924,7 @@
       "AD_LS": {
         "type": "Connector",
         "label": "",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "AD_LS_ART"
@@ -1973,7 +1973,7 @@
       "LS_VLB": {
         "type": "Connector",
         "label": "",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "LS_VEN_VLB"
@@ -2022,7 +2022,7 @@
       "INT_VLB": {
         "type": "Connector",
         "label": "",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "INT_VEN_VLB"
@@ -2071,7 +2071,7 @@
       "KID_VLB": {
         "type": "Connector",
         "label": "",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "KID_VEN_VLB"
@@ -2120,7 +2120,7 @@
       "RUB": {
         "type": "Compartment",
         "label": "RUB",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "RUB"
@@ -2169,7 +2169,7 @@
       "BR": {
         "type": "Compartment",
         "label": "BR",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "BR"
@@ -2218,7 +2218,7 @@
       "AA_BR": {
         "type": "Connector",
         "label": "",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "AA_BR_ART"
@@ -2267,7 +2267,7 @@
       "AA_RUB": {
         "type": "Connector",
         "label": "",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "AA_RUB"
@@ -2316,7 +2316,7 @@
       "SVC": {
         "type": "Compartment",
         "label": "SVC",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "SVC"
@@ -2365,7 +2365,7 @@
       "VUB": {
         "type": "Compartment",
         "label": "VUB",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "VUB"
@@ -2414,7 +2414,7 @@
       "BR_VUB": {
         "type": "Connector",
         "label": "",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "BR_VEN_VUB"
@@ -2463,7 +2463,7 @@
       "RUB_VUB": {
         "type": "Connector",
         "label": "",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "RUB_VUB"
@@ -2512,7 +2512,7 @@
       "VUB_SVC": {
         "type": "Connector",
         "label": "",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "VUB_SVC"
@@ -2561,7 +2561,7 @@
       "DA": {
         "type": "Connector",
         "label": "ductus arteriosus",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "DA_PA"
@@ -2610,7 +2610,7 @@
       "LUNG": {
         "type": "Compartment",
         "label": "",
-        "picto": "gfx/gas_container.png",
+        "picto": "gas_container.png",
         "enabled": true,
         "models": [
           "ALL",
@@ -2660,7 +2660,7 @@
       "TITLE": {
         "type": "Device",
         "label": "NORMAL NEONATE (24H, SHUNTS CLOSED)",
-        "picto": "gfx/vessel.png",
+        "picto": "vessel.png",
         "enabled": true,
         "models": [],
         "dbcFrom": "",
@@ -2707,7 +2707,7 @@
       "COR": {
         "type": "Compartment",
         "label": "COR",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "COR"
@@ -2756,7 +2756,7 @@
       "AA_COR": {
         "type": "Connector",
         "label": "",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "AA_COR"
@@ -2805,7 +2805,7 @@
       "COR_RA": {
         "type": "Connector",
         "label": "",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "COR_RAIVCI",
@@ -2855,7 +2855,7 @@
       "ECLS_TUBING_IN": {
         "type": "Compartment",
         "label": "IN",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": false,
         "models": [
           "ECLS_TUBING_IN"
@@ -2904,7 +2904,7 @@
       "ECLS_PUMP": {
         "type": "Compartment",
         "label": "PUMP",
-        "picto": "gfx/pump.png",
+        "picto": "pump.png",
         "enabled": false,
         "models": [
           "ECLS_PUMP"
@@ -2953,7 +2953,7 @@
       "ECLS_OXY": {
         "type": "Compartment",
         "label": "OXY",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": false,
         "models": [
           "ECLS_OXY"
@@ -3002,7 +3002,7 @@
       "ECLS_TUBING_OUT": {
         "type": "Compartment",
         "label": "OUT",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": false,
         "models": [
           "ECLS_TUBING_OUT"
@@ -3051,7 +3051,7 @@
       "ECLS_DRAINAGE": {
         "type": "Connector",
         "label": "",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": false,
         "models": [
           "ECLS_DRAINAGE"
@@ -3100,7 +3100,7 @@
       "ECLS_TUBIN_PUMP": {
         "type": "Connector",
         "label": "",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": false,
         "models": [
           "ECLS_TUBING_IN_ECLS_PUMP"
@@ -3149,7 +3149,7 @@
       "ECLS_PUMP_OXY": {
         "type": "Connector",
         "label": "",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": false,
         "models": [
           "ECLS_PUMP_ECLS_OXY"
@@ -3198,7 +3198,7 @@
       "ECLS_OXY_TUBOUT": {
         "type": "Connector",
         "label": "",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": false,
         "models": [
           "ECLS_OXY_ECLS_TUBING_OUT"
@@ -3247,7 +3247,7 @@
       "ECLS_RETURN": {
         "type": "Connector",
         "label": "",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": false,
         "models": [
           "ECLS_RETURN"
@@ -3296,7 +3296,7 @@
       "RA": {
         "type": "Compartment",
         "label": "RA",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "RAIVCI",
@@ -3346,7 +3346,7 @@
       "SVC_RA": {
         "type": "Connector",
         "label": "",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "SVC_RASVC"
@@ -3395,7 +3395,7 @@
       "RA_RV": {
         "type": "Connector",
         "label": "",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "RAIVCI_RV",
@@ -3445,7 +3445,7 @@
       "FO": {
         "type": "Connector",
         "label": "foramen ovale",
-        "picto": "gfx/container.png",
+        "picto": "container.png",
         "enabled": true,
         "models": [
           "LA_RAIVCI",
@@ -8976,15 +8976,42 @@
           "ALL",
           "ALR",
           "DS"
-        ],
-        "el_base": [
-          "ALL",
-          "ALR",
+        ]
+      },
+      "airway": {
+        "u_vol": [
           "DS"
         ],
-        "resistance": [
-          "MOUTH_DS",
+        "el_base": [
+          "DS"
+        ],
+        "resistance_upper": [
+          "MOUTH_DS"
+        ],
+        "resistance_lower": [
           "DS_ALL",
+          "DS_ALR"
+        ]
+      },
+      "left_lung": {
+        "u_vol": [
+          "ALL"
+        ],
+        "el_base": [
+          "ALL"
+        ],
+        "resistance": [
+          "DS_ALL"
+        ]
+      },
+      "right_lung": {
+        "u_vol": [
+          "ALR"
+        ],
+        "el_base": [
+          "ALR"
+        ],
+        "resistance": [
           "DS_ALR"
         ]
       },

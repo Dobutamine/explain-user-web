@@ -43,6 +43,9 @@ export default class Compartment {
     this.max_to2 = max_to2
 
     // define a PIXI sprite
+    if (!this.picto.includes("gfx/")) {
+      this.picto = "gfx/" + this.picto;
+    }
     this.sprite = PIXI.Sprite.from(this.picto);
     this.sprite["name_sprite"] = key;
     this.sprite["type"] = this.type;

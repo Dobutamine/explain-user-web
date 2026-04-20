@@ -85,6 +85,10 @@ export default class Animation {
     
 
     // define a PIXI sprite
+    // add gfx/ to the path if not already there
+    if (!this.picto.includes("gfx/")) {
+      this.picto = "gfx/" + this.picto;
+    }
     this.sprite = PIXI.Sprite.from(this.picto);
     this.sprite["name_sprite"] = key;
     this.sprite["type"] = this.type;

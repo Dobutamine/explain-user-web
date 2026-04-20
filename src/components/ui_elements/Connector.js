@@ -89,6 +89,9 @@ export default class Connector {
 
     this.drawPath();
 
+    if (!this.picto.includes("gfx/")) {
+      this.picto = "gfx/" + this.picto;
+    }
     this.sprite = PIXI.Sprite.from(this.picto);
     this.sprite["name_sprite"] = key;
     this.sprite["compType"] = this.type;

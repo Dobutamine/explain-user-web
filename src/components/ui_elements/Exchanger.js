@@ -55,6 +55,9 @@ export default class Exchanger {
     this.global_scaling = scaling;
 
     // this is a blood compartment sprite which uses
+    if (!this.picto.includes("gfx/")) {
+      this.picto = "gfx/" + this.picto;
+    }
     this.sprite = PIXI.Sprite.from(this.picto);
     this.sprite["name_sprite"] = key;
     this.sprite["type"] = this.type;

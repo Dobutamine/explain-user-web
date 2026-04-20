@@ -685,12 +685,38 @@ const scale_model = function (payload) {
       case "systemic_u_vol":
         model.ModelScaler.scale_systemic_u_vol(factor);
         break;
-      // lung
-      case "lung_elastances":
-        model.ModelScaler.scale_lung_elastances(factor);
+      // airway (dead space + conducting airways)
+      case "airway_elastances":
+        model.ModelScaler.scale_airway_elastances(factor);
         break;
-      case "lung_resistances":
-        model.ModelScaler.scale_lung_resistances(factor);
+      case "airway_u_vol":
+        model.ModelScaler.scale_airway_u_vol(factor);
+        break;
+      case "airway_upper_resistances":
+        model.ModelScaler.scale_airway_upper_resistances(factor);
+        break;
+      case "airway_lower_resistances":
+        model.ModelScaler.scale_airway_lower_resistances(factor);
+        break;
+      // left lung
+      case "left_lung_elastances":
+        model.ModelScaler.scale_left_lung_elastances(factor);
+        break;
+      case "left_lung_resistances":
+        model.ModelScaler.scale_left_lung_resistances(factor);
+        break;
+      case "left_lung_u_vol":
+        model.ModelScaler.scale_left_lung_u_vol(factor);
+        break;
+      // right lung
+      case "right_lung_elastances":
+        model.ModelScaler.scale_right_lung_elastances(factor);
+        break;
+      case "right_lung_resistances":
+        model.ModelScaler.scale_right_lung_resistances(factor);
+        break;
+      case "right_lung_u_vol":
+        model.ModelScaler.scale_right_lung_u_vol(factor);
         break;
       // heart
       case "heart_el_min":
