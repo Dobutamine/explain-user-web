@@ -22,7 +22,7 @@ export { Shunts } from "./component_models/Shunts";
 export { Pda } from "./component_models/Pda";
 
 export { Heart } from "./component_models/Heart";
-export { Mob } from "./component_models/Mob";
+export { Mob2 } from "./component_models/Mob2";
 export { Circulation } from "./component_models/Circulation";
 export { HeartChamber } from "./component_models/HeartChamber";
 

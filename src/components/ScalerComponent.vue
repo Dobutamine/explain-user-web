@@ -523,7 +523,7 @@ export default {
       explain.setPropValue("Ans.ans_active", val, 0);
     },
     toggleMob(val) {
-      explain.setPropValue("Mob.mob_active", val, 0);
+      explain.setPropValue("Mob2.mob_active", val, 0);
     },
     toggleHrOverride(val) {
       explain.setPropValue("Heart.hr_override", val, 0);

@@ -3855,11 +3855,11 @@
           "AA"
         ]
       },
-      "Mob": {
-        "name": "Mob",
-        "description": "coronary perfusion model",
+      "Mob2": {
+        "name": "Mob2",
+        "description": "myocardial oxygen balance v2 (basal + stroke-work, mmol O2/g)",
         "is_enabled": true,
-        "model_type": "Mob",
+        "model_type": "Mob2",
         "components": {
           "COR": {
             "name": "COR",
@@ -3919,13 +3919,10 @@
         "to2_min": 0.0002,
         "to2_ref": 0.2,
         "resp_q": 0.1,
-        "bm_vo2_ref": 0.0007,
-        "bm_vo2_min": 0.00035,
-        "bm_vo2_tc": 5,
-        "bm_g": 0.0403398998998999,
-        "ecc_ref": 0.00000301,
-        "pva_ref": 0.00143245,
-        "pe_ref": 0,
+        "bm_vo2_per_g": 3.7e-5,
+        "sw_vo2_per_g": 2.0e-7,
+        "hw_intercept": 7.799,
+        "hw_slope": 0.004296,
         "hr_factor": 1,
         "hr_factor_max": 1,
         "hr_factor_min": 0.01,
@@ -3934,23 +3931,11 @@
         "cont_factor_max": 1,
         "cont_factor_min": 0.01,
         "cont_tc": 5,
-        "act_factor": 1,
         "ans_factor": 1,
         "ans_factor_max": 1,
         "ans_factor_min": 0.01,
         "ans_tc": 5,
-        "ans_activity_factor": 1,
-        "hw": 23.02832,
-        "coronaries": [
-          "COR"
-        ],
-        "coronary_arteries": [
-          "AA_COR"
-        ],
-        "coronary_veins": [
-          "COR_RAIVCI",
-          "COR_RASVC"
-        ]
+        "ans_activity_factor": 1
       },
       "Ventilator": {
         "name": "Ventilator",
@@ -7034,7 +7019,7 @@
       [
         {
           "label": "MOB",
-          "value": "Mob"
+          "value": "Mob2"
         }
       ],
       [

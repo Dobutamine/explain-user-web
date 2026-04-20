@@ -216,7 +216,7 @@ export class Breathing extends BaseModelClass {
       this._rr_factor = 1.0
     }
     // update the resp frequency even when there's no respiration
-    if (this._rr_counter > 2 * this._rr_factor) {
+    if (this._rr_counter > 4 * this._rr_factor) {
       this.resp_rate_measured = 60 / this._rr_counter;
       this._rr_factor += 1;
     }
