@@ -302,6 +302,10 @@ export default {
         // populate other state fields from the loaded file if present
         const fileData = explain.loadedFileData;
         if (fileData) {
+          if (fileData.description) this.state.description = fileData.description;
+          if (fileData.shared_category) this.state.shared_category = fileData.shared_category;
+          if (typeof fileData.protected === "boolean") this.state.protected = fileData.protected;
+          if (typeof fileData.shared === "boolean") this.state.shared = fileData.shared;
           if (fileData.diagram_definition) this.state.diagram_definition = fileData.diagram_definition;
           if (fileData.animation_definition) this.state.animation_definition = fileData.animation_definition;
           if (fileData.configuration) this.state.configuration = fileData.configuration;

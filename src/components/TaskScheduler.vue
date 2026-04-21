@@ -231,7 +231,6 @@
           },
 
           body: JSON.stringify({
-            explain_version: this.general.version,
             user: this.user.name.toLowerCase(),
             name: this.eventName,
           }),
@@ -266,7 +265,6 @@
           },
 
           body: JSON.stringify({
-            explain_version: this.general.version,
             user: this.user.name.toLowerCase(),
             name: this.eventName,
             description: this.eventDescription,

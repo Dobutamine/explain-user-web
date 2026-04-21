@@ -2,7 +2,6 @@ import { defineStore } from "pinia";
 
 export const useStateStore = defineStore("state", {
   state: () => ({
-    explain_version: "",
     user: "",
     name: "",
     description: "",
@@ -92,7 +91,6 @@ export const useStateStore = defineStore("state", {
 
       if (response.status === 200) {
         let data = await response.json();
-        this.explain_version = data.explain_version;
         this.user = data.user.toLowerCase();
         this.name = data.name;
         this.description = data.description;
@@ -124,7 +122,6 @@ export const useStateStore = defineStore("state", {
 
       if (response.status === 200) {
         let data = await response.json();
-        this.explain_version = data.explain_version;
         this.name = data.name + "_" + userName.toLowerCase();
         this.description = data.description;
         // make this the users own copy
@@ -157,7 +154,6 @@ export const useStateStore = defineStore("state", {
           },
 
           body: JSON.stringify({
-            explain_version: this.explain_version,
             user: userName.toLowerCase(),
             name: this.name,
             description: this.description,

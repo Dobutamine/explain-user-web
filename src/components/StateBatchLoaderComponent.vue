@@ -90,7 +90,7 @@
         <q-item v-for="state in loadedStates" :key="state.key">
           <q-item-section>
             <q-item-label>{{ state.name }}</q-item-label>
-            <q-item-label caption>{{ state.user }} | {{ state.explain_version }}</q-item-label>
+            <q-item-label caption>{{ state.user }}</q-item-label>
           </q-item-section>
         </q-item>
       </q-list>
@@ -169,7 +169,6 @@ export default {
         body: JSON.stringify({
           user: this.user.name.toLowerCase(),
           name: "placeholder",
-          explain_version: "placeholder",
           model_definition: {},
           diagram_definition: { name: "" },
           animation_definition: { name: "" },
@@ -194,7 +193,6 @@ export default {
         body: JSON.stringify({
           user: this.user.name.toLowerCase(),
           name: "placeholder",
-          explain_version: "placeholder",
           model_definition: {},
           diagram_definition: { name: "" },
           animation_definition: { name: "" },
@@ -238,7 +236,6 @@ export default {
         this.source === "shared"
           ? {
               name,
-              explain_version: "placeholder",
               model_definition: {},
               diagram_definition: { name: "" },
               animation_definition: { name: "" },
@@ -248,7 +245,6 @@ export default {
           : {
               user: this.user.name.toLowerCase(),
               name,
-              explain_version: "placeholder",
               model_definition: {},
               diagram_definition: { name: "" },
               animation_definition: { name: "" },
@@ -283,7 +279,6 @@ export default {
             key: loaded._id || `${loaded.user || "shared"}-${loaded.name}`,
             name: loaded.name,
             user: loaded.user || "shared",
-            explain_version: loaded.explain_version || "unknown",
             payload: loaded,
           });
         }
