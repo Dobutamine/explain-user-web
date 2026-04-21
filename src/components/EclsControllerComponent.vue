@@ -256,6 +256,10 @@ export default {
       type: Boolean,
       default: true,
     },
+    collapsed: {
+      type: Boolean,
+      default: false,
+    },
     chartAutoscale: {
       type: Boolean,
       default: true,
@@ -524,6 +528,8 @@ export default {
     },
   },
   mounted() {
+    this.isEnabled = !this.collapsed;
+
     this.refreshWatchProps();
 
     this._onRtf = () => this.dataUpdateRt();

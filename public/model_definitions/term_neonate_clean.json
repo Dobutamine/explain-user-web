@@ -6089,6 +6089,24 @@
     "diagram_speed": 1,
     "diagram_scale": 1,
     "chart_hires": false,
+    "tabs": {
+      "demo": { "enabled": true, "collapsed": false },
+      "controllers": { "enabled": true, "collapsed": false },
+      "task_scheduler": { "enabled": true, "collapsed": false },
+      "ventilator": { "enabled": false, "collapsed": false },
+      "ecls": { "enabled": false, "collapsed": false },
+      "model_editor": { "enabled": true, "collapsed": false },
+      "model_builder": { "enabled": true, "collapsed": false },
+      "scaler": { "enabled": true, "collapsed": false },
+      "diagram": { "enabled": true, "collapsed": false },
+      "animation": { "enabled": true, "collapsed": false },
+      "time_chart": { "enabled": true, "collapsed": false },
+      "loop_chart": { "enabled": true, "collapsed": false },
+      "numerics": { "enabled": true, "collapsed": false },
+      "numerics_editor": { "enabled": true, "collapsed": false },
+      "diagram_editor": { "enabled": true, "collapsed": false },
+      "animation_editor": { "enabled": true, "collapsed": false }
+    },
     "presets": {
       "RealTimeCharts": {
         "Pda velocity": {

@@ -5,35 +5,35 @@
         <div class="col-3">
           <q-tabs v-model="tab_left" dense class="text-white" active-color="primary" indicator-color="primary"
             narrow-indicator outside-arrows @update:model-value="tabLeftChanged">
-            <q-tab name="demo">
+            <q-tab v-if="state.configuration.tabs?.demo?.enabled" name="demo">
               <q-icon name="fa-solid fa-flask" size="xs"></q-icon>
               <q-tooltip>demo</q-tooltip>
             </q-tab>
-            <q-tab name="controllers"><q-icon name="fa-solid fa-sliders" size="xs"></q-icon><q-tooltip>controllers</q-tooltip>
+            <q-tab v-if="state.configuration.tabs?.controllers?.enabled" name="controllers"><q-icon name="fa-solid fa-sliders" size="xs"></q-icon><q-tooltip>controllers</q-tooltip>
             </q-tab>
-            <q-tab name="task_scheduler">
+            <q-tab v-if="state.configuration.tabs?.task_scheduler?.enabled" name="task_scheduler">
               <q-icon name="fa-solid fa-list-check" size="xs"></q-icon>
               <q-tooltip>event scheduler</q-tooltip>
             </q-tab>
-            <q-tab name="ventilator">
+            <q-tab v-if="state.configuration.tabs?.ventilator?.enabled" name="ventilator">
               <q-icon name="fa-solid fa-lungs" size="xs"></q-icon>
               <q-tooltip>mechanical ventilator</q-tooltip>
             </q-tab>
-            <q-tab name="ecls">
+            <q-tab v-if="state.configuration.tabs?.ecls?.enabled" name="ecls">
               <!-- <q-icon name="fa-solid fa-lungs" size="xs"></q-icon> -->
               ECLS
               <q-tooltip>extracorporeal life support</q-tooltip>
             </q-tab>
-            <q-tab name="model_editor"><q-icon name="fa-solid fa-wrench" size="xs"></q-icon><q-tooltip>model editor</q-tooltip>
+            <q-tab v-if="state.configuration.tabs?.model_editor?.enabled" name="model_editor"><q-icon name="fa-solid fa-wrench" size="xs"></q-icon><q-tooltip>model editor</q-tooltip>
             </q-tab>
-            <q-tab name="model_builder"><q-icon name="fa-solid fa-pen-to-square" size="xs"></q-icon><q-tooltip>model builder</q-tooltip>
+            <q-tab v-if="state.configuration.tabs?.model_builder?.enabled" name="model_builder"><q-icon name="fa-solid fa-pen-to-square" size="xs"></q-icon><q-tooltip>model builder</q-tooltip>
             </q-tab>
-            <q-tab name="scaler"><q-icon name="fa-solid fa-weight-scale" size="xs"></q-icon><q-tooltip>model scaler</q-tooltip>
+            <q-tab v-if="state.configuration.tabs?.scaler?.enabled" name="scaler"><q-icon name="fa-solid fa-weight-scale" size="xs"></q-icon><q-tooltip>model scaler</q-tooltip>
             </q-tab>
 
           </q-tabs>
           <q-tab-panels v-model="tab_left" keep-alive style="background-color: black">
-            <q-tab-panel name="demo">
+            <q-tab-panel v-if="state.configuration.tabs?.demo?.enabled" name="demo">
               <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
                 right: '5px',
                 borderRadius: '5px',
@@ -45,7 +45,7 @@
               </q-scroll-area>
             </q-tab-panel>
 
-            <q-tab-panel name="model_editor">
+            <q-tab-panel v-if="state.configuration.tabs?.model_editor?.enabled" name="model_editor">
               <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
                 right: '5px',
                 borderRadius: '5px',
@@ -58,7 +58,7 @@
               </q-scroll-area>
             </q-tab-panel>
             
-            <q-tab-panel name="ventilator">
+            <q-tab-panel v-if="state.configuration.tabs?.ventilator?.enabled" name="ventilator">
               <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
                 right: '5px',
                 borderRadius: '5px',
@@ -66,11 +66,12 @@
                 width: '5px',
                 opacity: 0.5
               }">
-                <VentilatorComponent :alive="ventilator_alive"></VentilatorComponent>
+                <VentilatorComponent :alive="ventilator_alive"
+                  :collapsed="state.configuration.tabs?.ventilator?.collapsed"></VentilatorComponent>
               </q-scroll-area>
             </q-tab-panel>
 
-            <q-tab-panel name="ecls">
+            <q-tab-panel v-if="state.configuration.tabs?.ecls?.enabled" name="ecls">
               <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
                 right: '5px',
                 borderRadius: '5px',
@@ -78,11 +79,12 @@
                 width: '5px',
                 opacity: 0.5
               }">
-                <EclsControllerComponent :alive="ecls_alive"></EclsControllerComponent>
+                <EclsControllerComponent :alive="ecls_alive"
+                  :collapsed="state.configuration.tabs?.ecls?.collapsed"></EclsControllerComponent>
               </q-scroll-area>
             </q-tab-panel>
 
-            <q-tab-panel name="model_builder">
+            <q-tab-panel v-if="state.configuration.tabs?.model_builder?.enabled" name="model_builder">
               <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
                 right: '5px',
                 borderRadius: '5px',
@@ -94,7 +96,7 @@
               </q-scroll-area>
             </q-tab-panel>
 
-            <q-tab-panel name="scaler">
+            <q-tab-panel v-if="state.configuration.tabs?.scaler?.enabled" name="scaler">
               <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
                 right: '5px',
                 borderRadius: '5px',
@@ -106,7 +108,7 @@
               </q-scroll-area>
             </q-tab-panel>
 
-            <q-tab-panel name="controllers">
+            <q-tab-panel v-if="state.configuration.tabs?.controllers?.enabled" name="controllers">
               <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
                 right: '5px',
                 borderRadius: '5px',
@@ -118,7 +120,7 @@
               </q-scroll-area>
             </q-tab-panel>
             
-            <q-tab-panel name="task_scheduler">
+            <q-tab-panel v-if="state.configuration.tabs?.task_scheduler?.enabled" name="task_scheduler">
               <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
                 right: '5px',
                 borderRadius: '5px',
@@ -137,24 +139,24 @@
           <q-tabs v-model="tab_center" dense class="text-white" active-color="primary" indicator-color="primary"
            narrow-indicator outside-arrows @update:model-value="tabCenterChanged">
 
-            <q-tab name="diagram">
+            <q-tab v-if="state.configuration.tabs?.diagram?.enabled" name="diagram">
               <q-icon name="fa-solid fa-diagram-project" size="xs"></q-icon>
               <q-tooltip>diagram</q-tooltip>
             </q-tab>
 
-            <!-- <q-tab name="animation">
+            <q-tab v-if="state.configuration.tabs?.animation?.enabled" name="animation">
               <q-icon name="fa-solid fa-person" size="xs"></q-icon>
               <q-tooltip>animation</q-tooltip>
-            </q-tab> -->
+            </q-tab>
 
 
-            <q-tab name="time_chart">
+            <q-tab v-if="state.configuration.tabs?.time_chart?.enabled" name="time_chart">
               <q-icon name="fa-solid fa-chart-line" size="xs"></q-icon>
               <q-tooltip>time chart</q-tooltip>
             </q-tab>
 
 
-            <q-tab name="loop_chart">
+            <q-tab v-if="state.configuration.tabs?.loop_chart?.enabled" name="loop_chart">
               <q-icon name="fa-solid fa-circle-notch" size="xs"></q-icon>
               <q-tooltip>loop chart</q-tooltip>
             </q-tab>
@@ -165,7 +167,7 @@
 
           <q-tab-panels v-model="tab_center" keep-alive style="background-color: black">
 
-            <!-- <q-tab-panel name="animation">
+          <q-tab-panel v-if="state.configuration.tabs?.animation?.enabled" name="animation">
               <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
                 right: '5px',
                 borderRadius: '5px',
@@ -176,9 +178,9 @@
                 <AnimationComponent :alive="animation_alive">
                 </AnimationComponent>
               </q-scroll-area>
-            </q-tab-panel> -->
+            </q-tab-panel>
 
-            <q-tab-panel name="diagram">
+            <q-tab-panel v-if="state.configuration.tabs?.diagram?.enabled" name="diagram">
               <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
                 right: '5px',
                 borderRadius: '5px',
@@ -191,7 +193,7 @@
               </q-scroll-area>
             </q-tab-panel>
 
-            <q-tab-panel name="time_chart">
+            <q-tab-panel v-if="state.configuration.tabs?.time_chart?.enabled" name="time_chart">
               <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
                 right: '5px',
                 borderRadius: '5px',
@@ -199,7 +201,6 @@
                 width: '5px',
                 opacity: 0.5
               }">
-                <!-- <RealtimeChart :alive="chart_alive"></RealtimeChart> -->
                 <RealtimeChart
                   :alive="chart_alive"
                   :default-autoscale="true"
@@ -211,7 +212,7 @@
             </q-tab-panel>
 
 
-            <q-tab-panel name="loop_chart">
+            <q-tab-panel v-if="state.configuration.tabs?.loop_chart?.enabled" name="loop_chart">
               <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
                 right: '5px',
                 borderRadius: '5px',
@@ -235,22 +236,22 @@
         <div class="col-3">
           <q-tabs v-model="tab_right" dense class="text-white" active-color="primary" indicator-color="primary"
             narrow-indicator outside-arrows @update:model-value="tabRightChanged">
-            <q-tab name="numerics">
+            <q-tab v-if="state.configuration.tabs?.numerics?.enabled" name="numerics">
               <q-icon name="fa-solid fa-desktop" size="xs"></q-icon>
               <q-tooltip>monitoring</q-tooltip>
             </q-tab>
-            <q-tab name="numerics_editor">
+            <q-tab v-if="state.configuration.tabs?.numerics_editor?.enabled" name="numerics_editor">
               <q-icon name="fa-solid fa-wrench" size="xs"></q-icon>
               <q-tooltip>monitoring editor</q-tooltip>
             </q-tab>
-            <q-tab name="diagram_editor"><q-icon name="fa-solid fa-diagram-project" size="xs"></q-icon><q-tooltip>diagram editor</q-tooltip>
+            <q-tab v-if="state.configuration.tabs?.diagram_editor?.enabled" name="diagram_editor"><q-icon name="fa-solid fa-diagram-project" size="xs"></q-icon><q-tooltip>diagram editor</q-tooltip>
             </q-tab>
-            <!-- <q-tab name="animation_editor"><q-icon name="fa-solid fa-person" size="xs"></q-icon><q-tooltip>animation editor</q-tooltip>
-            </q-tab> -->
+            <q-tab v-if="state.configuration.tabs?.animation_editor?.enabled" name="animation_editor"><q-icon name="fa-solid fa-person" size="xs"></q-icon><q-tooltip>animation editor</q-tooltip>
+            </q-tab>
 
           </q-tabs>
           <q-tab-panels v-model="tab_right" style="background-color: black">
-            <q-tab-panel name="numerics">
+            <q-tab-panel v-if="state.configuration.tabs?.numerics?.enabled" name="numerics">
               <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
                 right: '5px',
                 borderRadius: '5px',
@@ -270,7 +271,7 @@
                 </div>
               </q-scroll-area>
             </q-tab-panel>
-            <q-tab-panel name="numerics_editor">
+            <q-tab-panel v-if="state.configuration.tabs?.numerics_editor?.enabled" name="numerics_editor">
               <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
                 right: '5px',
                 borderRadius: '5px',
@@ -281,7 +282,7 @@
               <NumericsEditor title="MONITOR EDITOR"></NumericsEditor>
               </q-scroll-area>
             </q-tab-panel>
-            <!-- <q-tab-panel name="animation_editor">
+            <q-tab-panel v-if="state.configuration.tabs?.animation_editor?.enabled" name="animation_editor">
               <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
                 right: '5px',
                 borderRadius: '5px',
@@ -291,8 +292,8 @@
               }">
               <AnimationEditor></AnimationEditor>
               </q-scroll-area>
-            </q-tab-panel> -->
-            <q-tab-panel name="diagram_editor">
+            </q-tab-panel>
+            <q-tab-panel v-if="state.configuration.tabs?.diagram_editor?.enabled" name="diagram_editor">
               <q-scroll-area class="q-pa-xs" dark :style="screen_height" :vertical-bar-style="{
                 right: '5px',
                 borderRadius: '5px',

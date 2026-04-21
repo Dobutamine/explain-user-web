@@ -186,7 +186,8 @@ export default {
     }
   },
   props: {
-    alive: Boolean
+    alive: Boolean,
+    collapsed: Boolean
   },
   components: {
     RealtimeChart,
@@ -357,6 +358,8 @@ export default {
     if (this._unwatchState) this._unwatchState()
   },
   mounted() {
+    this.isEnabled = !this.collapsed
+
     this._unwatchState = this.$watch(
       () => this.modelStore.modelState,
       () => this.processModelState()
