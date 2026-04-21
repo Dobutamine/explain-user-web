@@ -133,6 +133,7 @@ export class GasDiffusor extends BaseModelClass {
     this.dif_o2_factor_ps = 1.0; // persistent diffusion factor for o2 (unitless)
     this.dif_co2_factor_ps = 1.0; // persistent diffusion factor for co2 (unitless)
     this.dif_n2_factor_ps = 1.0; // persistent diffusion factor for n2 (unitless)
+    this.dif_other_factor_ps = 1.0; // persistent diffusion factor for other gasses (unitless)
 
     // scaling factors. These factors are persistent and do not reset, but they are applied as scaling factors to the diffusion factors, meaning that they apply to the total diffusion factor after applying the non-persistent and persistent factors
     this.dif_o2_factor_scaling = 1.0;
@@ -159,25 +160,25 @@ export class GasDiffusor extends BaseModelClass {
     calc_gas_composition(this._comp_gas2);
 
     // incorporate the factors
-    this.dif_o2_step = this.dif_o2 
+    this.dif_o2_step = this.dif_o2
         + (this.dif_o2_factor - 1) * this.dif_o2
-        + (this.dif_o2_factor_ps - 1) * this.dif_o2;
-        + (this.dif_o2_factor_scaling - 1) * this.dif_o2; // apply scaling factor to the diffusion factor
+        + (this.dif_o2_factor_ps - 1) * this.dif_o2
+        + (this.dif_o2_factor_scaling - 1) * this.dif_o2;
 
     this.dif_co2_step = this.dif_co2
         + (this.dif_co2_factor - 1) * this.dif_co2
-        + (this.dif_co2_factor_ps - 1) * this.dif_co2;
-        + (this.dif_co2_factor_scaling - 1) * this.dif_co2; // apply scaling factor to the diffusion factor
+        + (this.dif_co2_factor_ps - 1) * this.dif_co2
+        + (this.dif_co2_factor_scaling - 1) * this.dif_co2;
 
     this.dif_n2_step = this.dif_n2
         + (this.dif_n2_factor - 1) * this.dif_n2
-        + (this.dif_n2_factor_ps - 1) * this.dif_n2;
-        + (this.dif_n2_factor_scaling - 1) * this.dif_n2; // apply scaling factor to the diffusion factor
-    
+        + (this.dif_n2_factor_ps - 1) * this.dif_n2
+        + (this.dif_n2_factor_scaling - 1) * this.dif_n2;
+
     this.dif_other_step = this.dif_other
         + (this.dif_other_factor - 1) * this.dif_other
-        + (this.dif_other_factor_ps - 1) * this.dif_other;
-        + (this.dif_other_factor_scaling - 1) * this.dif_other; // apply scaling factor to the diffusion factor
+        + (this.dif_other_factor_ps - 1) * this.dif_other
+        + (this.dif_other_factor_scaling - 1) * this.dif_other;
 
     // diffuse the gases, where diffusion is partial pressure-driven
     let do2 = (this._comp_gas1.po2 - this._comp_gas2.po2) * this.dif_o2_step * this._t;

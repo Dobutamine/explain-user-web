@@ -1,4 +1,3 @@
-import { readonly } from "vue";
 import { BaseModelClass } from "./BaseModelClass";
 
 export class Capacitance extends BaseModelClass {
@@ -197,7 +196,7 @@ export class Capacitance extends BaseModelClass {
     }
 
     // if the volume is zero or lower, handle it
-    if (this.vol < 0.0 && this.vol < this.u_vol) {
+    if (this.vol < 0.0) {
       let _vol_not_removed = -this.vol;
       // reset the volume to zero.
       this.vol = 0.0;

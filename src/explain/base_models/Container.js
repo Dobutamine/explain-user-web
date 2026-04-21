@@ -1,4 +1,4 @@
-import { BaseModelClass } from "../base_models/BaseModelClass";
+import { BaseModelClass } from "./BaseModelClass";
 
 export class Container extends BaseModelClass {
   // static properties
@@ -34,6 +34,7 @@ export class Container extends BaseModelClass {
       type: "number",
       build_prop: true,
       edit_mode: "basic",
+      readonly: false,
       factor: 1.0,
       delta: 0.001,
       rounding: 3,
@@ -44,6 +45,7 @@ export class Container extends BaseModelClass {
       type: "number",
       build_prop: true,
       edit_mode: "basic",
+      readonly: false,
       factor: 1,
       delta: 1,
       rounding: 0,
@@ -54,6 +56,7 @@ export class Container extends BaseModelClass {
       type: "number",
       build_prop: true,
       edit_mode: "basic",
+      readonly: false,
       factor: 1,
       delta: 1,
       rounding: 0,
@@ -84,7 +87,6 @@ export class Container extends BaseModelClass {
         "BloodTimeVaryingElastance", 
         "BloodPump", 
         "BloodVessel", 
-        "MicroVascularUnit",
         "HeartChamber",
         "GasCapacitance"
       ]

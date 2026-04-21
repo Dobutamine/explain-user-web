@@ -79,12 +79,11 @@ export class Resistor extends BaseModelClass {
       build_prop: true,
       edit_mode: "basic",
       options: [
-        "BloodCapacitance", 
-        "BloodTimeVaryingElastance", 
-        "BloodPump", 
-        "BloodVessel", 
+        "BloodCapacitance",
+        "BloodTimeVaryingElastance",
+        "BloodPump",
+        "BloodVessel",
         "MicroVascularUnit",
-        "HeartChamber", 
         "HeartChamber",
         "GasCapacitance"
       ]
@@ -96,12 +95,11 @@ export class Resistor extends BaseModelClass {
       build_prop: true,
       edit_mode: "basic",
       options: [
-        "BloodCapacitance", 
-        "BloodTimeVaryingElastance", 
-        "BloodPump", 
-        "BloodVessel", 
+        "BloodCapacitance",
+        "BloodTimeVaryingElastance",
+        "BloodPump",
+        "BloodVessel",
         "MicroVascularUnit",
-        "HeartChamber", 
         "HeartChamber",
         "GasCapacitance"
       ]
@@ -141,6 +139,7 @@ export class Resistor extends BaseModelClass {
     this.p1_ext = 0.0; // external pressure on the inlet (mmHg)
     this.p2_ext = 0.0; // external pressure on the outlet (mmHg)
     this.fixed_composition = false;
+    this.is_externally_managed = false; // flag read by owning models to skip their own flow calc
 
     // non-persistent property factors. These factors reset to 1.0 after each model step
     this.r_factor = 1.0; // non-persistent resistance factor
