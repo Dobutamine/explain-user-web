@@ -9,8 +9,8 @@
       "type": "explain_diagram",
       "backgroundColor": 3355443,
       "editingMode": 1,
-      "scaling": 0.6,
-      "speed": 0.2,
+      "scaling": 0.65,
+      "speed": 0.15,
       "grid": false,
       "gridSize": 10,
       "skeleton": true,
@@ -3964,7 +3964,7 @@
             "el_k_eff": 1
           }
         },
-        "heart_rate_ref": 80,
+        "heart_rate_ref": 70,
         "pq_time": 0.16,
         "qrs_time": 0.09,
         "qt_time": 0.38,
