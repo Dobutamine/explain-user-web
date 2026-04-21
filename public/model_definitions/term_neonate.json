@@ -1,6 +1,6 @@
 {
   "user": "timothy",
-  "name": "term_neonate_timothy",
+  "name": "term_neonate",
   "description": "normal 3.545 kg neonate without shunts, with preferential flow",
   "protected": false,
   "shared": false,
@@ -7622,7 +7622,7 @@
             "pres_rel": 0.41687542376678266
           },
           "ECLS_GAS_OUT": {
-            "name": "ECLS_GAS_OXY",
+            "name": "ECLS_GAS_OUT",
             "description": "gas outlet of the oxygenator of the ecls",
             "is_enabled": true,
             "model_type": "GasCapacitance",
@@ -8211,9 +8211,6 @@
         "gas_exchanger_right_lung": [
           "GASEX_RL"
         ],
-        "intrapulmonary_shunt": [
-          "IPS"
-        ],
         "el_lungs_factor": 1,
         "el_thorax_factor": 1,
         "res_upper_airways_factor": 1,
@@ -8606,7 +8603,6 @@
         "fo_svc": "LA_RASVC",
         "da": "AAR_DA",
         "vsd": "VSD",
-        "ips": "IPS",
         "ua": "AD_PL_UMB_ART",
         "uv": "PL_FETAL_VEN_PL_UMB_VEN",
         "heart_rate": 118.42459130124402,
@@ -8787,10 +8783,10 @@
           "RLB",
           "RUB",
           "DA",
-          "IVCI_RAIVC",
+          "IVCI_RAIVCI",
           "SVC_RASVC",
           "PV_LA",
-          "PV_RAIVC",
+          "PV_RAIVCI",
           "PV_RASVC"
         ]
       },
@@ -8819,7 +8815,7 @@
           "RL_VEN",
           "PV",
           "PV_LA",
-          "PV_RAIVC",
+          "PV_RAIVCI",
           "PV_RASVC"
         ]
       },
@@ -8872,7 +8868,7 @@
           "RLB",
           "RUB",
           "DA",
-          "IVCI_RAIVC",
+          "IVCI_RAIVCI",
           "SVC_RASVC"
         ]
       },
@@ -8909,7 +8905,8 @@
           "RASVC_RV",
           "LV_PA",
           "RV_AA",
-          "COR_RA"
+          "COR_RAIVCI",
+          "COR_RASVC"
         ]
       },
       "heart_left": {

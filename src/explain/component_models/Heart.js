@@ -105,7 +105,7 @@ export class Heart extends BaseModelClass {
       target: "ans_sens",
       type: "number",
       edit_mode: "basic",
-      build_prop: "true",
+      build_prop: true,
       factor: 1.0,
       delta: 0.01,
       rounding: 2,
@@ -276,6 +276,8 @@ export class Heart extends BaseModelClass {
     this._qt_running = false;
     this._la = null;
     this._lv = null;
+    this._ra = null;
+    this._ra_rv = null;
     this._raivci = null;
     this._raivci_rv = null;
     this._rasvc = null;
@@ -312,6 +314,10 @@ export class Heart extends BaseModelClass {
     // left atrial components (atrium and mitral valve)
     this._la = this._model_engine.models["LA"] || null;
     this._la_lv = this._model_engine.models["LA_LV"] || null;
+
+    // right atrial components (atrium and tricuspid valve)
+    this._ra = this._model_engine.models["RA"] || null;
+    this._ra_rv = this._model_engine.models["RA_RV"] || null;
 
     // preferential flow models are not always present in the model, so we check for their presence
     this._raivci = this._model_engine.models["RAIVCI"] || null;
@@ -431,8 +437,10 @@ export class Heart extends BaseModelClass {
       this.prev_pc_el_factor = pc_el;
 
 
-      // set the new volume
-      this._pc.vol_extra = this.pc_extra_volume;
+      // set the new volume if _pc is not null
+      if (this._pc) { 
+        this._pc.vol_extra = this.pc_extra_volume;
+      }
     }
 
     // store the previous cardiac cycle state
@@ -654,6 +662,9 @@ export class Heart extends BaseModelClass {
   }
 
   set_pericardium(new_el_factor, new_volume) {
+    // skip if no pericardium model is present in this configuration
+    if (!this._pc) return;
+
     // get the current factor from the model
     let f_pc_el = this._pc.el_base_factor_ps;
 
@@ -671,8 +682,9 @@ export class Heart extends BaseModelClass {
     // get the current factors from the model
     let f_ps_la = this._la.el_max_factor_ps;
     let f_ps_lv = this._lv.el_max_factor_ps;
-    let f_ps_raivc = this._raivci.el_max_factor_ps;
-    let f_ps_rasvc = this._rasvc.el_max_factor_ps;
+    // add guard rails for th situation when this._raivci or this._rasvc is not present in the model
+    let f_ps_raivc = this._raivci ? this._raivci.el_max_factor_ps : 0;
+    let f_ps_rasvc = this._rasvc ? this._rasvc.el_max_factor_ps : 0;
     let f_ps_rv = this._rv.el_max_factor_ps;
 
     let delta_left = new_cont_factor_left - this.prev_cont_factor_left;
@@ -688,8 +700,12 @@ export class Heart extends BaseModelClass {
     // transfer the factors
     this._la.el_max_factor_ps = f_ps_la
     this._lv.el_max_factor_ps = f_ps_lv
-    this._raivci.el_max_factor_ps = f_ps_raivc
-    this._rasvc.el_max_factor_ps = f_ps_rasvc
+    if (this._raivci) {
+      this._raivci.el_max_factor_ps = f_ps_raivc
+    }
+    if (this._rasvc) {
+      this._rasvc.el_max_factor_ps = f_ps_rasvc
+    }
     this._rv.el_max_factor_ps = f_ps_rv
 
     // store the new factor
@@ -701,8 +717,8 @@ export class Heart extends BaseModelClass {
     // get the current factors from the model
     let f_ps_la = this._la.el_min_factor_ps;
     let f_ps_lv = this._lv.el_min_factor_ps;
-    let f_ps_raivc = this._raivci.el_min_factor_ps;
-    let f_ps_rasvc = this._rasvc.el_min_factor_ps;
+    let f_ps_raivc = this._raivci ? this._raivci.el_min_factor_ps : 0;
+    let f_ps_rasvc = this._rasvc ? this._rasvc.el_min_factor_ps : 0;
     let f_ps_rv = this._rv.el_min_factor_ps;
 
     let delta_left = new_relax_factor_left - this.prev_relax_factor_left;
@@ -718,8 +734,12 @@ export class Heart extends BaseModelClass {
     // transfer the factors
     this._la.el_min_factor_ps = f_ps_la
     this._lv.el_min_factor_ps = f_ps_lv
-    this._raivci.el_min_factor_ps = f_ps_raivc
-    this._rasvc.el_min_factor_ps = f_ps_rasvc 
+    if (this._raivci) {
+      this._raivci.el_min_factor_ps = f_ps_raivc
+    }
+    if (this._rasvc) {
+      this._rasvc.el_min_factor_ps = f_ps_rasvc
+    }
     this._rv.el_min_factor_ps = f_ps_rv
 
     // store the new factor

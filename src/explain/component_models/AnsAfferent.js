@@ -21,16 +21,16 @@ export class AnsAfferent extends BaseModelClass {
       caption: "enabled",
     },
     {
+      target: "input_prop",
       target_prop: "input_prop",
+      target_model: "input_model",
       type: "prop-list",
       build_prop: true,
       readonly: false,
       edit_mode: "extra",
-      caption:"input model property",
+      caption: "input model property",
       caption_model: "input model",
       caption_prop: "input property",
-      target_model: "input_model",
-      target_prop: "input_prop",
       options: []
     },
     {
@@ -146,20 +146,28 @@ export class AnsAfferent extends BaseModelClass {
         _activation = this.input_value - this.set_value;
       }
 
-      // Calculate the gain
+      // Calculate the gain (guard against zero-range input windows)
       if (_activation > 0) {
-        // Gain for positive activation
-        this._gain = (this._max_firing_rate - this._set_firing_rate) / (this.max_value - this.set_value);
+        const _pos_range = this.max_value - this.set_value;
+        this._gain = _pos_range !== 0
+          ? (this._max_firing_rate - this._set_firing_rate) / _pos_range
+          : 0.0;
       } else {
-        // Gain for negative activation
-        this._gain = (this._set_firing_rate - this._min_firing_rate) / (this.set_value - this.min_value);
+        const _neg_range = this.set_value - this.min_value;
+        this._gain = _neg_range !== 0
+          ? (this._set_firing_rate - this._min_firing_rate) / _neg_range
+          : 0.0;
       }
 
       // Calculate the new firing rate
       const _new_firing_rate = this._set_firing_rate + this._gain * _activation;
 
-      // Incorporate the time constant to calculate the firing rate
-      this.firing_rate = this._update_interval * ((1.0 / this.tc) * (-this.firing_rate + _new_firing_rate)) + this.firing_rate;
+      // Incorporate the time constant to calculate the firing rate (guard tc == 0)
+      if (this.tc > 0) {
+        this.firing_rate = this._update_interval * ((1.0 / this.tc) * (-this.firing_rate + _new_firing_rate)) + this.firing_rate;
+      } else {
+        this.firing_rate = _new_firing_rate;
+      }
 
       // apply the firing rate to the effector
       this.efferents.forEach((effector) => {

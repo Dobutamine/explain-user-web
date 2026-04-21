@@ -1,5 +1,4 @@
 import { BaseModelClass } from "../base_models/BaseModelClass";
-import * as Models from "../ModelIndex.js"
 
 export class Shunts extends BaseModelClass {
   // static properties

@@ -94,8 +94,8 @@ export class Metabolism extends BaseModelClass {
     this.resp_q = 0.8; // respiratory quotient for CO2 production
     this.metabolic_active_models = {}; // dictionary of models with fractional oxygen use
   }
-  set_metabolic_active_model(new_fo2, site) {
-    self.metabolic_active_models[site] = new_fo2
+  set_metabolic_active_model(site, new_fvo2) {
+    this.metabolic_active_models[site] = new_fvo2;
   }
   calc_model() {
     if (!this.met_active) {

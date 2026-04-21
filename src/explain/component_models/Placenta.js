@@ -197,8 +197,6 @@ export class Placenta extends BaseModelClass {
     this.umb_art_velocity = 0.0; // velocity in the umbilical artery (m/s)
     this.umb_ven_flow = 0.0; // flow in the umbilical vein (L/s)
     this.umb_ven_velocity = 0.0; // velocity in the umbilical vein (m/s)
-    this.mat_to2 = 6.85; // maternal placenta oxygen partial pressure (mmHg)
-    this.mat_tco2 = 23; // maternal placenta carbon dioxide partial pressure (mmHg)
 
     // -----------------------------------------------
     // local parameters

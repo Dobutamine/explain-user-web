@@ -270,8 +270,8 @@ export class Pda extends BaseModelClass {
     this._da.el_base = this.el_min
 
     // guard for a too large ductal diameter
-    this.diameter_ao = Math.min(this.diameter_ao, this.diameter_max);
-    this.diameter_pa = Math.min(this.diameter_pa, this.diameter_max);
+    this.diameter_ao = Math.min(this.diameter_ao, this.diameter_ao_max);
+    this.diameter_pa = Math.min(this.diameter_pa, this.diameter_pa_max);
 
     // if the diameter is zero, set the resistance to a very high value to represent no flow
     this._aar_da.no_flow = this.diameter_ao === 0;
@@ -289,9 +289,9 @@ export class Pda extends BaseModelClass {
     this._da_pa.r_back = this.res_pa;
 
     // calculate the elastance of the duct depending on the diameter
-    this.el = this.el_min + (this.el_max - this.el_min) * (this.diameter_pa / this.diameter_max);
+    this.el = this.el_min + (this.el_max - this.el_min) * (this.diameter_pa / this.diameter_pa_max);
 
-    // calculate the ductus arteriosus area
+    // calculate the ductus arteriosus area at the aortic and pulmonary ends
     let area_ao = Math.pow((this.diameter_ao * 0.001) / 2.0, 2.0) * Math.PI; // in m^2
     let area_pa = Math.pow((this.diameter_pa * 0.001) / 2.0, 2.0) * Math.PI; // in m^2
     

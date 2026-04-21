@@ -22,15 +22,16 @@ export class AnsEfferent extends BaseModelClass {
       caption: "enabled",
     },
     {
+      target: "target_prop",
+      target_model: "target_model",
+      target_prop: "target_prop",
+      type: "prop-list",
       edit_mode: "extra",
       build_prop: true,
       readonly: false,
       caption: "target model property",
       caption_model: "target model",
       caption_prop: "target property",
-      target_model: "target_model",
-      target_prop: "target_prop",
-      type: "prop-list",
       options: []
     },
     {
@@ -79,7 +80,7 @@ export class AnsEfferent extends BaseModelClass {
     this.target_prop = ""; // name of the target using dot notation (e.g. Heart.hr_ans_factor)
     this.effect_at_max_firing_rate = 0.0; // effect size at average input firing rate of 1.0
     this.effect_at_min_firing_rate = 0.0; // effect size at average input firing rate of 0.0
-    this.tc = 0.0; // time constant of the effect change (s)
+    this.tc = 1.0; // time constant of the effect change (s)
     this.ans_active = true; // whether the efferent is active and can be influenced by the afferents
 
     // Initialize dependent parameters
@@ -120,8 +121,12 @@ export class AnsEfferent extends BaseModelClass {
         this.effector = 1.0;
       }
 
-      // Incorporate the time constant for the effector change
-      this.effector = this._update_interval * ((1.0 / this.tc) * (-this.effector + effector)) + this.effector;
+      // Incorporate the time constant for the effector change (guard tc == 0)
+      if (this.tc > 0) {
+        this.effector = this._update_interval * ((1.0 / this.tc) * (-this.effector + effector)) + this.effector;
+      } else {
+        this.effector = effector;
+      }
       
       // Transfer the effect factor to the target model
       this._model_engine.models[this.target_model][this.target_prop] = this.effector

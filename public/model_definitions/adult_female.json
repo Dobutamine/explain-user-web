@@ -2,6 +2,9 @@
   "name": "adult_female",
   "user": "timothy",
   "description": "non-pregnant normal female adult with a body weight of 65 kg and height of 165 cm",
+  "protected": false,
+  "shared": false,
+  "shared_category": "Adults",
   "diagram_definition": {
     "settings": {
       "name": "baseline_neonate_diagram_exp",
@@ -8243,7 +8246,7 @@
             "pres_rel": 0.4168724083336883
           },
           "ECLS_GAS_OUT": {
-            "name": "ECLS_GAS_OXY",
+            "name": "ECLS_GAS_OUT",
             "description": "gas outlet of the oxygenator of the ecls",
             "is_enabled": true,
             "model_type": "GasCapacitance",
@@ -10614,10 +10617,10 @@
           "RLB",
           "RUB",
           "DA",
-          "IVCI_RAIVC",
+          "IVCI_RAIVCI",
           "SVC_RASVC",
           "PV_LA",
-          "PV_RAIVC",
+          "PV_RAIVCI",
           "PV_RASVC"
         ]
       },
@@ -10699,7 +10702,7 @@
           "RLB",
           "RUB",
           "DA",
-          "IVCI_RAIVC",
+          "IVCI_RAIVCI",
           "SVC_RASVC"
         ]
       },
@@ -10736,7 +10739,8 @@
           "RASVC_RV",
           "LV_PA",
           "RV_AA",
-          "COR_RA"
+          "COR_RAIVCI",
+          "COR_RASVC"
         ]
       },
       "heart_left": {
@@ -11400,7 +11404,7 @@
             "props_processed": []
           }
         ],
-        "name": "respiration"
+        "name": "Respiration"
       }
     },
     "controllers": [

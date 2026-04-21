@@ -313,7 +313,7 @@ export class Respiration extends BaseModelClass {
       }
       // transfer the factor
       m.dif_o2_factor_ps = f_ps_o2;
-      m.dif_co2_factor_ps - f_ps_co2
+      m.dif_co2_factor_ps = f_ps_co2;
       // store the new factor
       this.gex_factor = new_factor
     })
