@@ -353,15 +353,6 @@ export class Heart extends BaseModelClass {
   }
 
   analyze() {
-    // state going from diastole to systole (end_diastolic)
-    if (this.prev_cardiac_cycle_state === 0 && this.cardiac_cycle_state === 1) {
-      this.lv_edv = this._lv ? this._lv.vol : 0;
-      this.lv_edp = this._lv ? this._lv.pres_in : 0;
-      
-      this.rv_edv = this._rv ? this._rv.vol : 0;
-      this.rv_edp = this._rv ? this._rv.pres_in : 0;
-    }
-
     // state going from systole to diastole (end systolic)
     if (this.prev_cardiac_cycle_state === 1 && this.cardiac_cycle_state === 0) {
       this.lv_esv = this._lv ? this._lv.vol : 0;
@@ -375,6 +366,11 @@ export class Heart extends BaseModelClass {
       
       this.ra_esv = (this._raivci ? this._raivci.vol : 0) + (this._rasvc ? this._rasvc.vol : 0)
       this.ra_esp = 0.5 * ((this._raivci ? this._raivci.pres_in : 0) + (this._rasvc ? this._rasvc.pres_in : 0) )
+
+      if (this._ra) {
+        this.ra_esv = this._ra.vol
+        this.ra_esp = this._ra.pres_in
+      }
     }
 
     // state going from diastole to systole (end diastolic)
@@ -390,6 +386,11 @@ export class Heart extends BaseModelClass {
       
       this.ra_edv = (this._raivci ? this._raivci.vol : 0) + (this._rasvc ? this._rasvc.vol : 0);
       this.ra_esp = 0.5 * ((this._raivci ? this._raivci.pres_in : 0) + (this._rasvc ? this._rasvc.pres_in : 0));
+
+      if (this._ra) {
+        this.ra_edv = this._ra.vol
+        this.ra_esp = this._ra.pres_in
+      }
 
       // store the other parameters
       this.lv_sv = this.lv_edv - this.lv_esv
@@ -636,6 +637,12 @@ export class Heart extends BaseModelClass {
       this._la.ans_sens = this.ans_sens
       this._la.ans_activity = this.ans_activity
       this._la.act_factor = this.aaf;
+    }
+
+     if (this._ra) {
+      this._ra.ans_sens = this.ans_sens
+      this._ra.ans_activity = this.ans_activity
+      this._ra.act_factor = this.aaf;
     } 
 
     if (this._lv) {
@@ -685,6 +692,7 @@ export class Heart extends BaseModelClass {
     // add guard rails for th situation when this._raivci or this._rasvc is not present in the model
     let f_ps_raivc = this._raivci ? this._raivci.el_max_factor_ps : 0;
     let f_ps_rasvc = this._rasvc ? this._rasvc.el_max_factor_ps : 0;
+    let f_ps_ra = this._ra ? this._ra.el_max_factor_ps : 0;
     let f_ps_rv = this._rv.el_max_factor_ps;
 
     let delta_left = new_cont_factor_left - this.prev_cont_factor_left;
@@ -695,6 +703,7 @@ export class Heart extends BaseModelClass {
     f_ps_lv = Math.max(f_ps_lv + delta_left, 0);
     f_ps_raivc = Math.max(f_ps_raivc + delta_right, 0);
     f_ps_rasvc = Math.max(f_ps_rasvc + delta_right, 0);
+    f_ps_ra = Math.max(f_ps_ra + delta_right, 0);
     f_ps_rv = Math.max(f_ps_rv + delta_right, 0);
 
     // transfer the factors
@@ -705,6 +714,9 @@ export class Heart extends BaseModelClass {
     }
     if (this._rasvc) {
       this._rasvc.el_max_factor_ps = f_ps_rasvc
+    }
+    if (this._ra) {
+      this._ra.el_max_factor_ps = f_ps_ra
     }
     this._rv.el_max_factor_ps = f_ps_rv
 
@@ -719,6 +731,7 @@ export class Heart extends BaseModelClass {
     let f_ps_lv = this._lv.el_min_factor_ps;
     let f_ps_raivc = this._raivci ? this._raivci.el_min_factor_ps : 0;
     let f_ps_rasvc = this._rasvc ? this._rasvc.el_min_factor_ps : 0;
+    let f_ps_ra = this._ra ? this._ra.el_min_factor_ps : 0;
     let f_ps_rv = this._rv.el_min_factor_ps;
 
     let delta_left = new_relax_factor_left - this.prev_relax_factor_left;
@@ -729,6 +742,7 @@ export class Heart extends BaseModelClass {
     f_ps_lv = Math.max(f_ps_lv + delta_left, 0);
     f_ps_raivc = Math.max(f_ps_raivc + delta_right, 0);
     f_ps_rasvc = Math.max(f_ps_rasvc + delta_right, 0);
+    f_ps_ra = Math.max(f_ps_ra + delta_right, 0);   
     f_ps_rv = Math.max(f_ps_rv + delta_right, 0);
 
     // transfer the factors
@@ -739,6 +753,9 @@ export class Heart extends BaseModelClass {
     }
     if (this._rasvc) {
       this._rasvc.el_min_factor_ps = f_ps_rasvc
+    }
+    if (this._ra) {
+      this._ra.el_min_factor_ps = f_ps_ra
     }
     this._rv.el_min_factor_ps = f_ps_rv
 
