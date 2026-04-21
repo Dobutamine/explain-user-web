@@ -389,6 +389,14 @@ export default defineComponent({
     }
   },
   methods: {
+    applyDefaultTabs() {
+      const defaults = this.state.configuration?.default_tabs
+      if (!defaults) return
+      if (defaults.left) this.tab_left = defaults.left
+      if (defaults.center) this.tab_center = defaults.center
+      if (defaults.right) this.tab_right = defaults.right
+      this.tabCenterChanged(this.tab_center)
+    },
     tabLeftChanged() {
       explain.getModelState()
     },
@@ -500,6 +508,7 @@ export default defineComponent({
     this.$bus.off("redraw_monitors", this.redrawMonitors)
     this.$bus.off("sprite_tapped", this.onDiagramTap)
     if (this._unwatchReady) this._unwatchReady()
+    if (this._unwatchDefaultTabs) this._unwatchDefaultTabs()
   },
   mounted() {
     // return if the user is not logged in
@@ -518,6 +527,14 @@ export default defineComponent({
     this._unwatchReady = this.$watch(
       () => this.modelStore.isReady,
       (val) => { if (val) this.modelReady() }
+    )
+
+    // apply default tabs now if the configuration is already loaded, and on any future state load
+    this.applyDefaultTabs()
+    this._unwatchDefaultTabs = this.$watch(
+      () => this.state.configuration?.default_tabs,
+      () => this.applyDefaultTabs(),
+      { deep: true }
     )
 
     // if the models resets make sure the watchlist is up to date

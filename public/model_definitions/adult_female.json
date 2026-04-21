@@ -10823,6 +10823,11 @@
     "diagram_speed": 1,
     "diagram_scale": 1,
     "chart_hires": false,
+    "default_tabs": {
+      "left": "demo",
+      "center": "diagram",
+      "right": "numerics"
+    },
     "tabs": {
       "demo": { "enabled": false, "collapsed": false },
       "controllers": { "enabled": true, "collapsed": false },
