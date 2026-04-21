@@ -8997,7 +8997,7 @@
     "diagram_scale": 1,
     "chart_hires": false,
     "default_tabs": {
-      "left": "demo",
+      "left": "controllers",
       "center": "diagram",
       "right": "numerics"
     },
