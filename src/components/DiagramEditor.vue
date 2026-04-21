@@ -495,6 +495,7 @@ import { explain } from "../boot/explain";
 import { useUserStore } from "src/stores/user";
 import { useStateStore } from "src/stores/state";
 import { useGeneralStore } from "src/stores/general";
+import { useModelStore } from "src/stores/model";
 
 export default {
   components: {},
@@ -502,10 +503,12 @@ export default {
     const user = useUserStore();
     const state = useStateStore();
     const general = useGeneralStore();
+    const modelStore = useModelStore();
     return {
       user,
       state,
-      general
+      general,
+      modelStore
     };
   },
   data() {
@@ -628,7 +631,7 @@ export default {
           general: {
             animatedBy: this.compAnimatedBy,
             z_index: parseInt(this.compZIndex),
-            alpha: parseInt(this.compAlpha),
+            alpha: parseFloat(this.compAlpha),
             tinting: this.compTinting
           },
           path: {
@@ -690,7 +693,7 @@ export default {
       let compToDelete = [];
       compToDelete.push(this.compName);
 
-      let compType = this.state.diagram_definition.components[this.compName].compType;
+      let compType = this.state.diagram_definition.components[this.compName].type;
       if (
         compType === "Compartment" ||
         compType === "Device" ||
@@ -699,8 +702,8 @@ export default {
         Object.entries(this.state.diagram_definition.components).forEach(
           ([component_name, component]) => {
             if (
-              component.compType === "Connector" ||
-              component.compType === "Valve"
+              component.type === "Connector" ||
+              component.type === "Valve"
             ) {
               if (
                 component.dbcFrom === this.compName ||
@@ -726,6 +729,9 @@ export default {
     onDiagramSelection(e) {
       this.selectedDiagramComponentName = e
       this.editComponent()
+    },
+    handleDiagramLoaded() {
+      this.diagramComponentNames = this.getAllDiagramComponents();
     },
     addComponent(compType) {
       // set the editor mode to adding
@@ -815,11 +821,6 @@ export default {
       // get the dbc comp froms and tos dependending on the component type
       switch (this.compType) {
         case "Connector":
-          this.compDbcFroms = this.findDiagramComponents(["Compartment", "Pump"]);
-          this.compDbcTos = this.findDiagramComponents(["Compartment", "Pump"]);
-          this.compDbcFrom = this.selectedDiagramComponent.dbcFrom;
-          this.compDbcTo = this.selectedDiagramComponent.dbcTo;
-          break;
         case "Valve":
           this.compDbcFroms = this.findDiagramComponents(["Compartment", "Pump"]);
           this.compDbcTos = this.findDiagramComponents(["Compartment", "Pump"]);
@@ -829,16 +830,6 @@ export default {
         case "Container":
           this.compDbcFroms = this.findDiagramComponents(["Compartment", "Pump", "Container", "Device"]);
           this.compDbcTos = this.findDiagramComponents(["Compartment", "Pump", "Container", "Device"]);
-          this.compAnimatedBy = "vol"
-          this.compTinting = false
-          break;
-        case "Device":
-          this.compAnimatedBy = "none"
-          this.compTinting = false
-          break;
-        case "Exchanger":
-          this.compAnimatedBy = "o2"
-          this.compTinting = false
           break;
         case "Pump":
           this.compDbcFroms = this.findDiagramComponents(["Connector", "Valve"]);
@@ -847,39 +838,48 @@ export default {
           this.compDbcTo = this.selectedDiagramComponent.dbcTo;
           break;
       }
-      
+
       // now process all the selected daigram component settings
+      const layout = this.selectedDiagramComponent.layout || {};
+      const general = layout.general || {};
+      const path = layout.path || {};
+      const sprite = layout.sprite || {};
+      const spritePos = sprite.pos || {};
+      const spriteScale = sprite.scale || {};
+      const spriteAnchor = sprite.anchor || {};
+      const label = layout.label || {};
+
       this.compName = this.selectedDiagramComponentName;
       this.compLabel = this.selectedDiagramComponent.label;
       this.compPicto = this.selectedDiagramComponent.picto;
       this.compEnabled = this.selectedDiagramComponent.enabled;
       this.compModelSelection = this.selectedDiagramComponent.models;
 
-      this.compAnimatedBy = this.selectedDiagramComponent.layout.general.animatedBy;
-      this.compZIndex = this.selectedDiagramComponent.layout.general.z_index;
-      this.compAlpha = this.selectedDiagramComponent.layout.general.alpha;
-      this.compTinting = this.selectedDiagramComponent.layout.general.tinting;
+      this.compAnimatedBy = general.animatedBy ?? "none";
+      this.compZIndex = general.z_index ?? 10;
+      this.compAlpha = general.alpha ?? 1;
+      this.compTinting = general.tinting ?? true;
 
-      this.compPathType = this.selectedDiagramComponent.layout.path.type;
-      this.compPathWidth = this.selectedDiagramComponent.layout.path.width;
-      this.compPathColor = this.selectedDiagramComponent.layout.path.color;
+      this.compPathType = path.type ?? "straight";
+      this.compPathWidth = path.width ?? 5;
+      this.compPathColor = path.color ?? "#666666";
 
-      this.compSpriteColor = this.selectedDiagramComponent.layout.sprite.color;
-      this.compSpritePosType = this.selectedDiagramComponent.layout.sprite.pos.type;
-      this.compSpritePosX = this.selectedDiagramComponent.layout.sprite.pos.x;
-      this.compSpritePosY = this.selectedDiagramComponent.layout.sprite.pos.y;
-      this.compSpritePosDgs = this.selectedDiagramComponent.layout.sprite.pos.dgs;
-      this.compSpriteScaleX = this.selectedDiagramComponent.layout.sprite.scale.x; 
-      this.compSpriteScaleY = this.selectedDiagramComponent.layout.sprite.scale.y; 
-      this.compSpriteAnchorX = this.selectedDiagramComponent.layout.sprite.anchor.x; 
-      this.compSpriteAnchorY = this.selectedDiagramComponent.layout.sprite.anchor.y; 
-      this.compSpriteRotation = this.selectedDiagramComponent.layout.sprite.rotation;
+      this.compSpriteColor = sprite.color ?? "#ffffff";
+      this.compSpritePosType = spritePos.type ?? "rel";
+      this.compSpritePosX = spritePos.x ?? 0;
+      this.compSpritePosY = spritePos.y ?? 0;
+      this.compSpritePosDgs = spritePos.dgs ?? 0;
+      this.compSpriteScaleX = spriteScale.x ?? 1;
+      this.compSpriteScaleY = spriteScale.y ?? 1;
+      this.compSpriteAnchorX = spriteAnchor.x ?? 0.5;
+      this.compSpriteAnchorY = spriteAnchor.y ?? 0.5;
+      this.compSpriteRotation = sprite.rotation ?? 0;
 
-      this.compLabelPosX = this.selectedDiagramComponent.layout.label.pos_x;
-      this.compLabelPosY = this.selectedDiagramComponent.layout.label.pos_y;
-      this.compLabelSize = this.selectedDiagramComponent.layout.label.size;
-      this.compLabelRotation = this.selectedDiagramComponent.layout.label.rotation;
-      this.compLabelColor = this.selectedDiagramComponent.layout.label.color;
+      this.compLabelPosX = label.pos_x ?? 0;
+      this.compLabelPosY = label.pos_y ?? 0;
+      this.compLabelSize = label.size ?? 10;
+      this.compLabelRotation = label.rotation ?? 0;
+      this.compLabelColor = label.color ?? "#ffffff";
     },
     clearFields() {
       this.compName = "";
@@ -978,61 +978,32 @@ export default {
           models = [];
           break;
       }
-      Object.keys(explain.modelState.models).forEach((model) => {
-        if (models.includes(explain.modelState.models[model].model_type)) {
-          model_list.push(model);
-        }
-      });
-      model_list.sort();
+      const engineModels = this.modelStore.isReady
+        ? this.modelStore.modelState?.models
+        : null;
+      if (engineModels) {
+        Object.keys(engineModels).forEach((model) => {
+          if (models.includes(engineModels[model].model_type)) {
+            model_list.push(model);
+          }
+        });
+        model_list.sort();
+      }
 
       return model_list;
     }
   },
   beforeUnmount() {
-    // remove the model state event listener
-    document.removeEventListener(
-      "edit_comp",
-      (e) => {
-        this.editComponent(e.detail);
-      },
-      false
-    );
-    this.$bus.off("select_diagram", (e) => this.onDiagramSelection(e))
+    this.$bus.off("diagram_loaded", this.handleDiagramLoaded);
+    this.$bus.off("select_diagram", this.onDiagramSelection);
   },
   mounted() {
-    this.rebuild_event = new CustomEvent("rebuild_diagram");
-
-    try {
-      document.removeEventListener(
-        "edit_comp",
-        (e) => {
-          this.editComponent(e.detail);
-        },
-        false
-      );
-    } catch { }
-
-    // get the model state
-    explain.getModelState();
-
-    // get all diagram component names
+    if (this.modelStore.isReady) {
+      explain.getModelState();
+    }
     this.diagramComponentNames = this.getAllDiagramComponents();
-
-    document.addEventListener(
-      "edit_comp",
-      (e) => {
-        this.editComponent(e.detail);
-      },
-      false
-    );
-
-    this.$bus.on("diagram_loaded", () => this.diagramComponentNames = this.getAllDiagramComponents());
-
-    this.$bus.on("addNewModelToDiagram", (new_element) => {
-      this.addToDiagramFromOutside(new_element);
-    });
-
-    this.$bus.on("select_diagram", (e) => this.onDiagramSelection(e))
+    this.$bus.on("diagram_loaded", this.handleDiagramLoaded);
+    this.$bus.on("select_diagram", this.onDiagramSelection);
   },
 };
 </script>
