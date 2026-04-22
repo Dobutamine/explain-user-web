@@ -1,0 +1,49 @@
+{
+  "user": "spike",
+  "name": "container_test",
+  "description": "Exercises the Container port. A THORAX container (vol_extra=0.1, el_base=50) encloses one BLOOD_INSIDE compartment (BloodCapacitance, vol=0.05). Verifies the vol_extra + contained_components sum and the pres_ext push onto the contained compartment.",
+  "protected": false,
+  "shared": false,
+  "shared_category": "spike",
+  "animation_definition": {},
+  "diagram_definition": {},
+  "model_definition": {
+    "weight": 3.5,
+    "height": 0.5,
+    "gestational_age": 40,
+    "age": 0,
+    "modeling_stepsize": 0.0005,
+    "model_time_total": 0.0,
+    "scaler_config": {},
+    "models": {
+      "THORAX": {
+        "name": "THORAX",
+        "description": "container enclosing BLOOD_INSIDE",
+        "is_enabled": true,
+        "model_type": "Container",
+        "components": {},
+        "u_vol": 0.0,
+        "el_base": 50.0,
+        "el_k": 0.0,
+        "vol_extra": 0.1,
+        "contained_components": ["BLOOD_INSIDE"]
+      },
+      "BLOOD_INSIDE": {
+        "name": "BLOOD_INSIDE",
+        "description": "blood compartment contained inside THORAX",
+        "is_enabled": true,
+        "model_type": "BloodCapacitance",
+        "components": {},
+        "u_vol": 0.0,
+        "el_base": 1000.0,
+        "el_k": 0.0,
+        "vol": 0.05,
+        "to2": 8.0,
+        "tco2": 20.0,
+        "temp": 37.0,
+        "viscosity": 6.0
+      }
+    }
+  },
+  "configuration": {}
+}

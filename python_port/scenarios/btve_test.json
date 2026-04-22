@@ -1,0 +1,68 @@
+{
+  "user": "spike",
+  "name": "btve_test",
+  "description": "Exercises BloodTimeVaryingElastance. BTVE_A (time-varying, oxygenated, warm) connected by a Resistor to BLOOD_B (plain BloodCapacitance, deoxygenated, cold). Fixed act_factor=0.5 drives a 90 mmHg initial gradient; volumes and composition should both equilibrate via one-way mixing.",
+  "protected": false,
+  "shared": false,
+  "shared_category": "spike",
+  "animation_definition": {},
+  "diagram_definition": {},
+  "model_definition": {
+    "weight": 3.5,
+    "height": 0.5,
+    "gestational_age": 40,
+    "age": 0,
+    "modeling_stepsize": 0.0005,
+    "model_time_total": 0.0,
+    "scaler_config": {},
+    "models": {
+      "BTVE_A": {
+        "name": "BTVE_A",
+        "description": "blood time-varying elastance (oxygenated, warm)",
+        "is_enabled": true,
+        "model_type": "BloodTimeVaryingElastance",
+        "components": {},
+        "u_vol": 0.0,
+        "el_min": 800.0,
+        "el_max": 2000.0,
+        "el_k": 0.0,
+        "vol": 0.100,
+        "act_factor": 0.5,
+        "to2": 8.0,
+        "tco2": 20.0,
+        "temp": 37.0,
+        "viscosity": 6.0
+      },
+      "BLOOD_B": {
+        "name": "BLOOD_B",
+        "description": "plain blood compartment (deoxygenated, cold)",
+        "is_enabled": true,
+        "model_type": "BloodCapacitance",
+        "components": {},
+        "u_vol": 0.0,
+        "el_base": 1000.0,
+        "el_k": 0.0,
+        "vol": 0.050,
+        "to2": 4.0,
+        "tco2": 28.0,
+        "temp": 34.0,
+        "viscosity": 6.0
+      },
+      "R_AB": {
+        "name": "R_AB",
+        "description": "resistor A -> B",
+        "is_enabled": true,
+        "model_type": "Resistor",
+        "components": {},
+        "comp_from": "BTVE_A",
+        "comp_to": "BLOOD_B",
+        "r_for": 100.0,
+        "r_back": 100.0,
+        "r_k": 0.0,
+        "no_flow": false,
+        "no_back_flow": false
+      }
+    }
+  },
+  "configuration": {}
+}

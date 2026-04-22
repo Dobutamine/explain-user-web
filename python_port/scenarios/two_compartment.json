@@ -1,0 +1,58 @@
+{
+  "user": "spike",
+  "name": "two_compartment",
+  "description": "Two capacitances (A, B) connected by a resistor. A starts with more volume than B. Expected: volumes and pressures equilibrate at (vol_A + vol_B) / 2 when elastances are equal and u_vol = 0.",
+  "protected": false,
+  "shared": false,
+  "shared_category": "spike",
+  "animation_definition": {},
+  "diagram_definition": {},
+  "model_definition": {
+    "weight": 3.5,
+    "height": 0.5,
+    "gestational_age": 40,
+    "age": 0,
+    "modeling_stepsize": 0.0005,
+    "model_time_total": 0.0,
+    "scaler_config": {},
+    "models": {
+      "COMP_A": {
+        "name": "COMP_A",
+        "description": "compartment A",
+        "is_enabled": true,
+        "model_type": "Capacitance",
+        "components": {},
+        "u_vol": 0.0,
+        "el_base": 1000.0,
+        "el_k": 0.0,
+        "vol": 0.100
+      },
+      "COMP_B": {
+        "name": "COMP_B",
+        "description": "compartment B",
+        "is_enabled": true,
+        "model_type": "Capacitance",
+        "components": {},
+        "u_vol": 0.0,
+        "el_base": 1000.0,
+        "el_k": 0.0,
+        "vol": 0.050
+      },
+      "R_AB": {
+        "name": "R_AB",
+        "description": "resistor between A and B",
+        "is_enabled": true,
+        "model_type": "Resistor",
+        "components": {},
+        "comp_from": "COMP_A",
+        "comp_to": "COMP_B",
+        "r_for": 100.0,
+        "r_back": 100.0,
+        "r_k": 0.0,
+        "no_flow": false,
+        "no_back_flow": false
+      }
+    }
+  },
+  "configuration": {}
+}

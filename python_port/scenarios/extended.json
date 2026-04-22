@@ -1,0 +1,79 @@
+{
+  "user": "spike",
+  "name": "extended",
+  "description": "Exercises all four ported classes. Two BloodCapacitances with different O2/CO2/temp connected by a Resistor (volumes + composition equilibrate). One isolated TimeVaryingElastance with fixed act_factor to verify the time-varying pressure formula.",
+  "protected": false,
+  "shared": false,
+  "shared_category": "spike",
+  "animation_definition": {},
+  "diagram_definition": {},
+  "model_definition": {
+    "weight": 3.5,
+    "height": 0.5,
+    "gestational_age": 40,
+    "age": 0,
+    "modeling_stepsize": 0.0005,
+    "model_time_total": 0.0,
+    "scaler_config": {},
+    "models": {
+      "BLOOD_A": {
+        "name": "BLOOD_A",
+        "description": "blood compartment A (oxygenated, warm)",
+        "is_enabled": true,
+        "model_type": "BloodCapacitance",
+        "components": {},
+        "u_vol": 0.0,
+        "el_base": 1000.0,
+        "el_k": 0.0,
+        "vol": 0.100,
+        "to2": 8.0,
+        "tco2": 20.0,
+        "temp": 37.0,
+        "viscosity": 6.0
+      },
+      "BLOOD_B": {
+        "name": "BLOOD_B",
+        "description": "blood compartment B (deoxygenated, cold)",
+        "is_enabled": true,
+        "model_type": "BloodCapacitance",
+        "components": {},
+        "u_vol": 0.0,
+        "el_base": 1000.0,
+        "el_k": 0.0,
+        "vol": 0.050,
+        "to2": 4.0,
+        "tco2": 28.0,
+        "temp": 34.0,
+        "viscosity": 6.0
+      },
+      "R_AB": {
+        "name": "R_AB",
+        "description": "resistor A -> B",
+        "is_enabled": true,
+        "model_type": "Resistor",
+        "components": {},
+        "comp_from": "BLOOD_A",
+        "comp_to": "BLOOD_B",
+        "r_for": 100.0,
+        "r_back": 100.0,
+        "r_k": 0.0,
+        "no_flow": false,
+        "no_back_flow": false
+      },
+      "TVE_ISOLATED": {
+        "name": "TVE_ISOLATED",
+        "description": "isolated time-varying elastance with fixed act_factor",
+        "is_enabled": true,
+        "model_type": "TimeVaryingElastance",
+        "components": {},
+        "u_vol": 0.010,
+        "el_min": 500.0,
+        "el_max": 5000.0,
+        "el_k": 0.0,
+        "vol": 0.020,
+        "act_factor": 0.5
+      }
+    }
+  },
+  "configuration": {}
+}
